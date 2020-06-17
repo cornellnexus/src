@@ -1,6 +1,31 @@
 import tkinter as tk
 
-def create_grid(event=None):
+
+"""
+must be in the format :   "0.0,1.2,1.3"
+"""
+def parseAndFormatCsvLine(line):
+    firstComma = line.index(",")
+    secondComma = line.index(",", firstComma+1)
+
+    xCoord = float(line[0:firstComma])
+    yCoord = float(line[firstComma+1:secondComma])
+    angle = float(line[secondComma+1:]) #ignore for now b.c. we do not need it.
+
+    return (xCoord, yCoord)
+
+
+def readCoordsFromCsv(file):
+    coordList = []
+    f = open(file, "r")
+    for line in f:
+        coords = parseAndFormatCsvLine(line)
+        coordList.append(coords)
+
+    return coordList
+
+
+def createGrid(event=None):
     w = c.winfo_width() # Get current width of canvas
     h = c.winfo_height() # Get current height of canvas
     c.delete('grid_line') # Will only remove the grid_line
@@ -13,11 +38,12 @@ def create_grid(event=None):
     for i in range(0, h, 100):
         c.create_line([(0, i), (w, i)], tag='grid_line')
 
-root = tk.Tk()
 
+root = tk.Tk()
+readCoordsFromCsv("coordinates.txt")
 c = tk.Canvas(root, height=500, width=500, bg='white')
 c.pack(fill=tk.BOTH, expand=True)
 
-c.bind('<Configure>', create_grid)
+c.bind('<Configure>', createGrid)
 
 root.mainloop()
