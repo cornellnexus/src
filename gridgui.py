@@ -28,6 +28,7 @@ def readCoordsFromCsv(file):
 #Take values from CSV file and plot them onto the screen
 def pasteCoords(coords):
     #Take tuples from coordList
+
     for (x,y) in coords:
 
         #Create oval based on coordinates
@@ -39,11 +40,12 @@ def generatediagonalCoordsFile():
         f.write(""+ str(i+1)+","+str(i+1)+","+str(i+1)+"\n")
 
 def moveRobot(coords):
-    robot = c.create_rectangle(10, 10, 10, 10, fill="red")
+    
+    robot = c.create_rectangle(0, 0, 10, 10, fill="red")
 
     for (x,y) in coords:
         print("moving to: "+str((x,y)))
-        c.coords(robot,x,y,x,y)
+        c.coords(robot,x-5,y-5,x+5,y+5)
         c.update()
         c.after(50)
 
@@ -71,9 +73,12 @@ c.pack(fill=tk.BOTH, expand=True)
 c.bind('<Configure>', createGrid)
 
 generatediagonalCoordsFile()
+
+#practice plotting points from CSV file to GUI
 practiceCoords = readCoordsFromCsv("samplepoints.txt")
 pasteCoords(practiceCoords)
 
+#move robot
 coords = readCoordsFromCsv("coords.txt")
 moveRobot(coords)
 
