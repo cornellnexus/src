@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter
-
+import time
 
 """
 must be in the format :   "0.0,1.2,1.3"
@@ -46,6 +46,19 @@ def pasteCoords(file):
         #Create oval based on coordinates
         c.create_oval(xCoord-10, yCoord-10, xCoord+10 , yCoord+10, fill='red')
 
+def generatediagonalCoordsFile():
+    f= open("coords.txt","w+")
+    for i in range (0,500):
+        f.write(""+ str(i+1)+","+str(i+1)+","+str(i+1)+"\n")
+
+def moveRobot(coords):
+    robot = c.create_rectangle(10, 10, 10, 10, fill="red")
+
+    for (x,y) in coords:
+        print("moving to: "+str((x,y)))
+        c.coords(robot,x,y,x,y)
+        c.update()
+        c.after(50)
 
 
 def createGrid(event=None):
@@ -54,24 +67,26 @@ def createGrid(event=None):
     c.delete('grid_line') # Will only remove the grid_line
 
     # Creates all vertical lines at intevals of 100
-    for i in range(0, w, 100):
+    for i in range(0, w, 25):
         c.create_line([(i, 0), (i, h)], tag='grid_line')
 
     # Creates all horizontal lines at intevals of 100
-    for i in range(0, h, 100):
+    for i in range(0, h, 25):
         c.create_line([(0, i), (w, i)], tag='grid_line')
 
 
 
 
 root = tk.Tk()
-readCoordsFromCsv("coordinates.txt")
 c = tk.Canvas(root, height=500, width=500, bg='white')
 c.pack(fill=tk.BOTH, expand=True)
 
 c.bind('<Configure>', createGrid)
 pasteCoords("coordinates.txt")
+
+generatediagonalCoordsFile()
+coords = readCoordsFromCsv("coords.txt")
+moveRobot(coords)
+
 c.pack(fill =tk.BOTH, expand = True)
-
-
 root.mainloop()
