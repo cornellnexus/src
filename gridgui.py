@@ -26,25 +26,12 @@ def readCoordsFromCsv(file):
     return coordList
 
 #Take values from CSV file and plot them onto the screen
-def pasteCoords(file):
-    coordList = readCoordsFromCsv(file)
-
+def pasteCoords(coords):
     #Take tuples from coordList
-    for coordinate in coordList:
-
-        #Convert tuple to string to get actual values
-        StringCoordinate = str(coordinate)
-
-        #Getting x and y coordinates from tuple string
-        xCoord = StringCoordinate[1:StringCoordinate.index(",")]
-        yCoord = StringCoordinate[StringCoordinate.index(" ")+1:StringCoordinate.index(")")]
-
-        #Convert to floats
-        xCoord = float(xCoord)
-        yCoord = float(yCoord)
+    for (x,y) in coords:
 
         #Create oval based on coordinates
-        c.create_oval(xCoord-10, yCoord-10, xCoord+10 , yCoord+10, fill='red')
+        c.create_oval(x-3, y-3, x+3 , y+3, fill='green')
 
 def generatediagonalCoordsFile():
     f= open("coords.txt","w+")
@@ -82,9 +69,11 @@ c = tk.Canvas(root, height=500, width=500, bg='white')
 c.pack(fill=tk.BOTH, expand=True)
 
 c.bind('<Configure>', createGrid)
-pasteCoords("coordinates.txt")
 
 generatediagonalCoordsFile()
+practiceCoords = readCoordsFromCsv("samplepoints.txt")
+pasteCoords(practiceCoords)
+
 coords = readCoordsFromCsv("coords.txt")
 moveRobot(coords)
 
