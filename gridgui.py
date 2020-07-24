@@ -40,7 +40,7 @@ def generatediagonalCoordsFile():
         f.write(""+ str(i+1)+","+str(i+1)+","+str(i+1)+"\n")
 
 def moveRobot(coords):
-    
+
     robot = c.create_rectangle(0, 0, 10, 10, fill="red")
 
     for (x,y) in coords:
@@ -49,6 +49,42 @@ def moveRobot(coords):
         c.update()
         c.after(50)
 
+allCoordinates = []
+def getCoordinates():
+    for c in range(0,500):
+        for r in range(0,500):
+            allCoordinates.append([r,c])#Add coordinates in pairs, forming 2D array
+
+    #print(allCoordinates)
+visited = set()
+hori_min = 0
+vert_min = 0
+hori_max = 500
+vert_max = 500
+def dfs(visited, coordinates, node):
+    if node not in visited:
+        if (node[0] == hori_min && node[1] == vert_min):
+            neighbors=[[node[0]+1,0],[node[0]+1,node[1]+1],[0,node[1]+1]]
+        elif(node[0]== hori_min && node[1] == vert_max):
+            neighbors=[[node[0]+1,node[1]],[node[0]+1,node[1]-1],[node[0],node[1]-1]]
+        elif(node[0] == hori_max && node[1] == vert_max):
+            neighbors=[[node[0]-1,node[1]],[node[0]-1,node[1]-1],[node[0],node[1]-1]]
+        elif(node[0] == hori_max && node[1] == vert_min):
+            neighbors=[[node[0]-1,node[1]],[node[0]-1,node[1]-1],[node[0],node[1]-1]]
+        elif(node[0]==hori_min):
+            neighbors=[[node[0],node[1]-1],[node[0]+1,node[1]+1],[node[0]+1,node[1]],[node[0]+1,node[1]-1],[node[0],node[1]-1]]
+        elif(node[0] == hori_max):
+            neighbors=[[node[0],node[1]+1],[node[0],node[1]-1],[node[0]-1,node[1]+1],[node[0]-1,node[1]],[node[0]-1,node[1]-1]]
+        elif(node[1]==vert_min):
+            neighbors=[[node[0]-1,node[1]],[node[0]-1,node[1]+1],[node[0],node[1]+1],[node[0]+1,node[1]+1],[node[0]+1,node[1]]]
+        elif(node[1] ==vert_max):
+            neighbors=[[node[0]-1,node[1]],[node[0]-1,node[1]-1],[node[0],node[1]-1],[node[0]+1,node[1]-1],[node[0]+1,node[1]]]
+        else:
+            neighbors=[[node[0]-1,node[1]-1],[node[0],node[1]-1],[node[0]+1,node[1]-1],[node[0]+1,node[1]],[node[0]+1,node[1]+1],[node[0],node[1]+1],[node[0]-1,node[1]+1],[node[0]-1,node[1]]]
+        print(node)
+        visited.add(node)
+        for neighbor in graph
+            dfs(visited, graph, neighbor)
 
 def createGrid(event=None):
     w = c.winfo_width() # Get current width of canvas
@@ -77,6 +113,7 @@ generatediagonalCoordsFile()
 #practice plotting points from CSV file to GUI
 practiceCoords = readCoordsFromCsv("samplepoints.txt")
 pasteCoords(practiceCoords)
+getCoordinates()
 
 #move robot
 coords = readCoordsFromCsv("coords.txt")
