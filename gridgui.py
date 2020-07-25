@@ -2,6 +2,17 @@ import tkinter as tk
 import tkinter
 import time
 
+
+class Coordinate(object):
+    x = 0
+    y = 0
+    isObstacle = False
+
+    def __init__(self, x,y,obby):
+        self.x = x
+        self.y = y
+        isObstacle=obby
+
 """
 must be in the format :   "0.0,1.2,1.3"
 """
@@ -49,42 +60,43 @@ def moveRobot(coords):
         c.update()
         c.after(50)
 
-allCoordinates = []
+coordinates = {}
 def getCoordinates():
     for c in range(0,500):
         for r in range(0,500):
-            allCoordinates.append([r,c])#Add coordinates in pairs, forming 2D array
+            coordinates[str(r)+","+str(c)] = Coordinate(r,c,False)
 
-    #print(allCoordinates)
-visited = set()
+visited = []
 hori_min = 0
 vert_min = 0
 hori_max = 500
 vert_max = 500
-def dfs(visited, coordinates, node):
-    if node not in visited:
-        if (node[0] == hori_min && node[1] == vert_min):
-            neighbors=[[node[0]+1,0],[node[0]+1,node[1]+1],[0,node[1]+1]]
-        elif(node[0]== hori_min && node[1] == vert_max):
-            neighbors=[[node[0]+1,node[1]],[node[0]+1,node[1]-1],[node[0],node[1]-1]]
-        elif(node[0] == hori_max && node[1] == vert_max):
-            neighbors=[[node[0]-1,node[1]],[node[0]-1,node[1]-1],[node[0],node[1]-1]]
-        elif(node[0] == hori_max && node[1] == vert_min):
-            neighbors=[[node[0]-1,node[1]],[node[0]-1,node[1]-1],[node[0],node[1]-1]]
-        elif(node[0]==hori_min):
-            neighbors=[[node[0],node[1]-1],[node[0]+1,node[1]+1],[node[0]+1,node[1]],[node[0]+1,node[1]-1],[node[0],node[1]-1]]
-        elif(node[0] == hori_max):
-            neighbors=[[node[0],node[1]+1],[node[0],node[1]-1],[node[0]-1,node[1]+1],[node[0]-1,node[1]],[node[0]-1,node[1]-1]]
-        elif(node[1]==vert_min):
-            neighbors=[[node[0]-1,node[1]],[node[0]-1,node[1]+1],[node[0],node[1]+1],[node[0]+1,node[1]+1],[node[0]+1,node[1]]]
-        elif(node[1] ==vert_max):
-            neighbors=[[node[0]-1,node[1]],[node[0]-1,node[1]-1],[node[0],node[1]-1],[node[0]+1,node[1]-1],[node[0]+1,node[1]]]
+
+#coordinates represents dictionary w all coordinates
+#key is the string of coordinate you want to access
+def dfs(visited, coordinates, key):
+    if key not in visited:
+        if (coordinates[key].x == hori_min and coordinates[key].y == vert_min):
+            neighbors=[[coordinates[key].x+1,0],[coordinates[key].x+1,coordinates[key].y+1],[0,coordinates[key].y+1]]
+        elif(coordinates[key].x== hori_min and coordinates[key].y == vert_max):
+            neighbors=[[coordinates[key].x+1,coordinates[key].y],[coordinates[key].x+1,coordinates[key].y-1],[coordinates[key].x,coordinates[key].y-1]]
+        elif(coordinates[key].x == hori_max and coordinates[key].y == vert_max):
+            neighbors=[[coordinates[key].x-1,coordinates[key].y],[coordinates[key].x-1,coordinates[key].y-1],[coordinates[key].x,coordinates[key].y-1]]
+        elif(coordinates[key].x == hori_max and coordinates[key].y == vert_min):
+            neighbors=[[coordinates[key].x-1,coordinates[key].y],[coordinates[key].x-1,coordinates[key].y-1],[coordinates[key].x,coordinates[key].y-1]]
+        elif(coordinates[key].x==hori_min):
+            neighbors=[[coordinates[key].x,coordinates[key].y-1],[coordinates[key].x+1,coordinates[key].y+1],[coordinates[key].x+1,coordinates[key].y],[coordinates[key].x+1,coordinates[key].y-1],[coordinates[key].x,coordinates[key].y-1]]
+        elif(coordinates[key].x == hori_max):
+            neighbors=[[coordinates[key].x,coordinates[key].y+1],[coordinates[key].x,coordinates[key].y-1],[coordinates[key].x-1,coordinates[key].y+1],[coordinates[key].x-1,coordinates[key].y],[coordinates[key].x-1,coordinates[key].y-1]]
+        elif(coordinates[key].y==vert_min):
+            neighbors=[[coordinates[key].x-1,coordinates[key].y],[coordinates[key].x-1,coordinates[key].y+1],[coordinates[key].x,coordinates[key].y+1],[coordinates[key].x+1,coordinates[key].y+1],[coordinates[key].x+1,coordinates[key].y]]
+        elif(coordinates[key].y ==vert_max):
+            neighbors=[[coordinates[key].x-1,coordinates[key].y],[coordinates[key].x-1,coordinates[key].y-1],[coordinates[key].x,coordinates[key].y-1],[coordinates[key].x+1,coordinates[key].y-1],[coordinates[key].x+1,coordinates[key].y]]
         else:
-            neighbors=[[node[0]-1,node[1]-1],[node[0],node[1]-1],[node[0]+1,node[1]-1],[node[0]+1,node[1]],[node[0]+1,node[1]+1],[node[0],node[1]+1],[node[0]-1,node[1]+1],[node[0]-1,node[1]]]
-        print(node)
-        visited.add(node)
-        for neighbor in graph
-            dfs(visited, graph, neighbor)
+            neighbors=[[coordinates[key].x-1,coordinates[key].y-1],[coordinates[key].x,coordinates[key].y-1],[coordinates[key].x+1,coordinates[key].y-1],[coordinates[key].x+1,coordinates[key].y],[coordinates[key].x+1,coordinates[key].y+1],[coordinates[key].x,coordinates[key].y+1],[coordinates[key].x-1,coordinates[key].y+1],[coordinates[key].x-1,coordinates[key].y]]
+        visited.append(key)
+        for neighbor in neighbors:
+            dfs(visited, coordinates, neighbor)
 
 def createGrid(event=None):
     w = c.winfo_width() # Get current width of canvas
@@ -101,7 +113,6 @@ def createGrid(event=None):
 
 
 
-
 root = tk.Tk()
 c = tk.Canvas(root, height=500, width=500, bg='white')
 c.pack(fill=tk.BOTH, expand=True)
@@ -114,6 +125,8 @@ generatediagonalCoordsFile()
 practiceCoords = readCoordsFromCsv("samplepoints.txt")
 pasteCoords(practiceCoords)
 getCoordinates()
+print(coordinates["24,355"].x)
+dfs(visited, coordinates, "24,355")
 
 #move robot
 coords = readCoordsFromCsv("coords.txt")
