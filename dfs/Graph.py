@@ -16,13 +16,8 @@ class Graph:
 
     def checkIfCoordinateInCoordsDictElseGenerateNode(self,x,y):
         if (x,y) in coordinates:
-            print(str(x) + ", " + str(y) + " in dictionary")
-            coordFound = coordinates.get((x,y))
-            print("It's neighbors.." + str(coordFound.getNeighbors()))
             return coordinates.get((x,y))
         else:
-            print(str(x) + ", " + str(y) + " not in dictionary")
-
             newCoordinateNode = Coordinate(x,y,[])
             coordinates[(x,y)] = newCoordinateNode
             return newCoordinateNode
@@ -33,8 +28,6 @@ class Graph:
 
     def createNeighborNodesForCoordinate(self,x,y):
         #we assume that x , y is already created.
-        print("----------------------------------------------------------------")
-        print("ADDING NEIGHBORS TO NODE : " + str(x) + ", " +str(y))
         coordinateToAddNeighborsTo = coordinates.get((x,y))
 
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y+1) #Neighbor above
@@ -46,8 +39,6 @@ class Graph:
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x+1,y-1) #Diagnoal lower right
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x-1,y-1) #Diagnol lower left
 
-        print("We have finished adding neighbors...all neighbors added are...")
-        print(str(coordinateToAddNeighborsTo.getNeighbors()))
 
     def generateGraph(self):
         for x in range(0,self.xMax): #x
@@ -114,17 +105,5 @@ c8.addNeighbor(c3)
 
 #g.performDFSAlgorithm(c1)
 g.generateGraph()
-print("----")
-g.printDict()
-print("-------")
 
-debugDict= {}
-def debug():
-    onetwo = coordinates[(0,1)].getNeighbors()[1]
-    print("-----")
-    print(onetwo)
-    onetwoDirect = coordinates[(0,0)]
-    print(onetwoDirect)
-    print(onetwo is onetwoDirect)
 g.performDFSAlgorithm(coordinates[(1,1)])
-debug()
