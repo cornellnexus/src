@@ -6,7 +6,6 @@ import time
 class Graph:
     xMax = 10
     yMax = 10
-    coordsSkipBy = 25
     coordinates = {}
 
     canvas = ""
