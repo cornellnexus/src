@@ -29,6 +29,9 @@ class Coordinate:
     def getObstacle(self):
         return self.obstacle
 
+    def getCoords(self):
+        return (self.x,self.y)
+
     def __repr__(self):
         return "".join("("+str(self.x)+","+str(self.y)+")")
 

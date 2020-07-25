@@ -1,29 +1,56 @@
 from Coordinate import Coordinate
-
-coordinates = {}
+import tkinter as tk
+import tkinter
+import time
 
 class Graph:
     xMax = 10
     yMax = 10
+    coordsSkipBy = 25
+    coordinates = {}
 
+    canvas = ""
+    robot = ""
+    root = ""
+    counter = 0
     def __init__(self, x, y):
         self.xMax = x
         self.yMax = y
+        self.generateGraph()
+        self.initializeGrid()
 
-    def performDFSAlgorithm(self,start):
+    def performIterativeDFSAlgorithmm(self,start):
+        stack = [start]
+
+        while stack:
+            vertex = stack.pop()
+
+            if vertex.getTraversed():
+                continue
+
+            vertex.setTraversed(True)
+            (x,y) = vertex.getCoords()
+            self.moveRobot(x,y)
+
+            for neighbor in vertex.getNeighbors():
+                stack.append(neighbor)
+
+    def performRecursiveDFSAlgorithm(self,start):
+        #Do not use with thousand of nodes. will run into stack overflow.
         start.setTraversed(True)
-        print(start)
+        (x,y) = start.getCoords()
+        self.moveRobot(x,y)
 
         for neighbor in start.getNeighbors():
             if not neighbor.getTraversed() and not neighbor.getObstacle():
                 self.performDFSAlgorithm(neighbor)
 
     def checkIfCoordinateInCoordsDictElseGenerateNode(self,x,y):
-        if (x,y) in coordinates:
-            return coordinates.get((x,y))
+        if (x,y) in self.coordinates:
+            return self.coordinates.get((x,y))
         else:
             newCoordinateNode = Coordinate(x,y,[])
-            coordinates[(x,y)] = newCoordinateNode
+            self.coordinates[(x,y)] = newCoordinateNode
             return newCoordinateNode
 
     def addNewNeighborNodeToCoordinate(self,coordinateNode,neighborX,neighborY):
@@ -34,7 +61,7 @@ class Graph:
 
     def createNeighborNodesForCoordinate(self,x,y):
         #we assume that x , y is already created.
-        coordinateToAddNeighborsTo = coordinates.get((x,y))
+        coordinateToAddNeighborsTo = self.coordinates.get((x,y))
 
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y+1) #Neighbor above
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y-1) #Neighbor below
@@ -50,16 +77,54 @@ class Graph:
         for x in range(0,self.xMax): #x
             for y in range(0,self.yMax): #y
                 #print(x,y)
-                if (x,y) not in coordinates:
-                    coordinates[(x,y)] = Coordinate(x,y,[])
+                if (x,y) not in self.coordinates:
+                    self.coordinates[(x,y)] = Coordinate(x,y,[])
                 self.createNeighborNodesForCoordinate(x,y)
 
     def printAllCoordinates(self):
-         for key in coordinates.keys():
-             print(key, '->', coordinates[key])
+         for key in self.coordinates.keys():
+             print(key, '->', self.coordinates[key])
 
-g = Graph(10,10)
+    def startDFSTraversalAtCoordinate(self,x,y):
+        self.performIterativeDFSAlgorithmm(self.coordinates[(x,y)])
+        print("main loop")
+        self.canvas.pack(fill =tk.BOTH, expand = True)
+        self.root.mainloop()
 
-g.generateGraph()
 
-g.performDFSAlgorithm(coordinates[(1,1)])
+#--------------- GUI Functions -----------------------------
+    def moveRobot(self,x,y):
+        self.canvas.coords(self.robot,x-5,y-5,x+5,y+5)
+        self.canvas.update()
+        self.canvas.after(1)
+
+    def initializeGrid(self):
+        self.root = tk.Tk()
+        self.canvas = tk.Canvas(self.root, height=500, width=500, bg='white')
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.canvas.bind('<Configure>', self.createGrid)
+        self.robot = self.canvas.create_rectangle(0, 0, 10, 10, fill="red")
+
+
+
+
+
+    def createGrid(event=None):
+        self.root = tk.Tk()
+        self.canvas = tk.Canvas(self.root, height=self.yMax, width=self.xMax, bg='white')
+        self.canvas.pack(fill=tk.BOTH, expand=True)
+        w = self.canvas.winfo_width() # Get current width of canvas
+        h = self.canvas.winfo_height() # Get current height of canvas
+        self.canvas.delete('grid_line') # Will only remove the grid_line
+
+        # Creates all vertical lines at intevals of 100
+        for i in range(0, w, 25):
+            self.canvas.create_line([(i, 0), (i, h)], tag='grid_line')
+
+        # Creates all horizontal lines at intevals of 100
+        for i in range(0, h, 25):
+            self.canvas.create_line([(0, i), (w, i)], tag='grid_line')
+
+
+g = Graph(500,500)
+g.startDFSTraversalAtCoordinate(1,1)
