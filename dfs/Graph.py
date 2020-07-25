@@ -1,6 +1,11 @@
 from Coordinate import Coordinate
 
+coordinates = {}
+
 class Graph:
+    xMax = 3
+    yMax = 3
+
     def performDFSAlgorithm(self,start):
         start.setTraversed(True)
         print(start)
@@ -9,6 +14,52 @@ class Graph:
             if not neighbor.getTraversed() and not neighbor.getObstacle():
                 self.performDFSAlgorithm(neighbor)
 
+    def checkIfCoordinateInCoordsDictElseGenerateNode(self,x,y):
+        if (x,y) in coordinates:
+            print(str(x) + ", " + str(y) + " in dictionary")
+            coordFound = coordinates.get((x,y))
+            print("It's neighbors.." + str(coordFound.getNeighbors()))
+            return coordinates.get((x,y))
+        else:
+            print(str(x) + ", " + str(y) + " not in dictionary")
+
+            newCoordinateNode = Coordinate(x,y,[])
+            coordinates[(x,y)] = newCoordinateNode
+            return newCoordinateNode
+
+    def addNewNeighborNodeToCoordinate(self,coordinateNode,neighborX,neighborY):
+        neighborNode = self.checkIfCoordinateInCoordsDictElseGenerateNode(neighborX,neighborY)
+        coordinateNode.addNeighbor(neighborNode)
+
+    def createNeighborNodesForCoordinate(self,x,y):
+        #we assume that x , y is already created.
+        print("----------------------------------------------------------------")
+        print("ADDING NEIGHBORS TO NODE : " + str(x) + ", " +str(y))
+        coordinateToAddNeighborsTo = coordinates.get((x,y))
+
+        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y+1) #Neighbor above
+        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y-1) #Neighbor below
+        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x+1,y) #Neighbor to the right
+        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x-1,y) #Neighbor to the left
+        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x+1,y+1) #Diagnol upper right neighbor
+        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x-1,y+1) #Diagnoal upper left neighbor
+        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x+1,y-1) #Diagnoal lower right
+        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x-1,y-1) #Diagnol lower left
+
+        print("We have finished adding neighbors...all neighbors added are...")
+        print(str(coordinateToAddNeighborsTo.getNeighbors()))
+
+    def generateGraph(self):
+        for x in range(0,self.xMax): #x
+            for y in range(0,self.yMax): #y
+                #print(x,y)
+                if (x,y) not in coordinates:
+                    coordinates[(x,y)] = Coordinate(x,y,[])
+                self.createNeighborNodesForCoordinate(x,y)
+
+    def printDict(self):
+         for key in coordinates.keys():
+             print(key, '->', coordinates[key])
 
 g = Graph()
 c1 = Coordinate(1,1,[])
@@ -61,4 +112,19 @@ c8.addNeighbor(c7)
 c8.addNeighbor(c4)
 c8.addNeighbor(c3)
 
-g.performDFSAlgorithm(c1)
+#g.performDFSAlgorithm(c1)
+g.generateGraph()
+print("----")
+g.printDict()
+print("-------")
+
+debugDict= {}
+def debug():
+    onetwo = coordinates[(0,1)].getNeighbors()[1]
+    print("-----")
+    print(onetwo)
+    onetwoDirect = coordinates[(0,0)]
+    print(onetwoDirect)
+    print(onetwo is onetwoDirect)
+g.performDFSAlgorithm(coordinates[(1,1)])
+debug()

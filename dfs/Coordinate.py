@@ -29,5 +29,8 @@ class Coordinate:
     def getObstacle(self):
         return self.obstacle
 
+    def __repr__(self):
+        return "".join("("+str(self.x)+","+str(self.y)+")")
+
     def __str__(self):
-        return "(" + str(self.x) + ", " + str(self.y) + ")"
+        return "[(" + str(self.x) + ", " + str(self.y) + ") --> " + str(self.neighbors) + "]"
