@@ -10,12 +10,15 @@ web map tiles from several sources (OpenStreetMap, Stamen).
 """
 # sphinx_gallery_thumbnail_number = 3
 import geopandas
+import contextily as ctx
+import matplotlib.pyplot as plt
 
 ###############################################################################
 # Let's use the NYC borough boundary data that is available in geopandas
 # datasets. Plotting this gives the following result:
 
 df = geopandas.read_file(geopandas.datasets.get_path('nybb'))
+
 ax = df.plot(figsize=(10, 10), alpha=0.5, edgecolor='k')
 
 ###############################################################################
@@ -32,7 +35,6 @@ df = df.to_crs(epsg=3857)
 
 ###############################################################################
 
-import contextily as ctx
 
 ###############################################################################
 # Add background tiles to plot
@@ -50,12 +52,14 @@ ctx.add_basemap(ax)
 # as this can result in a large download).:
 
 ax = df.plot(figsize=(10, 10), alpha=0.5, edgecolor='k')
-ctx.add_basemap(ax, zoom=12)
+ctx.add_basemap(ax, zoom=10)
 
 ###############################################################################
 # By default, contextily uses the Stamen Terrain style. We can specify a
 # different style using ``ctx.providers``:
 
-ax = df.plot(figsize=(10, 10), alpha=0.5, edgecolor='k')
-ctx.add_basemap(ax, url=ctx.providers.Stamen.TonerLite)
-ax.set_axis_off()
+# ax = df.plot(figsize=(10, 10), alpha=0.5, edgecolor='k')
+# ctx.add_basemap(ax, source=ctx.providers.Stamen.TonerLite)
+# ax.set_axis_off()
+
+plt.show()
