@@ -104,7 +104,10 @@ class Graph:
         self.canvas.bind('<Configure>', self.createGrid)
         self.robot = self.canvas.create_rectangle(0, 0, 10, 10, fill="red")
 
-    def createGrid(self,event=None):
+    def createGrid(event=None):
+        self.root = tk.Tk()
+        self.canvas = tk.Canvas(self.root, height=self.yMax, width=self.xMax, bg='white')
+        self.canvas.pack(fill=tk.BOTH, expand=True)
         w = self.canvas.winfo_width() # Get current width of canvas
         h = self.canvas.winfo_height() # Get current height of canvas
         self.canvas.delete('grid_line') # Will only remove the grid_line
