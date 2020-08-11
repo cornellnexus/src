@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from shapely.geometry import Polygon, Point
-import geopandas 
+import geopandas
 import csv
 import math
 import numpy
@@ -41,7 +41,7 @@ class Graph:
         #self.initializeGrid()
         self.initializeMap()
 
-    
+
 
     def performIterativeDFSAlgorithmm(self,start):
         stack = [start]
@@ -55,7 +55,7 @@ class Graph:
             vertex.setTraversed(True)
             (x,y) = vertex.getCoords()
 
-            with open("DFS.txt", "a", newline='') as csv_file:
+            with open("DFS.txt", "a+", newline='') as csv_file:
                 csv_writer = csv.writer(csv_file)
                 csv_writer.writerow([x,y])
 
@@ -112,7 +112,7 @@ class Graph:
                 if (x,y) not in self.coordinates:
                     self.coordinates[(x,y)] = Coordinate(x,y,[])
                 self.createNeighborNodesForCoordinate(x,y)
-    
+
     #Plots points onto graph from reading points on CSV file
     # def generateGraphUsingCSV(self):
     #     with open('longandlats.csv') as csv_file:
@@ -130,7 +130,7 @@ class Graph:
 
     #Takes user inputs for bounds on latitude/longitude
     def definingInputs(self):
-        try: 
+        try:
             self.long_min = float(input("Enter minimum longitude: "))
             print(type(self.long_min))
             self.long_max = float(input("Enter maximum longitude: "))
@@ -154,7 +154,7 @@ class Graph:
         self.long_step = long_base_unit / 2
 
 
-    
+
     def generateLatStep(self):
         self.lat_min = float(self.lat_min)
         self.lat_max = float(self.lat_max)
@@ -176,7 +176,7 @@ class Graph:
                     self.coordinates[(lat,longi)] = Coordinate(lat,longi,[])
                 self.createNeighborNodesForCoordinate(lat,longi)
 
-        
+
 
     def printAllCoordinates(self):
          for key in self.coordinates.keys():
@@ -245,4 +245,3 @@ class Graph:
 
 g = Graph(500,500)
 g.startDFSTraversalAtCoordinate(1,1)
-
