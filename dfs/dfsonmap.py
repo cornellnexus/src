@@ -52,10 +52,11 @@ class Graph:
             if vertex.getTraversed():
                 continue
 
+            print("dfs performing..")
             vertex.setTraversed(True)
             (x,y) = vertex.getCoords()
 
-            with open("DFS.txt", "a+", newline='') as csv_file:
+            with open("DFS.txt", "a", newline='') as csv_file:
                 csv_writer = csv.writer(csv_file)
                 csv_writer.writerow([x,y])
 
