@@ -38,8 +38,8 @@ class Graph:
         self.creatingCoordinates()
         #self.generateGraph()
         #self.generateGraphUsingCSV()
-        #self.initializeGrid()
-        self.initializeMap()
+        self.initializeGrid()
+        #self.initializeMap()
 
 
 
@@ -52,9 +52,10 @@ class Graph:
             if vertex.getTraversed():
                 continue
 
-            print("dfs performing..")
             vertex.setTraversed(True)
             (x,y) = vertex.getCoords()
+            print("DFS Traveled to: (" + str(x) + ", " + str(y)+")")
+
 
             with open("DFS.txt", "a", newline='') as csv_file:
                 csv_writer = csv.writer(csv_file)
@@ -194,7 +195,7 @@ class Graph:
     def moveRobot(self,x,y):
         self.canvas.coords(self.robot,x-5,y-5,x+5,y+5)
         self.canvas.update()
-        self.canvas.after(1)
+        self.canvas.after(300)
 
     def initializeGrid(self):
         self.root = tk.Tk()
