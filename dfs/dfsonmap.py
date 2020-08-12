@@ -43,6 +43,8 @@ class Graph:
 
 
 
+    #We should insted print out a list of nodes in the order of traversal. This function is doing
+    #too much.
     def performIterativeDFSAlgorithmm(self,start):
         stack = [start]
 

@@ -1,0 +1,19 @@
+"""
+Asks the user to provide long min, long max, lat min, lat max. Raises exception if the inputs are
+malformed. Returns the values in the format: (long_min, long_max, lat_min, lat_max)
+"""
+def definingInputs():
+        try:
+            long_min = float(input("Enter minimum longitude: "))
+            print(type(long_min))
+            long_max = float(input("Enter maximum longitude: "))
+            if long_max <= long_min:
+                raise Exception ("The maximum longitude must be larger than the minimum longitude")
+            lat_min = input ("Enter minimum latitude: ")
+            lat_max = input("Enter maximum litude: ")
+            if lat_max <= lat_min:
+                raise Exception ("The maximum latitude must be larger than the minimum latitude")
+            
+            return (long_min, long_max, lat_min, lat_max)
+        except ValueError:
+            print("Please enter a number")
