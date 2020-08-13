@@ -16,3 +16,13 @@ def getLongLatMinMaxFromUser():
             return (long_min, long_max, lat_min, lat_max)
         except ValueError:
             print("Please enter a number")
+
+
+def getDisplayGuiFromUserInput():
+    try:
+        shouldDisplayGui = input("Do you want to display a GUI of the DFS traversal in real-time? Type y for yes and n for no.")
+        if shouldDisplayGui == "y" or shouldDisplayGui == "n":
+            return shouldDisplayGui
+    except:
+        print("Invalid Input. Try again. \n")
+        getDisplayGuiFromUserInput()
