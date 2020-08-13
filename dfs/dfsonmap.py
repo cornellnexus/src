@@ -62,7 +62,7 @@ class Graph:
             print("DFS Traveled to: (" + str(x) + ", " + str(y)+")")
 
 
-            with open("DFS.txt", "a", newline='') as csv_file:
+            with open("DFS.txt", "w+", newline='') as csv_file:
                 csv_writer = csv.writer(csv_file)
                 csv_writer.writerow([x,y])
 
