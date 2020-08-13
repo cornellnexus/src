@@ -1,3 +1,4 @@
+import csv
 
 def writeCoordsToCSVFile(coords):
     csv_file = open("DFS.txt", "w+", newline='')
