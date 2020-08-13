@@ -51,6 +51,9 @@ class Graph:
     def performIterativeDFSAlgorithmm(self,start):
         stack = [start]
 
+        csv_file = open("DFS.txt", "w+", newline='')
+        csv_writer = csv.writer(csv_file)
+
         while stack:
             vertex = stack.pop()
 
@@ -61,16 +64,15 @@ class Graph:
             (x,y) = vertex.getCoords()
             print("DFS Traveled to: (" + str(x) + ", " + str(y)+")")
 
-
-            with open("DFS.txt", "w+", newline='') as csv_file:
-                csv_writer = csv.writer(csv_file)
-                csv_writer.writerow([x,y])
+            csv_writer.writerow([x,y])
 
             if not vertex.getObstacle():
                 self.moveRobot(x,y)
 
             for neighbor in vertex.getNeighbors():
                 stack.append(neighbor)
+            
+        csv_file.close()
 
     def performRecursiveDFSAlgorithm(self,start):
         #Do not use with thousand of nodes. will run into stack overflow.
