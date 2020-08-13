@@ -66,7 +66,8 @@ class Graph:
                 csv_writer = csv.writer(csv_file)
                 csv_writer.writerow([x,y])
 
-            self.moveRobot(x,y)
+            if not vertex.getObstacle():
+                self.moveRobot(x,y)
 
             for neighbor in vertex.getNeighbors():
                 stack.append(neighbor)
