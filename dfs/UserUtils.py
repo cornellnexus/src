@@ -20,9 +20,13 @@ def getLongLatMinMaxFromUser():
 
 def getDisplayGuiFromUserInput():
     try:
-        shouldDisplayGui = input("Do you want to display a GUI of the DFS traversal in real-time? Type y for yes and n for no.")
-        if shouldDisplayGui == "y" or shouldDisplayGui == "n":
-            return shouldDisplayGui
+        shouldDisplayGui = input("Do you want to display a GUI of the DFS traversal in real-time? Type y for yes and n for no. \n")
+        if shouldDisplayGui == "y":
+            return True
+        elif shouldDisplayGui == "n":
+            return False
+        else:
+            raise Exception("Invalid Input")
     except:
         print("Invalid Input. Try again. \n")
         getDisplayGuiFromUserInput()

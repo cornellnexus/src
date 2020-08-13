@@ -11,8 +11,11 @@ class Engine:
         coordsList = graph.startDFSTraversalAtCoordinate(longMin,latMin)
         writeCoordsToCSVFile(coordsList)
 
-        gui = GUI(longMax,latMax)
-        gui.animateRobotMovingGivenCoordList(coordsList)
+        shouldDisplayGUI = getDisplayGuiFromUserInput()
+
+        if (shouldDisplayGUI):
+            gui = GUI(longMax,latMax)
+            gui.animateRobotMovingGivenCoordList(coordsList)
 
          
 engine = Engine()
