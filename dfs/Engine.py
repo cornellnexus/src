@@ -5,7 +5,7 @@ class Engine:
     def run(self):
         longMin,longMax,latMin,latMax = getLongLatMinMaxFromUser()
         graph = Graph(longMin, longMax, latMin, latMax)
-        graph.startDFSTraversalAtCoordinate(1,1)
+        graph.startDFSTraversalAtCoordinate(longMin,latMin)
 
          
 engine = Engine()
