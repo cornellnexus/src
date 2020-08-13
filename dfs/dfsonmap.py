@@ -194,7 +194,7 @@ class Graph:
         self.canvas = tk.Canvas(self.root, height=self.yMax, width=self.xMax, bg='white')
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind('<Configure>', self.createGrid)
-        self.robot = self.canvas.create_rectangle(0, 0, 10, 10, fill="red")
+        self.robot = self.canvas.create_rectangle(0, 0, 5, 5, fill="red")
 
     def initializeMap(self):
         df = pd.read_csv("longandlats.csv")
@@ -229,11 +229,11 @@ class Graph:
         self.canvas.delete('grid_line') # Will only remove the grid_line
 
         # Creates all vertical lines at intevals of 100
-        for i in range(0, w, 25):
+        for i in range(0, w, 10):
             self.canvas.create_line([(i, 0), (i, h)], tag='grid_line')
 
         # Creates all horizontal lines at intevals of 100
-        for i in range(0, h, 25):
+        for i in range(0, h, 10):
             self.canvas.create_line([(0, i), (w, i)], tag='grid_line')
 
 
