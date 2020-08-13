@@ -237,7 +237,7 @@ class Graph:
             if self.long_max <= self.long_min:
                 raise Exception ("The maximum longitude must be larger than the minimum longitude")
             self.lat_min = input ("Enter minimum latitude: ")
-            self.lat_max = input("Enter maximum litude: ")
+            self.lat_max = input("Enter maximum latitude: ")
             if self.lat_max <= self.lat_min:
                 raise Exception ("The maximum latitude must be larger than the minimum latitude")
         except ValueError:
