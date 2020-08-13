@@ -71,14 +71,18 @@ class Graph:
             and neighborY < self.yMax and neighborY > 0):
             neighborNode = self.checkIfCoordinateInCoordsDictElseGenerateNode(neighborX,neighborY)
             coordinateNode.addNeighbor(neighborNode)
+            #print("In Bounds")
+        #else: 
+            #print("Oout of Bouds: " + str(neighborX) + ", " +  str(neighborY))
 
     def createNeighborNodesForCoordinate(self,x,y):
         #we assume that x , y is already created.
         coordinateToAddNeighborsTo = self.coordinates.get((x,y))
 
-        #
-        #print("LAT_STEP: " + str(self.lat_step))
-        #print("LONG_STEP: " + str(self.long_step))
+        #print("------ " + str(x) + ", "+ str(y))
+        #print("lat step: " + str(self.lat_step))
+        #print("long step: " + str(self.long_step))
+
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y+self.lat_step) #Neighbor above
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y-self.lat_step) #Neighbor below
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x+self.long_step,y) #Neighbor to the right

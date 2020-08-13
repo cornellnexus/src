@@ -8,7 +8,9 @@ class Engine:
     def run(self):
         longMin,longMax,latMin,latMax = getLongLatMinMaxFromUser()
         graph = Graph(longMin, longMax, latMin, latMax)
-        coordsList = graph.startDFSTraversalAtCoordinate(longMin,latMin)
+        #graph.printAllCoordinates()
+
+        coordsList = graph.startDFSTraversalAtCoordinate(latMin,longMin)
         writeCoordsToCSVFile(coordsList)
 
         shouldDisplayGUI = getDisplayGuiFromUserInput()
