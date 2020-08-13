@@ -3,10 +3,10 @@ import tkinter as tk
 import tkinter
 import time
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from shapely.geometry import Polygon, Point
-import geopandas
+#import pandas as pd
+#import matplotlib.pyplot as plt
+#from shapely.geometry import Polygon, Point
+#import geopandas
 import csv
 import math
 import numpy
@@ -29,20 +29,25 @@ class Graph:
     robot = ""
     root = ""
 
-    def __init__(self, x, y):
-        self.xMax = x
-        self.yMax = y
-        self.definingInputs()
+    def __init__(self, longMin, longMax, latMin, latMax):
+        self.xMax = longMax #Graph boundary on x-axis
+        self.yMax = latMax  #Graph boundary on y-axis
+        
+        self.long_min = longMin
+        self.long_max = longMax
+        self.lat_min = latMin
+        self.lat_max = latMax
+
         self.generateLongStep()
         self.generateLatStep()
-        self.creatingCoordinates()
-        #self.generateGraph()
-        #self.generateGraphUsingCSV()
-        self.initializeGrid()
-        #self.initializeMap()
+        self.generateCoordinates()
+
+        self.initializeGrid() #Eventually move this to another class file.
 
 
 
+    #We should insted print out a list of nodes in the order of traversal. This function is doing
+    #too much.
     def performIterativeDFSAlgorithmm(self,start):
         stack = [start]
 
@@ -130,20 +135,6 @@ class Graph:
     #                     self.coordinates[(x,y)] = Coordinate(x,y,[])
     #                 self.createNeighborNodesForCoordinate(x,y)
 
-    #Takes user inputs for bounds on latitude/longitude
-    def definingInputs(self):
-        try:
-            self.long_min = float(input("Enter minimum longitude: "))
-            print(type(self.long_min))
-            self.long_max = float(input("Enter maximum longitude: "))
-            if self.long_max <= self.long_min:
-                raise Exception ("The maximum longitude must be larger than the minimum longitude")
-            self.lat_min = input ("Enter minimum latitude: ")
-            self.lat_max = input("Enter maximum litude: ")
-            if self.lat_max <= self.lat_min:
-                raise Exception ("The maximum latitude must be larger than the minimum latitude")
-        except ValueError:
-            print("Please enter a number")
 
     def generateLongStep(self):
         self.long_min = float(self.long_min)
@@ -167,7 +158,7 @@ class Graph:
         lat_base_unit = 10**lat_10th
         self.lat_step = lat_base_unit / 2
 
-    def creatingCoordinates(self):
+    def generateCoordinates(self):
         #coord = []
 
         for lat in numpy.arange(self.lat_min, self.lat_max, self.lat_step):
@@ -199,7 +190,7 @@ class Graph:
 
     def initializeGrid(self):
         self.root = tk.Tk()
-        self.canvas = tk.Canvas(self.root, height=500, width=500, bg='white')
+        self.canvas = tk.Canvas(self.root, height=self.yMax, width=self.xMax, bg='white')
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.canvas.bind('<Configure>', self.createGrid)
         self.robot = self.canvas.create_rectangle(0, 0, 10, 10, fill="red")
@@ -245,5 +236,3 @@ class Graph:
             self.canvas.create_line([(0, i), (w, i)], tag='grid_line')
 
 
-g = Graph(500,500)
-g.startDFSTraversalAtCoordinate(1,1)
