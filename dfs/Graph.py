@@ -49,16 +49,19 @@ class Graph:
 
             vertex.setTraversed(True)
             (x,y) = vertex.getCoords()
+            print("X AND Y" + str((x,y)))
 
             if not vertex.getObstacle():
                 rawCoordsTraversed.append((x,y))
 
             for neighbor in vertex.getNeighbors():
                 stack.append(neighbor)
+                print("HERE")
             
         return rawCoordsTraversed
 
     def checkIfCoordinateInCoordsDictElseGenerateNode(self,x,y):
+        print("here 3")
         if (x,y) in self.coordinates:
             return self.coordinates.get((x,y))
         else:
@@ -67,8 +70,12 @@ class Graph:
             return newCoordinateNode
 
     def addNewNeighborNodeToCoordinate(self,coordinateNode,neighborX,neighborY):
-        if (neighborX < self.xMax and neighborX >= 0
-            and neighborY < self.yMax and neighborY > 0):
+        print("Here 2")
+        if (neighborX < self.lat_max and neighborX >= 0
+            and neighborY < self.long_max and neighborY > 0):
+            print("here 4")
+            neighborX = round(neighborX,2)
+            neighborY = round(neighborY,2)
             neighborNode = self.checkIfCoordinateInCoordsDictElseGenerateNode(neighborX,neighborY)
             coordinateNode.addNeighbor(neighborNode)
             #print("In Bounds")
@@ -105,21 +112,26 @@ class Graph:
         self.long_min = float(self.long_min)
         self.long_max = float(self.long_max)
 
-        long_diff = self.long_max - self.long_min
-        long_10th = math.log10(long_diff)
-        long_10th = math.floor(long_10th)
-        long_base_unit = 10**long_10th
-        self.long_step = long_base_unit / 2
+        # long_diff = self.long_max - self.long_min
+        # long_10th = math.log10(long_diff)
+        # long_10th = math.floor(long_10th)
+        # long_base_unit = 10**long_10th
+        # self.long_step = long_base_unit / 2
+        self.long_step = (self.long_max - self.long_min) / 10
+        print("Long_step = " + str(self.long_step))
 
     def generateLatStep(self):
         self.lat_min = float(self.lat_min)
         self.lat_max = float(self.lat_max)
 
-        lat_diff = self.lat_max - self.lat_min
-        lat_10th = math.log10(lat_diff)
-        lat_10th = math.floor(lat_10th)
-        lat_base_unit = 10**lat_10th
-        self.lat_step = lat_base_unit / 2
+        # lat_diff = self.lat_max - self.lat_min
+        # lat_10th = math.log10(lat_diff)
+        # lat_10th = math.floor(lat_10th)
+        # lat_base_unit = 10**lat_10th
+        # self.lat_step = lat_base_unit / 2
+
+        self.lat_step = (self.lat_max - self.lat_min) / 10
+        print("Lat_step = " + str(self.lat_step))
 
     def generateCoordinates(self):
         #coord = []
@@ -127,7 +139,11 @@ class Graph:
         for lat in numpy.arange(self.lat_min, self.lat_max, self.lat_step):
             for longi in numpy.arange(self.long_min, self.long_max, self.long_step):
                 # coord.append((lat,longi))
-                #print("Latitude: " + str(lat) + " Longitude: " + str(longi))
+                
+                lat = round(lat,2)
+                longi = round(longi,2)
+
+                print("Latitude: " + str(lat) + " Longitude: " + str(longi))
                 if (lat, longi) not in self.coordinates:
                     self.coordinates[(lat,longi)] = Coordinate(lat,longi,[])
                 self.createNeighborNodesForCoordinate(lat,longi)
