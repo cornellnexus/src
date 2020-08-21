@@ -10,10 +10,22 @@ class Engine:
         graph = Graph(longMin, longMax, latMin, latMax)
         #graph.printAllCoordinates()
 
-        coordsList = graph.startDFSTraversalAtCoordinate(latMin,longMin)
+        coordsList = graph.startDFSTraversalAtCoordinate(latMin,longMin) #all coords traversed
+
+        coordsGenerated = graph.getAllCoordinatesGenerated()
+
+        
+
+
         writeCoordsToCSVFile(coordsList)
 
         shouldDisplayGUI = getDisplayGuiFromUserInput()
+
+        for coord in coordsList:
+            coordsGenerated.remove(coord)
+
+        print("----Coords not traversed----")
+        print(coordsGenerated)
 
         if (shouldDisplayGUI):
             gui = GUI(longMax,latMax)
