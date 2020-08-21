@@ -52,32 +52,35 @@ class Graph:
             print("X AND Y" + str((x,y)))
 
             if not vertex.getObstacle():
+                #print("NOT OBSTACLE")
                 rawCoordsTraversed.append((x,y))
 
             for neighbor in vertex.getNeighbors():
                 stack.append(neighbor)
-                print("HERE")
+                print("Neighbor: " + str(neighbor))
             
         return rawCoordsTraversed
 
     def checkIfCoordinateInCoordsDictElseGenerateNode(self,x,y):
-        print("here 3")
+        #print("here 3")
         if (x,y) in self.coordinates:
             return self.coordinates.get((x,y))
         else:
+            #print("GENERATING NODE...")
             newCoordinateNode = Coordinate(x,y,[])
             self.coordinates[(x,y)] = newCoordinateNode
             return newCoordinateNode
 
     def addNewNeighborNodeToCoordinate(self,coordinateNode,neighborX,neighborY):
-        print("Here 2")
-        if (neighborX < self.lat_max and neighborX >= 0
-            and neighborY < self.long_max and neighborY > 0):
-            print("here 4")
-            neighborX = round(neighborX,2)
-            neighborY = round(neighborY,2)
+        #print("Here 2")
+        if (neighborX < self.lat_max and neighborX > self.lat_min
+            and neighborY < self.long_max and neighborY > self.long_min):
+            #print("here 4")
+            neighborX = round(neighborX,5)
+            neighborY = round(neighborY,5)
             neighborNode = self.checkIfCoordinateInCoordsDictElseGenerateNode(neighborX,neighborY)
             coordinateNode.addNeighbor(neighborNode)
+            print("COORDINATE NODES NEIGHBORS: ")
             #print("In Bounds")
         #else: 
             #print("Oout of Bouds: " + str(neighborX) + ", " +  str(neighborY))
@@ -87,8 +90,11 @@ class Graph:
         coordinateToAddNeighborsTo = self.coordinates.get((x,y))
 
         #print("------ " + str(x) + ", "+ str(y))
-        #print("lat step: " + str(self.lat_step))
-        #print("long step: " + str(self.long_step))
+        print("lat step: " + str(self.lat_step))
+        print("long step: " + str(self.long_step))
+
+        #self.lat_step = round(self.lat_step,5)
+        #self.long_step = round(self.long_step,5)
 
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y+self.lat_step) #Neighbor above
         self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y-self.lat_step) #Neighbor below
@@ -117,8 +123,8 @@ class Graph:
         # long_10th = math.floor(long_10th)
         # long_base_unit = 10**long_10th
         # self.long_step = long_base_unit / 2
-        self.long_step = (self.long_max - self.long_min) / 10
-        print("Long_step = " + str(self.long_step))
+        self.long_step = round((self.long_max - self.long_min) / 10,5)
+        #print("Long_step = " + str(self.long_step))
 
     def generateLatStep(self):
         self.lat_min = float(self.lat_min)
@@ -130,8 +136,8 @@ class Graph:
         # lat_base_unit = 10**lat_10th
         # self.lat_step = lat_base_unit / 2
 
-        self.lat_step = (self.lat_max - self.lat_min) / 10
-        print("Lat_step = " + str(self.lat_step))
+        self.lat_step = round((self.lat_max - self.lat_min) / 10,5)
+        #print("Lat_step = " + str(self.lat_step))
 
     def generateCoordinates(self):
         #coord = []
@@ -140,8 +146,8 @@ class Graph:
             for longi in numpy.arange(self.long_min, self.long_max, self.long_step):
                 # coord.append((lat,longi))
                 
-                lat = round(lat,2)
-                longi = round(longi,2)
+                lat = round(lat,5)
+                longi = round(longi,5)
 
                 print("Latitude: " + str(lat) + " Longitude: " + str(longi))
                 if (lat, longi) not in self.coordinates:
@@ -155,5 +161,6 @@ class Graph:
              print(key, '->', self.coordinates[key])
 
     def startDFSTraversalAtCoordinate(self,x,y):
+        print("STARTING DFS TRAVERSAL")
         return self.performIterativeDFSAlgorithmm(self.coordinates[(x,y)])
         
