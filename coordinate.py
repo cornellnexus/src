@@ -11,13 +11,13 @@ class Coordinate:
         self.y = y
         self.neighbors = neighbors
 
-    def addNeighbor(self,neighbor):
+    def addNeighbor(self, neighbor):
         self.neighbors.append(neighbor)
 
-    def setObstacle(self,obstacle):
+    def setObstacle(self, obstacle):
         self.obstacle = obstacle
 
-    def setTraversed(self,traversed):
+    def setTraversed(self, traversed):
         self.traversed = traversed
 
     def getTraversed(self):
@@ -30,7 +30,7 @@ class Coordinate:
         return self.obstacle
 
     def getCoords(self):
-        return (self.x,self.y)
+        return (self.x, self.y)
 
     def __repr__(self):
         return "".join("("+str(self.x)+","+str(self.y)+")")
