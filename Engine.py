@@ -3,19 +3,18 @@ from FileUtils import *
 from Graph import Graph
 from GUI import GUI
 
+
 class Engine:
 
     def run(self):
-        longMin,longMax,latMin,latMax = getLongLatMinMaxFromUser()
+        longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
         graph = Graph(longMin, longMax, latMin, latMax)
-        #graph.printAllCoordinates()
+        # graph.printAllCoordinates()
 
-        coordsList = graph.startDFSTraversalAtCoordinate(latMin,longMin) #all coords traversed
+        coordsList = graph.startDFSTraversalAtCoordinate(
+            latMin, longMin)  # all coords traversed
 
         coordsGenerated = graph.getAllCoordinatesGenerated()
-
-        
-
 
         writeCoordsToCSVFile(coordsList)
 
@@ -25,12 +24,14 @@ class Engine:
             coordsGenerated.remove(coord)
 
         print("----Coords not traversed----")
-        print(coordsGenerated)
-
         if (shouldDisplayGUI):
-            gui = GUI(longMax,latMax)
+            gui = GUI(longMax, latMax)
             gui.animateRobotMovingGivenCoordList(coordsList)
+        # print(graph.getAllCoordinatesGenerated())
+        print("COORDINATES: \n\n\n\n\n")
+        print(coordsList)
+        return coordsList
 
-         
-engine = Engine()
-engine.run()
+
+#engine = Engine()
+# engine.run()

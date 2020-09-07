@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-# living plotting
+# Update plot as a file is changed
 
 #df = pd.read_csv("cayugacoords.txt")
 BoundaryBox = [-76.5119, -76.5013, 42.4596, 42.4642]

@@ -21,6 +21,7 @@ class Commands:
                 ["%.2f" % self.x, "%.2f" % self.y, "%.2f" % self.heading])
 
     # coords as floats, angles in degrees
+
     def __init__(self, start_x, start_y, start_d):
         self.x = float(start_x)
         self.y = float(start_y)
@@ -89,10 +90,10 @@ class Commands:
         self.write_coords()
 
 
-# c = Commands(0.0, 0.0, 0.0)
-# c.turn_in_place(45)
-# c.move_in_line(50.0, 30)
-# c.print_coords()
+c = Commands(0.0, 0.0, 0.0)
+c.turn_in_place(45)
+c.move_in_line(50.0, 30)
+c.print_coords()
 
 # With time step .1
 # 0.0,47.752208334564855,0.0
