@@ -6,6 +6,7 @@ import numpy as np
 import csv
 import math
 import numpy
+import serial
 
 
 class Graph:
@@ -112,6 +113,15 @@ class Graph:
             coordinateNode.addNeighbor(neighborNode)
         #else:
             #print("Oout of Bouds: " + str(neighborX) + ", " +  str(neighborY))
+
+    def retrieveDistance (self):
+        #'com3' is port specific to computer
+        ser = serial.Serial('COM3',115200)
+        while(True):
+            b = ser.readline()
+            str_b = str(b)
+            print(str_b)
+
 
     #Creates neighbors for a single node
     #Precondition: the coordinate at (x,y) is already created and can be found in the
