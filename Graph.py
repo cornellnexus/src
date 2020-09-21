@@ -8,7 +8,6 @@ import math
 import numpy
 import serial
 
-
 class Graph:
 
     #xMax = 10
@@ -30,6 +29,12 @@ class Graph:
     long_step = 0
     lat_step = 0
 
+    #Time to wait before checking for distance data again.
+    distance_check_wait_time = 5 
+
+    #In cm
+    obstacle_length_limit = 100 
+
     #Initialization of variables
     #User inputs longitude min/max and latitude min/max for Initialization
     #Based on user inputs, the long step and latitude step are created
@@ -47,10 +52,19 @@ class Graph:
         self.generateLatStep()
         self.generateCoordinates()
 
+        
 
-    #We should insted print out a list of nodes in the order of traversal. This function is doing
-    #too much.
+    def checkForObstacle(self,vertex):
+        updated_distance_data = self.retrieveDistance()
 
+        for obstacle_attempt in range(0,2):
+            if (obstacle_attempt == 0 and updated_distance_data < obstacle_length_limit):
+                time.sleep(10)
+            elif (obstacle_attempt == 1 and updated_distance_data < obstacle_length_limit):
+                vertex.setObstacle(True)
+
+
+        
     #Iterative DFS Algorithm
     #Precondition: Start must be a coordinate in the dictionary coordinates
     #Preforms DFS as expected, adding the nontraversed neighbors of the recent nodes to the stack.
@@ -59,22 +73,22 @@ class Graph:
         rawCoordsTraversed = []
 
         while stack:
-            vertex = stack.pop()
+            vertex = stack.pop() #Next node to visit
 
             if vertex.getTraversed():
                 continue
 
-            vertex.setTraversed(True)
-            (x,y) = vertex.getCoords()
-            #print("X AND Y" + str((x,y)))
+            #Check for distance here before traveling to it
+            self.checkForObstacle(vertex)
 
             if not vertex.getObstacle():
-                #print("NOT OBSTACLE")
                 rawCoordsTraversed.append((x,y))
+                vertex.setTraversed(True)
+                (x,y) = vertex.getCoords()
 
+            
             for neighbor in vertex.getNeighbors():
                 stack.append(neighbor)
-                #print("Neighbor: " + str(neighbor))
 
         return rawCoordsTraversed
 
