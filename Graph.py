@@ -7,7 +7,7 @@ import csv
 import math
 import numpy
 import serial
-
+from Vector import Vector
 class Graph:
 
     #xMax = 10
@@ -35,6 +35,7 @@ class Graph:
     #In cm
     obstacle_length_limit = 100 
 
+    robot_starting_position = (lat_min,long_min)
     #Initialization of variables
     #User inputs longitude min/max and latitude min/max for Initialization
     #Based on user inputs, the long step and latitude step are created
@@ -64,6 +65,14 @@ class Graph:
                 vertex.setObstacle(True)
 
 
+    def neighborRelativeToCoordinate(self,coordinate, current_coordinate):
+        (next_x,next_y) = coordinate.getCoords()
+        
+        (current_x,current_y) = current_coordinate.getCoords()
+
+        if () 
+
+
         
     #Iterative DFS Algorithm
     #Precondition: Start must be a coordinate in the dictionary coordinates
@@ -71,6 +80,7 @@ class Graph:
     def performIterativeDFSAlgorithmm(self,start):
         stack = [start]
         rawCoordsTraversed = []
+        current_vertex = robot_starting_position
 
         while stack:
             vertex = stack.pop() #Next node to visit
@@ -82,14 +92,18 @@ class Graph:
             self.checkForObstacle(vertex)
 
             if not vertex.getObstacle():
+                                    
+                #we want to move to the vertex here.
+                self.neighborRelativeToCoordinate(vertex,current_vertex)
+                (x,y) = vertex.getCoords()
                 rawCoordsTraversed.append((x,y))
                 vertex.setTraversed(True)
-                (x,y) = vertex.getCoords()
 
             
             for neighbor in vertex.getNeighbors():
                 stack.append(neighbor)
 
+            current_vertex = vertex
         return rawCoordsTraversed
 
     #Checks if a coordinate is already in the dictionary coordinates
