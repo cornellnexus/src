@@ -28,12 +28,15 @@ class Graph:
     #the differences between longitude max/min and latitude max/min, respectuflly.
     long_step = 0
     lat_step = 0
+    circum_of_wheel = 0;
+    rpm = 0;
 
     #Time to wait before checking for distance data again.
-    distance_check_wait_time = 5 
+    distance_check_wait_time = 5
 
     #In cm
-    obstacle_length_limit = 100 
+    obstacle_length_limit = 100
+
 
     robot_starting_position = (lat_min,long_min)
     #Initialization of variables
@@ -53,11 +56,10 @@ class Graph:
         self.generateLatStep()
         self.generateCoordinates()
 
-        
+
 
     def checkForObstacle(self,vertex):
         updated_distance_data = self.retrieveDistance()
-
         for obstacle_attempt in range(0,2):
             if (obstacle_attempt == 0 and updated_distance_data < obstacle_length_limit):
                 time.sleep(10)
@@ -67,13 +69,57 @@ class Graph:
 
     def neighborRelativeToCoordinate(self,coordinate, current_coordinate):
         (next_x,next_y) = coordinate.getCoords()
-        
         (current_x,current_y) = current_coordinate.getCoords()
 
-        if () 
+        if (next_x > current_x and next_y > current_y):
+            #rotate clockwise 45 degrees; topright
+            sendHeading("top_right")
+        elif (next_x = current_x and next_y > current_y):
+            #same heading; above
+            sendHeading("above")
+        elif (next_x < current_x and next_y > current_y):
+            #rotate counterclockwise 45 degrees; topleft
+            sendHeading("top_left")
+        elif (next_x > current_x and next_y = current_y):
+            #rotate clockwise 90 degrees; right
+            sendHeading("right")
+        elif (next_x = current_x and next_y = current_y):
+            #same heading
+            raise Exception ("Current node = next node")
+        elif (next_x < current_x and next_y = current_y):
+            #rotate counterclockwise 90 degrees; left
+            sendHeading("left")
+        elif (next_x > current_x and next_y < current_y):
+            #rotate clockwise 135 degrees; bottomright
+            sendHeading("bottom_right")
+        elif (next_x = current_x and next_y < current_y):
+            #rotate 180 degrees; below
+            sendHeading("below")
+        elif (next_x < current_x and next_y < current_y):
+            #rotate counterclockwise 135 degrees; bottomleft
+            sendHeading("bottom_left")
+
+    #Parameter direction: string that tells us general direction to turn
+    def sendHeading(self, direction):
+        #------------check this later--------------#
+        Serial.print(direction)
+
+    def moveRobotToCoordinate(self, coordinate, current_coordinate):
+        (next_x,next_y) = coordinate.getCoords()
+        (current_x,current_y) = current_coordinate.getCoords()
+        vector = Vector(current_x, current_y, next_x, next_y)
+        distance = vector.getMagnitude()
+
+        #time for one revolution
+        period = circum_of_wheel / rpm
+
+        # time to travel distance
+        # time = distance * period
+
+        Serial.print("move forward: " + str(distance))
+        Serial.print("time: " + str(time))
 
 
-        
     #Iterative DFS Algorithm
     #Precondition: Start must be a coordinate in the dictionary coordinates
     #Preforms DFS as expected, adding the nontraversed neighbors of the recent nodes to the stack.
@@ -92,14 +138,15 @@ class Graph:
             self.checkForObstacle(vertex)
 
             if not vertex.getObstacle():
-                                    
+
                 #we want to move to the vertex here.
                 self.neighborRelativeToCoordinate(vertex,current_vertex)
+                self.moveRobotToCoordinate(vertex,current_vertex)
                 (x,y) = vertex.getCoords()
                 rawCoordsTraversed.append((x,y))
                 vertex.setTraversed(True)
 
-            
+
             for neighbor in vertex.getNeighbors():
                 stack.append(neighbor)
 
@@ -144,7 +191,9 @@ class Graph:
 
     def retrieveDistance (self):
         #'com3' is port specific to computer
+        # ----need to retrieve distance not in while loop -------
         ser = serial.Serial('COM3',115200)
+        #for certain amount of time
         while(True):
             b = ser.readline()
             str_b = str(b)
