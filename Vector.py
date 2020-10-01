@@ -1,4 +1,4 @@
-import Math
+import math
 
 class Vector:
     x1 = 0
@@ -41,11 +41,11 @@ class Vector:
 
     def getAngle(self):
         return self.angle
-    
+
     def getMagnitude(self):
         return self.magnitude
 
-    def setPoint1(self,x,y)
+    def setPoint1(self,x,y):
         self.p1 = (x,y)
         self.x1 = x
         self.y1 = y

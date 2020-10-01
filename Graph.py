@@ -1,4 +1,4 @@
-from Coordinate import Coordinate
+from coordinate import Coordinate
 import tkinter as tk
 import tkinter
 import time
@@ -8,6 +8,8 @@ import math
 import numpy
 import serial
 from Vector import Vector
+#from apscheduler.scheduler import Scheduler
+
 class Graph:
 
     #xMax = 10
@@ -37,7 +39,6 @@ class Graph:
     #In cm
     obstacle_length_limit = 100
 
-
     robot_starting_position = (lat_min,long_min)
     #Initialization of variables
     #User inputs longitude min/max and latitude min/max for Initialization
@@ -56,8 +57,6 @@ class Graph:
         self.generateLatStep()
         self.generateCoordinates()
 
-
-
     def checkForObstacle(self,vertex):
         updated_distance_data = self.retrieveDistance()
         for obstacle_attempt in range(0,2):
@@ -70,29 +69,30 @@ class Graph:
     def neighborRelativeToCoordinate(self,coordinate, current_coordinate):
         (next_x,next_y) = coordinate.getCoords()
         (current_x,current_y) = current_coordinate.getCoords()
+        #all relative to robot
 
         if (next_x > current_x and next_y > current_y):
             #rotate clockwise 45 degrees; topright
             sendHeading("top_right")
-        elif (next_x = current_x and next_y > current_y):
+        elif (next_x == current_x and next_y > current_y):
             #same heading; above
             sendHeading("above")
         elif (next_x < current_x and next_y > current_y):
             #rotate counterclockwise 45 degrees; topleft
             sendHeading("top_left")
-        elif (next_x > current_x and next_y = current_y):
+        elif (next_x > current_x and next_y == current_y):
             #rotate clockwise 90 degrees; right
             sendHeading("right")
-        elif (next_x = current_x and next_y = current_y):
+        elif (next_x == current_x and next_y == current_y):
             #same heading
             raise Exception ("Current node = next node")
-        elif (next_x < current_x and next_y = current_y):
+        elif (next_x < current_x and next_y == current_y):
             #rotate counterclockwise 90 degrees; left
             sendHeading("left")
         elif (next_x > current_x and next_y < current_y):
             #rotate clockwise 135 degrees; bottomright
             sendHeading("bottom_right")
-        elif (next_x = current_x and next_y < current_y):
+        elif (next_x == current_x and next_y < current_y):
             #rotate 180 degrees; below
             sendHeading("below")
         elif (next_x < current_x and next_y < current_y):
@@ -104,21 +104,33 @@ class Graph:
         #------------check this later--------------#
         Serial.print(direction)
 
+    #change name to calculateDistance
     def moveRobotToCoordinate(self, coordinate, current_coordinate):
+        # checkForObstacle(coordinate)
         (next_x,next_y) = coordinate.getCoords()
         (current_x,current_y) = current_coordinate.getCoords()
         vector = Vector(current_x, current_y, next_x, next_y)
         distance = vector.getMagnitude()
 
-        #time for one revolution
-        period = circum_of_wheel / rpm
-
-        # time to travel distance
+        # #time for one revolution
+        # period = circum_of_wheel / rpm
+        #
+        # # time to travel distance
         # time = distance * period
+        amt_time = 0
 
         Serial.print("move forward: " + str(distance))
-        Serial.print("time: " + str(time))
+        Serial.print("time: " + str(amt_time))
 
+    def retrieveDistance (self):
+        #'com3' is port specific to computer
+        # ----need to retrieve distance not in while loop -------
+        ser = serial.Serial('COM3',115200)
+        #for certain amount of time
+        while(True):
+            b = ser.readline()
+            str_b = str(b)
+            print(str_b)
 
     #Iterative DFS Algorithm
     #Precondition: Start must be a coordinate in the dictionary coordinates
@@ -138,7 +150,6 @@ class Graph:
             self.checkForObstacle(vertex)
 
             if not vertex.getObstacle():
-
                 #we want to move to the vertex here.
                 self.neighborRelativeToCoordinate(vertex,current_vertex)
                 self.moveRobotToCoordinate(vertex,current_vertex)
@@ -188,16 +199,6 @@ class Graph:
             coordinateNode.addNeighbor(neighborNode)
         #else:
             #print("Oout of Bouds: " + str(neighborX) + ", " +  str(neighborY))
-
-    def retrieveDistance (self):
-        #'com3' is port specific to computer
-        # ----need to retrieve distance not in while loop -------
-        ser = serial.Serial('COM3',115200)
-        #for certain amount of time
-        while(True):
-            b = ser.readline()
-            str_b = str(b)
-            print(str_b)
 
 
     #Creates neighbors for a single node

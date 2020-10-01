@@ -33,7 +33,7 @@ class Coordinate:
         return (self.x, self.y)
 
     def __eq__(self, other):
-         if isinstance(other, Coordinate):
+        if isinstance(other, Coordinate):
             return  self.x == other.x and self.y == other.y
         return False
 
