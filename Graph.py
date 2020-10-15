@@ -18,6 +18,7 @@ class Graph:
     #Dictionary to hold the created coordinates. Key is an (x,y) pair, and value
     #is a coordinate object.
     coordinates = {}
+    obstacle_coordinates = {}
 
     #Declaration of latitude min/max, and longitude min/max. These will be assigned
     #by user input
@@ -32,6 +33,8 @@ class Graph:
     lat_step = 0
     circum_of_wheel = 0;
     rpm = 0;
+
+    ser = serial.Serial('/dev/cu.usbserial- 1420', 9600)
 
     #Time to wait before checking for distance data again.
     distance_check_wait_time = 5
@@ -56,13 +59,16 @@ class Graph:
         self.generateLongStep()
         self.generateLatStep()
         self.generateCoordinates()
+        self.handshake()
 
     def checkForObstacle(self,vertex):
         updated_distance_data = self.retrieveDistance()
         for obstacle_attempt in range(0,2):
-            if (obstacle_attempt == 0 and updated_distance_data < obstacle_length_limit):
+            if (obstacle_attempt == 0 and updated_distance_data
+               < obstacle_length_limit):
                 time.sleep(10)
-            elif (obstacle_attempt == 1 and updated_distance_data < obstacle_length_limit):
+            elif (obstacle_attempt == 1 and updated_distance_data
+                 < obstacle_length_limit):
                 vertex.setObstacle(True)
 
 
@@ -104,33 +110,51 @@ class Graph:
         #------------check this later--------------#
         Serial.print(direction)
 
+    def sendDataToArduino(self, data):
+        Serial.print(data)
+
+    def readArduino (self):
+        b = ser.readline()
+        str_b = b.decode()
+        str = str_b.strip()
+        print(b)
+
+    def handshake(self):
+        Serial.print("start_pyserial")
+        time.sleep(1)
+        retrievedInput = readArduino()
+        if (retrievedInput == "handshake_received"):
+         return
+         #print("Successful")
+        else:
+         raise (Exception "Handshake unsuccessful")
+
     #change name to calculateDistance
+    #cant change heading in place -> ask
     def moveRobotToCoordinate(self, coordinate, current_coordinate):
         # checkForObstacle(coordinate)
         (next_x,next_y) = coordinate.getCoords()
         (current_x,current_y) = current_coordinate.getCoords()
         vector = Vector(current_x, current_y, next_x, next_y)
         distance = vector.getMagnitude()
+        #how to actually calculate time?
+        time = 1
+        Serial.print("move_forward " + str(time))
 
         # #time for one revolution
         # period = circum_of_wheel / rpm
         #
         # # time to travel distance
         # time = distance * period
-        amt_time = 0
+        # amt_time = 0
+        #
+        # Serial.print("move forward: " + str(distance))
+        # Serial.print("time: " + str(amt_time))
 
-        Serial.print("move forward: " + str(distance))
-        Serial.print("time: " + str(amt_time))
+    # def retrieveDistance (self):
+    #     #'com3' is port specific to computer
+    #     # ----need to retrieve distance not in while loop -------
 
-    def retrieveDistance (self):
-        #'com3' is port specific to computer
-        # ----need to retrieve distance not in while loop -------
-        ser = serial.Serial('COM3',115200)
-        #for certain amount of time
-        while(True):
-            b = ser.readline()
-            str_b = str(b)
-            print(str_b)
 
     #Iterative DFS Algorithm
     #Precondition: Start must be a coordinate in the dictionary coordinates
@@ -146,17 +170,18 @@ class Graph:
             if vertex.getTraversed():
                 continue
 
+            (x,y) = vertex.getCoords()
             #Check for distance here before traveling to it
             self.checkForObstacle(vertex)
 
-            if not vertex.getObstacle():
+            if vertex.getObstacle():
+                obstacle_coordinates.append((x,y))
+            else:
                 #we want to move to the vertex here.
                 self.neighborRelativeToCoordinate(vertex,current_vertex)
                 self.moveRobotToCoordinate(vertex,current_vertex)
-                (x,y) = vertex.getCoords()
                 rawCoordsTraversed.append((x,y))
                 vertex.setTraversed(True)
-
 
             for neighbor in vertex.getNeighbors():
                 stack.append(neighbor)
