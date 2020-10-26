@@ -3,8 +3,14 @@ class Coordinate:
     x = 0
     y = 0
     neighbors = []
-    obstacle = False
-    traversed = False
+    # obstacle = False
+    # traversed = False
+
+    #probability:
+    # 0: not traversed
+    # 1: traversed
+    # 2: obstacle
+    probability = 0
 
     def __init__(self, x, y, neighbors):
         self.x = x
@@ -14,20 +20,23 @@ class Coordinate:
     def addNeighbor(self, neighbor):
         self.neighbors.append(neighbor)
 
-    def setObstacle(self, obstacle):
-        self.obstacle = obstacle
+    def setObstacle(self):
+        self.probability = 2
 
-    def setTraversed(self, traversed):
-        self.traversed = traversed
+    def setTraversed(self):
+        self.probability = 1
 
-    def getTraversed(self):
-        return self.traversed
+    def getProbability(self):
+        self.probability
+
+    # def getTraversed(self):
+    #     return self.traversed
 
     def getNeighbors(self):
         return self.neighbors
-
-    def getObstacle(self):
-        return self.obstacle
+    #
+    # def getObstacle(self):
+    #     return self.obstacle
 
     def getCoords(self):
         return (self.x, self.y)
