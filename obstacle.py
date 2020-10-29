@@ -10,8 +10,8 @@ from Vector import Vector
 class Obstacle:
     #Dictionary to hold the created coordinates. Key is an (x,y) pair, and value
     #is a coordinate object.
-    coordinates = {}
-    two_dim_coordinates = [][]
+    traversalPath = []
+    traversalcoordinates = {}
     # obstacle_coordinates = {}
 
     #Declaration of latitude min/max, and longitude min/max. These will be assigned
@@ -57,61 +57,18 @@ class Obstacle:
     #Adds coordinate (x,y) pairs [the keys], to the dictionary coordinates
     #Given and lat and longi, a coordinate is created if it in not in the dictionary. Then
     # the neighbors of (lat,longi) are created and put into the dictionary if not already.
+
+    # New idea: In this function, we initalize all the Coordinates in the graph, and create two data structures:
+    # 1) a list of Coordinates ordered in the proper lawnmower traversal
+    # 2) a hashmap where the keys are the (x,y) tuple and values are the Coordinate instances
+    # We don't need to keep track of the neigbor nodes or generate them initially because later on we can generate them only for nodes where we detect an obstacle and use the hashmap to look up the neighbors in constant time
     def generateCoordinates(self):
         for lat in numpy.arange(self.lat_min, self.lat_max+self.lat_step, self.lat_step):
-            for longi in numpy.arange(self.long_min, self.long_max+self.long_step, self.long_step):
-                lat = round(lat,5)
-                longi = round(longi,5)
-                if (lat, longi) not in self.coordinates:
-                    self.coordinates[(lat,longi)] = Coordinate(lat,longi,[])
-                self.createNeighborNodesForCoordinate(lat,longi)
-
-    #Creates neighbors for a single node
-    #Precondition: the coordinate at (x,y) is already created and can be found in the
-    #dictionary coordinates
-    #This method accounts for all 8 possible neighbors of a node. If a node is on an
-    #edge or a corner, addNewNeighborNodeToCoordinate will take this into account and
-    #will not add a node that does not fit in the given boundary.
-    def createNeighborNodesForCoordinate(self,x,y):
-        #we assume that x , y is already created.
-        coordinateToAddNeighborsTo = self.coordinates.get((x,y))
-        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y+self.long_step) #Neighbor above
-        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x,y-self.long_step) #Neighbor below
-        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x+self.lat_step,y) #Neighbor to the right
-        self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x-self.lat_step,y) #Neighbor to the left
-
-        #Commenting out diagonal nodes
-        # self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x+self.lat_step,y+self.long_step) #Diagonal upper right neighbor
-        # self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x-self.lat_step,y+self.long_step) #Diagonal upper left neighbor
-        # self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x+self.lat_step,y-self.long_step) #Diagonal lower right
-        # self.addNewNeighborNodeToCoordinate(coordinateToAddNeighborsTo,x-self.lat_step,y-self.long_step) #Diagonal lower left
-
-    #Adds a neighbor to the parameter coordinateNode if neighborX and neighborY
-    #are not out of the boundary.
-    #If the neighbor node is not in the dictionary, a coordinate object is created,
-    #added to the dictionary, and then added to the neighbor array of coordinateNode
-    #If the neighbor node is already in the dictionary, the coordinate is added to
-    #the neighbor array of coordinateNode.
-    #Precondition: coordinateNode is in the dictionary coordinates
-    def addNewNeighborNodeToCoordinate(self,coordinateNode,neighborX,neighborY):
-        if (neighborX <= self.lat_max and neighborX >= self.lat_min
-            and neighborY <= self.long_max and neighborY >= self.long_min):
-            neighborNode = self.checkIfCoordinateInCoordsDictElseGenerateNode(neighborX,neighborY)
-            coordinateNode.addNeighbor(neighborNode)
-
-        #Checks if a coordinate is already in the dictionary coordinates
-        #If the coordinate is in the dictionary, it's value is returned
-        #If the coordinate is not in the dictionary, then a coordinate object is
-        #created using parameters x and y, and the value of the new object is returned
-        #Precondition: x and y are floats
-        def checkIfCoordinateInCoordsDictElseGenerateNode(self,x,y):
-            #print("here 3")
-            if (x,y) in self.coordinates:
-                return self.coordinates.get((x,y))
-            else:
-                newCoordinateNode = Coordinate(x,y,[])
-                self.coordinates[(x,y)] = newCoordinateNode
-                return newCoordinateNode
+            for long in numpy.arange(self.long_min, self.long_max+self.long_step, self.long_step):
+                # initialize list of entire traversal to be popped off queue
+                self.traversalPath.append(Coordinate(lat,long))
+                # initialize dict to be used to search for neighbors
+                self.traversalDict[(lat,long)] = Coordinate(lat,long)
 
 ##-------------------------------ARDUINO CONNECTION-------------------------------##
     def handshake(self):
@@ -197,4 +154,34 @@ class Obstacle:
 
     #Precondition: Robot is at (lat_min, long_min)
     def obstacle_path(self):
-        for lat in
+        queue = self.traversalPath[:] #make a copy
+        closed = []
+        current_vertex = robot_starting_position
+
+        while queue:
+            vertex = queue.pop() #Next node to visit
+
+            if vertex.getProbability() == 1: # if closed, then skip it
+                continue
+
+            self.check_for_obstacle(vertex)
+            if vertex.getProbability() == 2:
+                encircle_obstacle(current_vertex, queue)
+            (x,y) = vertex.getCoords()
+
+            closed.append(vertex)
+            self.moveRobotToCoordinate(vertex, current_vertex)
+
+            current_vertex = vertex # succssfully moed to desired node
+        return rawCoordsTraversed
+
+    def encircle_obstacle(self,current_Node,queue):
+        #We want to get to the node after the blocked node
+
+        branchedPath = [] #nodes we travel to in this iteration 
+        goalNode = queue.pop()
+        chooseOptimalNeighbor(current_Node, goalNode)
+
+    def chooseOptimalNeighbor(current_Node, goalNode):
+        left =
+        right =

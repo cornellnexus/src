@@ -2,7 +2,7 @@
 class Coordinate:
     x = 0
     y = 0
-    neighbors = []
+    # neighbors = []
     # obstacle = False
     # traversed = False
 
