@@ -38,6 +38,12 @@ class Coordinate:
     # def getObstacle(self):
     #     return self.obstacle
 
+    def getX(self):
+        return self.x
+
+    def getY(self):
+        return self.y
+
     def getCoords(self):
         return (self.x, self.y)
 
