@@ -11,7 +11,7 @@ class Obstacle:
     #Dictionary to hold the created coordinates. Key is an (x,y) pair, and value
     #is a coordinate object.
     traversalPath = []
-    traversalcoordinates = {}
+    traversalDict = {}
     # obstacle_coordinates = {}
 
     #Declaration of latitude min/max, and longitude min/max. These will be assigned
@@ -182,8 +182,41 @@ class Obstacle:
         goalNode = queue.pop()
         chooseOptimalNeighbor(current_Node, goalNode)
 
-    def chooseOptimalNeighbor(current_Node, goalNode):
-        left =
-        right =
-        front =
-        back =
+    def get_distance(self, directional_node, goal_node):
+        # dir_coords = directional_node.getCoords()
+        # goal_coords = goal_node.getCoords()
+        # return math.dist(dir_coords,goal_coords)
+        x = directional_node.getX() - goal_node.getX()
+        y = direction_node.getY() - goal_node.getY()
+        inside = x**2 + y**2
+        return math.sqrt(inside)
+
+    def chooseOptimalNeighbor(self, current_Node, goal_node):
+        coords = current_Node.getCoords()
+        #future: add bound constrictions // think about realtivity
+        left = traversalDict(coords[0]-self.lat_step, coords[1])
+        right = traversalDict(coords[0]+self.lat_step, coords[1])
+        front = traversalDict(coords[0], coords[1]-self.long_step)
+        back = traversalDict(coords[0], coords[1]+self.long_step)
+
+        left_distance = get_distance(left, goal_node)
+        right_distance = get_distance(right, goal_node)
+        front_distance = get_distance(front, goal_node)
+        back_distance = get_distance(back, goal_node)
+
+        directions = [front, left, back, right]
+        for direction in directions:
+            check_for_obstacle(direction)
+            if direction.getProbability() == 2:
+                directions.remove(direction)
+            #turn robot left 90 degrees
+            change_heading(90)
+
+        min_prob = directions[0]
+        min_prob_list = [directions[0]]
+        for direction in directions:
+            if direction.getProbability() < min_prob:
+                min_prob = direction
+                min_prob_list = [direction]
+            elif direction.getProbability() = min_prob:
+                min_prob_list.append(direction)
