@@ -178,10 +178,12 @@ class Obstacle:
     def encircle_obstacle(self,current_Node,queue):
         #We want to get to the node after the blocked node
 
-        branchedPath = [] #nodes we travel to in this iteration 
+        branchedPath = [] #nodes we travel to in this iteration
         goalNode = queue.pop()
         chooseOptimalNeighbor(current_Node, goalNode)
 
     def chooseOptimalNeighbor(current_Node, goalNode):
         left =
         right =
+        front =
+        back =
