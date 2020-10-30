@@ -12,7 +12,8 @@ class Obstacle:
     #is a coordinate object.
     traversalPath = []
     traversalDict = {}
-    # obstacle_coordinates = {}
+
+    obstacle_coordinates = []
 
     #Declaration of latitude min/max, and longitude min/max. These will be assigned
     #by user input
@@ -99,6 +100,9 @@ class Obstacle:
     #cant change heading in place -> ask
     def moveRobotToCoordinate(self, coordinate, current_coordinate):
         # checkForObstacle(coordinate)
+
+        #changes probability of coordinate to 1 since it's getting traversed
+        coordinate.setTraversed()
         (next_x,next_y) = coordinate.getCoords()
         (current_x,current_y) = current_coordinate.getCoords()
         vector = Vector(current_x, current_y, next_x, next_y)
@@ -166,7 +170,8 @@ class Obstacle:
 
             self.check_for_obstacle(vertex)
             if vertex.getProbability() == 2:
-                encircle_obstacle(current_vertex, queue)
+                branched = encircle_obstacle(current_vertex, queue)
+                obstacle_coordinates += branched
             (x,y) = vertex.getCoords()
 
             closed.append(vertex)
@@ -175,12 +180,18 @@ class Obstacle:
             current_vertex = vertex # succssfully moed to desired node
         return rawCoordsTraversed
 
-    def encircle_obstacle(self,current_Node,queue):
+    #corner case: going back and forth repeatedly
+    def encircle_obstacle(self,current_node,queue):
         #We want to get to the node after the blocked node
+        branched_path = [] #nodes we travel to in this iteration
+        goal_node = queue.pop()
 
-        branchedPath = [] #nodes we travel to in this iteration
-        goalNode = queue.pop()
-        chooseOptimalNeighbor(current_Node, goalNode)
+        while (current_node.getCoords() != goal_node.getCoords()):
+            choose_optimal_neighbor(current_node, goal_node)
+            moveRobotToCoordinates(choose_optimal_neighbor.getCoords())
+            branched_path.append(choose_optimal_neighbor)
+            current_node = choose_optimal_neighbor
+        return branched_path
 
     def get_distance(self, directional_node, goal_node):
         # dir_coords = directional_node.getCoords()
@@ -191,32 +202,55 @@ class Obstacle:
         inside = x**2 + y**2
         return math.sqrt(inside)
 
-    def chooseOptimalNeighbor(self, current_Node, goal_node):
-        coords = current_Node.getCoords()
+    def get_shortest_path(self, dir_lst, goal_node):
+        distance_lst = []
+        min_dist = Integer.MAX_VALUE
+        for direction in dir_lst:
+            dist = get_distance(direction, goal_node)
+            if (dist < min_dist):
+                min_dist = dist
+                distance_lst = [direction]
+            elif (dist = min_dist):
+                distance_lst.append(direction)
+        return distance_lst
+
+    def get_lowest_prob(self, dir_lst):
+        min_prob = dir_lst[0]
+        min_prob_list = [dir_lst[0]]
+        for direction in dir_lst:
+            if direction.getProbability() < min_prob:
+                min_prob = direction
+                min_prob_list = [dir_lst]
+            elif direction.getProbability() = min_prob:
+                min_prob_list.append(direction)
+        #If there is more than one element, they have the same
+        #distance and priority, so we return the first element at random
+        #May need to change in future implementations
+        return min_prob_list[0]
+
+
+    def choose_optimal_neighbor(self, current_node, goal_node):
+        coords = current_node.getCoords()
         #future: add bound constrictions // think about realtivity
+
         left = traversalDict(coords[0]-self.lat_step, coords[1])
         right = traversalDict(coords[0]+self.lat_step, coords[1])
         front = traversalDict(coords[0], coords[1]-self.long_step)
         back = traversalDict(coords[0], coords[1]+self.long_step)
 
-        left_distance = get_distance(left, goal_node)
-        right_distance = get_distance(right, goal_node)
-        front_distance = get_distance(front, goal_node)
-        back_distance = get_distance(back, goal_node)
-
         directions = [front, left, back, right]
         for direction in directions:
-            check_for_obstacle(direction)
+            self.check_for_obstacle(direction)
             if direction.getProbability() == 2:
                 directions.remove(direction)
             #turn robot left 90 degrees
-            change_heading(90)
+            self.change_heading(90)
 
-        min_prob = directions[0]
-        min_prob_list = [directions[0]]
-        for direction in directions:
-            if direction.getProbability() < min_prob:
-                min_prob = direction
-                min_prob_list = [direction]
-            elif direction.getProbability() = min_prob:
-                min_prob_list.append(direction)
+        shortest_dir = self.get_shortest_path(directions)
+
+        if len(shortest_dir) == 1:
+         return shortest_dir[0]
+
+        chosen_node = self.get_lowest_prob(shortest_dir)
+
+        return chosen_node
