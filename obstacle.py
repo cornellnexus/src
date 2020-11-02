@@ -8,11 +8,23 @@ import serial
 from Vector import Vector
 
 class Obstacle:
-    #Dictionary to hold the created coordinates. Key is an (x,y) pair, and value
-    #is a coordinate object.
+    """
+    Instances represents the list of nodes that make up the robot's traversal path along the graph.
+
+    INSTANCE ATTRIBUTES:
+        traversalPath: Ordered list of Coordinate objects to travel to [Coordinate list]
+
+        traversalDict: Ordered dictionary of nodes to travel to where keys are (x,y) tuples and values are Coordinate objects
+
+        obstacle_coordinates: List of Coordinate objects that represent obstacle nodes
+
+        lat_min: #todo julie
+        lat_max: #todo julie
+        long_min: #todo julie
+        long_max: #todo julie
+    """
     traversalPath = []
     traversalDict = {}
-
     obstacle_coordinates = []
 
     #Declaration of latitude min/max, and longitude min/max. These will be assigned
@@ -53,17 +65,26 @@ class Obstacle:
         self.generateCoordinates()
         self.handshake()
 
-##-------------------------------COORDINATE CREATION-------------------------------##
+##------------------------------COORDINATE CREATION---------------------------##
     #Initializes all the coordinates based on the boundary and longitude/latitude steps
     #Adds coordinate (x,y) pairs [the keys], to the dictionary coordinates
     #Given and lat and longi, a coordinate is created if it in not in the dictionary. Then
     # the neighbors of (lat,longi) are created and put into the dictionary if not already.
+    #TODO: @julie : this was the previous documentation ^^ check if we can delete
 
     # New idea: In this function, we initalize all the Coordinates in the graph, and create two data structures:
     # 1) a list of Coordinates ordered in the proper lawnmower traversal
     # 2) a hashmap where the keys are the (x,y) tuple and values are the Coordinate instances
     # We don't need to keep track of the neigbor nodes or generate them initially because later on we can generate them only for nodes where we detect an obstacle and use the hashmap to look up the neighbors in constant time
     def generateCoordinates(self):
+        """
+        Initializes all the Coordinate objects in the graph based on boundary and longitude/latitute steps and creates 2 data structures:
+
+        1) a list of Coordinates ordered based on lawnmower traversal search
+        2) a dictionary where keys are the (x,y) tuple and values are Coordinate objects
+
+        TODO: fix lawnmower to be zig zag and not c1 - cn ...
+        """
         for lat in numpy.arange(self.lat_min, self.lat_max+self.lat_step, self.lat_step):
             for long in numpy.arange(self.long_min, self.long_max+self.long_step, self.long_step):
                 # initialize list of entire traversal to be popped off queue
@@ -147,6 +168,10 @@ class Obstacle:
 
 ##-------------------------------OBSTACLE AVOIDANCE/PATH-------------------------------##
     def check_for_obstacle(self,vertex):
+    """
+        Preliminary implementation:
+        Checks if obstacle is present, and if it is, sets [vertex] as an obstacle Coordinate.
+    """
         updated_distance_data = self.retrieveDistance()
         for obstacle_attempt in range(0,2):
             if (obstacle_attempt == 0 and updated_distance_data
@@ -157,13 +182,13 @@ class Obstacle:
                 vertex.setObstacle()
 
     #Precondition: Robot is at (lat_min, long_min)
-    def obstacle_path(self):
-        queue = self.traversalPath[:] #make a copy
+    def obstacle_path(self):s
+        queue = self.traversalPath[:] #make a copy of traversal list
         closed = []
         current_vertex = robot_starting_position
 
         while queue:
-            vertex = queue.pop() #Next node to visit
+            vertex = queue.pop(0) #Next node to visit
 
             if vertex.getProbability() == 1: # if closed, then skip it
                 continue
@@ -180,11 +205,52 @@ class Obstacle:
             current_vertex = vertex # succssfully moed to desired node
         return rawCoordsTraversed
 
+    def obstacle_path_v2(self):
+        "Main LFS search function"
+        queue = self.traversalPath[:] #make a copy of traversal list
+        closed = []
+        current_node = robot_starting_position
+
+        while queue:
+            next = queue.pop() #Next node to visit
+
+            if next.getProbability() == 1: # if closed, then skip it
+                continue
+
+            self.check_for_obstacle(vertex) # obstacle detection real time
+            if next.getProbability() == 2: # next is an obstacle node
+                goal = queue.pop() #update node to travel to to be the next NEXT
+                # begin a* with goal node
+                branched = encircle_obstacle(current_node, queue)
+                # AT THIS LINE NOT SURE IF WE PASS IN CURRENT OR NEXT
+                obstacle_coordinates += branched #keep track of nodes traveled
+
+            #a* returns which means encircling is complete
+            (x,y) = next.getCoords()
+
+            closed.append(next)
+            self.moveRobotToCoordinate(next, current_node)
+
+            current_node = next # succssfully moved to desired node
+        return rawCoordsTraversed
+
+    # def encircle_obstacle_v2(self,current_node,queue):
+    #     #We want to get to the node after the blocked node
+    #     branched_path = [] #nodes we travel to in this iteration
+    #     goal_node = queue.pop()
+    #
+    #     while (current_node.getCoords() != goal_node.getCoords()):
+    #         choose_optimal_neighbor(current_node, goal_node)
+    #         moveRobotToCoordinates(choose_optimal_neighbor.getCoords())
+    #         branched_path.append(choose_optimal_neighbor)
+    #         current_node = choose_optimal_neighbor
+    #     return branched_path
+
     #corner case: going back and forth repeatedly
     def encircle_obstacle(self,current_node,queue):
         #We want to get to the node after the blocked node
         branched_path = [] #nodes we travel to in this iteration
-        goal_node = queue.pop()
+        goal_node = queue.pop(0)
 
         while (current_node.getCoords() != goal_node.getCoords()):
             choose_optimal_neighbor(current_node, goal_node)
