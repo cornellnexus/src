@@ -94,7 +94,7 @@ class Obstacle:
 
 ##-------------------------------ARDUINO CONNECTION-------------------------------##
     def handshake(self):
-        Serial.print("start_pyserial")
+        ser.write("start_pyserial")
         time.sleep(1)
         retrievedInput = readArduino()
         if (retrievedInput == "handshake_received"):
@@ -106,10 +106,10 @@ class Obstacle:
     #Parameter direction: string that tells us general direction to turn
     def sendHeading(self, direction):
         #------------check this later--------------#
-        Serial.print(direction)
+        ser.write(direction)
 
     def sendDataToArduino(self, data):
-        Serial.print(data)
+        ser.write(data)
 
     def readArduino (self):
         b = ser.readline()
@@ -124,13 +124,15 @@ class Obstacle:
 
         #changes probability of coordinate to 1 since it's getting traversed
         coordinate.setTraversed()
+        neighborRelativeToCoordinate(coordinate, current_coordinate)
         (next_x,next_y) = coordinate.getCoords()
         (current_x,current_y) = current_coordinate.getCoords()
         vector = Vector(current_x, current_y, next_x, next_y)
         distance = vector.getMagnitude()
         #how to actually calculate time?
         time = 1
-        Serial.print("move_forward " + str(time))
+        #how does robot know when to stop?
+        ser.write(b'F')
 
         #tweek bc we won't(?) have diagonals
     def neighborRelativeToCoordinate(self,coordinate, current_coordinate):
@@ -143,25 +145,25 @@ class Obstacle:
             sendHeading("top_right")
         elif (next_x == current_x and next_y > current_y):
             #same heading; above
-            sendHeading("above")
+            sendHeading(b'F')
         elif (next_x < current_x and next_y > current_y):
             #rotate counterclockwise 45 degrees; topleft
             sendHeading("top_left")
         elif (next_x > current_x and next_y == current_y):
             #rotate clockwise 90 degrees; right
-            sendHeading("right")
+            sendHeading(b'R')
         elif (next_x == current_x and next_y == current_y):
             #same heading
             raise Exception ("Current node = next node")
         elif (next_x < current_x and next_y == current_y):
             #rotate counterclockwise 90 degrees; left
-            sendHeading("left")
+            sendHeading(b'L')
         elif (next_x > current_x and next_y < current_y):
             #rotate clockwise 135 degrees; bottomright
             sendHeading("bottom_right")
         elif (next_x == current_x and next_y < current_y):
             #rotate 180 degrees; below
-            sendHeading("below")
+            sendHeading(b'B')
         elif (next_x < current_x and next_y < current_y):
             #rotate counterclockwise 135 degrees; bottomleft
             sendHeading("bottom_left")
@@ -201,6 +203,7 @@ class Obstacle:
 
             closed.append(vertex)
             self.moveRobotToCoordinate(vertex, current_vertex)
+            #stop function
 
             current_vertex = vertex # succssfully moed to desired node
         return rawCoordsTraversed
@@ -230,6 +233,7 @@ class Obstacle:
 
             closed.append(next)
             self.moveRobotToCoordinate(next, current_node)
+            #stop function
 
             current_node = next # succssfully moved to desired node
         return rawCoordsTraversed
@@ -255,6 +259,7 @@ class Obstacle:
         while (current_node.getCoords() != goal_node.getCoords()):
             choose_optimal_neighbor(current_node, goal_node)
             moveRobotToCoordinates(choose_optimal_neighbor.getCoords())
+            #stop function
             branched_path.append(choose_optimal_neighbor)
             current_node = choose_optimal_neighbor
         return branched_path
@@ -310,7 +315,8 @@ class Obstacle:
             if direction.getProbability() == 2:
                 directions.remove(direction)
             #turn robot left 90 degrees
-            self.change_heading(90)
+            # self.change_heading(90)
+            sendHeading(b'L')
 
         shortest_dir = self.get_shortest_path(directions)
 
