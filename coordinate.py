@@ -1,13 +1,11 @@
 
 class Coordinate:
-        """
-        Instances represent a node of the robot's graph traversal.
-
+    """ Instances represent a node of the robot's graph traversal.
         INSTANCE ATTRIBUTES:
-            x: x coordinate [int]
-            y: y coordinate [int]
-            probability: type of the node [0 = not traversed, 1 = traversed, 2 = obstacle]
-        """
+        x: x coordinate [int]
+        y: y coordinate [int]
+        probability: type of the node
+            [0 = not traversed, 1 = traversed, 2 = obstacle] """
     x = 0
     y = 0
     probability = 0

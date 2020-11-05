@@ -18,10 +18,10 @@ class Obstacle:
 
         obstacle_coordinates: List of Coordinate objects that represent obstacle nodes
 
-        lat_min: #todo julie
-        lat_max: #todo julie
-        long_min: #todo julie
-        long_max: #todo julie
+        lat_min: User input of minimum latitude boundary point
+        lat_max: User input of maximum latitude boundary point
+        long_min: User input of minimum longitude boundary point
+        long_max: User input of maximum longitude boundary point
     """
     traversalPath = []
     traversalDict = {}
@@ -72,16 +72,21 @@ class Obstacle:
     # the neighbors of (lat,longi) are created and put into the dictionary if not already.
     #TODO: @julie : this was the previous documentation ^^ check if we can delete
 
-    # New idea: In this function, we initalize all the Coordinates in the graph, and create two data structures:
+    # New idea: In this function, we initalize all the Coordinates in the graph,
+    # and create two data structures:
     # 1) a list of Coordinates ordered in the proper lawnmower traversal
     # 2) a hashmap where the keys are the (x,y) tuple and values are the Coordinate instances
-    # We don't need to keep track of the neigbor nodes or generate them initially because later on we can generate them only for nodes where we detect an obstacle and use the hashmap to look up the neighbors in constant time
+    # We don't need to keep track of the neigbor nodes or generate them initially because
+    # later on we can generate them only for nodes where we detect an obstacle
+    # and use the hashmap to look up the neighbors in constant time
     def generateCoordinates(self):
         """
-        Initializes all the Coordinate objects in the graph based on boundary and longitude/latitute steps and creates 2 data structures:
+        Initializes all the Coordinate objects in the graph based on boundary
+        and longitude/latitute steps and creates 2 data structures:
 
         1) a list of Coordinates ordered based on lawnmower traversal search
-        2) a dictionary where keys are the (x,y) tuple and values are Coordinate objects
+        2) a dictionary where keys are the (x,y) tuple and values are
+         Coordinate objects
 
         TODO: fix lawnmower to be zig zag and not c1 - cn ...
         """
@@ -101,7 +106,7 @@ class Obstacle:
          return
          #print("Successful")
         else:
-         raise (Exception "Handshake unsuccessful")
+         raise Exception ("Handshake unsuccessful")
 
     #Parameter direction: string that tells us general direction to turn
     def sendHeading(self, direction):
@@ -170,10 +175,9 @@ class Obstacle:
 
 ##-------------------------------OBSTACLE AVOIDANCE/PATH-------------------------------##
     def check_for_obstacle(self,vertex):
-    """
-        Preliminary implementation:
-        Checks if obstacle is present, and if it is, sets [vertex] as an obstacle Coordinate.
-    """
+        """Preliminary implementation:
+        Checks if obstacle is present, and if it is,
+        sets [vertex] as an obstacle Coordinate. """
         updated_distance_data = self.retrieveDistance()
         for obstacle_attempt in range(0,2):
             if (obstacle_attempt == 0 and updated_distance_data
@@ -184,7 +188,7 @@ class Obstacle:
                 vertex.setObstacle()
 
     #Precondition: Robot is at (lat_min, long_min)
-    def obstacle_path(self):s
+    def obstacle_path(self):
         queue = self.traversalPath[:] #make a copy of traversal list
         closed = []
         current_vertex = robot_starting_position
@@ -281,7 +285,7 @@ class Obstacle:
             if (dist < min_dist):
                 min_dist = dist
                 distance_lst = [direction]
-            elif (dist = min_dist):
+            elif (dist == min_dist):
                 distance_lst.append(direction)
         return distance_lst
 
@@ -292,7 +296,7 @@ class Obstacle:
             if direction.getProbability() < min_prob:
                 min_prob = direction
                 min_prob_list = [dir_lst]
-            elif direction.getProbability() = min_prob:
+            elif direction.getProbability() == min_prob:
                 min_prob_list.append(direction)
         #If there is more than one element, they have the same
         #distance and priority, so we return the first element at random
