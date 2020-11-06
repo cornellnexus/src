@@ -39,7 +39,8 @@ class Obstacle:
     long_step = 0
     lat_step = 0
 
-    ser = serial.Serial('/dev/cu.usbserial- 1420', 9600)
+    # ser = serial.Serial('/dev/cu.usbserial-1420', 9600)
+    ser = serial.Serial('/dev/cu.usbserial-1420', 9600, timeout = 1)
 
     #Time to wait before checking for distance data again.
     distance_check_wait_time = 5
