@@ -16,10 +16,10 @@ class Vector:
         self.vector = (self.x2 - self.x1, self.y2 - self.y1)
 
     def calculateAngle(self):
-        self.angle = Math.atan((self.y2-self.y1)/(self.x2-self.x1))
+        self.angle = math.atan((self.y2-self.y1)/(self.x2-self.x1))
 
     def calculateMagnitude(self):
-        self.magnitude = Math.sqrt(((self.y2-self.y1)**2) + ((self.x2-self.x1)**2))
+        self.magnitude = math.sqrt(((self.y2-self.y1)**2) + ((self.x2-self.x1)**2))
 
 
 

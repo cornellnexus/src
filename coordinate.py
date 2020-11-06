@@ -10,10 +10,10 @@ class Coordinate:
     y = 0
     probability = 0
 
-    def __init__(self, x, y, neighbors):
+    def __init__(self, x, y, probability = 0):
         self.x = x
         self.y = y
-        self.neighbors = neighbors
+        self.probability = probability
 
     def getX(self):
         return self.x

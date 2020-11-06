@@ -34,7 +34,7 @@ class Graph:
     circum_of_wheel = 0;
     rpm = 0;
 
-    ser = serial.Serial('/dev/cu.usbserial- 1420', 9600)
+    ser = serial.Serial('/dev/cu.usbserial-1420', 9600)
 
     #Time to wait before checking for distance data again.
     distance_check_wait_time = 5
@@ -108,7 +108,7 @@ class Graph:
     #Parameter direction: string that tells us general direction to turn
     def sendHeading(self, direction):
         #------------check this later--------------#
-        Serial.print(direction)
+        Serial.write(direction)
 
     def sendDataToArduino(self, data):
         Serial.print(data)

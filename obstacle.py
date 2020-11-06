@@ -62,9 +62,11 @@ class Obstacle:
         self.lat_max = latMax
         self.lat_step = 6
         self.long_step = 6
+        self.obstacle_length_limit = 10
 
         self.generateCoordinates()
-        self.handshake()
+        self.startTraversal()
+        # self.handshake()
 
 ##------------------------------COORDINATE CREATION---------------------------##
     #Initializes all the coordinates based on the boundary and longitude/latitude steps
@@ -99,26 +101,26 @@ class Obstacle:
                 self.traversalDict[(lat,long)] = Coordinate(lat,long)
 
 ##-------------------------------ARDUINO CONNECTION-------------------------------##
-    def handshake(self):
-        ser.write("start_pyserial")
-        time.sleep(1)
-        retrievedInput = readArduino()
-        if (retrievedInput == "handshake_received"):
-         return
-         #print("Successful")
-        else:
-         raise Exception ("Handshake unsuccessful")
+    # def handshake(self):
+    #     ser.write("start_pyserial")
+    #     time.sleep(1)
+    #     retrievedInput = readArduino()
+    #     if (retrievedInput == "handshake_received"):
+    #      return
+    #      #print("Successful")
+    #     else:
+    #      raise Exception ("Handshake unsuccessful")
 
     #Parameter direction: string that tells us general direction to turn
     def sendHeading(self, direction):
         #------------check this later--------------#
-        ser.write(direction)
+        self.ser.write(direction)
 
     def sendDataToArduino(self, data):
-        ser.write(data)
+        self.ser.write(data)
 
     def readArduino (self):
-        b = ser.readline()
+        b = self.ser.readline()
         str_b = b.decode()
         str = str_b.strip()
         print(b)
@@ -130,7 +132,7 @@ class Obstacle:
 
         #changes probability of coordinate to 1 since it's getting traversed
         coordinate.setTraversed()
-        neighborRelativeToCoordinate(coordinate, current_coordinate)
+        self.neighborRelativeToCoordinate(coordinate, current_coordinate)
         (next_x,next_y) = coordinate.getCoords()
         (current_x,current_y) = current_coordinate.getCoords()
         vector = Vector(current_x, current_y, next_x, next_y)
@@ -138,7 +140,7 @@ class Obstacle:
         #how to actually calculate time?
         time = 1
         #how does robot know when to stop?
-        ser.write(b'F')
+        self.ser.write(b'F')
 
         #tweek bc we won't(?) have diagonals
     def neighborRelativeToCoordinate(self,coordinate, current_coordinate):
@@ -160,7 +162,8 @@ class Obstacle:
             sendHeading(b'R')
         elif (next_x == current_x and next_y == current_y):
             #same heading
-            raise Exception ("Current node = next node")
+            return
+            # raise Exception ("Current node = next node")
         elif (next_x < current_x and next_y == current_y):
             #rotate counterclockwise 90 degrees; left
             sendHeading(b'L')
@@ -179,20 +182,22 @@ class Obstacle:
         """Preliminary implementation:
         Checks if obstacle is present, and if it is,
         sets [vertex] as an obstacle Coordinate. """
-        updated_distance_data = self.retrieveDistance()
+        updated_distance_data = 30
+        # self.retrieveDistance()
         for obstacle_attempt in range(0,2):
             if (obstacle_attempt == 0 and updated_distance_data
-               < obstacle_length_limit):
+               < self.obstacle_length_limit):
                 time.sleep(10)
             elif (obstacle_attempt == 1 and updated_distance_data
-                 < obstacle_length_limit):
+                 < self.obstacle_length_limit):
                 vertex.setObstacle()
 
     #Precondition: Robot is at (lat_min, long_min)
     def obstacle_path(self):
         queue = self.traversalPath[:] #make a copy of traversal list
         closed = []
-        current_vertex = robot_starting_position
+        current_vertex = Coordinate(self.robot_starting_position[0],
+                                    self.robot_starting_position[1])
 
         while queue:
             vertex = queue.pop(0) #Next node to visit
@@ -217,7 +222,7 @@ class Obstacle:
         "Main LFS search function"
         queue = self.traversalPath[:] #make a copy of traversal list
         closed = []
-        current_node = robot_starting_position
+        current_node = self.robot_starting_position
 
         while queue:
             next = queue.pop() #Next node to visit
@@ -331,3 +336,8 @@ class Obstacle:
         chosen_node = self.get_lowest_prob(shortest_dir)
 
         return chosen_node
+
+        #Starts the traversal
+        #Precondition: (x,y) must be a key value in dictionary coordinates
+    def startTraversal(self):
+        return self.obstacle_path()
