@@ -26,6 +26,9 @@ class Obstacle:
     traversalPath = []
     traversalDict = {}
     obstacle_coordinates = []
+    # 42.445084, -76.482847
+    # 42.445086, -76.482364
+    #
 
     #Declaration of latitude min/max, and longitude min/max. These will be assigned
     #by user input
@@ -150,32 +153,32 @@ class Obstacle:
 
         if (next_x > current_x and next_y > current_y):
             #rotate clockwise 45 degrees; topright
-            sendHeading("top_right")
+            self.sendHeading("top_right")
         elif (next_x == current_x and next_y > current_y):
             #same heading; above
-            sendHeading(b'F')
+            self.sendHeading(b'F')
         elif (next_x < current_x and next_y > current_y):
             #rotate counterclockwise 45 degrees; topleft
-            sendHeading("top_left")
+            self.sendHeading("top_left")
         elif (next_x > current_x and next_y == current_y):
             #rotate clockwise 90 degrees; right
-            sendHeading(b'R')
+            self.sendHeading(b'R')
         elif (next_x == current_x and next_y == current_y):
             #same heading
             return
             # raise Exception ("Current node = next node")
         elif (next_x < current_x and next_y == current_y):
             #rotate counterclockwise 90 degrees; left
-            sendHeading(b'L')
+            self.sendHeading(b'L')
         elif (next_x > current_x and next_y < current_y):
             #rotate clockwise 135 degrees; bottomright
-            sendHeading("bottom_right")
+            self.sendHeading("bottom_right")
         elif (next_x == current_x and next_y < current_y):
             #rotate 180 degrees; below
-            sendHeading(b'B')
+            self.sendHeading(b'B')
         elif (next_x < current_x and next_y < current_y):
             #rotate counterclockwise 135 degrees; bottomleft
-            sendHeading("bottom_left")
+            self.sendHeading("bottom_left")
 
 ##-------------------------------OBSTACLE AVOIDANCE/PATH-------------------------------##
     def check_for_obstacle(self,vertex):
