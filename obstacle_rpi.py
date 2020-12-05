@@ -4,7 +4,6 @@ import numpy as np
 import csv
 import math
 import numpy
-import serial
 from Vector import Vector
 
 
@@ -42,9 +41,6 @@ class Obstacle:
     # 2 times the width of the robot (future implementations)
     long_step = 0
     lat_step = 0
-
-    # ser = serial.Serial('/dev/cu.usbserial-1420', 9600)
-    ser = serial.Serial('/dev/cu.usbserial-1420', 9600, timeout = 1)
 
     #Time to wait before checking for distance data again.
     distance_check_wait_time = 5
@@ -115,19 +111,6 @@ class Obstacle:
     #     else:
     #      raise Exception ("Handshake unsuccessful")
 
-    #Parameter direction: string that tells us general direction to turn
-    def sendHeading(self, direction):
-        #------------check this later--------------#
-        self.ser.write(direction)
-
-    def sendDataToArduino(self, data):
-        self.ser.write(data)
-
-    def readArduino (self):
-        b = self.ser.readline()
-        str_b = b.decode()
-        str = str_b.strip()
-        print(b)
 
     #change name to calculateDistance
     #cant change heading in place -> ask
@@ -157,26 +140,26 @@ class Obstacle:
             self.sendHeading("top_right")
         elif (next_x == current_x and next_y > current_y):
             #same heading; above
-            self.sendHeading(b'F')
+            self.goForward()
         elif (next_x < current_x and next_y > current_y):
             #rotate counterclockwise 45 degrees; topleft
             self.sendHeading("top_left")
         elif (next_x > current_x and next_y == current_y):
             #rotate clockwise 90 degrees; right
-            self.sendHeading(b'R')
+            self.turnRight()
         elif (next_x == current_x and next_y == current_y):
             #same heading
             return
             # raise Exception ("Current node = next node")
         elif (next_x < current_x and next_y == current_y):
             #rotate counterclockwise 90 degrees; left
-            self.sendHeading(b'L')
+            self.turnLeft()
         elif (next_x > current_x and next_y < current_y):
             #rotate clockwise 135 degrees; bottomright
             self.sendHeading("bottom_right")
         elif (next_x == current_x and next_y < current_y):
             #rotate 180 degrees; below
-            self.sendHeading(b'B')
+            self.reverse()
         elif (next_x < current_x and next_y < current_y):
             #rotate counterclockwise 135 degrees; bottomleft
             self.sendHeading("bottom_left")
