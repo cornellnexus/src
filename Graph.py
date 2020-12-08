@@ -90,18 +90,18 @@ class Graph:
 
 
 
-g = Graph(42.4596, 42.4642, -76.5119, -76.5013)
+# g = Graph(42.4596, 42.4642, -76.5119, -76.5013)
 
-testlist = [] 
-xlist = []
-ylist = []
+# testlist = [] 
+# xlist = []
+# ylist = []
 
-for node in g.traversal_path:
-    coords = node.get_coords()
-    xlist.append(coords[0])
-    ylist.append(coords[1])
+# for node in g.traversal_path:
+#     coords = node.get_coords()
+#     xlist.append(coords[0])
+#     ylist.append(coords[1])
 
-plt.plot(xlist, ylist, marker='o', markerfacecolor='blue')
-plt.ylim(-76.5149, -76.5000) 
-plt.xlim(42.4580, 42.4650)
-plt.show()
+# plt.plot(xlist, ylist, marker='o', markerfacecolor='blue')
+# plt.ylim(-76.5149, -76.5000) 
+# plt.xlim(42.4580, 42.4650)
+# plt.show()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()

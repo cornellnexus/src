@@ -9,7 +9,7 @@ def getLongLatMinMaxFromUser():
             if long_max <= long_min:
                 raise Exception ("The maximum longitude must be larger than the minimum longitude")
             lat_min = float(input ("Enter minimum latitude: "))
-            lat_max = float(input("Enter maximum litude: "))
+            lat_max = float(input("Enter maximum latitude: "))
             if lat_max <= lat_min:
                 raise Exception ("The maximum latitude must be larger than the minimum latitude")
             

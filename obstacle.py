@@ -222,48 +222,6 @@ class Obstacle:
             current_vertex = vertex # succssfully moed to desired node
         return rawCoordsTraversed
 
-    def obstacle_path_v2(self):
-        "Main LFS search function"
-        queue = self.traversalPath[:] #make a copy of traversal list
-        closed = []
-        current_node = self.robot_starting_position
-
-        while queue:
-            next = queue.pop() #Next node to visit
-
-            if next.getProbability() == 1: # if closed, then skip it
-                continue
-
-            self.check_for_obstacle(vertex) # obstacle detection real time
-            if next.getProbability() == 2: # next is an obstacle node
-                goal = queue.pop() #update node to travel to to be the next NEXT
-                # begin a* with goal node
-                branched = encircle_obstacle(current_node, queue)
-                # AT THIS LINE NOT SURE IF WE PASS IN CURRENT OR NEXT
-                obstacle_coordinates += branched #keep track of nodes traveled
-
-            #a* returns which means encircling is complete
-            (x,y) = next.getCoords()
-
-            closed.append(next)
-            self.moveRobotToCoordinate(next, current_node)
-            #stop function
-
-            current_node = next # succssfully moved to desired node
-        return rawCoordsTraversed
-
-    # def encircle_obstacle_v2(self,current_node,queue):
-    #     #We want to get to the node after the blocked node
-    #     branched_path = [] #nodes we travel to in this iteration
-    #     goal_node = queue.pop()
-    #
-    #     while (current_node.getCoords() != goal_node.getCoords()):
-    #         choose_optimal_neighbor(current_node, goal_node)
-    #         moveRobotToCoordinates(choose_optimal_neighbor.getCoords())
-    #         branched_path.append(choose_optimal_neighbor)
-    #         current_node = choose_optimal_neighbor
-    #     return branched_path
-
     #corner case: going back and forth repeatedly
     def encircle_obstacle(self,current_node,queue):
         #We want to get to the node after the blocked node
