@@ -92,8 +92,8 @@ def turnRight():
     p1 = GPIO.PWM(enA, 1000) #1000Hz (Arduino Uno is 976)
     p2 = GPIO.PWM(enB, 1000) #1000Hz (Arduino Uno is 976)
 
-    p1.start(98) #98% on. Equivalent to 250/255 in arduino
-    p2.start(59) #59% on. Equivalent to 150/255 in arduino
+    self.p1.start(98) #98% on. Equivalent to 250/255 in arduino
+    self.p2.start(59) #59% on. Equivalent to 150/255 in arduino
     """
 
 def stop():
