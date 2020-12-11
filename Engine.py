@@ -40,34 +40,38 @@ import csv
 
 
 if __name__ == "__main__":
-    # longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
+    longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
 
-    # # Create graph object given longitute and latitude coordinates from user input.
-    # graph = Graph(longMin, longMax, latMin, latMax)
-    # queue = deque(list.copy.deepcopy(graph.traversalPath))
+    # Create graph object given longitute and latitude coordinates from user input.
+    graph = Graph(longMin, longMax, latMin, latMax)
+    queue = deque(list.copy.deepcopy(graph.traversalPath))
 
-    # while queue:
-    #     next_node = queue.popleft() #Next node to visit
-    #     if next_node.get_status() == 1: # if closed, then skip it
-    #         continue
-    #     # check for obstacle 
-    #     elif next_node.get_status() == 0:
-
-    #         # open csv
-    #         with open('longsandlats.csv', newline='') as csvfile:
-    #             spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-    #             for row in spamreader:
-    #                 print(', '.join(row))
-    #         # get latitude and longitude from csv (last line)
+    while queue:
+        next_node = queue.popleft() #Next node to visit
+        if next_node.get_status() == 1: # if closed, then skip it
+            continue
+        # check for obstacle 
+        elif next_node.get_status() == 0:  
+            predicted_loc = update_step()
             
-    #         predicted_loc = 
-    #         while not check:
-    #             self.ser.write(b'F')
 
-    with open('longandlats.csv', newline='') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-        for row in spamreader:
-            print(', '.join(row))
+            #math.dist([Px, Py], [Qx, Qy]) 
+            #distance_from_target = math.dist(predicted_loc, next_node.get_coords)
+            
+            #distance_from_target <- get pythogerean distance from target in meters
+            distance_from_target = geopy.distance.distance(predicted_loc,next_node.get_coords).meters
+            gps_noise_range = 3
+            while distance_from_target <  gps_noise_range:
+                self.ser.write(b'F')
+                predicted_loc = update_step()
+                distance_from_target = geopy.distance.distance(predicted_loc,next_node.get_coords).meters
+            # Add support for turning L and R.
+
+    # with open('longandlats.csv', newline='') as csvfile:
+    #     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        
+    #     for row in spamreader:
+    #         print(', '.join(row))
             
  
 
