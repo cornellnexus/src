@@ -7,13 +7,13 @@ class Node:
         status: current status of the node
             [0 = not traversed, 1 = traversed, 2 = obstacle] """
 
-    def __init__(self, x, y, status = 0):
-        self.long = x
+    def __init__(self, y, x, status = 0):
         self.lat = y
+        self.long = x
         self.status = status
 
     def get_coords(self):
-        return (self.long, self.lat)
+        return (self.lat, self.long)
 
     def get_status(self):
         return self.status
@@ -27,7 +27,7 @@ class Node:
         else:
           return False
 
-    def __repr__(self):
+    def __repr__(self): 
         return "".join("("+str(self.long)+","+str(self.lat)+")")
 
     
