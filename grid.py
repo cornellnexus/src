@@ -84,37 +84,3 @@ class Grid:
         self.lat_step, self.long_step, self.row_num, self.col_num = calc_step(lat_min, lat_max, long_min, long_max)
         self.traversal_path, self.nodes_dict, self.true_min_lat, self.true_max_lat = generate_nodes(
             lat_min, long_min, self.row_num, self.col_num, self.lat_step, self.long_step)
-
-
-# TEST CASE
-g = Grid(-76.488495, -76.488419, 42.444496, 42.444543)
-print(g.traversal_path)
-
-testlist = []
-xlist = []
-ylist = []
-
-for node in g.traversal_path:
-    coords = node.get_coords()
-    xlist.append(coords[1])
-    ylist.append(coords[0])
-
-plt.plot(xlist, ylist, marker='o', markerfacecolor='blue')
-plt.ylim(-76.488500,-76.488400)
-plt.xlim(42.444444,42.444590)
-plt.show()
-
-# g = Graph(42.4596, 42.4642, -76.5119, -76.5013)
-
-# testlist = []
-# xlist = []
-# ylist = []
-
-# for node in g.traversal_path:
-#     coords = node.get_coords()
-#     xlist.append(coords[0])
-#     ylist.append(coords[1])
-
-# plt.plot(xlist, ylist, marker='o', markerfacecolor='blue')
-# plt.ylim(-76.5149, -76.5000)
-# plt.xlim(42.4580, 42.4650)# g = Graph(42.444496,42.444543, -76.488495, -76.488419)

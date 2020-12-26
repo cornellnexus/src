@@ -17,7 +17,7 @@ class Node:
 
     def get_status(self):
         return self.status
-        
+
     def set_status(self, new_status):
         self.status = new_status
 
@@ -27,11 +27,10 @@ class Node:
         else:
           return False
 
-    def __repr__(self): 
-        return "".join("("+str(self.long)+","+str(self.lat)+")")
+    def __repr__(self):
+        return "".join("("+str(self.lat)+","+str(self.long)+")")
 
-    
+
 
     # def __str__(self):
     #     return "[(" + str(self.long) + ", " + str(self.lat) + ") --> " + str(self.neighbors) + "]"
-
