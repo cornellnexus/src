@@ -6,6 +6,7 @@ import geopy.distance
 import matplotlib.pyplot as plt
 from math import log
 import time
+from haversine import haversine, Unit
 
 
 class Grid:
@@ -40,11 +41,11 @@ class Grid:
         self.obstacle_length_limit = 10
 
         def calc_step(lat_min, lat_max, long_min, long_max):
-            lat_range = geopy.distance.distance(
-                (long_min, lat_min), (long_min, lat_max)).meters
+            lat_range = haversine(
+                (long_min, lat_min), (long_min, lat_max), unit = Unit.METERS)
             print(str(lat_range))
-            long_range = geopy.distance.distance(
-                (long_min, lat_min), (long_max, lat_min)).meters
+            long_range = haversine(
+                (long_min, lat_min), (long_max, lat_min), unit = Unit.METERS)
 
             # Underestimate to achieve integer number of rows and columns
             # 1.8288 meters is 6 feet
