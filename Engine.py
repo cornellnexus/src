@@ -32,8 +32,7 @@ if __name__ == "__main__":
         gps_noise_range = 3
 
         # while robot is too far away from target node
-        while distance_from_target > gps_noise_range + .1 or\
-                distance_from_target < gps_noise_range - .1:
+        while distance_from_target > gps_noise_range:
             # move forward command; talk to electrical about moving
             ser.write(b'MF')
             predicted_loc = update_step()
