@@ -39,8 +39,8 @@ while True:
     e1_error = TARGET - e1.value
     e2_error = TARGET - e2.value
 
-    m1_speed += (e1_error * KP) + (e1_prev_error * KD) + (e1_sum_error * KI)
-    m2_speed += (e2_error * KP) + (e1_prev_error * KD) + (e2_sum_error * KI)
+    m1_speed += (e1_error * KP) + ((e1_error - e1_prev_error)/ SAMPLETIME) * KD + (e1_sum_error * KI)
+    m2_speed += (e2_error * KP) + ((e2_error - e2_prev_error)/ SAMPLETIME) * KD  + (e2_sum_error * KI)
 
     m1_speed = max(min(1, m1_speed), 0)
     m2_speed = max(min(1, m2_speed), 0)
