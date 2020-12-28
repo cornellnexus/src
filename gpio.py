@@ -1,3 +1,5 @@
+""" This module contains all the pinout establishments and setup functions """
+
 import RPi.GPIO as GPIO
 import time
 
@@ -16,6 +18,8 @@ imu_scl = 5
 #Sonar
 sonar_trig = 16
 sonar_echo = 18 #double check this order
+
+#RF Module 
 
 def setup():
     GPIO.setmode(GPIO.BOARD)

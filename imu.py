@@ -1,10 +1,12 @@
+"""This module serially reads the data from the IMU sensors""" 
+
 import time
 import board
 import busio
 import adafruit_lsm9ds1
 from gpio import * 
 
-# establishing I2C connection:
+# establishing I2C connection (moved this to gpio.py):
 i2c = busio.I2C(board.SCL, board.SDA)
 sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
 

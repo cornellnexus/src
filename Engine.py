@@ -7,6 +7,7 @@ from collections import deque
 import csv
 import geopy
 from rpi_read import *
+import gps #temporary import for update_step() placement for kalman filter
 from commands import * 
 
 if __name__ == "__main__":
@@ -22,7 +23,7 @@ if __name__ == "__main__":
         target_coords = target_node.get_coords()
         # update_step writes to CSV file,
         # returns GPS data in the form (lat,long)
-        predicted_loc = update_step()
+        predicted_loc = gps.update_step()
 
         # distance_from_target <- get pythagerean distance from target in meters
         # must be in form latitude,longitude.

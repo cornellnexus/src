@@ -1,4 +1,4 @@
-#This module contains commands to physically move the robot. 
+""" Module contains commands to physically move the robot. """
 
 # TODO: 
 # turnLeft(): change the number of seconds the robot turns to get 90º
