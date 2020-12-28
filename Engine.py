@@ -7,6 +7,7 @@ from collections import deque
 import csv
 import geopy
 from rpi_read import *
+from commands import * 
 
 if __name__ == "__main__":
     longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()

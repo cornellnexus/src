@@ -10,31 +10,37 @@ enA = 35
 enB = 37
 
 #IMU
-imu_tx = 14
-imu_rx  = 15
+imu_sda = 3
+imu_scl = 5
 
 #Sonar
-sonar_trig = 23
-sonar_echo = 24
+sonar_trig = 16
+sonar_echo = 18 #double check this order
 
 #TODO:
 #No Module GPIO
 #pulseIn for sonar sensor
 #Time for each turn (to makes sure robot turns ie. 90º exactly
-#PWM frequency for how fast wheels are moving
-#Double Check the tx, rx for the IMU (is IMU UART?)
 
 def setup():
     GPIO.setmode(GPIO.BOARD)
-    #Motor Driver 
+    #Motor Driver
     GPIO.setup([in1, in2, in3, in4], GPIO.OUT, initial=GPIO.LOW) #In1, In2, In3, In4
     GPIO.setup([enA, enB], GPIO.OUT) #EnA, EnB
+
+    e1 = GPIO.PWM(enA, 600)    # create object D2A for PWM on port 25 at 1KHz
+    e2 = GPIO.PWM(enB, 600)
+
+    e1.start(100)
+    e2.start(100)
 
     #IMU
     GPIO.setup(imu_tx, GPIO.OUT)
     GPIO.setup(imu,rx, GPIO.IN)
-    # Telemetry
+
+    # RF 
     # GPS
+    
     # Sonar
     GPIO.setup(sonar_trig, GPIO.OUT)
     GPIO.setup(sonar_echo, GPIO.IN)
