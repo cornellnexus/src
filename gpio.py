@@ -20,6 +20,8 @@ sonar_trig = 16
 sonar_echo = 18 #double check this order
 
 #RF Module 
+rf_tx = 8
+rf_rx = 10
 
 def setup():
     GPIO.setmode(GPIO.BOARD)
