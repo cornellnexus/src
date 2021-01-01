@@ -2,6 +2,7 @@
 
 import time 
 import serial 
+from gpio import * 
 
 
 # Replace "replace" with Computer port
