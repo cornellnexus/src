@@ -13,7 +13,7 @@ def stop():
     GPIO.output([in1, in2, in3, in4],GPIO.LOW)
 
 # moves the robot forward 
-def goForward():
+def go_forward():
     GPIO.output([in1, in4],GPIO.LOW)
     GPIO.output([in2, in3], GPIO.HIGH)
 
@@ -23,13 +23,13 @@ def reverse():
     GPIO.output([in1, in4],GPIO.HIGH)
 
 # turns the robot left for 1 second 
-def turnLeft():
+def turn_left():
     GPIO.output([in2, in4],GPIO.LOW)
     GPIO.output([in1, in3], GPIO.HIGH)
     time.sleep(1)
 
 # turns the robot right for 1 second 
-def turnRight():
+def turn_right():
     GPIO.output([in1, in3],GPIO.LOW)
     GPIO.output([in2, in4], GPIO.HIGH)
     time.sleep(1)
@@ -42,9 +42,9 @@ def pause():
 # testing the functions to run under 10 seconds 
 stopTime = time.time() + 10
 while time.time() < stopTime:
-#     turnLeft()
+#     turn_left()
 #     pause()
-#     goForward()
+#     go_forward()
 #     stop()
 # e1.stop()
 # e2.stop()
