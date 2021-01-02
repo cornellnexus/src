@@ -43,8 +43,9 @@ if __name__ == "__main__":
 
         # Add support for turning L and R.
         if target_coords[1] == g.true_max_lat:
+            # Make sure it stops rotating after 90 degrees!
             print("Turn right")
-        elif target_coords[1] == g.true_min_lat:
+        elif target_coords[0] != g.true_min_long and target_coords[1] == g.true_min_lat:
             print("Turn left")
 
 # engine = Engine()

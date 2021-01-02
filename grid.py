@@ -63,6 +63,7 @@ class Grid:
             traversal_path = []
             nodes_dict = {}
 
+            true_min_long = start_long
             true_min_lat = start_lat
             true_max_lat = start_lat + (row_num - 1) * lat_step
 
@@ -82,5 +83,5 @@ class Grid:
             return traversal_path, nodes_dict, true_min_lat, true_max_lat
 
         self.lat_step, self.long_step, self.row_num, self.col_num = calc_step(lat_min, lat_max, long_min, long_max)
-        self.traversal_path, self.nodes_dict, self.true_min_lat, self.true_max_lat = generate_nodes(
+        self.traversal_path, self.nodes_dict, self.true_min_lat, self.true_max_lat, self.true_min_long = generate_nodes(
             lat_min, long_min, self.row_num, self.col_num, self.lat_step, self.long_step)

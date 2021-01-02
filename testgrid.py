@@ -17,9 +17,10 @@ def graph_traversal_path(traversal_path):
     plt.ylim(min(ylist) - 0.00001,max(ylist) + 0.00001)
     plt.xlim(min(xlist) - 0.00001,max(xlist) + 0.00001)
     plt.show()
-    plt.clf()
-    plt.cla()
+    # plt.clf()
+    # plt.cla()
     plt.close()
+
 
 class TestGenerateNodes(unittest.TestCase):
     def test_jessica_house(self):
