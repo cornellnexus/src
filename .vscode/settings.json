@@ -1,3 +1,4 @@
 {
-  "python.pythonPath": "/Users/jonathan/opt/anaconda3/envs/geo_env/bin/python"
+  "python.pythonPath": "/System/Library/Frameworks/Python.framework/Versions/2.7/Resources/Python.app/Contents/MacOS/Python",
+  "python.formatting.provider": "black"
 }

@@ -1,3 +1,7 @@
+""" This controller module for detecting if a robot is moving straight
+    using encoder data from motors
+"""
+
 from gpiozero import Robot, DigitalInputDevice
 from time import sleep
 
