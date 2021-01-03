@@ -41,7 +41,7 @@ def pause():
 
 # testing the functions to run under 10 seconds 
 stopTime = time.time() + 10
-while time.time() < stopTime:
+# while time.time() < stopTime:
 #     turn_left()
 #     pause()
 #     go_forward()
