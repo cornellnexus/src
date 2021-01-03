@@ -20,5 +20,5 @@ while True:
 ############################### Testing GPIO #################################
 setup()
 while True:
-    goForward()
+    go_forward()
 
