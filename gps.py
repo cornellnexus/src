@@ -1,4 +1,4 @@
-""" Module that includes functions for GPS sensor """
+""" Module that includes functions for GPS sensor  """
 
 import os, sys
 import serial
