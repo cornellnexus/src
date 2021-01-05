@@ -1,7 +1,10 @@
 """ This module imports serial data from sonar sensor """
 
 # TODO: figure out the Pulse_in function originally in Arduino code. 
-from gpio import * 
+from gpio import *
+
+GPIO.setup(sonar_trig, GPIO.OUT)
+GPIO.setup(sonar_echo, GPIO.IN)
 
 sleep_time = 2*(10**-6) #2 microseconds
 hold_sound_time = 10*(10**-6)

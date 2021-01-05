@@ -8,6 +8,35 @@ import RPi.GPIO as GPIO
 import time
 from gpio import *
 
+
+#testing
+in1 = 5
+in2 = 6
+in3 = 19
+in4 = 26
+enA = 13
+enB = 12
+
+
+GPIO.setmode(GPIO.BCM)
+#Motor Driver
+GPIO.setup([in1, in2, in3, in4], GPIO.OUT, initial=GPIO.LOW) #In1, In2, In3, In4
+GPIO.setup([enA, enB], GPIO.OUT) #EnA, EnB
+
+e1 = GPIO.PWM(enA, 600)    # create object D2A for PWM on port 25 at 1KHz
+e2 = GPIO.PWM(enB, 600)
+
+e1.start(100)
+e2.start(100)
+
+
+
+
+#-----
+
+
+
+
 # stops the robot 
 def stop():
     GPIO.output([in1, in2, in3, in4],GPIO.LOW)
@@ -40,15 +69,20 @@ def pause():
     time.sleep(0.2)
 
 # testing the functions to run under 10 seconds 
-stopTime = time.time() + 10
+# stopTime = time.time() + 1
 # while time.time() < stopTime:
+#     go_forward()
+# 
+# stop()
 #     turn_left()
 #     pause()
 #     go_forward()
-#     stop()
 # e1.stop()
 # e2.stop()
 
+print(time.time())
+print(time.time() + 1) 
+
 # cleans up all the ports used for motor driver 
-GPIO.cleanup()
+# GPIO.cleanup()
 

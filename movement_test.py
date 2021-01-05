@@ -8,11 +8,12 @@ import os, sys
 import time
 import csv
 
+from commands import *
 
 
 #comment out one of the tests to run
 ############################### Testing GPS ##################################
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 5)
+# ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 5)
 
 def print_gps(str):
     if str.find('GGA') > 0:
@@ -28,7 +29,11 @@ def print_gps(str):
 #     print_gps(decoded_line)
   
 ############################### Testing GPIO #################################
-setup()
-while True:
-    go_forward()
+# setup()
+stopTime = time.time() + 10
+while time.time() < stopTime:
+#     go_forward()
+    stop()
+
+# stop()
 
