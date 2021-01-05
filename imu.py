@@ -15,20 +15,28 @@ from gpio import *
 # print(sensor.temperature)
 
 i2c = busio.I2C(imu_scl, imu_sda)
-sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
 
+accelerometer = imu.acceleration
+magnetometer = imu.magnetic
+gyroscope = imu.gyro
+temp = imu.temperature
 
-while True:
-    acceleration = sensor.acceleration
-    magnetometer = sensor.magnetic
-    gyroscope = sensor.gyro
-    temp = sensor.temperature
+def map_iterator(map):
+    for data in map:
+        print(str(data) + " ")
+    print(' ')
 
-    print("Acceleration (m/s^2):" + str(acceleration)) 
-    print("Magnetometer (gauss):" + str(magnetometer))
-    print("Gyroscope (degrees/sec)" + str(gyroscope))
-    print("Temperature (C)" + str(temp))
-    print("--------------------")
-    time.sleep(0.2)
+def print_imu_data():
+    map_iterator(accelerometer)
+#     print('Acceleration (m/s^2): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(accelerometer))
+#     print('Magnetometer (gauss): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(magnetometer))
+#     print('Gyroscope (degrees/sec): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(gyroscope))
+#     print('Temperature: {0:0.3f}C'.format(temperature))
 
-    time.sleep(1)
+print_imu_data()
+
+# while True:
+#     
+# 
+#     time.sleep(1)
