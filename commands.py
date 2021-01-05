@@ -9,13 +9,6 @@ import time
 from gpio import *
 
 
-#testing
-in1 = 5
-in2 = 6
-in3 = 19
-in4 = 26
-enA = 13
-enB = 12
 
 
 GPIO.setmode(GPIO.BCM)
@@ -28,13 +21,6 @@ e2 = GPIO.PWM(enB, 600)
 
 e1.start(100)
 e2.start(100)
-
-
-
-
-#-----
-
-
 
 
 # stops the robot 
@@ -80,8 +66,6 @@ def pause():
 # e1.stop()
 # e2.stop()
 
-print(time.time())
-print(time.time() + 1) 
 
 # cleans up all the ports used for motor driver 
 # GPIO.cleanup()

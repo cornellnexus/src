@@ -17,25 +17,28 @@ from gpio import *
 i2c = busio.I2C(imu_scl, imu_sda)
 imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
 
-accelerometer = imu.acceleration
-magnetometer = imu.magnetic
-gyroscope = imu.gyro
+accelerometer = list(imu.acceleration)
+magnetometer = list(imu.magnetic)
+gyroscope = list(imu.gyro)
 temp = imu.temperature
 
-def map_iterator(map):
-    for data in map:
-        print(str(data) + " ")
-    print(' ')
+#this function is used to pretty print lists with three componenents (x, y, z) for coordinate labelling
+def pretty_print(list):
+#     data = [l
+    #TODO: make imu data into a dictionary to include all sensors together? need to add temp? 
+    coords = ["x: " + str(list[0]) + ", " + "y: " + str(list[1]) + ", " + "z: " + str(list[2])]
+    print(coords)
+    
+def imu_print():
+    pretty_print(accelerometer)
+    pretty_print(magnetometer)
+    pretty_print(gyroscope)
+    #TODO: add csv write functionality for IMU noise
 
-def print_imu_data():
-    map_iterator(accelerometer)
-#     print('Acceleration (m/s^2): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(accelerometer))
-#     print('Magnetometer (gauss): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(magnetometer))
-#     print('Gyroscope (degrees/sec): ({0:0.3f},{1:0.3f},{2:0.3f})'.format(gyroscope))
-#     print('Temperature: {0:0.3f}C'.format(temperature))
 
-print_imu_data()
-
+while True:
+    imu_print()
+    time.sleep(0.2)
 # while True:
 #     
 # 

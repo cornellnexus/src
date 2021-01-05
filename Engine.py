@@ -35,22 +35,24 @@ if __name__ == "__main__":
         # while robot is too far away from target node
         while distance_from_target > gps_noise_range:
             # move forward command; talk to electrical about moving
-            #move_forward() 
+            move_forward() 
             print("Move forward")
             predicted_loc = update_step()
             distance_from_target = geopy.distance.distance(predicted_loc,
                                                            target_node.get_coords).meters
-        #stop()
+        stop()
         print("STOP")
         # We are currently at target node (next_node)
         print("Reached node at" + str(target_coords))
 
         # Add support for turning L and R.
         if target_coords[1] == g.true_max_lat:
-            # turn_right()
+            turn_right()
+            time.sleep(1)
             print("Turn right")
         elif target_coords[1] == g.true_min_lat:
-            # turn_left()
+            turn_left()
+            time.sleep(1)
             print("Turn left")
 
 # engine = Engine()
