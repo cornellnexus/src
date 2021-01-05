@@ -8,16 +8,14 @@ import csv
 from gpio import *
 
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 5)
-
+csv_data = []
+num_coords = 5
 
 def parse_gps(str):
     if str.find('GGA') > 0: 
         msg = pynmea2.parse(str)
         data = (msg.longitude, msg.latitude)
         return(data)
-#     print("GGA not found")
-
-
 
 def update_step():
     line = str(ser.readline())
@@ -31,11 +29,6 @@ def update_step():
         csv_data.append(coord)
         print(csv_data)
 
-
-csv_data = []
-num_coords = 5
-
-# update_step()
 def write_to_csv(csv_data):
     while len(csv_data) < num_coords:
         update_step()
@@ -44,3 +37,7 @@ def write_to_csv(csv_data):
             gps_file.write(str(coord) + '\n')
             
 write_to_csv(csv_data)
+
+# while True:
+#     update_step()
+#     time.sleep(0.2)

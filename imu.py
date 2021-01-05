@@ -6,14 +6,6 @@ import busio
 import adafruit_lsm9ds1
 from gpio import * 
 
-# i2c = busio.I2C(board.SCL, board.SDA)
-# sensor = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
-
-# print(sensor.acceleration)
-# print(sensor.magnetic)
-# print(sensor.gyro)
-# print(sensor.temperature)
-
 i2c = busio.I2C(imu_scl, imu_sda)
 imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
 
@@ -22,24 +14,42 @@ magnetometer = list(imu.magnetic)
 gyroscope = list(imu.gyro)
 temp = imu.temperature
 
-#this function is used to pretty print lists with three componenents (x, y, z) for coordinate labelling
+csv_data = []
+num_data = 2 # minimum for good gaussian plot = 30 
+
+#[pretty_print(list)] is used to pretty print a [list] with three componenents 
+# (x, y, z) for coordinate labelling
 def pretty_print(list):
-#     data = [l
-    #TODO: make imu data into a dictionary to include all sensors together? need to add temp? 
-    coords = ["x: " + str(list[0]) + ", " + "y: " + str(list[1]) + ", " + "z: " + str(list[2])]
-    print(coords)
-    
-def imu_print():
-    pretty_print(accelerometer)
-    pretty_print(magnetometer)
-    pretty_print(gyroscope)
-    #TODO: add csv write functionality for IMU noise
+    coords = {
+      "x" : list[0], 
+      "y" : list[1], 
+      "z" : list[2]
+    }
+    return coords
 
+#[imu_print()] takes type unit and prints a dictionary of combined imu data 
+def imu_format():
+    imu_dict = {
+      "acc" : pretty_print(accelerometer),
+      "mag" : pretty_print(magnetometer),
+      "gyro" : pretty_print(gyroscope), 
+      "temp" : temp
+    }
+    return imu_dict
 
-while True:
-    imu_print()
-    time.sleep(0.2)
+# [write_to_csv(data_lst) writes to "imu_noise.csv" imu data elements in 
+# [data_lst]
+def write_to_csv(data_lst): 
+  while len(data_lst) < num_data: 
+    data_lst.append(imu_format())
+  with open('imu_noise.csv', 'w') as imu_file:
+    for data in data_lst: 
+      imu_file.write(str(data) + '\n')
+
+            
+write_to_csv(csv_data)
+
 # while True:
-#     
-# 
-#     time.sleep(1)
+#     imu_format()
+#     time.sleep(0.2)
+
