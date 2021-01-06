@@ -5,6 +5,7 @@ import serial
 import time
 import pynmea2
 import csv
+from gps import *
 from imu import * 
 
 # ---------------------------- GPS module -------------------------------------

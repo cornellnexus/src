@@ -28,6 +28,8 @@ def update_step():
     if isinstance(coord, tuple):
         csv_data.append(coord)
         print(csv_data)
+    return(coord)
+        
 
 def write_to_csv(csv_data):
     while len(csv_data) < num_coords:
