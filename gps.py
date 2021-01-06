@@ -9,7 +9,7 @@ from gpio import *
 
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 5)
 csv_data = []
-num_coords = 5
+num_coords = 30
 
 def parse_gps(str):
     if str.find('GGA') > 0: 
