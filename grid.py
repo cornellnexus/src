@@ -80,8 +80,16 @@ class Grid:
                         node = Node(lat_pos, long_pos)
                         traversal_path.append(node)
                         nodes_dict[node.get_coords()] = node
-            return traversal_path, nodes_dict, true_min_lat, true_max_lat
+            return traversal_path, nodes_dict, true_min_lat, true_max_lat, true_min_long
 
         self.lat_step, self.long_step, self.row_num, self.col_num = calc_step(lat_min, lat_max, long_min, long_max)
         self.traversal_path, self.nodes_dict, self.true_min_lat, self.true_max_lat, self.true_min_long = generate_nodes(
             lat_min, long_min, self.row_num, self.col_num, self.lat_step, self.long_step)
+
+g = Grid(-76.4,-76.2,42.0,42.4)
+# print(g.traversal_path)
+
+# g = Grid(0,0.01,0,0.01)
+# g = Grid(42.4596, 42.4642, -76.5119, -76.5013)
+
+print(g.traversal_path)
