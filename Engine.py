@@ -6,7 +6,6 @@ from grid import *
 from collections import deque
 import csv
 import geopy
-from rpi_read import *
 import gps #temporary import for update_step() placement for kalman filter
 from commands import * 
 
@@ -37,7 +36,7 @@ if __name__ == "__main__":
             # move forward command; talk to electrical about moving
             move_forward() 
             print("Move forward")
-            predicted_loc = update_step()
+            predicted_loc = gps.update_step()
             distance_from_target = geopy.distance.distance(predicted_loc,
                                                            target_node.get_coords).meters
         stop()
@@ -48,11 +47,9 @@ if __name__ == "__main__":
         # Add support for turning L and R.
         if target_coords[1] == g.true_max_lat:
             turn_right()
-            time.sleep(1)
             print("Turn right")
         elif target_coords[1] == g.true_min_lat:
             turn_left()
-            time.sleep(1)
             print("Turn left")
 
 # engine = Engine()

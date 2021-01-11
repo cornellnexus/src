@@ -1,9 +1,5 @@
 """ Module contains commands to physically move the robot. """
 
-# TODO: 
-# turnLeft(): change the number of seconds the robot turns to get 90º
-# turnRight(): change the number of seconds the robot turns to get 90º 
-
 import RPi.GPIO as GPIO
 import time
 from gpio import *
@@ -58,14 +54,9 @@ def pause():
 # stopTime = time.time() + 1
 # while time.time() < stopTime:
 #     go_forward()
-# 
+# # 
 # stop()
-#     turn_left()
-#     pause()
-#     go_forward()
-# e1.stop()
-# e2.stop()
-
+# 
 
 # cleans up all the ports used for motor driver 
 # GPIO.cleanup()

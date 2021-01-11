@@ -4,10 +4,10 @@
 import RPi.GPIO as GPIO
 import time
 
-import time
-import board
-import busio
-import adafruit_lsm9ds1
+# import time
+# import board
+# import busio
+# import adafruit_lsm9ds1
 
 
 #Motor Driver
