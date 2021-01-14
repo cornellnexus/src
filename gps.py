@@ -38,8 +38,8 @@ def write_to_csv(csv_data):
         for coord in csv_data:
             gps_file.write(str(coord) + '\n')
             
-# write_to_csv(csv_data)
+write_to_csv(csv_data)
 
-while True: 
-    write_to_csv(csv_data)
+# while True: 
+#     write_to_csv(csv_data)
  
