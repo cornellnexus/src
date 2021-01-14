@@ -15,7 +15,7 @@ gyroscope = list(imu.gyro)
 temp = imu.temperature
 
 csv_data = []
-collect_time = time.time() + 300
+collect_time = time.time() + 240 #collect data for four minutes 
 
 
 #[pretty_print(list)] is used to pretty print a [list] with three componenents 
@@ -53,5 +53,5 @@ def write_to_csv(data_lst):
 
 while True:
     write_to_csv(csv_data)
-    time.sleep(5)
+    time.sleep(10)
 
