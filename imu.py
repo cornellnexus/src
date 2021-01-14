@@ -15,7 +15,8 @@ gyroscope = list(imu.gyro)
 temp = imu.temperature
 
 csv_data = []
-num_data = 30 # minimum for good gaussian plot = 30 
+collect_time = time.time() + 60
+
 
 #[pretty_print(list)] is used to pretty print a [list] with three componenents 
 # (x, y, z) for coordinate labelling
@@ -39,18 +40,17 @@ def imu_format():
     return imu_dict
 
 # [write_to_csv(data_lst) writes to "imu_noise.csv" imu data elements in 
-# [data_lst]
+# data_lst
+
 def write_to_csv(data_lst): 
-  while len(data_lst) < num_data: 
+  while time.time() < collect_time: 
     data_lst.append(imu_format())
   with open('imu_noise.csv', 'w') as imu_file:
     for data in data_lst: 
       imu_file.write(str(data) + '\n')
-
             
-write_to_csv(csv_data)
+# write_to_csv(csv_data)
 
 while True:
     write_to_csv(csv_data)
-    time.sleep(1)
 
