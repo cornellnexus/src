@@ -15,7 +15,7 @@ gyroscope = list(imu.gyro)
 temp = imu.temperature
 
 csv_data = []
-collect_time = time.time() + 240 #collect data for four minutes 
+collect_time = time.time() + 60 #collect data for one minute 
 
 
 #[pretty_print(list)] is used to pretty print a [list] with three componenents 
@@ -48,10 +48,6 @@ def write_to_csv(data_lst):
   with open('imu_noise.csv', 'w') as imu_file:
     for data in data_lst: 
       imu_file.write(str(data) + '\n')
+      time.sleep(1)
             
-# write_to_csv(csv_data)
-
-while True:
-    write_to_csv(csv_data)
-    time.sleep(10)
-
+write_to_csv(csv_data)
