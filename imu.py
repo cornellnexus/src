@@ -53,5 +53,5 @@ def write_to_csv(data_lst):
 
 while True:
     write_to_csv(csv_data)
-    time.sleep()
+    time.sleep(5)
 
