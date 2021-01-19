@@ -9,7 +9,7 @@ from gpio import *
 
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 5)
 csv_data = []
-num_coords = 30
+collect_time = time.time() + 60
 
 def parse_gps(str):
     if str.find('GGA') > 0: 
@@ -32,7 +32,7 @@ def update_step():
         
 
 def write_to_csv(csv_data):
-    while len(csv_data) < num_coords:
+    while time.time() < collect_time:
         update_step()
     with open('gps_noise.csv','w') as gps_file:
         for coord in csv_data:
@@ -40,6 +40,6 @@ def write_to_csv(csv_data):
             
 write_to_csv(csv_data)
 
-# while True:
-#     update_step()
-#     time.sleep(0.2)
+# while True: 
+#     write_to_csv(csv_data)
+ 
