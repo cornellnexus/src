@@ -20,18 +20,13 @@ site I used to help understand things --> https://github.com/kriswiner/MPU6050/w
 
 i2c = busio.I2C(board.SCL, board.SDA)
 
-magnetometer = gyro_accel = LSM9DS1_I2C(i2c)
-############################
-# Magnetometer #
-############################
-mag_x, mag_y, mag_z = magnetometer.magnetic
+accelerometer = magnetometer = gyro_accel = LSM9DS1_I2C(i2c)
 
-print("Magnetometer: X: {0:8.2f}, Y:{1:8.2f}, Z:{2:8.2f} uT".format(
-            mag_x, mag_y, mag_z))
+while time.time() < time.time() + 60: 
+  acc_x, acc_y, acc_z = accelerometer.acceleration
+  print("Accelerometer: X: {0:8.2f}, Y:{1:8.2f}, Z:{2:8.2f} rad/s".format(acc_x, acc_y, acc_z))
+  gyro_x, gyro_y, gyro_z = gyro_accel.gyro
+  print("Gyroscope: X: {0:8.2f}, Y:{1:8.2f}, Z:{2:8.2f} rad/s".format(gyro_x, gyro_y, gyro_z))
+  mag_x, mag_y, mag_z = magnetometer.magnetic
+  print("Magnetometer: X: {0:8.2f}, Y:{1:8.2f}, Z:{2:8.2f} uT".format(mag_x, mag_y, mag_z))
 
-#########################
-# Gyroscope Calibration #
-#########################
-
-gyro_x, gyro_y, gyro_z = gyro_accel.gyro
-print("Gyroscope: X: {0:8.2f}, Y:{1:8.2f}, Z:{2:8.2f} rad/s".format(gyro_x, gyro_y, gyro_z))
