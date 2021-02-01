@@ -4,6 +4,8 @@ import board
 import busio
 from adafruit_lsm9ds1 import LSM9DS1_I2C
 
+#random change message 
+
 # --------------------------------READ ME BEFORE LOOKING AT CODE-------------------------------
 """
 Most of this code came from this website: https://learn.adafruit.com/adafruit-sensorlab-magnetometer-calibration/calibration-with-raspberry-pi-using-blinka.
