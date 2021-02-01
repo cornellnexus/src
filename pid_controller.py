@@ -44,7 +44,8 @@ while True:
     e2_error = TARGET - e2.value
 
 
-    # Potential Fix: the integral branch doesn't seem to be taking integral, it's just summing up the errors. I think the example code simplifies it to sum of error instead of actually taking integral
+    # Potential Fix: the integral branch doesn't seem to be taking integral, it's just summing up the errors. 
+    # I think the example code simplifies it to sum of error instead of actually taking integral
     # e1_integral = e1_integral_prior + e1_error * SAMPLETIME
     # e2_integral = e2_integral_prior + e2_error * SAMPLETIME
     
