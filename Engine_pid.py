@@ -1,4 +1,4 @@
-from collections import deque
+ from collections import deque
 import numpy as np
 import random
 import time 
@@ -82,61 +82,81 @@ def graph_traversal_path(traversal_path):
 
 if __name__ == "__main__":
     #longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
-
+    loc_pid = PID(Kp = 0.02, Ki = 0.005, Kd = 0.0, target = 0, sample_time = 0.01, output_limits = (None, None))
+    head_pid = PID(Kp = 0.02, Ki = 0.005, Kd = 0.0, target = 0, sample_time = 0.01, output_limits = (None, None))
     g = generate_nodes()
     queue = deque(g)
     r = Robot()
-    print("Beginning movement")
-    history = []
-    while queue:
-        print("Selecting new nodes")
-        target_coords = queue.popleft()  # Next node to visit from grid
-        
-        # returns GPS data in the form (lat,long)
-        #predicted_loc = update_step() # robot
-        predicted_loc = r.get_position()
 
-        # must be in form latitude,longitude.
-        # distance_from_target = 1
+    while queue:
+        target_coords = queue.popleft()  # Next node to visit from grid
+        # returns GPS data in the form (lat,long)
+        predicted_loc = r.get_position() #robot 
+        predicted_head = r.get_heading() # Dummy function
+
         #distance formula 
         def get_distance(x_targ,x_pred, y_targ,y_pred):
             return math.sqrt((x_targ-x_pred)**2 + (y_targ-y_pred)**2)
-        # distance should be close to 1 
-        distance_from_target = \
+        # distance should be close to 1 (??? explain pls)
+        # # TODO: confirm location error = pythagorean or 2d? 
+        location_error = \
             get_distance(target_coords[0],predicted_loc[0],\
             target_coords[1],predicted_loc[1])
-        gps_noise_range = 0
-        # gps_noise_range = 0.13
+        allowed_error = 0 #TODO: measure this
 
         # while robot is too far away from target node
-        while distance_from_target > gps_noise_range:
+        while location_error > allowed_error:
+            loc_pid = loc_pid.set_target(target_coords)
+            head_pid = head_pid.set_target(0)
+            vel = loc_pid.update(predicted_loc)
+            ang_vel = head_pid.update(predicted_head)
             # move forward command; talk to electrical about moving
-            r.move_forward()
-            print("Target node: x is " + str(target_coords[0]) + ", y is " + str(target_coords[1]))
-            # Get predicted location from robot 
-            predicted_loc = r.get_position()
-            history.append(predicted_loc[:])
-            distance_from_target = \
+            # TODO: send angular_velocity and velocity to electrical
+                r.move_forward(vel,ang_vel)
+            # The robot moves forward adjusting to move in straight line. 
+            sleep(loc_pid.get_sample_time())
+            #TODO: Get current location from Kalman Filter  
+                predicted_loc = r.get_position()
+            location_error = \
                 get_distance(target_coords[0],predicted_loc[0],\
                 target_coords[1],predicted_loc[1])  
-            print("distance from target is now" + str(distance_from_target))
-            print("-----------------------------------")
 
+        # We have reached the target node
+        r.stop(vel = 0, ang_vel = 0)
+        sleep(robot_stop_time)
 
-        # We are currently at target node (next_node)
-        print("\n\nReached target node: " + str(target_coords)+ "\n\n")
-        print("Actual location at target node: " + \
-            str(r.get_position()[0])+","+str(r.get_position()[1]))
-        # Add support for turning L and R
+        # Turning Left and Right 
         if target_coords[1] == 9: 
             print("Turning right")
-            r.turn_right()
+            next_target_coords = queue.peek()
+            if target_coords[0] < next_target_coords[0]:
+                target_angle = 0
+            elif target_coords[0] == next_target_coords[0]:
+                target_angle = 270
+            print("Should not be here, faulty angle logic")
         elif target_coords[0] != 0 and target_coords[1] == 0:
             print("Turning left")
-            r.turn_left()
+            next_target_coords = queue.peek()
+            if target_coords[0] < next_target_coords[0]:
+                target_angle = 0
+            elif target_coords[0] == next_target_coords[0]:
+                target_angle = 90
+
+        angle_error = abs(target_angle - r.heading)
+        allowed_error = 2   # TODO: Measure this   
+        while angle_error > allowed_error:
+            head_pid.set_target(target_angle)
+            angular_velocity = head_pid.update(angle_error)
+            # TODO: send angular_velocity to electrical and (velocity = 0)
+            # The robot turns.
+            sleep(head_pid.get_sample_time())
+            # TODO: Get current heading from Kalman filter
+            # r.set_heading = Kalman filter output
+            angle_error = abs(target_angle - r.heading)
     print("Reached end of traversal path!")
 
-
+# -----------------------------PLOT PATH----------------------------------------
+# we should make this a function 
     xlist = []
     ylist = []
     for node in g:
@@ -164,3 +184,5 @@ if __name__ == "__main__":
     #     time.sleep(.1)
     #     plt.show()
     # plt.close()
+
+# if __name__ == "__main__":
