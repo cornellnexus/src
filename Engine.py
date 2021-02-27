@@ -38,7 +38,7 @@ if __name__ == "__main__":
         # while robot is too far away from target node
         while distance_from_target > gps_noise_range:
             # move forward command; talk to electrical about moving
-            move_forward() 
+            go_forward() 
             print("Move forward")
             predicted_loc = gps.update_step()
             distance_from_target = geopy.distance.distance(predicted_loc,
