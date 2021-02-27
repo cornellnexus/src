@@ -10,6 +10,8 @@ import geopy
 import gps #temporary import for update_step() placement for kalman filter
 from commands import * 
 
+print("under the imports")
+
 if __name__ == "__main__":
     print("testing")
     longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
@@ -54,5 +56,5 @@ if __name__ == "__main__":
             turn_left()
             print("Turn left")
 
-engine = Engine()
-engine.run()
+# engine = Engine()
+# engine.run()
