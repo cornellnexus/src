@@ -41,8 +41,7 @@ if __name__ == "__main__":
             go_forward() 
             print("Move forward")
             predicted_loc = gps.update_step()
-            distance_from_target = geopy.distance.distance(predicted_loc,
-                                                           target_node.get_coords).meters
+            distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
         stop()
         print("STOP")
         # We are currently at target node (next_node)
