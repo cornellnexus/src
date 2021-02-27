@@ -10,6 +10,7 @@ import gps #temporary import for update_step() placement for kalman filter
 from commands import * 
 
 if __name__ == "__main__":
+    print("testing")
     longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
 
     # Create graph object given longitute
@@ -52,5 +53,5 @@ if __name__ == "__main__":
             turn_left()
             print("Turn left")
 
-# engine = Engine()
-# engine.run()
+engine = Engine()
+engine.run()

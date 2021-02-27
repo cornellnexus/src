@@ -86,10 +86,10 @@ class Grid:
         self.traversal_path, self.nodes_dict, self.true_min_lat, self.true_max_lat, self.true_min_long = generate_nodes(
             lat_min, long_min, self.row_num, self.col_num, self.lat_step, self.long_step)
 
-g = Grid(-76.4,-76.2,42.0,42.4)
+# g = Grid(-76.4,-76.2,42.0,42.4)
 # print(g.traversal_path)
 
 # g = Grid(0,0.01,0,0.01)
 # g = Grid(42.4596, 42.4642, -76.5119, -76.5013)
 
-print(g.traversal_path)
+# print(g.traversal_path)
