@@ -1,3 +1,4 @@
+print("hi")
 from UserUtils import *
 # from FileUtils import *
 # from GUI import GUI
@@ -9,7 +10,10 @@ import geopy
 import gps #temporary import for update_step() placement for kalman filter
 from commands import * 
 
+print("under the imports")
+
 if __name__ == "__main__":
+    print("testing")
     longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
 
     # Create graph object given longitute
@@ -34,11 +38,10 @@ if __name__ == "__main__":
         # while robot is too far away from target node
         while distance_from_target > gps_noise_range:
             # move forward command; talk to electrical about moving
-            move_forward() 
+            go_forward() 
             print("Move forward")
             predicted_loc = gps.update_step()
-            distance_from_target = geopy.distance.distance(predicted_loc,
-                                                           target_node.get_coords).meters
+            distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
         stop()
         print("STOP")
         # We are currently at target node (next_node)
