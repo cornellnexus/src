@@ -1,74 +1,53 @@
-""" This controller module for detecting if a robot is moving straight
-    using encoder data from motors
-"""
-
-from gpiozero import Robot, DigitalInputDevice
 from time import sleep
+import numpy as np
 
-SAMPLETIME = 1
-TARGET = 45
-KP = 0.02
-KD = 0.01
-KI = 0.005
+# pid = PID(0.02, 0.01, 0.005, 0.0, 0.01, (-90,90))
 
+class PID(object):
+    def __init__(self, Kp = 0.02, Ki = 0.005, Kd = 0.0, target = 0, sample_time = 0.01, output_limits = (None, None)): 
+        self.Kp, self.Ki, self.Kd = Kp, Ki, Kd
+        self.target = target
+        self.sample_time = sample_time
+        self.output_limits = output_limits 
+        self.prev_error = 0
+        self.proportional = 0
+        self.integral = 0
+        self.derivative = 0
 
-class Encoder(object):
-    def __init__(self, pin):
-        self._value = 0
-        encoder = DigitalInputDevice(pin)
-        encoder.when_activated = self._increment
-        encoder.when_deactivated = self._increment
-    def reset(self):
-        self._value = 0
-    def _increment(self):
-        self._value += 1
-    @property
-    def value(self):
-        return self._value
-
-r = Robot((10,9), (8,7))
-e1 = Encoder(17)
-e2 = Encoder(18)
-
-m1_speed = 1.0
-m2_speed = 1.0
-r.value = (m1_speed, m2_speed)
-
-e1_prev_error = 0
-e2_prev_error = 0
-e1_sum_error = 0
-e2_sum_error = 0
-
-while True:
-    e1_error = TARGET - e1.value
-    e2_error = TARGET - e2.value
-
-
-    # Potential Fix: the integral branch doesn't seem to be taking integral, it's just summing up the errors. 
-    # I think the example code simplifies it to sum of error instead of actually taking integral
-    # e1_integral = e1_integral_prior + e1_error * SAMPLETIME
-    # e2_integral = e2_integral_prior + e2_error * SAMPLETIME
+    def calculate_heading_error(self, input):
+        error = abs(self.target - input)
+        return error
+        
+    #call calculate_error before calling update
+    def update(self, error): 
+        self.proportional = self.Kp * error 
+        print("PROPORTIONAL: " + str(self.proportional))
+        self.integral += self.Ki * error * self.sample_time
+        #max(min(num, max_value), min_value); avoid integral windup
+        self.integral = max(min(self.integral, output_limit[1]), output_limit[0]) 
+        print("INTEGRAL: " + str(self.integral))
+        self.derivative = self.Kd * ((error - self.prev_error) / self.sample_time)
+        print("DERIVATIVE: " + str(self.derivative))
+        value = self.proportional + self.integral + self.derivative 
+        self.prev_error = error 
+        print("VALUE: " + str(value))
+        return value
     
-    e1_derivative = (e1_error - e1_prev_error)/ SAMPLETIME
-    e2_derivative = (e2_error - e2_prev_error)/ SAMPLETIME
+    def get_distance(targ_coods, pred_curr_coords):
+        return math.sqrt((targ_coords[0]-pred_curr_coords[0])**2 + \
+        (targ_coords[1]-pred_curr_coords[1])**2)       
+    
+    def get_sample_time(self):
+        return self.sample_time
 
+    def set_target(self, target): 
+        self.target = target
+    
+    def get_error( )
 
-    m1_speed += (e1_error * KP) + e1_derivative * KD + (e1_sum_error * KI)
-    m2_speed += (e2_error * KP) + e2_derivative * KD  + (e2_sum_error * KI)
+#TODO: change the output limits (angular velocity)
+control = PID(0.02, 0.005, 0.0, 90, 0.01, (0,90))
+while True:    
+    control.update(20)
+    sleep(control.sample_time)
 
-    m1_speed = max(min(1, m1_speed), 0)
-    m2_speed = max(min(1, m2_speed), 0)
-
-    r.value = (m1_speed, m2_speed)
-
-    print("e1 {} e2 {}".format(e1.value, e2.value))
-    print("m1 {} m2 {}".format(m1_speed, m2_speed))
-
-    e1.reset()
-    e2.reset()
-    sleep(SAMPLETIME)
-
-    e1_prev_error = e1_error
-    e2_prev_error = e2_error
-    e1_sum_error += e1_error
-    e2_sum_error += e2_error
