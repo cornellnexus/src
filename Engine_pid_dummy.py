@@ -1,11 +1,11 @@
- from collections import deque
-
+from collections import deque
+from pid_controller import PID
 import numpy as np
 import random
 import time 
 import math
 import matplotlib.pyplot as plt
-import pid_controller
+
 
 class Robot:
     def __init__(self, position= [0,0], heading = 90): 
@@ -29,12 +29,15 @@ class Robot:
         self.heading += (w * t) % 360
         self.print_current_state()
     
-    def turn_right(self):
+    def turn_right(self, w, t):
         self.heading -= (w * t) % 360
         self.print_current_state()
     
     def get_position(self):
         return self.pos
+
+    def get_heading(self):
+        return self.heading
 
 # TODO: To be used in final test.
 # Create graph object given longitute
@@ -82,9 +85,11 @@ if __name__ == "__main__":
     # TEST1- for testing purposes, initialize pids as follows:
     loc_pid = PID(Kp = 0.01, Ki = 0.0, Kd = 0.0, target = 0, sample_time = 1.0, output_limits = (None, None))
     head_pid = PID(Kp = 0.01, Ki = 0.0, Kd = 0.0, target = 0, sample_time = 1.0, output_limits = (None, None))
+
+    loc_pid.am_i_real()
     # g = generate_nodes()
     # TEST1 - Use one node for the queue
-    g = [(0,10)]
+    g = [(0,5)]
     queue = deque(g)
     r = Robot()
 
@@ -94,6 +99,7 @@ if __name__ == "__main__":
         predicted_head = r.get_heading() # Assuming prediciton is 100% accurate
 
         #distance formula 
+        # TODO: fix with 2d error not pythagorean
         def get_distance(x_targ,x_pred, y_targ,y_pred):
             return math.sqrt((x_targ-x_pred)**2 + (y_targ-y_pred)**2)
        
@@ -102,22 +108,25 @@ if __name__ == "__main__":
         location_error = \
             get_distance(target_coords[0],predicted_loc[0],\
             target_coords[1],predicted_loc[1])
-        allowed_error = 0 #TODO: measure this
+        allowed_error = 1 #TODO: measure this
 
         # while robot is too far away from target node
         while location_error > allowed_error:
-            loc_pid = loc_pid.set_target(target_coords)  
-            head_pid = head_pid.set_target(0) 
-            vel = loc_pid.update(predicted_loc) 
-            ang_vel = head_pid.update(predicted_head) #TEST1 - should be 0 
-            
+            loc_pid.set_target(target_coords)  
+            head_pid.set_target(0) 
+            print("i made it here")
+            #TODO: Calling update wrong - if confirmed, also fix in engine_pid 
+            print("LOCATION ERROR: " + str(location_error))
+            vel = loc_pid.update(location_error) 
+            ang_vel = head_pid.update(0) #TEST1 - should be 0 
+            print("we made it once")
             # TODO: send angular_velocity and velocity to electrical
             r.move_forward(vel,loc_pid.get_sample_time())
             # The robot moves forward adjusting to move in straight line. 
-            sleep(loc_pid.get_sample_time())
+            time.sleep(loc_pid.get_sample_time())
             
             #TEST1 - Get current location from fake robot (IRL Kalman Filter)
-                predicted_loc = r.get_position()
+            predicted_loc = r.get_position()
             location_error = \
                 get_distance(target_coords[0],predicted_loc[0],\
                 target_coords[1],predicted_loc[1])  
