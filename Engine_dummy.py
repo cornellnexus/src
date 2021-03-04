@@ -142,25 +142,25 @@ if __name__ == "__main__":
     for node in g:
         xlist.append(node[0])
         ylist.append(node[1])
-    plt.plot(xlist, ylist, marker='o', markerfacecolor='blue')
+    plt.plot(xlist, ylist, 'ro',markerfacecolor='blue')
     plt.ylim(min(ylist) - 1,max(ylist) + 1)
     plt.xlim(min(xlist) - 1,max(xlist) + 1)
     plt.show()
 
-    # xlist2=[]
-    # ylist2=[]
-    # for node in history:
-    #     xlist2.append(node[0])
-    #     ylist2.append(node[1])
-    # plt.plot(xlist2, ylist2, marker='x', markerfacecolor='red')
-    # plt.ylim(min(ylist2) - 1,max(ylist2) + 1)
-    # plt.xlim(min(xlist2) - 1,max(xlist2) + 1)
-    # plt.show()
-    # plt.close()
-
+    xlist2=[]
+    ylist2=[]
     for node in history:
-        print("Plotting node")
-        plt.plot(node[0],node[1],marker='x',markerfacecolor='red')
-        time.sleep(.1)
-        plt.show()
+        xlist2.append(node[0])
+        ylist2.append(node[1])
+    plt.plot(xlist2, ylist2, 'bx')
+    plt.ylim(min(ylist2) - 1,max(ylist2) + 1)
+    plt.xlim(min(xlist2) - 1,max(xlist2) + 1)
+    plt.show()
     plt.close()
+
+    # for node in history:
+    #     print("Plotting node")
+    #     plt.plot(node[0],node[1],marker='x',markerfacecolor='red')
+    #     time.sleep(.1)
+    #     plt.show()
+    # plt.close()
