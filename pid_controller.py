@@ -23,8 +23,10 @@ class PID(object):
         self.proportional = self.Kp * error 
         print("PROPORTIONAL: " + str(self.proportional))
         self.integral += self.Ki * error * self.sample_time
+
         #max(min(num, max_value), min_value); avoid integral windup
-        self.integral = max(min(self.integral, output_limit[1]), output_limit[0]) 
+        # TODO: COMMENTED THIS INTEGRAL WINDUP LINE OUT - should only occur when output_limits are not none 
+        #self.integral = max(min(self.integral, output_limit[1]), output_limit[0]) 
         print("INTEGRAL: " + str(self.integral))
         self.derivative = self.Kd * ((error - self.prev_error) / self.sample_time)
         print("DERIVATIVE: " + str(self.derivative))
@@ -43,7 +45,8 @@ class PID(object):
     def set_target(self, target): 
         self.target = target
     
-    def get_error( )
+    # TODO: ADD THIS FUNCTION
+    # def get_error( )
 
 #TODO: change the output limits (angular velocity)
 control = PID(0.02, 0.005, 0.0, 90, 0.01, (0,90))
