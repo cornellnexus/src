@@ -14,7 +14,8 @@ print("under the imports")
 
 if __name__ == "__main__":
     print("testing")
-    longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
+    # longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
+    longMin, longMax, latMin, latMax = -76.483682, -76.483276, 42.444250, 42.444599
 
     # Create graph object given longitute
     # and latitude coordinates from user input.
@@ -27,6 +28,7 @@ if __name__ == "__main__":
         # update_step writes to CSV file,
         # returns GPS data in the form (lat,long)
         predicted_loc = gps.update_step()
+        print("Predicted Location: " + str(predicted_loc))
 
         # distance_from_target <- get pythagerean distance from target in meters
         # must be in form latitude,longitude.
@@ -42,6 +44,7 @@ if __name__ == "__main__":
             print("Move forward")
             predicted_loc = gps.update_step()
             distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
+            print("Distance from target: " + str(distance_from_target) )
         stop()
         print("STOP")
         # We are currently at target node (next_node)
