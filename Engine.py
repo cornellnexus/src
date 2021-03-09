@@ -43,6 +43,7 @@ if __name__ == "__main__":
             print("Move forward")
             predicted_loc = gps.update_step()
             print("Predicted Location: " + str(predicted_loc))
+            print(predicted_loc)
             distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
             print("Distance from target: " + str(distance_from_target) )
         stop()
