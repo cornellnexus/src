@@ -27,7 +27,7 @@ def update_step():
     coord = parse_gps(decoded_line)
     if isinstance(coord, tuple):
         csv_data.append(coord)
-        # print(csv_data)
+        print(csv_data)
     return(coord)
         
 

@@ -1,4 +1,3 @@
-print("hi")
 from UserUtils import *
 # from FileUtils import *
 # from GUI import GUI
