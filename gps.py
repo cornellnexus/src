@@ -27,7 +27,7 @@ def update_step():
     coord = parse_gps(decoded_line)
     if isinstance(coord, tuple):
         csv_data.append(coord)
-        # print(csv_data)
+        print(csv_data)
     return(coord)
         
 
@@ -38,7 +38,7 @@ def write_to_csv(csv_data):
         for coord in csv_data:
             gps_file.write(str(coord) + '\n')
             
-write_to_csv(csv_data)
+# write_to_csv(csv_data)
 
 # while True: 
 #     write_to_csv(csv_data)
