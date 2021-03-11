@@ -51,20 +51,24 @@ class PID:
         print(self.Kp)
         print(self.Ki)  
 
+    def get_proportional(self):
+        return self.proportional
+    
+    def get_integral(self):
+        return self.integral
+    
+    def get_derivative(self):
+        return self.derivative
+    
     def update(self, error): 
         self.proportional = self.Kp * error 
-        print("PROPORTIONAL: " + str(self.proportional))
         self.integral += self.Ki * error * self.sample_time
-
         #max(min(num, max_value), min_value); avoid integral windup
         # TODO: COMMENTED THIS INTEGRAL WINDUP LINE OUT - should only occur when output_limits are not none 
         #self.integral = max(min(self.integral, output_limit[1]), output_limit[0]) 
-        print("INTEGRAL: " + str(self.integral))
         self.derivative = self.Kd * ((error - self.prev_error) / self.sample_time)
-        print("DERIVATIVE: " + str(self.derivative))
         value = self.proportional + self.integral + self.derivative 
         self.prev_error = error 
-        print("VALUE: " + str(value))
         return value     
 
     # TODO: ADD THIS FUNCTION
