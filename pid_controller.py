@@ -3,8 +3,29 @@ import numpy as np
 
 # pid = PID(0.02, 0.01, 0.005, 0.0, 0.01, (-90,90))
 
+""" 
+PID Controller that is used to continuously correct errors. 
+
+"""
 class PID:
-    def __init__(self, Kp = 0.02, Ki = 0.005, Kd = 0.0, target = 0, sample_time = 0.01, output_limits = (None, None)): 
+
+    """Initializes fields for PID Controller
+    Parameters: 
+    Kp: Constant for proportional controller 
+    Ki: Constant for integral controller 
+    Kd: Constant for derivative controller 
+    target: Target value we want to reach 
+    sample_time: Frequency the PID controller is correcting values
+    output_limits: Limits that the PID controller can correct within 
+
+    Fields: 
+    prev_error: Value of the error calculated in the previous cycle
+    proportional: Proportional controller computation 
+    integral: Integral controller computation 
+    derivative: Derivative controller computation 
+    """
+    def __init__(self, Kp = 0.02, Ki = 0.005, Kd = 0.0, target = 0, 
+        sample_time = 0.01, output_limits = (None, None)): 
         self.Kp, self.Ki, self.Kd = Kp, Ki, Kd
         self.target = target
         self.sample_time = sample_time
@@ -14,6 +35,9 @@ class PID:
         self.integral = 0
         self.derivative = 0
 
+    """calculate_heading_error(self,input) is the error between the input 
+    and the target value.
+    """
     def calculate_heading_error(self, input):
         error = abs(self.target - input)
         return error
@@ -39,12 +63,14 @@ class PID:
     #     return math.sqrt((targ_coords[0]-pred_curr_coords[0])**2 + \
     #     (targ_coords[1]-pred_curr_coords[1])**2)       
     
+
     def get_sample_time(self):
         return self.sample_time
 
     def set_target(self, target): 
         self.target = target
-    
+
+    #@jess @yagmur what does this do LOL
     def am_i_real(self):
         print(type(self))
         print(self.target)
@@ -60,6 +86,8 @@ class PID:
     def get_derivative(self):
         return self.derivative
     
+    """Calculates the values of the controllers and updates them accordingly.
+    Returns the corrected value based on the error and previous calculations"""
     def update(self, error): 
         self.proportional = self.Kp * error 
         self.integral += self.Ki * error * self.sample_time
