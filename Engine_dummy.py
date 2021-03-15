@@ -5,16 +5,43 @@ import time
 import math
 import matplotlib.pyplot as plt
 
+"""
+Defines a dummy robot to be used for debugging
+"""
 class Robot:
+     """
+    Initializes the robot with the given position and heading.
+    Parameters:
+    position: int list representing x and y position of robot
+    heading: angle robot is facing from East. (E.g. 0 East, 90 North, 270 South)
+    Preconditions:
+    position is list of size 2
+    heading is in range [0..359]
+    """
     def __init__(self, position= [0,0], heading = 90): 
         self.pos = position
         self.heading = heading
+    """
+    Returns randomly generated noise in range [-.02, .02]
+    """"
     def get_noise(self):
-        return np.random.uniform(-.02, .02)    
+        return np.random.uniform(-.02, .02)
+    """
+    Prints robots current position and heading
+    """
     def print_current_state(self):
         print('pos: ' + str(self.pos))
         print('heading: ' + str(self.heading))
-        # time.sleep(0.1)  
+        # time.sleep(0.1)    
+    """
+    Moves robot forward by an increment of 0.1
+    If facing North, increment y coordinate.
+    If facing South, decrement y coordinate.
+    If facing East, increment x coordinate.
+    For the purposes of this test, Robot does not ever face West.
+    Warning: This method only works assuming the only possible headings are 
+    90, 270, or 0.
+    """
     def move_forward(self): 
         if self.heading == 90:
             self.pos[1] = round(self.pos[1] + .1,3)
@@ -26,15 +53,23 @@ class Robot:
             self.pos[0] = round(self.pos[0] + .1,3)
             # self.pos[0] = round(self.pos[0] + .1 + self.get_noise(),3)
         self.print_current_state()
-
+    """
+    Updates heading to turn robot left 90 degrees.
+    """
     def turn_left(self):
         self.heading += 90
         self.heading = self.heading % 360
-        self.print_current_state()
+        self.print_current_state()  
+    """
+    Updates heading to turn robot right 90 degrees.
+    """
     def turn_right(self):
         self.heading -= 90
         self.heading = self.heading % 360
         self.print_current_state()
+    """
+    Current position of robot
+    """
     def get_position(self):
         return self.pos
 
@@ -62,6 +97,10 @@ def generate_nodes():
     return traversal_path
 
 
+"""
+Plots traversal path.
+WARNING: This method is not used, should we remove it?
+"""
 def graph_traversal_path(traversal_path):
     print(traversal_path)
     xlist = []
@@ -80,9 +119,12 @@ def graph_traversal_path(traversal_path):
     # plt.cla()
     # plt.close()
 
-if __name__ == "__main__":
-    #longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
 
+"""
+Moves dummy robot along the traversal path and plots the traversal.
+"""
+def engine_dummy():
+    #longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
     g = generate_nodes()
     queue = deque(g)
     r = Robot()
@@ -136,7 +178,7 @@ if __name__ == "__main__":
             r.turn_left()
     print("Reached end of traversal path!")
 
-
+    # Plotting traversal path:
     xlist = []
     ylist = []
     for node in g:
@@ -157,6 +199,10 @@ if __name__ == "__main__":
     plt.xlim(min(xlist2) - 1,max(xlist2) + 1)
     plt.show()
     plt.close()
+
+
+if __name__ == "__main__":
+    engine_dummy()
 
     # for node in history:
     #     print("Plotting node")
