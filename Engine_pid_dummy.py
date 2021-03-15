@@ -39,51 +39,7 @@ class Robot:
     def get_heading(self):
         return self.heading
 
-# TODO: To be used in final test.
-# Create graph object given longitute
-# and latitude coordinates from user input.
-# g = Grid(longMin, longMax, latMin, latMax)
-# Create a grid from 0..10 and 0..10
-def generate_nodes():
-    origin = (0, 0)
-    traversal_path = []
-    for i in range(10):
-        for j in range(10):
-            if i % 2 == 0:
-                node = origin[0] + i, origin[1] + j
-                # node = Node(origin[0] + j, origin[1] + i)
-                traversal_path.append(node)
-            elif i % 2 == 1:
-                # lat_pos = origin[0] + (9 - j)
-                # long_pos = origin[1] + i
-                y = origin[1] + (9-j)
-                x = origin[0] + i 
-                # node = Node(lat_pos, long_pos)
-                node = (x,y)
-                traversal_path.append(node)
-    return traversal_path
-
-
-def graph_traversal_path(traversal_path):
-    print(traversal_path)
-    xlist = []
-    ylist = []
-
-    for node in traversal_path:
-        xlist.append(node[0])
-        ylist.append(node[1])
-
-    plt.plot(xlist, ylist, marker='o', markerfacecolor='blue')
-    plt.ylim(min(ylist) - 1,max(ylist) + 1)
-    plt.xlim(min(xlist) - 1,max(xlist) + 1)
-    plt.show()
-    plt.close()
-
-# TEST 2 fails to get to end node because turning and moving logic requires 
-# exact angles to be met. If we allow for angle error, the robot will not keep
-# moving. Consider changing turning logic to a more mechanically intuitive thing?
-
-if __name__ == "__main__":
+def engine_pid_dummy():
     #longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
     # TEST1- for testing purposes, initialize pids as follows:
     loc_pid = PID(Kp = 0.1, Ki = 0.0, Kd = 0.0, target = 0, sample_time = 1.0, output_limits = (None, None))
@@ -189,34 +145,32 @@ if __name__ == "__main__":
         print("----------------- DONE WITH TURNING ROUTINE -----------------")
     print("Reached end of traversal path!")
 
+
+# TEST 2 fails to get to end node because turning and moving logic requires 
+# exact angles to be met. If we allow for angle error, the robot will not keep
+# moving. Consider changing turning logic to a more mechanically intuitive thing?
+
+if __name__ == "__main__":
+    engine_pid_dummy()
+
+
 # -----------------------------PLOT PATH----------------------------------------
 # we should make this a function 
-    xlist = []
-    ylist = []
-    for node in g:
-        xlist.append(node[0])
-        ylist.append(node[1])
-    plt.plot(xlist, ylist, 'ro',markerfacecolor='blue')
-    plt.ylim(min(ylist) - 1,max(ylist) + 1)
-    plt.xlim(min(xlist) - 1,max(xlist) + 1)
-    plt.show()
+    # xlist = []
+    # ylist = []
+    # for node in g:
+    #     xlist.append(node[0])
+    #     ylist.append(node[1])
+    # plt.plot(xlist, ylist, 'ro',markerfacecolor='blue')
+    # plt.ylim(min(ylist) - 1,max(ylist) + 1)
+    # plt.xlim(min(xlist) - 1,max(xlist) + 1)
+    # plt.show()
 
-    xlist2=[]
-    ylist2=[]
-    for node in history:
-        xlist2.append(node[0])
-        ylist2.append(node[1])
-    plt.plot(xlist2, ylist2, 'bx')
-    plt.ylim(min(ylist2) - 1,max(ylist2) + 1)
-    plt.xlim(min(xlist2) - 1,max(xlist2) + 1)
-    plt.show()
-    plt.close()
-
-    # for node in history:
-    #     print("Plotting node")
-    #     plt.plot(node[0],node[1],marker='x',markerfacecolor='red')
-    #     time.sleep(.1)
-    #     plt.show()
+    # xlist2=[]
+    # ylist2=[]
+    # plt.plot(xlist2, ylist2, 'bx')
+    # plt.ylim(min(ylist2) - 1,max(ylist2) + 1)
+    # plt.xlim(min(xlist2) - 1,max(xlist2) + 1)
+    # plt.show()
     # plt.close()
-
-# if __name__ == "__main__":
+#TODO: Add plotting function that plots robot trajectory against grid Nodes!
