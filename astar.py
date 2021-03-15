@@ -2,10 +2,16 @@ import pygame
 import math
 from queue import PriorityQueue
 
+'''
+Create window using pygame GUI library
+'''
 WIDTH = 600
 WINDOW = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("A* Pathfinding Algorithm")
 
+'''
+Colors defined by their RGB values
+'''
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 255, 0)
@@ -17,20 +23,26 @@ ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
 
-
+'''
+Calculate the distance between two Euclidean points
+'''
 def heuristic(p1, p2):
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
 
-
+'''
+Draws a path from the current node
+'''
 def reconstruct_path(came_from, current, draw):
     while current in came_from:
         current = came_from[current]
         current.make_path()
         draw()
 
-
+'''
+Implementation of the a* algorithm
+'''
 def algorithm(draw, grid, start, end):
     count = 0
     open_set = PriorityQueue()
@@ -79,7 +91,10 @@ def algorithm(draw, grid, start, end):
 
     return False
 
-
+'''
+A Node is a cell which composes part of the graph that our robot is localized
+in.
+'''
 class Node:
     def __init__(self, row, col, width, total_rows):
         self.row = row
