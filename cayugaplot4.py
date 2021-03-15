@@ -11,9 +11,12 @@ from matplotlib import animation as animation
 from matplotlib import patches as patch
 from matplotlib.widgets import Button
 from UserUtils import *
-# import arduino_read
 
-longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
+'''
+When running this file, input 0, 10, 0, 10 for the corresponding values
+below. getLongLatMinMax 
+'''
+longMin, longMax, latMin, latMax = get_coord_inputs()
 
 BoundaryBox = [longMin, longMax, latMin, latMax]
 ruh_m = plt.imread('map.png')

@@ -13,7 +13,7 @@ print("under the imports")
 
 if __name__ == "__main__":
     print("testing")
-    # longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
+    # longMin, longMax, latMin, latMax = get_coord_inputs()
     longMin, longMax, latMin, latMax = -76.483682, -76.483276, 42.444250, 42.444599
 
     # Create graph object given longitute
