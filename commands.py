@@ -51,9 +51,9 @@ def pause():
     time.sleep(0.2)
 
 # testing the functions to run under 10 seconds 
-# stopTime = time.time() + 1
-# while time.time() < stopTime:
-#     go_forward()
+stopTime = time.time() + 1
+while time.time() < stopTime:
+    go_forward()
 # # 
 # stop()
 # 
