@@ -29,7 +29,7 @@ def go_forward():
     # GPIO.output([in1, in4],GPIO.LOW)
     # GPIO.output([in2, in3], GPIO.HIGH)
     print('go_forward')
-    time.sleep(1)
+    time.sleep(0.1)
 
 # reverses the robot 
 def reverse():
