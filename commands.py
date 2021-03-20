@@ -51,7 +51,7 @@ def pause():
     time.sleep(0.2)
 
 # testing the functions to run under 10 seconds 
-stopTime = time.time() + 1
+stopTime = time.time() + 5
 while time.time() < stopTime:
     go_forward()
 # # 
@@ -59,5 +59,5 @@ while time.time() < stopTime:
 # 
 
 # cleans up all the ports used for motor driver 
-# GPIO.cleanup()
+GPIO.cleanup()
 
