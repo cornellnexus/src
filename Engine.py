@@ -29,7 +29,10 @@ def engine():
         target_coords = target_node.get_coords()
         # update_step writes to CSV file,
         # returns GPS data in the form (lat,long)
-        predicted_loc = gps.update_step()
+        predicted_loc = (longMin, latMin)
+        temp = gps.update_step()
+        if temp is not None:
+            predicted_loc = temp
         print("Predicted Location: " + str(predicted_loc))
 
         # distance_from_target <- get pythagerean distance from target in meters
@@ -44,7 +47,9 @@ def engine():
             # move forward command; talk to electrical about moving
             go_forward() 
             print("Move forward")
-            predicted_loc = gps.update_step()
+            temp = gps.update_step()
+            if temp is not None:
+                predicted_loc = temp
             print("Predicted Location: " + str(predicted_loc))
             distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
             print("Distance from target: " + str(distance_from_target) )
