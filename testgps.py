@@ -52,6 +52,27 @@ def engine():
     # We are currently at target node (next_node)
     print("Reached node at" + str(target_coords))
 
+
+    ##########################################################################
+    #COMMENT OUT TO TEST IF TURN RIGHT WORKS 
+    # while distance_from_target > gps_noise_range:
+    #     print("DISTANCE FROM TARGET GREATER THAN NOISE RANGE")
+    #     # move forward command; talk to electrical about moving
+    #     go_forward() 
+    #     print("MOVING FORWARD")
+    #     predicted_loc = gps.update_step()
+    #     print("GPS PREDICTED LOCATION: " + str(predicted_loc))
+    #     distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
+    #     print("DISTANCE FROM TARGET: " + str(distance_from_target) )
+    # print("TURNING RIGHT")
+    # print("GPS PREDICTED LOCATION: " + str(predicted_loc))
+    # turn_right()
+    # print("FINISHING TURNING RIGHT")
+    # print("GPS PREDICTED LOCATION: " + str(predicted_loc))
+    # stop()
+    # print("STOP")
+
+
     # Add support for turning L and R.
     # if target_coords[1] == g.true_max_lat:
     #     turn_right()
