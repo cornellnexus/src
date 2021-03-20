@@ -7,7 +7,7 @@ import pynmea2
 import csv
 from gpio import *
 
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 5)
+ser = serial.Serial('/dev/ttyACM0', 19200, timeout = 5)
 csv_data = []
 collect_time = time.time() + 60
 
@@ -27,6 +27,7 @@ def update_step():
     coord = parse_gps(decoded_line)
     if isinstance(coord, tuple):
         #csv_data.append(coord)
+        print('----------------GOT COORD!!!!!----------------')
         print('is tuple: ' + str(coord))
         return(coord)
     print('not tuple: '+str(coord))
