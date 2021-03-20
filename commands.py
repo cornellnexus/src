@@ -29,6 +29,7 @@ def go_forward():
     # GPIO.output([in1, in4],GPIO.LOW)
     # GPIO.output([in2, in3], GPIO.HIGH)
     print('go_forward')
+    time.sleep(1)
 
 # reverses the robot 
 def reverse():
@@ -57,13 +58,13 @@ def pause():
     time.sleep(0.2)
 
 # testing the functions to run under 10 seconds 
-stopTime = time.time() + 5
-while time.time() < stopTime:
-    go_forward()
+# stopTime = time.time() + 5
+# while time.time() < stopTime:
+#     go_forward()
+# # # 
+# # stop()
 # # 
-# stop()
-# 
 
-# cleans up all the ports used for motor driver 
-GPIO.cleanup()
+# # cleans up all the ports used for motor driver 
+# GPIO.cleanup()
 
