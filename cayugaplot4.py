@@ -18,6 +18,13 @@ from matplotlib import patches as patch
 from matplotlib.widgets import Button
 from UserUtils import *
 
+# resources needed for GUI
+from matplotlib.ticker import NullFormatter
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import PySimpleGUI as sg
+matplotlib.use('TkAgg')
+
 '''
 When running this file, input 0, 10, 0, 10 for the corresponding values
 below. get_coord_inputs() is documented in UserUtils.py
@@ -80,4 +87,31 @@ anim = animation.FuncAnimation(fig, animate,
                                interval=20,
                                blit=True)
 
-plt.show()
+#plt.show()
+fig = plt.gcf()
+
+# Beginning of Matplotlib helper code
+
+def draw_figure(canvas, figure):
+    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+    return figure_canvas_agg
+
+# Beginning of GUI code
+
+# define the window layout
+layout = [[sg.Text('Plot test')],
+          [sg.Canvas(key='-CANVAS-')],
+          [sg.Button('Ok')]]
+
+# create the form and show it without the plot
+window = sg.Window('Demo Application - Embedding Matplotlib In PySimpleGUI', layout, finalize=True, element_justification='center', font='Helvetica 18')
+
+# add the plot to the window
+fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
+
+event, values = window.read()
+
+window.close()
+
