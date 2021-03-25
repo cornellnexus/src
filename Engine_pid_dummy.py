@@ -6,7 +6,6 @@ import time
 import math
 import matplotlib.pyplot as plt
 
-
 class Robot:
     def __init__(self, position= [0,0], heading = 90): 
         self.pos = position
