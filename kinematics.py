@@ -17,7 +17,7 @@ def robot_to_global(pose,x_robot,y_robot):
     Tgr = np.array([[math.cos(theta), -1*math.sin(theta), px], \
                     [math.sin(theta), math.cos(theta), py], \
                     [0, 0, 1] ])
-    pose_global = Tgr @ np.array[[x_robot],[y_robot]]
+    pose_global = Tgr @ np.array([[x_robot],[y_robot]])
     return pose_global[0:2]
 
 def global_to_robot(pose, xy_global):
@@ -45,8 +45,8 @@ def feedback_lin(curr_pose, vx_global, vy_global, epsilon):
     velocity the robot should move at.
     """
     theta = float(curr_pose[2])
-    v = vxi * math.cos(theta) + vyi * math.sin(theta)
-    w = (-1/epsilon) * vxi * math.sin(theta) + (1/epsilon) * v * math.cos(theta)
+    v = vx_global * math.cos(theta) + vy_global * math.sin(theta)
+    w = (-1/epsilon) * vx_global * math.sin(theta) + (1/epsilon) * v * math.cos(theta)
     return np.array([v],[w])
 
 
@@ -56,24 +56,23 @@ def limit_cmds(v, w, max_v, wheel_to_center):
     '''
     diameter = wheel_to_center * 2
     v_leftwheel = (-w * diameter + 2*v)/2
-    v_rightwheel = (w*L + 2*v)/2
+    v_rightwheel = (w*diameter + 2*v)/2
 
-    if math.abs(v_leftwheel) >= max_v and math.abs(v_rightwheel) <= max_v:
-        alpha = max_v/math.abs(v_leftwheel)
-    elif math.abs(v_leftwheel) <= max_v and math.abs(v_rightwheel) > max_v:
+    if abs(v_leftwheel) >= max_v and abs(v_rightwheel) <= max_v:
+        alpha = max_v/abs(v_leftwheel)
+    elif abs(v_leftwheel) <= max_v and abs(v_rightwheel) > max_v:
         alpha = max_v/abs(v_rightwheel)   
-    elif math.abs(v_leftwheel) > max_v and math.abs(v_rightwheel) > max_v:
-        alpha = min(max_v/math.abs(v_rightwheel),maxV/math.abs(v_leftwheel))
+    elif abs(v_leftwheel) > max_v and abs(v_rightwheel) > max_v:
+        alpha = min(max_v/abs(v_rightwheel),max_v/abs(v_leftwheel))
     else:
         alpha = 1
         
     v_leftwheel = v_leftwheel * alpha
     v_rightwheel = v_rightwheel * alpha
     scaled_v = (1/2)*(v_leftwheel + v_rightwheel)
-    scaled_w = (1/diametere)*(v_rightwheel-v_leftwheel)
+    scaled_w = (1/diameter)*(v_rightwheel-v_leftwheel)
 
     return (scaled_v, scaled_w)
-
 
 #robot_to_wheel
 print('hi')
