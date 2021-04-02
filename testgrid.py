@@ -24,7 +24,8 @@ def graph_traversal_path(traversal_path):
 
 class TestGenerateNodes(unittest.TestCase):
     def test_jessica_house(self):
-        g = Grid(34.23117305494089, 34.23120742746021, -119.00640453979496, -119.00629523978851)
+        # g = Grid(34.23117305494089, 34.23120742746021, -119.00640453979496, -119.00629523978851)
+        g = Grid(-76.483682, -76.483276, 42.444250, 42.444599)
         graph_traversal_path(g.traversal_path)
 
     def test_pike_room(self):

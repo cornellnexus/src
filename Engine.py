@@ -9,7 +9,7 @@ import geopy
 import gps #temporary import for update_step() placement for kalman filter
 from commands import * 
 
-print("under the imports")
+# print("under the imports")
 
 """
 Moves robot along traversal path.
@@ -23,6 +23,7 @@ def engine():
     # and latitude coordinates from user input.
     g = Grid(longMin, longMax, latMin, latMax)
     queue = deque(g.traversal_path[:])
+    print("QUEUE: " + str(queue))
 
     while queue:
         target_node = queue.popleft()  # Next node to visit
@@ -51,7 +52,10 @@ def engine():
             if temp is not None:
                 predicted_loc = temp
             print("Predicted Location: " + str(predicted_loc))
+            print("Target Location: " + str(target_node.get_coords()))
+
             distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
+            
             print("Distance from target: " + str(distance_from_target) )
         stop()
         print("STOP")
