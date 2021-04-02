@@ -20,8 +20,10 @@ def engine():
     # g = Grid(longMin, longMax, latMin, latMax)
     # queue = deque(g.traversal_path[:])
 
+    node1 = Node(-76.483682, 42.444250)
+    node2 = Node(-76.483682,42.444416)
     #straightline path!
-    queue = [(-76.483682, 42.444250), (-76.483682,42.444416)]
+    queue = [node1,node2]
 
     target_node = queue.pop()  # Next node to visit
     target_coords = target_node.get_coords()
