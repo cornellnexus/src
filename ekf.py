@@ -44,7 +44,7 @@ class ExtendedKalmanFilter:
 
 if __name__ == "__main__":
     initial_mu = np.array([[10],[10]])
-    initial_sigma = np.array([[1,0],[0,1]])
+    initial_sigma = np.array([[5,0],[0,5]])
     
     def g_gps(pose, u):
         return pose
@@ -54,8 +54,8 @@ if __name__ == "__main__":
         return pose
     H_gps_jac = np.array([[1,0],[0,1]])
 
-    R = np.array([[2,0],[0,2]])
-    Q = np.array([[0.5,0],[0,0.5]])
+    R = np.array([[10,0],[0,2]])
+    Q = np.array([[2,0],[0,2]])
 
 
     ekf_gps = ExtendedKalmanFilter(initial_mu, initial_sigma, g_gps, G_gps_jac,\
@@ -63,22 +63,26 @@ if __name__ == "__main__":
     # (m,s) = ekf_gps.get_state()
     # print(ekf_gps.g(m,0))
 
-
-    ekf_gps.localize(0, np.array([[5],[6]]))
-    print(ekf_gps.mu)
-    # print(ekf_gps.get_mu())
-    print(ekf_gps.sigma)
     fig, ax = plt.subplots()
-    ax.plot(ekf_gps.mu[0], ekf_gps.mu[1], 'ro')
-    ax.set_title('Simple plot')
-
-    e= Ellipse((ekf_gps.mu[0], ekf_gps.mu[1]), 2, \
-        2, facecolor = None)
-    e.set_edgecolor('b')
-    e.set_facecolor('w')
+    ax.plot(ekf_gps.mu[0], ekf_gps.mu[1], 'ro', label = 'Initial mu')
+    
     # e.set_clip_box(ax.bbox)
+    x_trajectory = []
+    y_trajectory = []
+    for i in range(20):
+        x_trajectory.append(ekf_gps.mu[0])
+        y_trajectory.append(ekf_gps.mu[1])
 
-    ax.add_artist(e)
-    ax.set_xlim(5, 15)
-    ax.set_ylim(5, 15)
+        e= Ellipse((ekf_gps.mu[0], ekf_gps.mu[1]), ekf_gps.sigma[0,0], \
+        ekf_gps.sigma[1,1], facecolor = None, fill = False, label = 'ellipse')
+        e.set_edgecolor('b')
+        # e.set_facecolor(None)
+        ax.add_artist(e)
+        ekf_gps.localize(0, np.array([[5],[6]]))
+    ax.plot(x_trajectory,y_trajectory, 'g-', label = 'EKF trajectory')
+
+    ax.set_title('Simple EKF Localization using GPS-like Data')
+    ax.set_xlim(0, 20)
+    ax.set_ylim(0, 20)
+    ax.legend()
     plt.show()
