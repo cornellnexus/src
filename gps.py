@@ -10,11 +10,11 @@ from gpio import *
 ser = serial.Serial('/dev/ttyACM0', 19200, timeout = 5)
 csv_data = []
 collect_time = time.time() + 60
-
+# CODE does not work atm. error. 
 def gps():
     gps_line = ser.readline()
     if len(gps_line)==0:
-        print("exiting")
+        print("exiting. timeout")
         sys.exit()
     while gps_line.find('GGA')<0:
         print("re-reading")
