@@ -140,11 +140,16 @@ def draw_figure(canvas, figure):
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
 
-# define the window layout
-layout = [[sg.Text('Plot test')],
-          [sg.Canvas(key='-CANVAS-')],
-          [sg.Cancel()]]
-          #[sg.Button('Ok')]]
+# , [[sg.Image(key='-MINIMAP-')], [sg.Image(key='-CAMERA-')]]
+left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-')]]
+right_col = [
+        [sg.Image(key='-LOGO-')], 
+        [sg.InputText(key="-COMMANDLINE-")], 
+        [sg.Text("Current Coordinates: ______")]
+        # [[sg.Button('Autonomous')], [sg.Button('Store Data')], [sg.Button('Track Location')]]
+        ]
+ 
+layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(),sg.Column(right_col, element_justification='c')]]
 
 # create the form and show it without the plot
 window = sg.Window('Cornell Nexus', layout, finalize=True, element_justification='center', font='Helvetica 18')
