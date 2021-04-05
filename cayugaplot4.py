@@ -140,13 +140,13 @@ def draw_figure(canvas, figure):
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
 
-# , [[sg.Image(key='-MINIMAP-')], [sg.Image(key='-CAMERA-')]]
-left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-')]]
+
+left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-')], [sg.Image(key='-MINIMAP-'), sg.Image(key='-CAMERA-')]]
 right_col = [
         [sg.Image(key='-LOGO-')], 
         [sg.InputText(key="-COMMANDLINE-")], 
-        [sg.Text("Current Coordinates: ______")]
-        # [[sg.Button('Autonomous')], [sg.Button('Store Data')], [sg.Button('Track Location')]]
+        [sg.Text("Current Coordinates: ______")],
+        [sg.Button('Autonomous'), sg.Button('Store Data'), sg.Button('Track Location')]
         ]
  
 layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(),sg.Column(right_col, element_justification='c')]]
