@@ -25,6 +25,48 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
 matplotlib.use('TkAgg')
 
+# ------------------------------------- GUI 1 --------------------------------------------------
+layout = [[sg.Text('Enter Map Bounds:')],   
+        [sg.Text('Minimum Longitude:')],
+        [sg.InputText(key='-MINLONG-')],   
+        [sg.Text('Maximum Longitude:')],
+        [sg.InputText(key='-MAXLONG-')], 
+        [sg.Text('Minimum Lattitude:')],
+        [sg.InputText(key='-MINLAT-')], 
+        [sg.Text('Maximum Lattitude:')],
+        [sg.InputText(key='-MAXLAT-')],    
+        [sg.Submit(), sg.Cancel()]]      
+
+window = sg.Window('Cornell Nexus', layout)    
+
+show = True
+while show: # The Event Loop
+    event, values = window.read() 
+
+    if event == 'Cancel':
+        show = False
+        window.close()
+
+    try:
+        long_min = int(values['-MINLONG-'])
+        long_max = int(values['-MAXLONG-'])
+        lat_min = int(values['-MINLAT-'])
+        lat_max = int(values['-MAXLAT-'])
+
+        if long_max <= long_min or lat_max <= lat_min:
+            sg.popup('Invalid map bounds')
+        else:
+            show = False
+            window.close()
+    except:
+        sg.popup('Invalid map bounds')
+
+
+def get_coord_inputs():
+    return (long_min, long_max, lat_min, lat_max)
+
+# ------------------------------------- matplotlib --------------------------------------------------
+
 '''
 When running this file, input 0, 10, 0, 10 for the corresponding values
 below. get_coord_inputs() is documented in UserUtils.py
@@ -74,8 +116,8 @@ def animate(i):
     wedge_patch.theta1 = wedge_patch.theta1 % 360
     wedge_patch.theta2 = wedge_patch.theta2 % 360
 
-    print(wedge_patch.theta1, wedge_patch.theta2)
-    print(wedge_patch.center)
+    # print(wedge_patch.theta1, wedge_patch.theta2)
+    # print(wedge_patch.center)
     return circle_patch, wedge_patch
 
 '''
@@ -90,7 +132,7 @@ anim = animation.FuncAnimation(fig, animate,
 #plt.show()
 fig = plt.gcf()
 
-# Beginning of Matplotlib helper code
+# ------------------------------------- GUI 2 --------------------------------------------------
 
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
@@ -98,20 +140,21 @@ def draw_figure(canvas, figure):
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
 
-# Beginning of GUI code
-
 # define the window layout
 layout = [[sg.Text('Plot test')],
           [sg.Canvas(key='-CANVAS-')],
-          [sg.Button('Ok')]]
+          [sg.Cancel()]]
+          #[sg.Button('Ok')]]
 
 # create the form and show it without the plot
-window = sg.Window('Demo Application - Embedding Matplotlib In PySimpleGUI', layout, finalize=True, element_justification='center', font='Helvetica 18')
+window = sg.Window('Cornell Nexus', layout, finalize=True, element_justification='center', font='Helvetica 18')
 
 # add the plot to the window
 fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
 
 event, values = window.read()
 
-window.close()
+if event == 'Cancel':
+    window.close()
+
 
