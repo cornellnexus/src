@@ -1,4 +1,5 @@
 from UserUtils import *
+
 # from FileUtils import *
 # from GUI import GUI
 # from obstacle import *
@@ -6,14 +7,16 @@ from grid import *
 from collections import deque
 import csv
 import geopy
-import gps #temporary import for update_step() placement for kalman filter
-from commands import * 
+import gps  # temporary import for update_step() placement for kalman filter
+from commands import *
 
 # print("under the imports")
 
 """
 Moves robot along traversal path.
 """
+
+
 def engine():
     print("testing")
     # longMin, longMax, latMin, latMax = get_coord_inputs()
@@ -39,14 +42,15 @@ def engine():
         # distance_from_target <- get pythagerean distance from target in meters
         # must be in form latitude,longitude.
         # check distance is correct (order of coordinates in initialization):
-        distance_from_target = \
-            geopy.distance.distance(predicted_loc, target_coords).meters
+        distance_from_target = geopy.distance.distance(
+            predicted_loc, target_coords
+        ).meters
         gps_noise_range = 3
 
         # while robot is too far away from target node
         while distance_from_target > gps_noise_range:
             # move forward command; talk to electrical about moving
-            go_forward() 
+            go_forward()
             print("Move forward")
             temp = gps.update_step()
             if temp is not None:
@@ -54,9 +58,11 @@ def engine():
             print("Predicted Location: " + str(predicted_loc))
             print("Target Location: " + str(target_node.get_coords()))
 
-            distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
-            
-            print("Distance from target: " + str(distance_from_target) )
+            distance_from_target = geopy.distance.distance(
+                predicted_loc, target_node.get_coords()
+            ).meters
+
+            print("Distance from target: " + str(distance_from_target))
         stop()
         print("STOP")
         # We are currently at target node (next_node)
