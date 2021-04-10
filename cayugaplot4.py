@@ -42,7 +42,8 @@ window = sg.Window('Cornell Nexus', layout)
 show = True
 while show: # The Event Loop
     event, values = window.read() 
-
+    #TODO fix close out window to not reference popup map bounds
+    #check for (event == sg.WIN_CLOSED) 
     if event == 'Cancel':
         show = False
         window.close()
@@ -134,6 +135,9 @@ fig = plt.gcf()
 
 # ------------------------------------- GUI 2 --------------------------------------------------
 
+current_output = "Welcome! If you enter commands in the text field above, \
+the results will appear here. Try typing <print_coords>."
+
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
     figure_canvas_agg.draw()
@@ -144,22 +148,56 @@ def draw_figure(canvas, figure):
 left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-')]]
 right_col = [
         [sg.Image(key='-LOGO-')], 
-        [sg.InputText(key="-COMMANDLINE-")], 
-        [sg.Text("Current Coordinates: ______")]
+        [sg.InputText(size=(30,1), key="-COMMANDLINE-")], 
+        [sg.Button('Submit', visible=False, bind_return_key=True)],
+        [sg.Multiline(current_output, key = "-OUTPUT-")]
         # [[sg.Button('Autonomous')], [sg.Button('Store Data')], [sg.Button('Track Location')]]
         ]
  
-layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(),sg.Column(right_col, element_justification='c')]]
+layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(), \
+sg.Column(right_col, element_justification='c')]]
 
 # create the form and show it without the plot
-window = sg.Window('Cornell Nexus', layout, finalize=True, element_justification='center', font='Helvetica 18')
+window = sg.Window('Cornell Nexus', layout, finalize=True, \
+element_justification='center', font='Helvetica 18', location=(0,0), \
+size=(1200,700), resizable=True)
 
 # add the plot to the window
 fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
 
-event, values = window.read()
+'''
+Update outputlog to reflect the result of entering the command [str] in the
+commandline textfield
+'''
+def update_input(str, current_output):
+    if str == "print_coords":
+        #update the output
+        new_output = "Current Coordinates: (0,1)" + "\n" + current_output
+    else:
+        new_output = "<" + str + "> is not a valid command. Please try again. " \
+        + "\n" + current_output
+    window['-OUTPUT-'].update(new_output) 
+    return new_output
+    
 
-if event == 'Cancel':
-    window.close()
+while True:  # Event Loop
+    event, values = window.read()
+    # print(event, values)
+    if event == sg.WIN_CLOSED or event == 'Cancel':
+        break
+    if event == 'Show':
+        # Update the "output" text element to be the value of "commandline" 
+        #element
+        window['-OUTPUT-'].update(values['-COMMANDLINE-'])
+    if event == 'Submit':
+        print('Command entered: %s'% window['-COMMANDLINE-'].get())
+        current_output = update_input(window['-COMMANDLINE-'].get(), \
+        current_output)
+        # Empty Command Line for next input
+        window['-COMMANDLINE-'].update("")
+
+        
+
+window.close()
 
 
