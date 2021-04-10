@@ -85,7 +85,8 @@ ax.set_xlim(BoundaryBox[0], BoundaryBox[1])
 ax.set_ylim(BoundaryBox[2], BoundaryBox[3])
 ax.imshow(ruh_m, zorder=0, extent=BoundaryBox, aspect='equal')
 fig.set_dpi(100)
-fig.set_size_inches(7, 6.5)
+# fig.set_size_inches(7, 6.5) original size
+fig.set_size_inches(6, 5)
 
 '''
 Create circle patch object to represent moving robot, and wedge patch for
@@ -134,9 +135,6 @@ anim = animation.FuncAnimation(fig, animate,
 fig = plt.gcf()
 
 # ------------------------------------- GUI 2 --------------------------------------------------
-
-current_output = "Welcome! If you enter commands in the text field above, \
-the results will appear here. Try typing <print_coords>."
 
 def draw_figure(canvas, figure):
     figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
@@ -188,15 +186,22 @@ for image in images:
 
 # -------- end of handling images
 
+current_output = "Welcome! If you enter commands in the text field above, \
+the results will appear here. Try typing <print_coords>."
+
+current_data = "Pounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\n\
+    Total Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\n\
+    Estimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
 
 left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
 right_col = [
             [sg.Image(key='-LOGO-', data=image_data[3])], 
             [sg.InputText(size=(30,1), key="-COMMANDLINE-")], 
             [sg.Button('Submit', visible=False, bind_return_key=True)],
-            [sg.Multiline(current_output, key = "-OUTPUT-")],
+            [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8))],
             [sg.Text("Current Coordinates: ______")],
-            [sg.Button('Autonomous'), sg.Button('Store Data'), sg.Button('Track Location')]
+            [sg.Button('Autonomous'), sg.Button('Store Data'), sg.Button('Track Location')],
+            [sg.Multiline(current_data, key = "-DATA-", size=(40,8))]
         ]
  
 layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(), \
