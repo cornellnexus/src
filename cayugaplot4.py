@@ -39,14 +39,13 @@ layout = [[sg.Text('Enter Map Bounds:')],
 
 window = sg.Window('Cornell Nexus', layout)    
 
-show = True
-while show: # The Event Loop
+while True: # The Event Loop
     event, values = window.read() 
     #TODO fix close out window to not reference popup map bounds
     #check for (event == sg.WIN_CLOSED) 
     if event == 'Cancel':
-        show = False
         window.close()
+        break
 
     try:
         long_min = int(values['-MINLONG-'])
@@ -57,8 +56,8 @@ while show: # The Event Loop
         if long_max <= long_min or lat_max <= lat_min:
             sg.popup('Invalid map bounds')
         else:
-            show = False
             window.close()
+            break
     except:
         sg.popup('Invalid map bounds')
 
@@ -85,6 +84,8 @@ ax.set_xlim(BoundaryBox[0], BoundaryBox[1])
 ax.set_ylim(BoundaryBox[2], BoundaryBox[3])
 ax.imshow(ruh_m, zorder=0, extent=BoundaryBox, aspect='equal')
 fig.set_dpi(100)
+# fig.patch.set_facecolor('blue')
+# fig.patch.set_alpha(0.5)
 # fig.set_size_inches(7, 6.5) original size
 fig.set_size_inches(6, 5)
 
@@ -189,9 +190,7 @@ for image in images:
 current_output = "Welcome! If you enter commands in the text field above, \
 the results will appear here. Try typing <print_coords>."
 
-current_data = "Pounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\n\
-    Total Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\n\
-    Estimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
+current_data = "Pounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\nTotal Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\nEstimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
 
 left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
 right_col = [
