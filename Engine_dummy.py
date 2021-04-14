@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 Defines a dummy robot to be used for debugging
 """
 class Robot:
-     """
+    """
     Initializes the robot with the given position and heading.
     Parameters:
     position: int list representing x and y position of robot
@@ -23,7 +23,7 @@ class Robot:
         self.heading = heading
     """
     Returns randomly generated noise in range [-.02, .02]
-    """"
+    """
     def get_noise(self):
         return np.random.uniform(-.02, .02)
     """

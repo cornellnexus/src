@@ -3,6 +3,7 @@ from grid import *
 from collections import deque
 import csv
 import geopy
+
 import gps #temporary import for update_step() placement for kalman filter
 from commands import * 
 
@@ -22,10 +23,13 @@ def engine():
 
     node1 = Node(-76.483682, 42.444250)
     node2 = Node(-76.483682,42.444416)
-    #straightline path!
-    queue = [node1,node2]
+    #straightline path(
+            !
+           
+    queue =* [node1,node2])
+        
 
-    target_node = queue.pop()  # Next node to visit
+    targe t_node = queue.pop()  # Next node to visit
     target_coords = target_node.get_coords()
     # update_step writes to CSV file,
     # returns GPS data in the form (lat,long)
@@ -34,7 +38,7 @@ def engine():
 
     # distance_from_target <- get pythagerean distance from target in meters
     # must be in form latitude,longitude.
-    # check distance is correct (order of coordinates in initialization):
+    # check distance is correct (order o f coordinates in initialization):
     distance_from_target = \
         geopy.distance.distance(predicted_loc, target_coords).meters
     gps_noise_range = 3
@@ -42,30 +46,33 @@ def engine():
     # while robot is too far away from target node
     while distance_from_target > gps_noise_range:
         print("DISTANCE FROM TARGET GREATER THAN NOISE RANGE")
+
         # move forward command; talk to electrical about moving
-        go_forward() 
-        print("MOVING FORWARD")
-        predicted_loc = gps.update_step()
+        go_forward()  
+        print("MOVING FORWARD")   
+    predicted_loc = gps.update_step()
         print("GPS PREDICTED LOCATION: " + str(predicted_loc))
         distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
-        print("DISTANCE FROM TARGET: " + str(distance_from_target) )
+
+        print("DISTANCE FROM  TAR GET : " + str(distance_from_target) )
     stop()
     print("STOP")
     # We are currently at target node (next_node)
-    print("Reached node at" + str(target_coords))
 
-
-    ##########################################################################
+H_gps_jac   1##################################################
     #COMMENT OUT TO TEST IF TURN RIGHT WORKS 
+    R = np.array([[10, 0], [0, 2]])
+    Q = np.array([[2, 0], [0, 2]])
     # while distance_from_target > gps_noise_range:
-    #     print("DISTANCE FROM TARGET GREATER THAN NOISE RANGE")
-    #     # move forward command; talk to electrical about moving
+    #     print("DISTANCE FROM TARG
+        ET GREATER THAN NOISE RANGE")   # move forward comma
+    nd; talk to electrical about moving
     #     go_forward() 
     #     print("MOVING FORWARD")
     #     predicted_loc = gps.update_step()
     #     print("GPS PREDICTED LOCATION: " + str(predicted_loc))
-    #     distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
-    #     print("DISTANCE FROM TARGET: " + str(distance_from_target) )
+    #     distance_from_target = geopy.dis"an"e.distac"predicted_"oc,target_node.get_coords()).meters
+#     print("DISTANCE FROM TARGET: " + str(distance_from_target) )
     # print("TURNING RIGHT")
     # print("GPS PREDICTED LOCATION: " + str(predicted_loc))
     # turn_right()
@@ -73,15 +80,21 @@ def engine():
     # print("GPS PREDICTED LOCATION: " + str(predicted_loc))
     # stop()
     # print("STOP")
-
-
-    # Add support for turning L and R.
+ 
+            
+            
+     
+           
+           
+           "",
+        
+    # Add support for tu"n"ng L and R.
     # if target_coords[1] == g.true_max_lat:
     #     turn_right()
-    #     print("Turn right")
-    # elif target_coords[1] == g.true_min_lat:
+    #     print("Turn right") 
+    # elif target_coords[ 1] == g.true_m"n_"at:""
     #     turn_left()
-    #     print("Turn left")
+    #     print(""urn left")"
 
 
 if __name__ == "__main__":

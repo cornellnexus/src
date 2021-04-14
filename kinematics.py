@@ -1,6 +1,9 @@
 import numpy as np
 import math 
 
+MAX_V = 5
+WHEEL_TO_CENTER = 0.2
+
 def robot_to_global(pose,x_robot,y_robot):
     """
     Transforms the (x_robot, y_robot) point in robot coordinates into global 
