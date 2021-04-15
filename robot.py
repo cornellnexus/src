@@ -2,17 +2,18 @@ import numpy as np
 import math
 
 """
-Defines a dummy robot to be used for debugging
+Defines a robot to be used to track state variables as well as for debugging
 """
 class Robot:
     """
     Initializes the robot with the given position and heading.
     Parameters:
-    position: int list representing x and y position of robot
-    heading: angle robot is facing from East. (E.g. 0 East, 90 North, 270 South)
+    state = Robot's state, np.array
+    phase = 'collect' when traversing through grid, 'return' when returning to \
+        base station
+    is_sim = False when running code with physical robot, True otherwise
     Preconditions:
-    position is list of size 2
-    heading is in range [0..359]
+    heading is in radians, where 0 = East and pi/2 = North
     """
     def __init__(self, x_pos, y_pos, heading, init_mode = 'collect', \
         is_sim = True, init_charge = 100, init_capacity = 100): 
