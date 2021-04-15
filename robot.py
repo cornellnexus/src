@@ -4,7 +4,7 @@ import math
 """
 Defines a dummy robot to be used for debugging
 """
-class SimRobot:
+class Robot:
     """
     Initializes the robot with the given position and heading.
     Parameters:
@@ -14,10 +14,11 @@ class SimRobot:
     position is list of size 2
     heading is in range [0..359]
     """
-    def __init__(self, x_pos, y_pos, heading = 90, init_mode = 'collect', \
-        init_charge = 100, init_capacity = 100): 
+    def __init__(self, x_pos, y_pos, heading, init_mode = 'collect', \
+        is_sim = True, init_charge = 100, init_capacity = 100): 
         self.state = np.array([[x_pos],[y_pos],[heading]])
         self.phase = init_mode
+        self.is_sim = is_sim
         self.battery = init_charge
         self.waste_capacity = init_capacity
 
