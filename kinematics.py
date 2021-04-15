@@ -50,7 +50,7 @@ def feedback_lin(curr_pose, vx_global, vy_global, epsilon):
     theta = float(curr_pose[2])
     v = vx_global * math.cos(theta) + vy_global * math.sin(theta)
     w = (-1/epsilon) * vx_global * math.sin(theta) + (1/epsilon) * v * math.cos(theta)
-    return np.array([v],[w])
+    return (v,w)
 
 
 def limit_cmds(v, w, max_v, wheel_to_center):
@@ -86,7 +86,4 @@ def integrate_odom(pose, d, phi):
         new_x = pose[0] + (d/phi) * (math.sin(pose[2]+phi) - math.sin(pose[2]))
         new_y = pose[1] + (d/phi) * (-math.cos(pose[2]+phi) + math.cos(pose[2]))
         new_theta = pose[2] + phi
-    return np.array([[new_x],[new_y],[new_theta]])
-
-#robot_to_wheel
-print('hi')
+    return np.array([[float(new_x)], [float(new_y)], [float(new_theta)]])
