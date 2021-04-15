@@ -7,19 +7,15 @@ from matplotlib import pyplot as plt
 from matplotlib import animation as animation
 from matplotlib import patches as patch
 from matplotlib.widgets import Button
-from UserUtils import *
+# from UserUtils import *
 
-# resources needed for GUI
-from matplotlib.ticker import NullFormatter
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import PySimpleGUI as sg
 matplotlib.use('TkAgg')
+
 '''
 When running this file, input 0, 10, 0, 10 for the corresponding values
 below. get_coord_inputs() is documented in UserUtils.py
 '''
-longMin, longMax, latMin, latMax = gui_popup.get_coord_inputs()
+longMin, longMax, latMin, latMax = gui_popup.run_popup()
 
 '''
 Set up window
