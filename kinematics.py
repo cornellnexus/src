@@ -77,5 +77,16 @@ def limit_cmds(v, w, max_v, wheel_to_center):
 
     return (scaled_v, scaled_w)
 
+def integrate_odom(pose, d, phi):
+    if phi == 0:
+        new_x = pose[0] + d * math.cos(phi)
+        new_y = pose[1] + d * math.sin(phi)
+        new_theta = pose[2]
+    else:
+        new_x = pose[0] + (d/phi) * (math.sin(pose[2]+phi) - math.sin(pose[2]))
+        new_y = pose[1] + (d/phi) * (-math.cos(pose[2]+phi) + math.cos(pose[2]))
+        new_theta = pose[2] + phi
+    return np.array([[new_x],[new_y],[new_theta]])
+
 #robot_to_wheel
 print('hi')
