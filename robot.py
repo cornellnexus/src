@@ -63,62 +63,62 @@ class Robot:
 
 if __name__ == "__main__":
     # Initialize robot
-    marvin = Robot(0,0,math.pi/2)
+    r2d2 = Robot(0,0,math.pi/2)
 
     '''MOTION CONTROL'''
-    # marvin.move_forward(1)
-    # marvin.move_forward(1)
-    # marvin.move_forward(2)
-    # marvin.turn(math.pi/2)
     goal1 = (5,10)
     goal2 = (2,1)
-    waypoints = [(5,10),(2,1),(6,7),(4,7)]
+    goals = [(5,10),(2,1),(6,7),(4,7)]
 
+    #Larger epsilons means a larger turning radius
     EPSILON = 0.2
+    # Used in limit_cmds
     MAX_V = .4
     ROBOT_RADIUS = 0.2
 
-    
-
-    # while len(waypoints) > 0:
-    # # for i in range(500):
-    #     curr_goal = waypoints.pop(0)
-    #     distance_away = math.hypot(float(marvin.state[0]) - curr_goal[0], \
-    #         float(marvin.state[1]) - curr_goal[1])
-
-    #     while distance_away > 0.1:
-    #         print(curr_goal)
-    #         print(marvin.state)
-    #         print(distance_away)
-    #         cmd_v, cmd_w = feedback_lin(marvin.state, curr_goal[0] - marvin.state[0], \
-    #             curr_goal[1] - marvin.state[1], EPSILON)
-            
-    #         (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, ROBOT_RADIUS)
-    #         marvin.travel(0.1 * limited_cmd_v, 0.1 * limited_cmd_w)
-
-    #         distance_away = math.hypot(float(marvin.state[0]) - curr_goal[0], \
-    #         float(marvin.state[1]) - curr_goal[1])
-
-
+    #Visit goal1, works correctly
     for i in range(5000):
-        cmd_v, cmd_w = feedback_lin(marvin.state, goal1[0] - marvin.state[0], \
-            goal1[1] - marvin.state[1], EPSILON)
-                
+        cmd_v, cmd_w = feedback_lin(r2d2.state, goal1[0] - r2d2.state[0], \
+            goal1[1] - r2d2.state[1], EPSILON)
         (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, ROBOT_RADIUS)
-        marvin.travel(0.1 * limited_cmd_v, 0.1 * limited_cmd_w)
+        r2d2.travel(0.1 * limited_cmd_v, 0.1 * limited_cmd_w)
+    #Visit goal2, does not work, robot gets stuck at ~(2.5, 9)
     for i in range(10000):
-        cmd_v, cmd_w = feedback_lin(marvin.state, goal2[0] - marvin.state[0], \
-            goal2[1] - marvin.state[1], EPSILON)
+        cmd_v, cmd_w = feedback_lin(r2d2.state, goal2[0] - r2d2.state[0], \
+            goal2[1] - r2d2.state[1], EPSILON)
         (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, ROBOT_RADIUS)
-        marvin.travel(0.01 * limited_cmd_v, 0.01 * limited_cmd_w)
+        r2d2.travel(0.01 * limited_cmd_v, 0.01 * limited_cmd_w)
 
     '''PLOTTING'''
     plt.style.use('seaborn-whitegrid')
-    x_coords = marvin.truthpose[:,0]
-    y_coords = marvin.truthpose[:,1]
+    x_coords = r2d2.truthpose[:,0]
+    y_coords = r2d2.truthpose[:,1]
     fig, ax = plt.subplots()
     ax.plot(x_coords, y_coords, '-b')
 
     plt.xlim([-20, 20])
     plt.ylim([-20, 20])
     plt.show()
+
+    '''
+    Below is an attempt at having the robot visit a series of goals, did not work
+    '''
+
+        # while len(goals) > 0:
+    # # for i in range(500):
+    #     curr_goal = goals.pop(0)
+    #     distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
+    #         float(r2d2.state[1]) - curr_goal[1])
+
+    #     while distance_away > 0.1:
+    #         print(curr_goal)
+    #         print(r2d2.state)
+    #         print(distance_away)
+    #         cmd_v, cmd_w = feedback_lin(r2d2.state, curr_goal[0] - r2d2.state[0], \
+    #             curr_goal[1] - r2d2.state[1], EPSILON)
+            
+    #         (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, ROBOT_RADIUS)
+    #         r2d2.travel(0.1 * limited_cmd_v, 0.1 * limited_cmd_w)
+
+    #         distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
+    #         float(r2d2.state[1]) - curr_goal[1])
