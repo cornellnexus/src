@@ -49,8 +49,10 @@ def feedback_lin(curr_pose, vx_global, vy_global, epsilon):
     """
     theta = float(curr_pose[2])
     v = vx_global * math.cos(theta) + vy_global * math.sin(theta)
-    w = (-1/epsilon) * vx_global * math.sin(theta) + (1/epsilon) * v * math.cos(theta)
+    w = (-1/epsilon) * vx_global * math.sin(theta) + (1/epsilon) * vy_global * math.cos(theta)
     return (v,w)
+# test_state = np.array([[0],[0],[math.pi/2]])
+# print(feedback_lin(test_state, 5, 10, 0.1))
 
 
 def limit_cmds(v, w, max_v, wheel_to_center):
@@ -61,7 +63,7 @@ def limit_cmds(v, w, max_v, wheel_to_center):
     v_leftwheel = (-w * diameter + 2*v)/2
     v_rightwheel = (w*diameter + 2*v)/2
 
-    if abs(v_leftwheel) >= max_v and abs(v_rightwheel) <= max_v:
+    if abs(v_leftwheel) > max_v and abs(v_rightwheel) <= max_v:
         alpha = max_v/abs(v_leftwheel)
     elif abs(v_leftwheel) <= max_v and abs(v_rightwheel) > max_v:
         alpha = max_v/abs(v_rightwheel)   
@@ -79,11 +81,12 @@ def limit_cmds(v, w, max_v, wheel_to_center):
 
 def integrate_odom(pose, d, phi):
     if phi == 0:
-        new_x = pose[0] + d * math.cos(phi)
-        new_y = pose[1] + d * math.sin(phi)
+        new_x = pose[0] + d * math.cos(pose[2])
+        new_y = pose[1] + d * math.sin(pose[2])
         new_theta = pose[2]
     else:
         new_x = pose[0] + (d/phi) * (math.sin(pose[2]+phi) - math.sin(pose[2]))
         new_y = pose[1] + (d/phi) * (-math.cos(pose[2]+phi) + math.cos(pose[2]))
-        new_theta = pose[2] + phi
+        new_theta = (pose[2] + phi) % (2*math.pi)
+        # new_theta = (pose[2] + phi)
     return np.array([[float(new_x)], [float(new_y)], [float(new_theta)]])
