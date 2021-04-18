@@ -14,7 +14,7 @@ class Robot:
     Initializes the robot with the given position and heading.
     Parameters:
     state = Robot's state, np.array
-    phase = 'collect' when traversing through grid, 'return' when returning to \
+    phase = 'collect' when traversing through grid, 'return' when returning to 
         base station
     is_sim = False when running code with physical robot, True otherwise
     Preconditions:
@@ -80,8 +80,9 @@ if __name__ == "__main__":
     # Used in limit_cmds
     MAX_V = .5
     ROBOT_RADIUS = 0.2
-    #Range for which robot has 'visited' the goal
+
     ALLOWED_DIST_ERROR = 0.5
+    TIME_STEP = 0.1
 
     curr_goal_ind = 0
 
@@ -95,7 +96,8 @@ if __name__ == "__main__":
             # print(curr_goal)
             # print(r2d2.state)
             # print(distance_away)
-            cmd_v, cmd_w = feedback_lin(r2d2.state, curr_goal[0] - r2d2.state[0], \
+            cmd_v, cmd_w = feedback_lin(r2d2.state, curr_goal[0] - 
+            r2d2.state[0], \
                 curr_goal[1] - r2d2.state[1], EPSILON)
             
             (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, ROBOT_RADIUS)
@@ -103,7 +105,7 @@ if __name__ == "__main__":
             curr_y = r2d2.state[1]
             curr_theta = r2d2.state[2]
             
-            r2d2.travel(limited_cmd_v, limited_cmd_w)
+            r2d2.travel(TIME_STEP * limited_cmd_v, TIME_STEP * limited_cmd_w)
             
             distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
             float(r2d2.state[1]) - curr_goal[1])
@@ -149,9 +151,6 @@ if __name__ == "__main__":
 
         return circle_patch, wedge_patch
 
-    """
-    Begins the animation
-    """
     anim = animation.FuncAnimation(
         fig, animate, init_func=init, frames=np.shape(r2d2.truthpose)[0], interval=20, blit=True
     )
