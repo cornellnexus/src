@@ -1,11 +1,11 @@
 import numpy as np
 import math
-from kinematics import limit_cmds, feedback_lin, integrate_odom
+from kinematics import integrate_odom
 
 """
 Defines a dummy robot to be used for debugging
 """
-class SimRobot:
+class Robot:
     """
     Initializes the robot with the given position and heading.
     Parameters:
@@ -22,7 +22,7 @@ class SimRobot:
         
         self.state = np.array([[x_pos],[y_pos],[heading]])
         self.truthpose = np.transpose(np.array([[x_pos],[y_pos],[heading]]))
-        
+        self.is_sim = is_sim
         self.phase = init_mode
         self.battery = init_charge
         self.waste_capacity = init_capacity
