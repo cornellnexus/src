@@ -3,9 +3,9 @@ import math
 from kinematics import limit_cmds, feedback_lin, integrate_odom
 
 """
-Defines a robot to be used to track state variables as well as for debugging
+Defines a dummy robot to be used for debugging
 """
-class Robot:
+class SimRobot:
     """
     Initializes the robot with the given position and heading.
     Parameters:
@@ -14,7 +14,8 @@ class Robot:
         base station
     is_sim = False when running code with physical robot, True otherwise
     Preconditions:
-    heading is in radians, where 0 = East and pi/2 = North
+    position is list of size 2
+    heading is in range [0..359]
     """
     def __init__(self, x_pos, y_pos, heading, init_mode = 'collect', \
         is_sim = True, init_charge = 100, init_capacity = 100): 
@@ -23,7 +24,6 @@ class Robot:
         self.truthpose = np.transpose(np.array([[x_pos],[y_pos],[heading]]))
         
         self.phase = init_mode
-        self.is_sim = is_sim
         self.battery = init_charge
         self.waste_capacity = init_capacity
     

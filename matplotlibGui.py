@@ -1,13 +1,4 @@
-'''
-cayugaplot4 is the current working version of cayuga plot. As of now, it
-plots the robot's location and heading using an arbitrarily defined animate 
-function. It uses matplotlib wedges and circles and the funcAnimation 
-feature to plot. 
-The goal is to 
-1) rewrite the animate function so that the robot's state
-   is plotted according to the Kalman Filter output, and 
-2) embed this graph into the GUI. 
-'''
+import gui_popup
 
 import numpy as np
 import pandas as pd
@@ -16,13 +7,15 @@ from matplotlib import pyplot as plt
 from matplotlib import animation as animation
 from matplotlib import patches as patch
 from matplotlib.widgets import Button
-from UserUtils import *
+# from UserUtils import *
+
+matplotlib.use('TkAgg')
 
 '''
 When running this file, input 0, 10, 0, 10 for the corresponding values
 below. get_coord_inputs() is documented in UserUtils.py
 '''
-longMin, longMax, latMin, latMax = get_coord_inputs()
+longMin, longMax, latMin, latMax = gui_popup.run_popup()
 
 '''
 Set up window
@@ -35,7 +28,10 @@ ax.set_xlim(BoundaryBox[0], BoundaryBox[1])
 ax.set_ylim(BoundaryBox[2], BoundaryBox[3])
 ax.imshow(ruh_m, zorder=0, extent=BoundaryBox, aspect='equal')
 fig.set_dpi(100)
-fig.set_size_inches(7, 6.5)
+# fig.patch.set_facecolor('blue')
+# fig.patch.set_alpha(0.5)
+# fig.set_size_inches(7, 6.5) original size
+fig.set_size_inches(6, 5)
 
 '''
 Create circle patch object to represent moving robot, and wedge patch for
@@ -67,8 +63,8 @@ def animate(i):
     wedge_patch.theta1 = wedge_patch.theta1 % 360
     wedge_patch.theta2 = wedge_patch.theta2 % 360
 
-    print(wedge_patch.theta1, wedge_patch.theta2)
-    print(wedge_patch.center)
+    # print(wedge_patch.theta1, wedge_patch.theta2)
+    # print(wedge_patch.center)
     return circle_patch, wedge_patch
 
 '''
@@ -80,4 +76,9 @@ anim = animation.FuncAnimation(fig, animate,
                                interval=20,
                                blit=True)
 
-plt.show()
+#plt.show()
+fig = plt.gcf()
+
+# ------------------------------------- GUI 2 --------------------------------------------------
+def get_fig():
+    return fig
