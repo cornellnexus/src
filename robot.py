@@ -1,8 +1,9 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+from matplotlib import animation as animation
+from matplotlib import patches as patch
 from kinematics import limit_cmds, feedback_lin, integrate_odom
-from collections import deque
 import time
 
 """
@@ -79,6 +80,8 @@ if __name__ == "__main__":
     # Used in limit_cmds
     MAX_V = .5
     ROBOT_RADIUS = 0.2
+    #Range for which robot has 'visited' the goal
+    ALLOWED_DIST_ERROR = 0.5
 
     curr_goal_ind = 0
 
@@ -88,7 +91,7 @@ if __name__ == "__main__":
         distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
             float(r2d2.state[1]) - curr_goal[1])
 
-        while distance_away > 0.2:
+        while distance_away > ALLOWED_DIST_ERROR:
             # print(curr_goal)
             # print(r2d2.state)
             # print(distance_away)
@@ -107,27 +110,6 @@ if __name__ == "__main__":
 
         curr_goal_ind += 1
 
-    # #Visit goal1, works correctly
-    # for i in range(5000):
-    #     cmd_v, cmd_w = feedback_lin(r2d2.state, goal1[0] - r2d2.state[0], \
-    #         goal1[1] - r2d2.state[1], EPSILON)
-    #     (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, ROBOT_RADIUS)
-    #     r2d2.travel(0.1 * limited_cmd_v, 0.1 * limited_cmd_w)
-
-    # #Visit goal2, does not work, robot gets stuck at ~(2.5, 9)
-    # for i in range(10000):
-    #     x_error = goal2[0] - r2d2.state[0]
-    #     y_error = goal2[1] - r2d2.state[1]
-    #     cmd_v, cmd_w = feedback_lin(r2d2.state, x_error, y_error, EPSILON)
-    #     curr_x = r2d2.state[0]
-    #     curr_y = r2d2.state[1]
-    #     curr_theta = np.degrees(r2d2.state[2])
-
-        
-    #     (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, 
-    #     ROBOT_RADIUS)
-    #     r2d2.travel(0.01 * limited_cmd_v, 0.01 * limited_cmd_w)
-
     '''PLOTTING'''
     plt.style.use('seaborn-whitegrid')
     x_coords = r2d2.truthpose[:,0]
@@ -136,8 +118,42 @@ if __name__ == "__main__":
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
     ax.plot(goals[:,0], goals[:,1], 'rx')
-# [(5,10),(2,1),(6,7),(4,7)]
 
     plt.xlim([-20, 20])
     plt.ylim([-20, 20])
+    # plt.show()
+
+    circle_patch = plt.Circle((5, 5), 1, fc="green")
+    wedge_patch = patch.Wedge(
+        (5, 1), 3, 100, 80, animated=True, fill=False, width=2, ec="g", hatch="xx"
+    )
+
+    def init():
+        circle_patch.center = (0, 0)
+        ax.add_patch(circle_patch)
+        # ax.add_patch(arc_patch)
+        ax.add_patch(wedge_patch)
+        return circle_patch, wedge_patch
+
+    def animate(i):
+        x_coord = r2d2.truthpose[i,0]
+        y_coord = r2d2.truthpose[i,1]
+        circle_patch.center = (x_coord, y_coord)
+        wedge_patch.update({"center": [x_coord, y_coord]})
+        wedge_patch.theta1 = np.degrees(r2d2.truthpose[i,2]) - 10
+        wedge_patch.theta2 = np.degrees(r2d2.truthpose[i,2]) + 10
+
+        # print(wedge_patch.theta1, wedge_patch.theta2)
+        # print(wedge_patch.center)
+
+
+        return circle_patch, wedge_patch
+
+    """
+    Begins the animation
+    """
+    anim = animation.FuncAnimation(
+        fig, animate, init_func=init, frames=np.shape(r2d2.truthpose)[0], interval=20, blit=True
+    )
+
     plt.show()
