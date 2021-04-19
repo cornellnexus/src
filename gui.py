@@ -57,7 +57,7 @@ def draw_figure(canvas, figure):
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
 
-def setup_gui():
+def setup_gui(bounds):
     data = {
         "current_output" : "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>.",
         "current_data" : "Pounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\nTotal Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\nEstimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
@@ -82,7 +82,8 @@ def setup_gui():
     element_justification='center', font='Helvetica 18', location=(0,0), \
     size=(1200,700), resizable=True)
 
-    fig = matplotlibGui.get_fig()
+    plt, anim = matplotlibGui.get_graph_info(bounds)
+    fig = plt.gcf()
     # add the plot to the window
     fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
     return (window, data)
@@ -104,8 +105,8 @@ def update_input(str, window, current_output):
 '''
 Run the GUI
 '''
-def run_gui():
-    window, data = setup_gui()
+def run_gui(bounds):
+    window, data = setup_gui(bounds)
     while True:  # Event Loop
         event, values = window.read()
         # print(event, values)
@@ -124,5 +125,8 @@ def run_gui():
             window['-COMMANDLINE-'].update("")
     window.close()
 
-#runs the gui   
-run_gui()
+#runs the gui popup asking for latitude and longitude
+bounds = gui_popup.run_popup()
+#run the gui if the user doesn't close out of the window
+if bounds != None:
+    run_gui(bounds)
