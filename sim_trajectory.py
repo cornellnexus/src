@@ -8,6 +8,7 @@ import time
 from robot import Robot
 
 if __name__ == "__main__":
+    #adding a comment
     # Initialize robot
     r2d2 = Robot(-5,-10,math.pi/2)
 
