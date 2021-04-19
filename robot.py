@@ -10,6 +10,7 @@ class Robot:
     Initializes the robot with the given position and heading.
     Parameters:
     state = Robot's state, np.array
+        state contain's the robot's x position, y position, and heading
     phase = 'collect' when traversing through grid, 'return' when returning to 
         base station
     is_sim = False when running code with physical robot, True otherwise
@@ -31,6 +32,7 @@ class Robot:
     # Moves the robot with both linear and angular velocity
         self.state = np.round(integrate_odom(self.state, dist, turn_angle),3)
         
+        #if it is a simulation, 
         if self.is_sim:
             self.truthpose = np.append(self.truthpose,np.transpose(self.state), 0)
 

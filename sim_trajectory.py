@@ -5,11 +5,12 @@ from matplotlib import animation as animation
 from matplotlib import patches as patch
 from kinematics import limit_cmds, feedback_lin, integrate_odom
 import time
+import random
 from robot import Robot
 
 if __name__ == "__main__":
-    #adding a comment
     # Initialize robot
+    #xpos, ypos, heading
     r2d2 = Robot(-5,-10,math.pi/2)
 
     '''MOTION CONTROL'''
@@ -34,20 +35,33 @@ if __name__ == "__main__":
     while curr_goal_ind < np.shape(goals)[0]:
     # for i in range(500):
         curr_goal = goals[curr_goal_ind, :]
+        #add noise to current r2d2 position reading
+
+        #TODO: currently if the noise range is super big, you can see the robot 'jumping' over some areas 
+  
         distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
             float(r2d2.state[1]) - curr_goal[1])
 
         while distance_away > ALLOWED_DIST_ERROR:
+
+            #TODO: produce bellcurve error
+            #match expected error of the gps
+            #rn its all in meters
+            r2d2.state[0] += random.uniform(-1,1) 
+            r2d2.state[1] += random.uniform(-1,1)
+
             # print(curr_goal)
             # print(r2d2.state)
             # print(distance_away)
+            #velcoity and angular velocity
             cmd_v, cmd_w = feedback_lin(r2d2.state, curr_goal[0] - 
             r2d2.state[0], \
                 curr_goal[1] - r2d2.state[1], EPSILON)
             
+            #clamping of velocities?
             (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, ROBOT_RADIUS)
             
-            r2d2.travel(TIME_STEP * limited_cmd_v, TIME_STEP * limited_cmd_w)
+            r2d2.travel(TIME_STEP * (limited_cmd_v), TIME_STEP * (limited_cmd_w))
             
             distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
             float(r2d2.state[1]) - curr_goal[1])
