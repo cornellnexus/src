@@ -1,7 +1,6 @@
 
 Get path, convert into queue
 Initialize robot
-
 while queue is not empty:
     pop off target node [lawn mower traversal]
     read current location from sensors [predicted_loc]
