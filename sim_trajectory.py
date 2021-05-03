@@ -19,16 +19,20 @@ if __name__ == "__main__":
     [10,0],[10,-5],[10,-10]])
 
     #Larger epsilons means a larger turning radius
-    EPSILON = 2
+    EPSILON = 0.2
 
     # Used in limit_cmds
     MAX_V = 0.5
     ROBOT_RADIUS = 0.2
-    ALLOWED_DIST_ERROR = 0.5
+    ALLOWED_DIST_ERROR = 0.5 # was 0.5, weird when 10 and everything 0.1
     TIME_STEP = 0.1 # is this the time by which we are going to sleep after each movement?
 
-    loc_pid = PID(
-        Kp=0.1, Ki=0.0, Kd=0.0, target=0, sample_time=TIME_STEP, output_limits=(None, None)
+    loc_pid_x = PID(
+        Kp=1, Ki=0.1, Kd=0.1, target=0, sample_time=TIME_STEP, output_limits=(None, None)
+    )
+
+    loc_pid_y = PID(
+        Kp=1, Ki=0.1, Kd=0.1, target=0, sample_time=TIME_STEP, output_limits=(None, None)
     )
 
     curr_goal_ind = 0
@@ -48,8 +52,8 @@ if __name__ == "__main__":
             x_error = curr_goal[0] - r2d2.state[0]
             y_error = curr_goal[1] - r2d2.state[1]
 
-            x_vel = loc_pid.update(x_error)
-            y_vel = loc_pid.update(y_error)
+            x_vel = loc_pid_x.update(x_error)
+            y_vel = loc_pid_y.update(y_error)
 
             # the x_vel and y_vel we pass into feedback_lin should be global. Are they?
             cmd_v, cmd_w = feedback_lin(predicted_state, x_vel, y_vel, EPSILON)
