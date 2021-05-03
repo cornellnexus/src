@@ -46,6 +46,7 @@ def feedback_lin(curr_pose, vx_global, vy_global, epsilon):
     Given desired x and y velocity in the inertial frame (calculated by 
     desired pose - current pose), returns the linear and angular 
     velocity the robot should move at.
+        curr_pose: [3x1] (is this global?)
     """
     theta = float(curr_pose[2])
     v = vx_global * math.cos(theta) + vy_global * math.sin(theta)

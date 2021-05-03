@@ -22,7 +22,8 @@ def set_up():
     return window    
 
 '''
-Runs the popup window
+Runs the popup window. Input 0, 10, 0, 10 for the 
+corresponding values below.
 '''
 def run_popup():
     window = set_up()

@@ -7,6 +7,7 @@ from kinematics import limit_cmds, feedback_lin, integrate_odom
 import time
 import random
 from robot import Robot
+from pid_controller import PID
 
 if __name__ == "__main__":
     # Initialize robot
@@ -14,68 +15,68 @@ if __name__ == "__main__":
     r2d2 = Robot(-5,-10,math.pi/2)
 
     '''MOTION CONTROL'''
-    goal1 = (5,10)
-    goal2 = (2,1)
-    goals = np.array([[5,5],[-5,5],[-5,-5],[5,-5]])
-    # goals = [(-2.5,-5)]
-    goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],[0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],[10,0],[10,-5],[10,-10]])
-
     #simulated noise added to robot's state 
-    NOISE_RANGE = .2
+    NOISE_RANGE = 0.1
+    #TODO: Integrate Grid
+    goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],\
+    [0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],\
+    [10,0],[10,-5],[10,-10]])
 
     #Larger epsilons means a larger turning radius
-    EPSILON = 2
-    # Used in limit_cmds
-    MAX_V = .5
-    ROBOT_RADIUS = 0.2
+    EPSILON = 0.2
 
-    ALLOWED_DIST_ERROR = 0.5
-    TIME_STEP = 0.1
+    # Used in limit_cmds
+    MAX_V = 0.5
+    ROBOT_RADIUS = 0.2
+    ALLOWED_DIST_ERROR = 0.5 # was 0.5, weird when 10 and everything 0.1
+    TIME_STEP = 0.1 # is this the time by which we are going to sleep after each movement?
+
+    loc_pid_x = PID(
+        Kp=1, Ki=0.1, Kd=0.1, target=0, sample_time=TIME_STEP, output_limits=(None, None)
+    )
+
+    loc_pid_y = PID(
+        Kp=1, Ki=0.1, Kd=0.1, target=0, sample_time=TIME_STEP, output_limits=(None, None)
+    )
 
     curr_goal_ind = 0
+    num_goals = np.shape(goals)[0]
 
-    while curr_goal_ind < np.shape(goals)[0]:
-    # for i in range(500):
-        curr_goal = goals[curr_goal_ind, :]
-        #add noise to current r2d2 position reading
+    for curr_goal_ind in range(num_goals): # while queue (once we integrate Grid)
+        
+        curr_goal = goals[curr_goal_ind] # target coords
+        predicted_state = r2d2.state # this will come from Kalman Filter
 
-        #TODO: currently if the noise range is super big, you can see the robot 'jumping' over some areas 
-  
-        distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
-            float(r2d2.state[1]) - curr_goal[1])
+        # location error (in meters)
+        distance_away = math.hypot(float(predicted_state[0]) - curr_goal[0], \
+            float(predicted_state[1]) - curr_goal[1])
 
         while distance_away > ALLOWED_DIST_ERROR:
-
-            #TODO: produce bellcurve error
-            #match expected error of the gps
-            #rn its all in meters
-            # r2d2.state[0] += random.uniform(-.1,.1) 
-            # r2d2.state[1] += random.uniform(-.1,.1)
-            # print("NORMAL VALUE STATE 0: " + str(r2d2.state[0]))
-            # print("USING NORMAL FUNCTION VALUE STATE 0: " + str(np.random.normal(r2d2.state[0],0.1)))
             r2d2.state[0] = np.random.normal(r2d2.state[0],NOISE_RANGE)
-            # print("NORMAL VALUE STATE 1: " + str(r2d2.state[1]))
-            # print("USING NORMAL FUNCTION VALUE STATE 1: " + str(np.random.normal(r2d2.state[1],0.1)))
             r2d2.state[1] = np.random.normal(r2d2.state[1],NOISE_RANGE)
 
+            x_error = curr_goal[0] - r2d2.state[0]
+            y_error = curr_goal[1] - r2d2.state[1]
 
-            # print(curr_goal)
-            # print(r2d2.state)
-            # print(distance_away)
-            #velcoity and angular velocity
-            cmd_v, cmd_w = feedback_lin(r2d2.state, curr_goal[0] - 
-            r2d2.state[0], \
-                curr_goal[1] - r2d2.state[1], EPSILON)
+            x_vel = loc_pid_x.update(x_error)
+            y_vel = loc_pid_y.update(y_error)
+
+            # the x_vel and y_vel we pass into feedback_lin should be global. Are they?
+            cmd_v, cmd_w = feedback_lin(predicted_state, x_vel, y_vel, EPSILON)
             
             #clamping of velocities?
             (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, ROBOT_RADIUS)
             
-            r2d2.travel(TIME_STEP * (limited_cmd_v), TIME_STEP * (limited_cmd_w))
-            
-            distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
-            float(r2d2.state[1]) - curr_goal[1])
+            r2d2.travel(TIME_STEP * limited_cmd_v, TIME_STEP * limited_cmd_w)
+            # sleep in real robot.
 
-        curr_goal_ind += 1
+            # Get state after movement:
+            predicted_state = r2d2.state # this will come from Kalman Filter
+            # location error (in meters)
+            distance_away = math.hypot(float(predicted_state[0]) - curr_goal[0], \
+                float(predicted_state[1]) - curr_goal[1])
+
+        # Turning? Heading pid?
 
     '''PLOTTING'''
     plt.style.use('seaborn-whitegrid')

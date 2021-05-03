@@ -7,39 +7,37 @@ from matplotlib import pyplot as plt
 from matplotlib import animation as animation
 from matplotlib import patches as patch
 from matplotlib.widgets import Button
-# from UserUtils import *
 
 matplotlib.use('TkAgg')
 
 '''
-When running this file, input 0, 10, 0, 10 for the corresponding values
-below. get_coord_inputs() is documented in UserUtils.py
-'''
-longMin, longMax, latMin, latMax = gui_popup.run_popup()
-
-'''
 Set up window
 '''
-BoundaryBox = [longMin, longMax, latMin, latMax]
-ruh_m = plt.imread('map.png')
-fig, ax = plt.subplots(figsize=(8, 7))
-ax.set_title('Cayuga Lake Shore')
-ax.set_xlim(BoundaryBox[0], BoundaryBox[1])
-ax.set_ylim(BoundaryBox[2], BoundaryBox[3])
-ax.imshow(ruh_m, zorder=0, extent=BoundaryBox, aspect='equal')
-fig.set_dpi(100)
-# fig.patch.set_facecolor('blue')
-# fig.patch.set_alpha(0.5)
-# fig.set_size_inches(7, 6.5) original size
-fig.set_size_inches(6, 5)
+def setup(bounds): 
+    longMin, longMax, latMin, latMax = bounds
+    BoundaryBox = [longMin, longMax, latMin, latMax]
+    ruh_m = plt.imread('map.png')
+    fig, ax = plt.subplots(figsize=(8, 7))
+    ax.set_title('Cayuga Lake Shore')
+    ax.set_xlim(BoundaryBox[0], BoundaryBox[1])
+    ax.set_ylim(BoundaryBox[2], BoundaryBox[3])
+    ax.imshow(ruh_m, zorder=0, extent=BoundaryBox, aspect='equal')
+    fig.set_dpi(100)
+    # fig.patch.set_facecolor('blue')
+    # fig.patch.set_alpha(0.5)
+    # fig.set_size_inches(7, 6.5) original size
+    fig.set_size_inches(6, 5)
+    return fig, ax
 
 '''
 Create circle patch object to represent moving robot, and wedge patch for
 robot's heading
 '''
-circle_patch = plt.Circle((5, 5), 0.1, fc='black')
-wedge_patch = patch.Wedge(
-    (5, 1), 1, 30, 50, animated=True, fill=False, width=.9, ec='r', hatch='xx')
+def make_robot_symbol():
+    circle_patch = plt.Circle((5, 5), 0.1, fc='black')
+    wedge_patch = patch.Wedge(
+        (5, 1), 1, 30, 50, animated=True, fill=False, width=.9, ec='r', hatch='xx')
+    return circle_patch, wedge_patch
 
 def init():
     circle_patch.center = (5, 5)
@@ -62,23 +60,22 @@ def animate(i):
     wedge_patch.theta2 += (.5 * x)
     wedge_patch.theta1 = wedge_patch.theta1 % 360
     wedge_patch.theta2 = wedge_patch.theta2 % 360
-
     # print(wedge_patch.theta1, wedge_patch.theta2)
     # print(wedge_patch.center)
     return circle_patch, wedge_patch
 
 '''
-Begins the animation
+Returns information required to show the animated plot corresponding to the 
+given bounds.
 '''
-anim = animation.FuncAnimation(fig, animate,
+def get_graph_info(bounds):
+    global fig, ax, circle_patch, wedge_patch
+    fig, ax = setup(bounds)
+    circle_patch, wedge_patch = make_robot_symbol()
+    #Begins the animation
+    anim = animation.FuncAnimation(fig, animate,
                                init_func=init,
                                frames=360,
                                interval=20,
                                blit=True)
-
-#plt.show()
-fig = plt.gcf()
-
-# ------------------------------------- GUI 2 --------------------------------------------------
-def get_fig():
-    return fig
+    return plt, anim

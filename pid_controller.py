@@ -97,7 +97,7 @@ class PID:
         self.derivative = self.Kd * ((error - self.prev_error) / self.sample_time)
         value = self.proportional + self.integral + self.derivative 
         self.prev_error = error 
-        return value     
+        return value
 
     # TODO: ADD THIS FUNCTION
     # def get_error( )
