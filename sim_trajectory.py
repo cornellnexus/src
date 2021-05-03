@@ -20,6 +20,8 @@ if __name__ == "__main__":
     # goals = [(-2.5,-5)]
     goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],[0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],[10,0],[10,-5],[10,-10]])
 
+    #simulated noise added to robot's state 
+    NOISE_RANGE = .2
 
     #Larger epsilons means a larger turning radius
     EPSILON = 2
@@ -47,8 +49,15 @@ if __name__ == "__main__":
             #TODO: produce bellcurve error
             #match expected error of the gps
             #rn its all in meters
-            r2d2.state[0] += random.uniform(-1,1) 
-            r2d2.state[1] += random.uniform(-1,1)
+            # r2d2.state[0] += random.uniform(-.1,.1) 
+            # r2d2.state[1] += random.uniform(-.1,.1)
+            # print("NORMAL VALUE STATE 0: " + str(r2d2.state[0]))
+            # print("USING NORMAL FUNCTION VALUE STATE 0: " + str(np.random.normal(r2d2.state[0],0.1)))
+            r2d2.state[0] = np.random.normal(r2d2.state[0],NOISE_RANGE)
+            # print("NORMAL VALUE STATE 1: " + str(r2d2.state[1]))
+            # print("USING NORMAL FUNCTION VALUE STATE 1: " + str(np.random.normal(r2d2.state[1],0.1)))
+            r2d2.state[1] = np.random.normal(r2d2.state[1],NOISE_RANGE)
+
 
             # print(curr_goal)
             # print(r2d2.state)
