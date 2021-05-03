@@ -6,52 +6,70 @@ from matplotlib import patches as patch
 from kinematics import limit_cmds, feedback_lin, integrate_odom
 import time
 from robot import Robot
+from pid_controller import PID
 
 if __name__ == "__main__":
     # Initialize robot
     r2d2 = Robot(-5,-10,math.pi/2)
 
     '''MOTION CONTROL'''
-    goal1 = (5,10)
-    goal2 = (2,1)
-    goals = np.array([[5,5],[-5,5],[-5,-5],[5,-5]])
-    # goals = [(-2.5,-5)]
-    goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],[0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],[10,0],[10,-5],[10,-10]])
-
+    #TODO: Integrate Grid
+    goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],\
+    [0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],\
+    [10,0],[10,-5],[10,-10]])
 
     #Larger epsilons means a larger turning radius
-    EPSILON = 2
-    # Used in limit_cmds
-    MAX_V = .5
-    ROBOT_RADIUS = 0.2
+    EPSILON = 0.2
 
-    ALLOWED_DIST_ERROR = 0.5
-    TIME_STEP = 0.1
+    # Used in limit_cmds
+    MAX_V = 0.5
+    ROBOT_RADIUS = 0.2
+    ALLOWED_DIST_ERROR = 0.5 # was 0.5, weird when 10 and everything 0.1
+    TIME_STEP = 0.1 # is this the time by which we are going to sleep after each movement?
+
+    loc_pid_x = PID(
+        Kp=1, Ki=0.1, Kd=0.1, target=0, sample_time=TIME_STEP, output_limits=(None, None)
+    )
+
+    loc_pid_y = PID(
+        Kp=1, Ki=0.1, Kd=0.1, target=0, sample_time=TIME_STEP, output_limits=(None, None)
+    )
 
     curr_goal_ind = 0
+    num_goals = np.shape(goals)[0]
 
-    while curr_goal_ind < np.shape(goals)[0]:
-    # for i in range(500):
-        curr_goal = goals[curr_goal_ind, :]
-        distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
-            float(r2d2.state[1]) - curr_goal[1])
+    for curr_goal_ind in range(num_goals): # while queue (once we integrate Grid)
+        
+        curr_goal = goals[curr_goal_ind] # target coords
+        predicted_state = r2d2.state # this will come from Kalman Filter
+
+        # location error (in meters)
+        distance_away = math.hypot(float(predicted_state[0]) - curr_goal[0], \
+            float(predicted_state[1]) - curr_goal[1])
 
         while distance_away > ALLOWED_DIST_ERROR:
-            # print(curr_goal)
-            # print(r2d2.state)
-            # print(distance_away)
-            cmd_v, cmd_w = feedback_lin(r2d2.state, curr_goal[0] - 
-            r2d2.state[0], \
-                curr_goal[1] - r2d2.state[1], EPSILON)
+
+            x_error = curr_goal[0] - r2d2.state[0]
+            y_error = curr_goal[1] - r2d2.state[1]
+
+            x_vel = loc_pid_x.update(x_error)
+            y_vel = loc_pid_y.update(y_error)
+
+            # the x_vel and y_vel we pass into feedback_lin should be global. Are they?
+            cmd_v, cmd_w = feedback_lin(predicted_state, x_vel, y_vel, EPSILON)
             
             (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, MAX_V, ROBOT_RADIUS)
             
             r2d2.travel(TIME_STEP * limited_cmd_v, TIME_STEP * limited_cmd_w)
-            
-            distance_away = math.hypot(float(r2d2.state[0]) - curr_goal[0], \
-            float(r2d2.state[1]) - curr_goal[1])
+            # sleep in real robot.
 
-        curr_goal_ind += 1
+            # Get state after movement:
+            predicted_state = r2d2.state # this will come from Kalman Filter
+            # location error (in meters)
+            distance_away = math.hypot(float(predicted_state[0]) - curr_goal[0], \
+                float(predicted_state[1]) - curr_goal[1])
+
+        # Turning? Heading pid?
 
     '''PLOTTING'''
     plt.style.use('seaborn-whitegrid')
