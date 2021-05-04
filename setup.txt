@@ -3,3 +3,4 @@ pyserial==3.5
 pynmea2==1.15.0
 matplotlib==3.3.3
 haversine==2.3.0
+vincenty==0.1.4

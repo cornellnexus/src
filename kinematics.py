@@ -1,8 +1,12 @@
 import numpy as np
 import math 
+from vincenty import vincenty
+from haversine import haversine, Unit
+
 
 MAX_V = 5
 WHEEL_TO_CENTER = 0.2
+EARTH_RADIUS = 6371008.8 # meters
 
 def robot_to_global(pose,x_robot,y_robot):
     """
@@ -91,3 +95,39 @@ def integrate_odom(pose, d, phi):
         new_theta = (pose[2] + phi) % (2*math.pi)
         # new_theta = (pose[2] + phi)
     return np.array([[float(new_x)], [float(new_y)], [float(new_theta)]])
+
+def meters_to_gps(lat,long, dy, dx):
+    new_lat = lat  + ((dy / EARTH_RADIUS) * (180 / math.pi))/1000
+    new_long = long + ((dx / EARTH_RADIUS) * (180 / math.pi) / math.cos(lat * math.pi/180))
+    return new_lat,new_long
+
+def meters_to_lat(m):
+    lat = ((m / EARTH_RADIUS) * (180 / math.pi))
+    return lat
+
+def meters_to_long(m,latitude):
+    long = ((m / EARTH_RADIUS) * (180 / math.pi) / math.cos(latitude * math.pi/180))
+    return long
+
+def get_vincenty_x(coord1, coord2):
+    coord1_x = (coord2[0],coord1[1])
+    x = vincenty(coord1_x,coord2)*1000
+    return x
+
+def get_vincenty_y(coord1, coord2):
+    coord1_y = (coord1[0],coord2[1])
+    y = vincenty(coord1_y,coord2)*1000
+    return y
+
+def get_haversine_x(coord1, coord2):
+    coord1_x = (coord2[0],coord1[1])
+    x = haversine(coord1_x,coord2,unit = Unit.METERS)
+    return x
+
+def get_haversine_y(coord1, coord2):
+    coord1_y = (coord1[0],coord2[1])
+    y = haversine(coord1_y,coord2,unit = Unit.METERS)
+    return y
+
+
+
