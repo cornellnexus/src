@@ -35,8 +35,8 @@ def graph_traversal_path(g,map_name,distance_type):
     plt.plot(m_xlist, m_ylist, marker='o', markerfacecolor='blue')
     plt.ylim(min(m_ylist) - 1,max(m_ylist) + 1)
     plt.xlim(min(m_xlist) - 1,max(m_xlist) + 1)
-    for i_x, i_y in zip(m_xlist, m_ylist):
-        plt.text(i_x, i_y, '({}, {})'.format(i_x, i_y))
+    # for i_x, i_y in zip(m_xlist, m_ylist):
+    #     plt.text(i_x, i_y, '({}, {})'.format(i_x, i_y))
     plt.title(map_name + ' Grid Converted to Meters ' + '(' + distance_type + ')')
     plt.show()
 
@@ -49,9 +49,13 @@ class TestGenerateNodes(unittest.TestCase):
         # g = Grid(-76.483682, -76.483276, 42.444250, 42.444599)
         # graph_traversal_path(g.gps_traversal_path)
 
-    def test_pike_room(self):
-        g = Grid(-76.488495, -76.488419, 42.444496, 42.444543)
-        graph_traversal_path(g, 'Pike Room', 'Vincenty')
+    # def test_pike_room(self):
+    #     g = Grid(-76.488495, -76.488419, 42.444496, 42.444543)
+    #     graph_traversal_path(g, 'Pike Room', 'Vincenty')
+
+    def test_engineering_quad(self):
+        g = Grid(42.444250, 42.444599, -76.483682, -76.483276)
+        graph_traversal_path(g, 'Engineering Quad', 'Vincenty')
 
 if __name__ == '__main__':
     unittest.main()
