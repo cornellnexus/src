@@ -1,15 +1,14 @@
 from node import Node
 import numpy as np
-import math
 import serial
 import geopy.distance
 import matplotlib.pyplot as pltß
-from math import log
-import time
 from haversine import haversine, Unit
+from vincenty import vincenty
+from kinematics import meters_to_lat,meters_to_long,get_vincenty_x,get_vincenty_y,get_haversine_x,get_haversine_y
 
 
-class Grid:
+class Grid():
     """
     Instances represent the current grid of the robot's traversal.
 
@@ -21,101 +20,120 @@ class Grid:
             - Keys are (y,x), aka (latitude, longitude), tuples.
             - Values are Node objects
 
-        # obstacle_coordinates: List of Node objects that represent obstacle nodes [Node list]
-
         #lat_min: Minimum latitude boundary point of the actual map. [float]
         #lat_max: Maximum latitude boundary point of the actual map. [float]
         #long_min: Minimum longitude boundary point of the actual map. [float]
         #long_max: Maximum longitude boundary point of the actual map. [float]
 
-        #lat_step: Latitude step size in between Nodes of the grid
-        #long_step: Longitude step size in between Nodes of the grid 
-        #row_num: Number of rows of Nodes in the grid
-        #col_num: Number of columns of Nodes in the grid.
-        #true_min_lat: Minimum latitude boundary point of the generated grid. 
-        #true_max_lat: Maximum latitude boundary point of the generated grid.
-        #true_min_long: Minimum longitude boundary point of the generated grid. 
-        #true_max_long: Maximum longitude boundary point of the generated grid.
+        #num_rows: Number of rows of Nodes in the grid [int]
+        #num_cols: Number of columns of Nodes in the grid. [int]
     """
 
     def __init__(self, lat_min, lat_max, long_min, long_max):
-        self.traversal_path = []
-        self.nodes_dict = {}
-        self.obstacle_coordinates = []
+        STEP_SIZE_METERS = 2
 
+        # ----------- HELPER FUNCTIONS FOR GRID INITIALIZATION ------------# 
+        def calc_step(lat_min, lat_max, long_min, long_max,step_size_m):
+            """
+            Calculates the number of rows and columns needed for a grid with given 
+            latitude and longitude boundaries and a desired step size in meters. 
+            """
+            y_range = vincenty(
+                (long_min, lat_min), (long_min, lat_max))* 1000
+            x_range = vincenty(
+                (long_min, lat_min), (long_max, lat_min))*1000
+            # y_range = haversine(
+            #     (long_min, lat_min), (long_min, lat_max), unit = Unit.METERS)
+            # x_range = haversine(
+            #     (long_min, lat_min), (long_max, lat_min), unit = Unit.METERS)
+
+            num_y_steps = int(y_range // step_size_m)
+            num_x_steps = int(x_range // step_size_m)
+
+            num_rows = num_y_steps+1 # to account for starting node
+            num_cols = num_x_steps+1
+
+            return num_rows, num_cols
+
+        def generate_nodes(start_lat, start_long, rows, cols, step_size_m):
+            """
+            Returns a grid of GPS Node objects [Node np array] and the GPS grid's
+            corresponding traversal path [Node list]. 
+            """
+            gps_grid = np.ndarray([rows,cols],dtype=np.object)
+            origin = (start_lat, start_long)
+            gps_traversal_path = []
+
+            lat_step = meters_to_lat(step_size_m)
+            long_step = meters_to_long(step_size_m, start_lat)
+            
+            # Develop the gps grid and gps traversal path in order of lawnmower
+            # traversal. 
+            for i in range(cols):
+                for j in range(rows):
+                    if i % 2 == 0:
+                        node = Node(origin[0] + j*lat_step, origin[1] + i*long_step)
+                        gps_traversal_path.append(node)
+                        gps_grid[j,i] = node
+                    elif i % 2 == 1:
+                        lat_pos = origin[0] + \
+                            ((rows - 1) * lat_step) - j*lat_step
+                        long_pos = origin[1] + i*long_step
+                        node = Node(lat_pos, long_pos)
+                        gps_traversal_path.append(node)
+                        row_index = rows - (j+1)
+                        gps_grid[row_index,i] = node
+                             
+            return gps_grid, gps_traversal_path
+
+        def grid_convert(gps_grid):
+            """
+            Returns a grid [Node np array] in units of meters that corresponds 
+            to the gps_grid input. 
+            """
+            meters_grid = np.ndarray(gps_grid.shape,dtype = np.object)
+            rows = gps_grid.shape[0]
+            cols = gps_grid.shape[1]
+            gps_origin = (gps_grid[0,0]).get_coords()
+            for i in range(cols):
+                for j in range(rows):
+                    curr_coords = (gps_grid[j,i]).get_coords()
+                    # x_dist = get_haversine_x(gps_origin,curr_coords)
+                    # y_dist = get_haversine_y(gps_origin,curr_coords)
+                    x_dist = get_vincenty_x(gps_origin,curr_coords)
+                    y_dist = get_vincenty_y(gps_origin,curr_coords)
+                    meters_grid[j,i] = Node(x_dist,y_dist)
+
+            return meters_grid
+
+        # ----------------- GRID INITIALIZATION BEGINS ------------------- #
         self.lat_min = lat_min
         self.lat_max = lat_max
         self.long_min = long_min
         self.long_max = long_max
 
         self.obstacle_length_limit = 10
-
-        def calc_step(lat_min, lat_max, long_min, long_max):
-            """
-            Given latitude and longitude bounds for the desired space of the robot's 
-            traversal, calculates the step size in between nodes in longitude and 
-            latitude units using the desired size in meters. 
-            (Desired space btw nodes is currently 6 feet ~= 1.8288 m)
-            
-            Returns: latitude & longitude step size, number of rows, and number 
-            of columns.
-            """
-            lat_range = haversine(
-                (long_min, lat_min), (long_min, lat_max), unit = Unit.METERS)
-            long_range = haversine(
-                (long_min, lat_min), (long_max, lat_min), unit = Unit.METERS)
-
-            desired_step_size = 1.8288
-            # Underestimate using int() to achieve integer number of rows and columns
-            num_lat_steps = int(lat_range // desired_step_size)
-            num_long_steps = int(long_range // desired_step_size)
-
-            lat_step = (self.lat_max - self.lat_min) / num_lat_steps
-            long_step = (self.long_max - self.long_min) / num_long_steps
-
-            num_rows = num_lat_steps+1
-            num_cols = num_long_steps+1
-
-            return lat_step, long_step, num_rows, num_cols
-
-        def generate_nodes(start_lat, start_long, row_num, col_num, lat_step, long_step):
-            """
-            Given the starting position of the robot, the number of rows/cols of Nodes 
-            and the step size in between the Nodes, creates and returns a
-            dictionary and ordered list of all the Node objects in the grid.
-            Also, returns the longitude and latitude boundaries of the generated grid. 
-            """
-            origin = (start_lat, start_long)
-            traversal_path = []
-            nodes_dict = {}
-
-            true_min_long = start_long
-            true_min_lat = start_lat
-            true_max_lat = start_lat + (row_num - 1) * lat_step
-
-            for i in range(col_num):
-                for j in range(row_num):
-                    if i % 2 == 0:
-                        node = Node(origin[0] + j*lat_step, origin[1] + i*long_step)
-                        traversal_path.append(node)
-                        nodes_dict[node.get_coords()] = node
-                    elif i % 2 == 1:
-                        lat_pos = origin[0] + \
-                            ((row_num - 1) * lat_step) - j*lat_step
-                        long_pos = origin[1] + i*long_step
-                        node = Node(lat_pos, long_pos)
-                        traversal_path.append(node)
-                        nodes_dict[node.get_coords()] = node
-            return traversal_path, nodes_dict, true_min_lat, true_max_lat, true_min_long
-
-        self.lat_step, self.long_step, self.row_num, self.col_num = calc_step(lat_min, lat_max, long_min, long_max)
-        self.traversal_path, self.nodes_dict, self.true_min_lat, self.true_max_lat, self.true_min_long = generate_nodes(
-            lat_min, long_min, self.row_num, self.col_num, self.lat_step, self.long_step)
-
-# g = Grid(-76.4,-76.2,42.0,42.4)
-# print(g.traversal_path)
-
-# g = Grid(0,0.01,0,0.01)
-# g = Grid(42.4596, 42.4642, -76.5119, -76.5013)
-
-# print(g.traversal_path)
+        self.num_rows, self.num_cols = calc_step(lat_min, lat_max, long_min, long_max,STEP_SIZE_METERS)
+        self.gps_grid, self.gps_traversal_path = generate_nodes(
+            lat_min, long_min, self.num_rows, self.num_cols, STEP_SIZE_METERS)
+        self.meters_grid = grid_convert(self.gps_grid)
+                    
+    def get_traversal_path(self):
+        """
+        Returns the GPS traversal path in terms of meters for the current grid. 
+        """
+        m_traversal_path = []
+        meters_grid = self.meters_grid
+        rows = meters_grid.shape[0]
+        cols = meters_grid.shape[1]
+        print(meters_grid)
+        for i in range(cols):
+            for j in range(rows):
+                if i % 2 == 0:
+                    node = meters_grid[j,i]
+                    m_traversal_path.append(node)
+                elif i % 2 == 1:
+                    row_index = rows - (j+1)
+                    node = meters_grid[row_index,i]
+                    m_traversal_path.append(node)
+        return m_traversal_path
