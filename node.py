@@ -9,13 +9,18 @@ class Node:
             [0 = not traversed, 1 = traversed, 2 = obstacle] 
     """
 
-    def __init__(self, y, x, status = 0):
+    def __init__(self, y, x, is_border = '0',status = 0):
         self.lat = y
         self.long = x
+        self.is_border = is_border
         self.status = status
+        
 
     def get_coords(self):
         return (self.lat, self.long)
+    
+    def is_border_node(self):
+        return self.is_border
 
     def get_status(self):
         return self.status

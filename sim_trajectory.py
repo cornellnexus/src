@@ -7,16 +7,19 @@ from kinematics import limit_cmds, feedback_lin, integrate_odom
 import time
 from robot import Robot
 from pid_controller import PID
+from grid import Grid
+from collections import deque
 
 if __name__ == "__main__":
     # Initialize robot
-    r2d2 = Robot(-5,-10,math.pi/2)
+    r2d2 = Robot(0,0,math.pi/2)
 
     '''MOTION CONTROL'''
-    #TODO: Integrate Grid
-    goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],\
-    [0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],\
-    [10,0],[10,-5],[10,-10]])
+    # Grid: Engineering Quad
+    g = Grid(42.444250, 42.444599, -76.483682, -76.483276)
+
+    # pass in 'full' to get full traversal path
+    waypoints = g.get_waypoints('borders')
 
     #Larger epsilons means a larger turning radius
     EPSILON = 0.2
@@ -28,19 +31,19 @@ if __name__ == "__main__":
     TIME_STEP = 0.1 # is this the time by which we are going to sleep after each movement?
 
     loc_pid_x = PID(
-        Kp=1, Ki=0.1, Kd=0.1, target=0, sample_time=TIME_STEP, output_limits=(None, None)
+        Kp=1, Ki=0, Kd=0, target=0, sample_time=TIME_STEP, output_limits=(None, None)
     )
 
     loc_pid_y = PID(
-        Kp=1, Ki=0.1, Kd=0.1, target=0, sample_time=TIME_STEP, output_limits=(None, None)
+        Kp=1, Ki=0, Kd=0, target=0, sample_time=TIME_STEP, output_limits=(None, None)
     )
 
     curr_goal_ind = 0
-    num_goals = np.shape(goals)[0]
+    num_goals = len(waypoints)
 
-    for curr_goal_ind in range(num_goals): # while queue (once we integrate Grid)
+    for curr_goal_ind in range(num_goals): # TODO: while queue: should we switch to this format?
         
-        curr_goal = goals[curr_goal_ind] # target coords
+        curr_goal = waypoints[curr_goal_ind].get_coords() # target coords (meters)
         predicted_state = r2d2.state # this will come from Kalman Filter
 
         # location error (in meters)
@@ -72,16 +75,41 @@ if __name__ == "__main__":
         # Turning? Heading pid?
 
     '''PLOTTING'''
+    def waypoints_to_array(waypoints):
+        """
+        Tranforms a list of Node objects to an 2D np array of coordinates to be plotted
+        for easier plotting. 
+        """
+        n = len(waypoints)
+        waypoints_arr = np.empty([n,2])
+        for i in range(n):
+            waypoints_arr[i,:] = np.asarray(waypoints[i].get_coords())
+        return waypoints_arr 
+    
+    def get_plot_boundaries(meters_grid,delta):
+        """
+        Given some grid to be plotted, and a delta value, returns the desired 
+        x limits and y limits for the plot.
+        """
+        size = np.shape(meters_grid)
+        min_coords = meters_grid[0,0].get_coords()
+        max_coords = meters_grid[size[0]-1, size[1]-1].get_coords()
+        xlim = [min_coords[0]-delta, max_coords[0]+delta]
+        ylim = [min_coords[1]-delta, max_coords[1]+delta]
+        return xlim,ylim
+
     plt.style.use('seaborn-whitegrid')
     x_coords = r2d2.truthpose[:,0]
     y_coords = r2d2.truthpose[:,1]
     fig, ax = plt.subplots()
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
+    goals = waypoints_to_array(waypoints)
     ax.plot(goals[:,0], goals[:,1], 'rx')
 
-    plt.xlim([-20, 20])
-    plt.ylim([-20, 20])
+    xbounds,ybounds = get_plot_boundaries(g.meters_grid,5);
+    plt.xlim(xbounds)
+    plt.ylim(ybounds)
     # plt.show()
 
     circle_patch = plt.Circle((5, 5), 1, fc="green")
