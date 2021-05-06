@@ -27,18 +27,29 @@ def imu_format(acc, mag, gyro):
     }
     return imu_dict
 
-while time.time() < original_time + 15:
-    acc = imu.acceleration
-    mag = imu.magnetic
-    gyro = imu.gyro
+def get_imu():
+  acc = imu.acceleration) 
+  mag = imu.magnetic) 
+  gyro = imu.gyro
+
+  combined_data = imu_format(acc, mag, gyro)
+  return combined_data
+
+
+#Writing to CSV: 
+
+# while time.time() < original_time + 15:
+#     acc = imu.acceleration
+#     mag = imu.magnetic
+#     gyro = imu.gyro
       
-    combined_data = imu_format(acc, mag, gyro)
-    print(combined_data)
-    time.sleep(0.1)
+#     combined_data = imu_format(acc, mag, gyro)
+#     print(combined_data)
+#     time.sleep(0.1)
 
-    csv_data.append(combined_data)
+#     csv_data.append(combined_data)
 
-with open('imu_360.csv', 'w') as imu_file:
-    for datum in csv_data: 
-        imu_file.write(str(datum) + '\n')
-        time.sleep(0.1)
+# with open('imu_360.csv', 'w') as imu_file:
+#     for datum in csv_data: 
+#         imu_file.write(str(datum) + '\n')
+#         time.sleep(0.1)
