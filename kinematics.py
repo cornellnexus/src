@@ -97,34 +97,60 @@ def integrate_odom(pose, d, phi):
     return np.array([[float(new_x)], [float(new_y)], [float(new_theta)]])
 
 def meters_to_gps(lat,long, dy, dx):
+    """
+    Returns the approximate gps coordinate of starting at (lat,long) and moving 
+    dx meters horizontally (E-W) and dy meters vertically. [N-S]
+    """
     new_lat = lat  + ((dy / EARTH_RADIUS) * (180 / math.pi))/1000
     new_long = long + ((dx / EARTH_RADIUS) * (180 / math.pi) / math.cos(lat * math.pi/180))
     return new_lat,new_long
 
 def meters_to_lat(m):
+    """
+    Returns an approximation of m meters in units of latitude.
+    """
     lat = ((m / EARTH_RADIUS) * (180 / math.pi))
     return lat
 
 def meters_to_long(m,latitude):
+    """
+    Returns an approximation of m meters in units of longitude.
+    """
     long = ((m / EARTH_RADIUS) * (180 / math.pi) / math.cos(latitude * math.pi/180))
     return long
 
 def get_vincenty_x(coord1, coord2):
+    """
+    Calculates the longitudinal vincenty distance btw gps coordinates [coord1] 
+    and [coord2] in meters. 
+    """
     coord1_x = (coord2[0],coord1[1])
     x = vincenty(coord1_x,coord2)*1000
     return x
 
 def get_vincenty_y(coord1, coord2):
+    """
+    Calculates the latitude vincenty distance btw gps coordinates [coord1] and 
+    [coord2] in meters. 
+    """
     coord1_y = (coord1[0],coord2[1])
     y = vincenty(coord1_y,coord2)*1000
     return y
 
 def get_haversine_x(coord1, coord2):
+    """
+    Calculates the longitudinal haversine distance btw gps coordinates [coord1] 
+    and [coord2] in meters. 
+    """
     coord1_x = (coord2[0],coord1[1])
     x = haversine(coord1_x,coord2,unit = Unit.METERS)
     return x
 
 def get_haversine_y(coord1, coord2):
+    """
+    Calculates the latitude vincenty distance btw gps coordinates [coord1] 
+    and [coord2] in meters. 
+    """
     coord1_y = (coord1[0],coord2[1])
     y = haversine(coord1_y,coord2,unit = Unit.METERS)
     return y

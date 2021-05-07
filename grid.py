@@ -42,18 +42,12 @@ class Grid():
             """
             y_range = get_vincenty_y((lat_min,long_min), (lat_max,long_max))
             x_range = get_vincenty_x((lat_min,long_min), (lat_max,long_max))
-            # y_range = haversine(
-            #     (long_min, lat_min), (long_min, lat_max), unit = Unit.METERS)
-            # x_range = haversine(
-            #     (long_min, lat_min), (long_max, lat_min), unit = Unit.METERS)
 
             num_y_steps = int(y_range // step_size_m)
             num_x_steps = int(x_range // step_size_m)
 
             num_rows = num_y_steps+1 # to account for starting node
             num_cols = num_x_steps+1
-            print(num_rows)
-            print(num_cols)
 
             return num_rows, num_cols
 
@@ -102,8 +96,6 @@ class Grid():
                 for j in range(rows):
                     is_border = (j == 0 or j == rows-1)
                     curr_coords = (gps_grid[j,i]).get_coords()
-                    # x_dist = get_haversine_x(gps_origin,curr_coords)
-                    # y_dist = get_haversine_y(gps_origin,curr_coords)
                     x_dist = get_vincenty_x(gps_origin,curr_coords)
                     y_dist = get_vincenty_y(gps_origin,curr_coords)
                     meters_grid[j,i] = Node(x_dist,y_dist,is_border)
@@ -147,6 +139,7 @@ class Grid():
                         row_index = rows - (j+1)
                         node = meters_grid[row_index,i]
                         waypoints.append(node)
+        # 'borders' mode only traverses the nodes in the top and bottom rows of the grid
         elif mode == 'borders': 
             for i in range(cols):
                 if i % 2 == 0:
