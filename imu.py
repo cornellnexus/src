@@ -14,11 +14,7 @@ class IMU:
 
   #returns acc, mag, gyro data formatted in a dictionary
   def get_imu():
-    acc = imu.acceleration 
-    mag = imu.magnetic 
-    gyro = imu.gyro
-
-    combined_data = imu_format(acc, mag, gyro)
+    combined_data = imu_format(self.acc, self.mag, self.gyro)
     return combined_data
 
   #helper function to print sensor data in x, y, z
