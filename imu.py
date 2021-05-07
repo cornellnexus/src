@@ -5,38 +5,46 @@ import adafruit_lsm9ds1
 from gpio import * 
 
 i2c = busio.I2C(imu_scl, imu_sda)
-imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+class IMU: 
+  def __init__(self, i2c):
+    self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+    self.acc = imu.acceleration
+    self.mag = imu.magnetic 
+    self.gyro = imu.gyro 
 
-csv_data = [] #initialize empty list to store imu data
-original_time = time.time()
+  #returns acc, mag, gyro data formatted in a dictionary
+  def get_imu():
+    acc = imu.acceleration 
+    mag = imu.magnetic 
+    gyro = imu.gyro
 
-def pretty_print(data):
-    data = list(data)
-    coords = {
-      "x" : data[0], 
-      "y" : data[1], 
-      "z" : data[2]
-    }
-    return coords
+    combined_data = imu_format(acc, mag, gyro)
+    return combined_data
 
-def imu_format(acc, mag, gyro):
-    imu_dict = {
-      "acc" : pretty_print(acc),
-      "mag" : pretty_print(mag),
-      "gyro" : pretty_print(gyro), 
-    }
-    return imu_dict
+  #helper function to print sensor data in x, y, z
+  def pretty_print(data):
+      data = list(data)
+      coords = {
+        "x" : data[0], 
+        "y" : data[1], 
+        "z" : data[2]
+      }
+      return coords
 
-def get_imu():
-  acc = imu.acceleration) 
-  mag = imu.magnetic) 
-  gyro = imu.gyro
-
-  combined_data = imu_format(acc, mag, gyro)
-  return combined_data
+  #helper function to combine IMU sensors together
+  def imu_format(acc, mag, gyro):
+      imu_dict = {
+        "acc" : pretty_print(acc),
+        "mag" : pretty_print(mag),
+        "gyro" : pretty_print(gyro), 
+      }
+      return imu_dict
 
 
 #Writing to CSV: 
+
+# csv_data = [] #initialize empty list to store imu data
+# original_time = time.time()
 
 # while time.time() < original_time + 15:
 #     acc = imu.acceleration
