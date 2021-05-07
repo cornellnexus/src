@@ -4,9 +4,9 @@ import busio
 import adafruit_lsm9ds1
 from gpio import * 
 
-i2c = busio.I2C(imu_scl, imu_sda)
 class IMU: 
   def __init__(self, i2c):
+    self.i2c = busio.I2C(imu_scl, imu_sda)
     self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
     self.acc = imu.acceleration
     self.mag = imu.magnetic 
@@ -17,22 +17,12 @@ class IMU:
     combined_data = imu_format(self.acc, self.mag, self.gyro)
     return combined_data
 
-  #helper function to print sensor data in x, y, z
-  def pretty_print(data):
-      data = list(data)
-      coords = {
-        "x" : data[0], 
-        "y" : data[1], 
-        "z" : data[2]
-      }
-      return coords
-
   #helper function to combine IMU sensors together
   def imu_format(acc, mag, gyro):
       imu_dict = {
-        "acc" : pretty_print(acc),
-        "mag" : pretty_print(mag),
-        "gyro" : pretty_print(gyro), 
+        "acc" : tuple(acc),
+        "mag" : tuple(mag),
+        "gyro" : tuple(gyro), 
       }
       return imu_dict
 
@@ -41,6 +31,16 @@ class IMU:
 
 # csv_data = [] #initialize empty list to store imu data
 # original_time = time.time()
+
+  # #helper function to print sensor data in x, y, z
+  # def pretty_print(data):
+  #     data = list(data)
+  #     coords = {
+  #       "x" : data[0], 
+  #       "y" : data[1], 
+  #       "z" : data[2]
+  #     }
+  #     return coords
 
 # while time.time() < original_time + 15:
 #     acc = imu.acceleration
