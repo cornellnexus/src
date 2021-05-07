@@ -1,53 +1,59 @@
-"""This module serially reads the data from the IMU sensors""" 
-
 import time
 import board
 import busio
 import adafruit_lsm9ds1
 from gpio import * 
 
-i2c = busio.I2C(imu_scl, imu_sda)
-imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+class IMU: 
+  def __init__(self, i2c):
+    self.i2c = busio.I2C(imu_scl, imu_sda)
+    self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+    self.acc = self.imu.acceleration
+    self.mag = self.imu.magnetic 
+    self.gyro = self.imu.gyro 
 
-accelerometer = list(imu.acceleration)
-magnetometer = list(imu.magnetic)
-gyroscope = list(imu.gyro)
-temp = imu.temperature
+  #returns acc, mag, gyro data formatted in a dictionary
+  def get_imu(self):
+    combined_data = self.imu_format(self.acc, self.mag, self.gyro)
+    return combined_data
 
-csv_data = []
-collect_time = time.time() + 60 #collect data for one minute 
+  #helper function to combine IMU sensors together
+  def imu_format(self, acc, mag, gyro):
+      imu_dict = {
+        "acc" : tuple(acc),
+        "mag" : tuple(mag),
+        "gyro" : tuple(gyro), 
+      }
+      return imu_dict
 
 
-#[pretty_print(list)] is used to pretty print a [list] with three componenents 
-# (x, y, z) for coordinate labelling
-def pretty_print(list):
-    coords = {
-      "x" : list[0], 
-      "y" : list[1], 
-      "z" : list[2]
-    }
-    return coords
+#Writing to CSV: 
 
-#[imu_print()] takes type unit and prints a dictionary of combined imu data 
-def imu_format():
-    imu_dict = {
-      "acc" : pretty_print(accelerometer),
-      "mag" : pretty_print(magnetometer),
-      "gyro" : pretty_print(gyroscope), 
-      "temp" : temp
-    }
-    print(imu_dict)
-    return imu_dict
+# csv_data = [] #initialize empty list to store imu data
+# original_time = time.time()
 
-# [write_to_csv(data_lst) writes to "imu_noise.csv" imu data elements in 
-# data_lst
+  # #helper function to print sensor data in x, y, z
+  # def pretty_print(data):
+  #     data = list(data)
+  #     coords = {
+  #       "x" : data[0], 
+  #       "y" : data[1], 
+  #       "z" : data[2]
+  #     }
+  #     return coords
 
-def write_to_csv(data_lst): 
-  while time.time() < collect_time: 
-    data_lst.append(imu_format())
-  with open('imu_noise.csv', 'w') as imu_file:
-    for data in data_lst: 
-      imu_file.write(str(data) + '\n')
-      time.sleep(1)
-            
-write_to_csv(csv_data)
+# while time.time() < original_time + 15:
+#     acc = imu.acceleration
+#     mag = imu.magnetic
+#     gyro = imu.gyro
+      
+#     combined_data = imu_format(acc, mag, gyro)
+#     print(combined_data)
+#     time.sleep(0.1)
+
+#     csv_data.append(combined_data)
+
+# with open('imu_360.csv', 'w') as imu_file:
+#     for datum in csv_data: 
+#         imu_file.write(str(datum) + '\n')
+#         time.sleep(0.1)
