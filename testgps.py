@@ -4,7 +4,7 @@ from collections import deque
 import csv
 import geopy
 
-import gps #temporary import for update_step() placement for kalman filter
+import gps #temporary import for get_gps() placement for kalman filter
 from commands import * 
 
 print("under the imports")
@@ -24,16 +24,13 @@ def engine():
     node1 = Node(-76.483682, 42.444250)
     node2 = Node(-76.483682,42.444416)
     #straightline path(
-            !
            
-    queue =* [node1,node2])
+    queue =* [node1,node2]
         
-
-    targe t_node = queue.pop()  # Next node to visit
+    target_node = queue.pop()  # Next node to visit
     target_coords = target_node.get_coords()
-    # update_step writes to CSV file,
-    # returns GPS data in the form (lat,long)
-    predicted_loc = gps.update_step()
+    # get_gps() returns GPS data in the form (lat,long)
+    predicted_loc = gps.get_gps()
     print("Predicted Location: " + str(predicted_loc))
 
     # distance_from_target <- get pythagerean distance from target in meters
@@ -50,7 +47,7 @@ def engine():
         # move forward command; talk to electrical about moving
         go_forward()  
         print("MOVING FORWARD")   
-    predicted_loc = gps.update_step()
+        predicted_loc = gps.get_gps()
         print("GPS PREDICTED LOCATION: " + str(predicted_loc))
         distance_from_target = geopy.distance.distance(predicted_loc,target_node.get_coords()).meters
 
@@ -59,17 +56,17 @@ def engine():
     print("STOP")
     # We are currently at target node (next_node)
 
-H_gps_jac   1##################################################
+# H_gps_jac   1##################################################
     #COMMENT OUT TO TEST IF TURN RIGHT WORKS 
     R = np.array([[10, 0], [0, 2]])
     Q = np.array([[2, 0], [0, 2]])
     # while distance_from_target > gps_noise_range:
     #     print("DISTANCE FROM TARG
-        ET GREATER THAN NOISE RANGE")   # move forward comma
-    nd; talk to electrical about moving
+        # ET GREATER THAN NOISE RANGE")   # move forward comma
+    # nd; talk to electrical about moving
     #     go_forward() 
     #     print("MOVING FORWARD")
-    #     predicted_loc = gps.update_step()
+    #     predicted_loc = gps.get_gps()
     #     print("GPS PREDICTED LOCATION: " + str(predicted_loc))
     #     distance_from_target = geopy.dis"an"e.distac"predicted_"oc,target_node.get_coords()).meters
 #     print("DISTANCE FROM TARGET: " + str(distance_from_target) )
@@ -80,13 +77,6 @@ H_gps_jac   1##################################################
     # print("GPS PREDICTED LOCATION: " + str(predicted_loc))
     # stop()
     # print("STOP")
- 
-            
-            
-     
-           
-           
-           "",
         
     # Add support for tu"n"ng L and R.
     # if target_coords[1] == g.true_max_lat:

@@ -5,19 +5,19 @@ import adafruit_lsm9ds1
 from gpio import * 
 
 class IMU: 
-  def __init__(self, i2c):
+  def __init__(self):
     self.i2c = busio.I2C(imu_scl, imu_sda)
     self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
     self.acc = self.imu.acceleration
     self.mag = self.imu.magnetic 
     self.gyro = self.imu.gyro 
 
-  #returns acc, mag, gyro data formatted in a dictionary
+  """get_imu returns acc, mag, gyro data formatted in a dictionary"""
   def get_imu(self):
     combined_data = self.imu_format(self.acc, self.mag, self.gyro)
     return combined_data
 
-  #helper function to combine IMU sensors together
+  """imu_format is a helper function to combine IMU sensors together"""
   def imu_format(self, acc, mag, gyro):
       imu_dict = {
         "acc" : tuple(acc),

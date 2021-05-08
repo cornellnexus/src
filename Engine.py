@@ -7,7 +7,7 @@ from grid import *
 from collections import deque
 import csv
 import geopy
-import gps  # temporary import for update_step() placement for kalman filter
+import gps  # temporary import for get_gps() placement for kalman filter
 from commands import *
 
 # print("under the imports")
@@ -31,10 +31,9 @@ def engine():
     while queue:
         target_node = queue.popleft()  # Next node to visit
         target_coords = target_node.get_coords()
-        # update_step writes to CSV file,
-        # returns GPS data in the form (lat,long)
+        # get_gps() returns GPS data in the form (lat,long)
         predicted_loc = (longMin, latMin)
-        temp = gps.update_step()
+        temp = gps.get_gps()
         if temp is not None:
             predicted_loc = temp
         print("Predicted Location: " + str(predicted_loc))
@@ -52,7 +51,7 @@ def engine():
             # move forward command; talk to electrical about moving
             go_forward()
             print("Move forward")
-            temp = gps.update_step()
+            temp = gps.get_gps()
             if temp is not None:
                 predicted_loc = temp
             print("Predicted Location: " + str(predicted_loc))

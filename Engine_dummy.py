@@ -135,7 +135,7 @@ def engine_dummy():
         target_coords = queue.popleft()  # Next node to visit from grid
         
         # returns GPS data in the form (lat,long)
-        #predicted_loc = update_step() # robot
+        #predicted_loc = get_gps() # robot
         predicted_loc = r.get_position()
 
         # must be in form latitude,longitude.
