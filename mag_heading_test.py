@@ -48,17 +48,17 @@ ekf = EKF(gyr=gyr_data, acc=acc_data, mag=mag_data)
 print(np.shape(ekf.Q))
 height = np.shape(ekf.Q)[0]
 for i in range(height):
-    # top = 2.0*(ekf.Q[i,2]*ekf.Q[i,3] + ekf.Q[i,0]*ekf.Q[i,1])
-    # bottom = ekf.Q[i,0]*ekf.Q[i,0] - ekf.Q[i,1]*ekf.Q[i,1] - ekf.Q[i,2]*ekf.Q[i,2] + ekf.Q[i,3]*ekf.Q[i,3]
+    top = 2.0*(ekf.Q[i,2]*ekf.Q[i,3] + ekf.Q[i,0]*ekf.Q[i,1])
+    bottom = ekf.Q[i,0]*ekf.Q[i,0] - ekf.Q[i,1]*ekf.Q[i,1] - ekf.Q[i,2]*ekf.Q[i,2] + ekf.Q[i,3]*ekf.Q[i,3]
     
-    # heading = np.degrees(math.atan2(top,bottom))
+    heading = np.degrees(math.atan2(top,bottom))
 
     # print(heading)
 
-    ekf.Q[i,1] = 0;
-    ekf.Q[i,3] = 0;
-    m = math.sqrt(ekf.Q[i,0]*ekf.Q[i,0] + ekf.Q[i,2]*ekf.Q[i,2]);
-    ekf.Q[i,0] /= m
-    ekf.Q[i,2] /= m;
-    heading = np.degrees(2*math.acos(ekf.Q[i,0]));
+    # ekf.Q[i,1] = 0;
+    # ekf.Q[i,3] = 0;
+    # m = math.sqrt(ekf.Q[i,0]*ekf.Q[i,0] + ekf.Q[i,2]*ekf.Q[i,2]);
+    # ekf.Q[i,0] /= m
+    # ekf.Q[i,2] /= m;
+    # heading = np.degrees(2*math.acos(ekf.Q[i,0]));
     print(heading)
