@@ -1,7 +1,12 @@
 from node import *
 import unittest
 
-class TestGenerateNodes(unittest.TestCase):
+'''
+Unit tests for node.py
+'''
+
+class TestNodes(unittest.TestCase):
+    #Set up nodes to test on
     reg_node = Node(20, 30)
 
     border_node = Node(20, 30, '1')
@@ -24,6 +29,7 @@ class TestGenerateNodes(unittest.TestCase):
     max_long_node = Node(20, 180)
     min_long_node = Node(20, -180)
 
+    #Group initialized nodes together
     test_set = [
         reg_node, border_node, non_border_node, non_traversed_node,
         traversed_node, obstacle_node, non_trav_border_node, trav_border_node,
@@ -32,7 +38,7 @@ class TestGenerateNodes(unittest.TestCase):
         min_long_node
         ]
 
-    #Test/edge cases that should fail
+    #Test/edge cases that should fail when initialized?
     neg_lat_node = Node(-100, 30)
     pos_lat_node = Node(150, 30)
     neg_long_node = Node(20, -200)
