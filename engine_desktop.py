@@ -123,7 +123,7 @@ def graph_traversal_path(traversal_path):
 """
 Moves dummy robot along the traversal path and plots the traversal.
 """
-def engine_dummy():
+def engine_desktop():
     #longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
     g = generate_nodes()
     queue = deque(g)
@@ -202,7 +202,7 @@ def engine_dummy():
 
 
 if __name__ == "__main__":
-    engine_dummy()
+    engine_desktop()
 
     # for node in history:
     #     print("Plotting node")

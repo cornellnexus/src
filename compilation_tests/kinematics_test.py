@@ -1,5 +1,6 @@
 from kinematics import *
 import unittest
+import math
 
 '''
 Unit tests for kinematics.py
@@ -7,9 +8,10 @@ Unit tests for kinematics.py
 
 class TestRobotGlobalConversions(unittest.TestCase):
   def test_robot_to_global(self):
-    print("not used, what is global")
+    self.assertEqual(np.array([[-4],[-2]]).tolist(), robot_to_global([1,4,math.pi], 5, 6).tolist())
+  
   def test_global_to_robot(self):
-    print("not used, what is global")
+    self.assertEqual(np.array([[-5],[-2]]).tolist(), global_to_robot([1,4,math.pi], 5, 6).tolist())
 
 class TestAlegbra(unittest.TestCase):
   def test_feedback_lin(self):

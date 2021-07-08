@@ -24,16 +24,24 @@ def robot_to_global(pose,x_robot,y_robot):
     Tgr = np.array([[math.cos(theta), -1*math.sin(theta), px], \
                     [math.sin(theta), math.cos(theta), py], \
                     [0, 0, 1] ])
-    pose_global = Tgr @ np.array([[x_robot],[y_robot]])
+    # DEBUG UPDATE: added [1] to array in order to make it 3x3 times 3x1 rather than 2x1
+    # rounding x,y coordinates to make it testable (ex: 4.000000001 --> 4); noise?
+    pose_global = Tgr @ np.array([[x_robot],[y_robot],[1]])
+    pose_global = pose_global.round(5)
     return pose_global[0:2]
 
-def global_to_robot(pose, xy_global):
+
+
+def global_to_robot(pose, x_global, y_global):
     """
     Transforms xy_global into robot coordinates. Outputs a [2x1] np array. 
     
     Inputs: 
         pose: robot's current pose (global) [3x1]
-        xy_global: 2D point in gloabl coordinates [2x1]
+        x_global: x coordinate in global frame 
+        y_global: y coordinate in global frame
+
+        xy_global: 2D point in gloabl coordinates [2x1] (get rid of this?)
     """ 
     px = pose[0]
     py = pose[1]
@@ -42,7 +50,11 @@ def global_to_robot(pose, xy_global):
                       [math.sin(theta), math.cos(theta), py], \
                       [0, 0, 1] ])
     Trg = np.linalg.inv(Tgr)
-    pose_robot = Trg * xy_global
+    # DEBUG UPDATE: Adjusting parameters to be consistent with first funtion
+    # Also adding [1] to make it a 3x3 times 3x1
+    # Changed * to @
+    pose_robot = Trg * [[x_global],[y_global],[1]]
+    pose_robot = pose_robot.round(5)
     return pose_robot[0:2]
 
 def feedback_lin(curr_pose, vx_global, vy_global, epsilon):

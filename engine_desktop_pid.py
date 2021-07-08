@@ -42,7 +42,7 @@ class Robot:
         return self.heading
 
 
-def engine_pid_dummy():
+def engine_pid_desktop():
     # longMin, longMax, latMin, latMax = getLongLatMinMaxFromUser()
     # TEST1- for testing purposes, initialize pids as follows:
     loc_pid = PID(
@@ -152,7 +152,7 @@ def engine_pid_dummy():
 # moving. Consider changing turning logic to a more mechanically intuitive thing?
 
 if __name__ == "__main__":
-    engine_pid_dummy()
+    engine_pid_desktop()
 
 
 # -----------------------------PLOT PATH----------------------------------------
