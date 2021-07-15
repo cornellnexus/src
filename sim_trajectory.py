@@ -11,6 +11,17 @@ from pid_controller import PID
 from grid import Grid
 from collections import deque
 
+'''PLOTTING'''
+def waypoints_to_array(waypoints):
+    """
+    Tranforms a list of Node objects to a 1D np array of coordinates to be plotted
+    for easier plotting. 
+    """
+    n = len(waypoints)
+    waypoints_arr = np.empty([n,2])
+    for i in range(n):
+        waypoints_arr[i,:] = np.asarray(waypoints[i].get_coords())
+    return waypoints_arr 
 
 if __name__ == "__main__":
     # Initialize robot
@@ -25,11 +36,9 @@ if __name__ == "__main__":
 
     '''MOTION CONTROL'''
     #simulated noise added to robot's state 
-    NOISE_RANGE = 0.1
-    #TODO: Integrate Grid
-    goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],\
-    [0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],\
-    [10,0],[10,-5],[10,-10]])
+    NOISE_RANGE = .1
+
+    goals = np.array(g.gps_waypoints)
 
     #Larger epsilons means a larger turning radius
     EPSILON = 0.2
@@ -61,8 +70,8 @@ if __name__ == "__main__":
             float(predicted_state[1]) - curr_goal[1])
 
         while distance_away > ALLOWED_DIST_ERROR:
-            r2d2.state[0] = np.random.normal(r2d2.state[0],NOISE_RANGE)
-            r2d2.state[1] = np.random.normal(r2d2.state[1],NOISE_RANGE)
+            # r2d2.state[0] = np.random.normal(r2d2.state[0],NOISE_RANGE)
+            # r2d2.state[1] = np.random.normal(r2d2.state[1],NOISE_RANGE)
 
             x_error = curr_goal[0] - r2d2.state[0]
             y_error = curr_goal[1] - r2d2.state[1]
@@ -87,17 +96,7 @@ if __name__ == "__main__":
 
         # Turning? Heading pid?
 
-    '''PLOTTING'''
-    def waypoints_to_array(waypoints):
-        """
-        Tranforms a list of Node objects to an 2D np array of coordinates to be plotted
-        for easier plotting. 
-        """
-        n = len(waypoints)
-        waypoints_arr = np.empty([n,2])
-        for i in range(n):
-            waypoints_arr[i,:] = np.asarray(waypoints[i].get_coords())
-        return waypoints_arr 
+
     
     def get_plot_boundaries(meters_grid,delta):
         """
@@ -120,7 +119,7 @@ if __name__ == "__main__":
     goals = waypoints_to_array(waypoints)
     ax.plot(goals[:,0], goals[:,1], 'rx')
 
-    xbounds,ybounds = get_plot_boundaries(g.meters_grid,5);
+    xbounds,ybounds = get_plot_boundaries(g.meters_grid,5)
     plt.xlim(xbounds)
     plt.ylim(ybounds)
     # plt.show()
@@ -154,6 +153,7 @@ if __name__ == "__main__":
     )
 
     plt.show()
+
 
 
 def simulation(robot, noise, goals, kp, ki, kd):
