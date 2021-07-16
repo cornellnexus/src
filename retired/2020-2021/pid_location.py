@@ -1,7 +1,12 @@
 from time import sleep
-from engine_rpi import *
-from gpiozero import Robot, DigitalInputDevice
+# from engine_rpi import *
 from grid import *
+
+import os.path
+cwd = os.getcwd()
+import sys
+sys.path.append(cwd[0:cwd.index('2020-2021')-1]+"/electrical")
+from gpiozero import Robot, DigitalInputDevice
 import gps
 
 SAMPLETIME = 1

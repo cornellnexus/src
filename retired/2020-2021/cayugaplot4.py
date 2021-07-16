@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 from matplotlib import animation as animation
 from matplotlib import patches as patch
 from matplotlib.widgets import Button
-from UserUtils import *
+from user_utils import *
 
 '''
 When running this file, input 0, 10, 0, 10 for the corresponding values

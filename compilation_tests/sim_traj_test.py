@@ -10,12 +10,13 @@ import random
 import os.path
 cwd = os.getcwd()
 import sys
-sys.path.append(cwd[0:cwd.index('compilation_tests')-1])
+sys.path.append(cwd[0:cwd.index('compilation_tests')-1]+"/software")
+
 from sim_trajectory import *
 from pid_controller import PID
 from robot import Robot
 from kinematics import limit_cmds, feedback_lin, integrate_odom, get_vincenty_x, get_vincenty_y
-from UserUtils import *
+from user_utils import *
 from node import *
 from grid import *
 

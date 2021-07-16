@@ -1,4 +1,4 @@
-import matplotlibGui
+import matplotlib_gui
 import gui_popup
 
 import matplotlib
@@ -8,6 +8,8 @@ import io
 import base64
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
+import sys
+
 matplotlib.use('TkAgg')
 
 # ------ handle images
@@ -43,10 +45,11 @@ def convert_to_bytes(file_or_bytes, resize=None):
     return bio.getvalue()
 
 cwd = os.getcwd()
-images = ['Images/Progress Bar.png', 'Images/zoomview.png', 'Images/Camera.png', 'Images/final_logo 1.png']
+sys.path.append(cwd[0:cwd.index('gui')-1]+"/images")
+images = ['/Progress Bar.png', '/zoomview.png', '/Camera.png', '/final_logo 1.png']
 image_data = []
 for image in images:
-    image_path = os.path.join(cwd,image)
+    image_path = sys.path[-1] + image 
     image_data.append(convert_to_bytes(image_path))
 
 # -------- end of handling images
@@ -82,7 +85,7 @@ def setup_gui(bounds):
     element_justification='center', font='Helvetica 18', location=(0,0), \
     size=(1200,700), resizable=True)
 
-    plt, anim = matplotlibGui.get_graph_info(bounds)
+    plt, anim = matplotlib_gui.get_graph_info(bounds)
     fig = plt.gcf()
     # add the plot to the window
     fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)

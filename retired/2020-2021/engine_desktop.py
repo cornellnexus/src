@@ -5,7 +5,7 @@ import time
 import math
 import matplotlib.pyplot as plt
 from grid import *
-from UserUtils import *
+from user_utils import *
 
 """
 Defines a dummy robot to be used for debugging
