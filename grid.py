@@ -130,7 +130,6 @@ class Grid():
         meters_grid = self.meters_grid
         rows = meters_grid.shape[0]
         cols = meters_grid.shape[1]
-        print(meters_grid)
         if mode == 'full':
             for i in range(cols):
                 for j in range(rows):
