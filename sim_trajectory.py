@@ -23,6 +23,18 @@ def waypoints_to_array(waypoints):
         waypoints_arr[i,:] = np.asarray(waypoints[i].get_coords())
     return waypoints_arr 
 
+def get_plot_boundaries(meters_grid,delta):
+    """
+    Given some grid to be plotted, and a delta value, returns the desired 
+    x limits and y limits for the plot.
+    """
+    size = np.shape(meters_grid)
+    min_coords = meters_grid[0,0].get_coords()
+    max_coords = meters_grid[size[0]-1, size[1]-1].get_coords()
+    xlim = [min_coords[0]-delta, max_coords[0]+delta]
+    ylim = [min_coords[1]-delta, max_coords[1]+delta]
+    return xlim,ylim
+
 if __name__ == "__main__":
     # Initialize robot
     r2d2 = Robot(0,0,math.pi/2)
@@ -95,20 +107,6 @@ if __name__ == "__main__":
                 float(predicted_state[1]) - curr_goal[1])
 
         # Turning? Heading pid?
-
-
-    
-    def get_plot_boundaries(meters_grid,delta):
-        """
-        Given some grid to be plotted, and a delta value, returns the desired 
-        x limits and y limits for the plot.
-        """
-        size = np.shape(meters_grid)
-        min_coords = meters_grid[0,0].get_coords()
-        max_coords = meters_grid[size[0]-1, size[1]-1].get_coords()
-        xlim = [min_coords[0]-delta, max_coords[0]+delta]
-        ylim = [min_coords[1]-delta, max_coords[1]+delta]
-        return xlim,ylim
 
     plt.style.use('seaborn-whitegrid')
     x_coords = r2d2.truthpose[:,0]

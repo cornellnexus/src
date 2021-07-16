@@ -11,12 +11,13 @@ import os.path
 cwd = os.getcwd()
 import sys
 sys.path.append(cwd[0:cwd.index('compilation_tests')-1])
-from sim_trajectory import waypoints_to_array
+from sim_trajectory import *
 from pid_controller import PID
 from robot import Robot
-from kinematics import limit_cmds, feedback_lin, integrate_odom
+from kinematics import limit_cmds, feedback_lin, integrate_odom, get_vincenty_x, get_vincenty_y
 from UserUtils import *
 from node import *
+from grid import *
 
 target = [0,0]
 add_to_x = False
@@ -68,7 +69,51 @@ class TestPlottingFunctions(unittest.TestCase):
     #Check equality
     result = np.array_equal(ans_node_list, waypoints_to_array(node_list))
     self.assertEqual(True, result)
-    
+
+  def test_get_plot_boundaries(self):
+    #CASE: Eng Quad
+    grid_eng = Grid(42.444250, 42.444599, -76.483682, -76.483276).meters_grid
+    self.assertEqual(([0.0, 32.085],[0,37.961]), get_plot_boundaries(grid_eng,0))
+    self.assertEqual(([-5.0, 37.085],[-5.0, 42.961]), get_plot_boundaries(grid_eng,5))
+
+    #Calculates bounds based on input grid information
+    def calc_ans(lat_min, long_min, grid, delta):
+      #Need true_max_lat to account for steps in grid
+      true_max_lat = grid.true_lat_max
+      true_max_long = grid.true_long_max
+      #Calculate distance in meters between smallest coordinate and largest coordinate
+      coord1, coord2 = [lat_min, long_min], [true_max_lat, true_max_long]
+      x_dist = get_vincenty_x(coord1, coord2)
+      y_dist = get_vincenty_y(coord1, coord2)
+      #factor in desired delta spacing
+      return [0 - delta, x_dist + delta],[0 - delta, y_dist + delta]
+
+    #CASE: Checking unit meter conversion (no extra spacing)
+    lat_min = 0.0
+    long_min = 0.0
+    lat_max = 0.0001
+    long_max = 0.0001
+    grid_simple = Grid(lat_min, lat_max, long_min, long_max)
+    self.assertEqual(calc_ans(lat_min,long_min, grid_simple, 0), \
+    get_plot_boundaries(grid_simple.meters_grid,0))
+
+    #CASE: Checking unit meter conversion (with extra spacing)
+    lat_min = 1.0
+    long_min = 1.0
+    lat_max = 1.0003
+    long_max = 1.0003
+    grid_spacing = Grid(lat_min, lat_max, long_min, long_max)
+    self.assertEqual(calc_ans(lat_min,long_min, grid_spacing, 4), \
+    get_plot_boundaries(grid_spacing.meters_grid,4))
+
+    #CASE: Checking unit meter conversion (diff lat longs)
+    lat_min = 0.0001
+    long_min = 0.0
+    lat_max = 0.0003
+    long_max = 0.0002
+    grid_diff = Grid(lat_min, lat_max, long_min, long_max)
+    self.assertEqual(calc_ans(lat_min,long_min, grid_diff, 3), \
+    get_plot_boundaries(grid_diff.meters_grid,3))
 
 
 if __name__ == '__main__':

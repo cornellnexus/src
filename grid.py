@@ -64,6 +64,7 @@ class Grid():
             long_step = meters_to_long(step_size_m, start_lat)
             
             true_max_lat = start_lat + (rows - 1) * lat_step
+            true_max_long = start_long + (cols - 1) * long_step
 
             # Develop the gps grid and gps traversal path in order of lawnmower
             # traversal. 
@@ -83,7 +84,7 @@ class Grid():
                         row_index = rows - (j+1)
                         gps_grid[row_index,i] = node
                              
-            return gps_grid, gps_traversal_path, true_max_lat
+            return gps_grid, gps_traversal_path, true_max_lat, true_max_long
 
         def grid_convert(gps_grid):
             """
@@ -101,7 +102,7 @@ class Grid():
                     x_dist = get_vincenty_x(gps_origin,curr_coords)
                     y_dist = get_vincenty_y(gps_origin,curr_coords)
                     meters_grid[j,i] = Node(x_dist,y_dist,is_border)
-
+                    
             return meters_grid
 
         # ----------------- GRID INITIALIZATION BEGINS ------------------- #
@@ -112,7 +113,7 @@ class Grid():
 
         self.obstacle_length_limit = 10
         self.num_rows, self.num_cols = calc_step(lat_min, lat_max, long_min, long_max,STEP_SIZE_METERS)
-        self.gps_grid, self.gps_waypoints, self.true_lat_max = generate_nodes(
+        self.gps_grid, self.gps_waypoints, self.true_lat_max, self.true_long_max = generate_nodes(
             lat_min, long_min, self.num_rows, self.num_cols, STEP_SIZE_METERS)
         self.meters_grid = grid_convert(self.gps_grid)
 
