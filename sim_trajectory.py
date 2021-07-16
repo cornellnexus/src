@@ -174,6 +174,7 @@ def simulation(robot, noise, goals, kp, ki, kd):
 
     curr_goal_ind = 0
     num_goals = np.shape(goals)[0]
+    targets_visited = [False] * num_goals #is an array of booleans telling us if the goal node at the index has been traveled to
 
     for curr_goal_ind in range(num_goals): # while queue (once we integrate Grid)
         
@@ -208,49 +209,6 @@ def simulation(robot, noise, goals, kp, ki, kd):
             # location error (in meters)
             distance_away = math.hypot(float(predicted_state[0]) - curr_goal[0], \
                 float(predicted_state[1]) - curr_goal[1])
-
-        # Turning? Heading pid?
-
-    '''PLOTTING'''
-    plt.style.use('seaborn-whitegrid')
-    x_coords = robot.truthpose[:,0]
-    y_coords = robot.truthpose[:,1]
-    fig, ax = plt.subplots()
-    ax.plot(x_coords, y_coords, '-b')
-    ax.plot(x_coords[0], y_coords[0], 'gx')
-    ax.plot(goals[:,0], goals[:,1], 'rx')
-
-    plt.xlim([-20, 20])
-    plt.ylim([-20, 20])
-    # plt.show()
-
-    circle_patch = plt.Circle((5, 5), 1, fc="green")
-    wedge_patch = patch.Wedge(
-        (5, 1), 3, 100, 80, animated=True, fill=False, width=2, ec="g", hatch="xx"
-    )
-
-    def init():
-        circle_patch.center = (0, 0)
-        ax.add_patch(circle_patch)
-        # ax.add_patch(arc_patch)
-        ax.add_patch(wedge_patch)
-        return circle_patch, wedge_patch
-
-    def animate(i):
-        x_coord = robot.truthpose[i,0]
-        y_coord = robot.truthpose[i,1]
-        circle_patch.center = (x_coord, y_coord)
-        wedge_patch.update({"center": [x_coord, y_coord]})
-        wedge_patch.theta1 = np.degrees(robot.truthpose[i,2]) - 10
-        wedge_patch.theta2 = np.degrees(robot.truthpose[i,2]) + 10
-
-        # print(wedge_patch.theta1, wedge_patch.theta2)
-        # print(wedge_patch.center)
-        return circle_patch, wedge_patch
-
-    anim = animation.FuncAnimation(
-        fig, animate, init_func=init, frames=np.shape(robot.truthpose)[0], interval=20, blit=True
-    )
-
-    plt.show()
+        targets_visited[curr_goal_ind] = True
+    return targets_visited
     

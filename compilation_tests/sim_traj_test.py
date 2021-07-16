@@ -25,21 +25,52 @@ gps_noise_range = .3
 # lat_min, lat_max, long_min, long_max = get_coord_inputs()
 # current_position = [lat_min, long_min]
 
-# class TestGenerateNodes(unittest.TestCase):
-    # def test_no_noise(self):
-    #   r2d2 = Robot(-5,-10,math.pi/2)
-    #   NOISE_RANGE = 0.0
+class TestGenerateNodes(unittest.TestCase):
+    def test_no_noise_all_nodes(self):
+      r2d2 = Robot(-5,-10,math.pi/2)
+      NOISE_RANGE = 0.0
 
-    #   goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],\
-    #   [0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],\
-    #   [10,0],[10,-5],[10,-10]])
+      goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],\
+      [0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],\
+      [10,0],[10,-5],[10,-10]])
 
-    #   Kp=1
-    #   Ki=0.1
-    #   Kd=0.1
 
-    #   simulation(r2d2, NOISE_RANGE, goals, Kp, Ki, Kd)
+      Kp=1
+      Ki=0.1
+      Kd=0.1
 
+      all_nodes_traveled_to = simulation(r2d2, NOISE_RANGE, goals, Kp, Ki, Kd)
+      self.assertEqual([True] * len(goals.tolist()), all_nodes_traveled_to)
+
+    def test_no_noise_first_target(self):
+      r2d2 = Robot(-5, -10, math.pi/2)
+      NOISE_RANGE = 0.0
+
+      goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],\
+      [0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],\
+      [10,0],[10,-5],[10,-10]])
+
+      Kp=1
+      Ki=0.1
+      Kd=0.1
+
+      all_nodes_traveled_to = simulation(r2d2, NOISE_RANGE, goals, Kp, Ki, Kd)
+      self.assertEqual([True] * 2, all_nodes_traveled_to[0:2])
+
+    def test_no_noise_first_turn(self):
+      r2d2 = Robot(-5, -10, math.pi/2)
+      NOISE_RANGE = 0.0
+
+      goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],\
+      [0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],\
+      [10,0],[10,-5],[10,-10]])
+
+      Kp=1
+      Ki=0.1
+      Kd=0.1
+
+      all_nodes_traveled_to = simulation(r2d2, NOISE_RANGE, goals, Kp, Ki, Kd)
+      self.assertEqual([True] * 3, all_nodes_traveled_to[0:3])
 
     # def test_minimal_noise(self):
     #   r2d2 = Robot(-5,-10,math.pi/2)
