@@ -12,20 +12,24 @@ class TestKinematics(unittest.TestCase):
     self.assertEqual(np.array([[-4],[-2]]).tolist(), robot_to_global([1,4,math.pi], 5, 6).tolist())
     self.assertEqual(np.array([[-5],[-2]]).tolist(), global_to_robot([1,4,math.pi], 5, 6).tolist())
 
+# There should be a bunch of tests in each of the functions below
   def test_feedback_lin(self):
-    print("test")
+    pass
+
   def test_limit_cmds(self):
-    print("test")
+    pass
+
   def test_integrate_odom(self):
-    print("test")
+    pass
 
   def test_meters_to_gps(self):
-    print("test")
+    pass
+
   def test_meters_to_lat(self):
-    print("test")
-    # self.assertEqual(0.1, meters_to_lat(185)) 
+    pass
+
   def test_meters_to_long(self):
-    print("test")
+    pass
 
 # Should now include the tests for test_get_vincenty_x and test_get_vincenty_y :
   def test_vincenty(self):
