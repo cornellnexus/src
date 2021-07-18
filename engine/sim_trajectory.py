@@ -1,15 +1,15 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+
+from collections import deque
 from matplotlib import animation as animation
 from matplotlib import patches as patch
-from kinematics import limit_cmds, feedback_lin, integrate_odom
-import time
-import random
-from robot import Robot
-from pid_controller import PID
-from grid import Grid
-from collections import deque
+
+from engine.grid import Grid
+from engine.kinematics import limit_cmds, feedback_lin, integrate_odom
+from engine.pid_controller import PID
+from engine.robot import Robot
 
 '''PLOTTING'''
 def waypoints_to_array(waypoints):

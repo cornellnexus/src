@@ -1,19 +1,15 @@
 #file for testing gps data
-import os.path
-cwd = os.getcwd()
-import sys
-sys.path.append(cwd[0:cwd.index('compilation_tests')-1]+"/software")
-
-import RPi.GPIO as GPIO
-from gpio import *
-import pynmea2
-import serial
-
-import os, sys
-import time
 import csv
+import os, sys
+import pynmea2
+import RPi.GPIO as GPIO
+import serial
+import time
 
-from commands import *
+from electrical.commands import *
+from electrical.gpio import *
+
+
 
 
 #comment out one of the tests to run

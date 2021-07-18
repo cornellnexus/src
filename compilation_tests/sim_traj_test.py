@@ -1,24 +1,17 @@
-import unittest
 import numpy as np
 import math
 import matplotlib.pyplot as plt
 from matplotlib import animation as animation
 from matplotlib import patches as patch
-import time
-import random
+import unittest
 
-import os.path
-cwd = os.getcwd()
-import sys
-sys.path.append(cwd[0:cwd.index('compilation_tests')-1]+"/software")
-
-from sim_trajectory import *
-from pid_controller import PID
-from robot import Robot
-from kinematics import limit_cmds, feedback_lin, integrate_odom, get_vincenty_x, get_vincenty_y
-from user_utils import *
-from node import *
-from grid import *
+from engine.grid import *
+from engine.kinematics import limit_cmds, feedback_lin, integrate_odom, get_vincenty_x, get_vincenty_y
+from engine.node import *
+from engine.pid_controller import PID
+from engine.robot import Robot
+from engine.sim_trajectory import *
+from engine.user_utils import *
 
 target = [0,0]
 add_to_x = False

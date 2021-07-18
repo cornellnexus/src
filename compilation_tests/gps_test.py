@@ -1,16 +1,11 @@
-import os.path
-cwd = os.getcwd()
-import sys
-sys.path.append(cwd[0:cwd.index('compilation_tests')-1]+"/software")
-
-from user_utils import *
-from grid import *
-from collections import deque
-import csv
+from engine.grid import *
+from engine.node import *
+from engine.user_utils import get_coord_inputs
+from electrical.commands import *
+from electrical.gps import *
+from collections import deque 
+import csv 
 import geopy
-
-import gps #temporary import for get_gps() placement for kalman filter
-from commands import * 
 
 print("under the imports")
 
@@ -30,7 +25,7 @@ def engine():
     node2 = Node(-76.483682,42.444416)
     #straightline path(
            
-    queue =* [node1,node2]
+    queue = [node1,node2]
         
     target_node = queue.pop()  # Next node to visit
     target_coords = target_node.get_coords()
