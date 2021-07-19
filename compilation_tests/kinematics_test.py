@@ -18,7 +18,7 @@ class TestRobotGlobalConversions(unittest.TestCase):
   def test_global_to_robot(self):
     self.assertEqual(np.array([[-5],[-2]]).tolist(), global_to_robot([1,4,math.pi], 5, 6).tolist())
 
-class TestAlegbra(unittest.TestCase):
+class TestAlgebra(unittest.TestCase):
   def test_feedback_lin(self):
     print("test")
   def test_limit_cmds(self):

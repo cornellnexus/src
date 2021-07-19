@@ -7,6 +7,21 @@ import numpy as np
 PID Controller that is used to continuously correct errors. 
 
 """
+
+"""
+TODO: 
+1. why do we only have a section for heading error? 
+2. for calculate_heading_error, rename "input" param to "current heading"
+3. calculate error function => define the preconditions for the inputs 
+    (floats for heading, coordinate for position/velocity/torque)
+4. how should we establish the sampling time? 
+5. at what frequency is the update PID controller function being run
+6. Need some way to simulate closed feedback loop in regards to PID 
+7. might be good to map out current software's controls system architecture
+    and see if it models the diagram we initially created. 
+"""
+
+
 class PID:
 
     """Initializes fields for PID Controller
@@ -69,13 +84,6 @@ class PID:
 
     def set_target(self, target): 
         self.target = target
-
-    #@jess @yagmur what does this do LOL
-    def am_i_real(self):
-        print(type(self))
-        print(self.target)
-        print(self.Kp)
-        print(self.Ki)  
 
     def get_proportional(self):
         return self.proportional
