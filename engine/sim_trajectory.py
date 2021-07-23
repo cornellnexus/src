@@ -1,15 +1,15 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+
+from collections import deque
 from matplotlib import animation as animation
 from matplotlib import patches as patch
-from kinematics import limit_cmds, feedback_lin, integrate_odom
-import time
-import random
-from robot import Robot
-from pid_controller import PID
-from grid import Grid
-from collections import deque
+
+from engine.grid import Grid
+from engine.kinematics import limit_cmds, feedback_lin, integrate_odom
+from engine.pid_controller import PID
+from engine.robot import Robot
 
 '''PLOTTING'''
 def waypoints_to_array(waypoints):
@@ -153,7 +153,8 @@ if __name__ == "__main__":
     plt.show()
 
 
-
+#This method is for testing purposes only! Made for more parameterization
+#TODO: Replace the main version with this?
 def simulation(robot, noise, goals, kp, ki, kd):
     #Larger epsilons means a larger turning radius
     EPSILON = 0.2

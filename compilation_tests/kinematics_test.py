@@ -1,53 +1,46 @@
-import os.path
-cwd = os.getcwd()
-import sys
-sys.path.append(cwd[0:cwd.index('compilation_tests')-1]+"/software")
-
-from kinematics import *
 import unittest
+import numpy as np
 import math
+from engine.kinematics import robot_to_global, global_to_robot
 
 '''
 Unit tests for kinematics.py
 '''
 
-class TestRobotGlobalConversions(unittest.TestCase):
-  def test_robot_to_global(self):
+class TestKinematics(unittest.TestCase):
+  def test_robot_global_conversions(self):
     self.assertEqual(np.array([[-4],[-2]]).tolist(), robot_to_global([1,4,math.pi], 5, 6).tolist())
-  
-  def test_global_to_robot(self):
     self.assertEqual(np.array([[-5],[-2]]).tolist(), global_to_robot([1,4,math.pi], 5, 6).tolist())
 
+<<<<<<< HEAD
 class TestAlgebra(unittest.TestCase):
+=======
+# There should be a bunch of tests in each of the functions below
+>>>>>>> e177ae1157c5ad2e18c2f85c03be7a6c608ec26e
   def test_feedback_lin(self):
-    print("test")
+    pass
+
   def test_limit_cmds(self):
-    print("test")
+    pass
+
   def test_integrate_odom(self):
-    print("test")
+    pass
 
-class TestMeterConversions(unittest.TestCase):
   def test_meters_to_gps(self):
-    print("test")
+    pass
+
   def test_meters_to_lat(self):
-    print("test")
-    # self.assertEqual(0.1, meters_to_lat(185)) 
+    pass
+
   def test_meters_to_long(self):
-    print("test")
+    pass
 
-class TestVincentyConversions(unittest.TestCase):
-  def test_get_vincenty_x(self):
-    print("test")
-  def test_get_vincenty_y(self):
-    print("test")
-  def test_get_haversine_x(self):
-    print("test")
-  def test_get_haversine_y(self):
-    print("test")
-
-
-# class TestHaversineConversions(unittest.TestCase):
-
+# Should now include the tests for test_get_vincenty_x and test_get_vincenty_y :
+  def test_vincenty(self):
+    pass
+# Should now include the tests for test_get_haversine_x and test_get_haversine_y :
+  def test_haversine(self):
+    pass
 
 
 if __name__ == '__main__':

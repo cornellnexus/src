@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from kinematics import integrate_odom
+from engine.kinematics import integrate_odom
 
 """
 Defines a dummy robot to be used for debugging
