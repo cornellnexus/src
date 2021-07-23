@@ -12,11 +12,7 @@ class TestKinematics(unittest.TestCase):
     self.assertEqual(np.array([[-4],[-2]]).tolist(), robot_to_global([1,4,math.pi], 5, 6).tolist())
     self.assertEqual(np.array([[-5],[-2]]).tolist(), global_to_robot([1,4,math.pi], 5, 6).tolist())
 
-<<<<<<< HEAD
-class TestAlgebra(unittest.TestCase):
-=======
 # There should be a bunch of tests in each of the functions below
->>>>>>> e177ae1157c5ad2e18c2f85c03be7a6c608ec26e
   def test_feedback_lin(self):
     pass
 
