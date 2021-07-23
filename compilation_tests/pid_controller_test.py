@@ -1,10 +1,4 @@
-import os.path
-cwd = os.getcwd()
-import sys
-sys.path.append(cwd[0:cwd.index('compilation_tests')-1]+"/software")
-
-import pid_controller
-import unittest
+import engine.pid_controller as pid_controller
 
 '''
 Unit tests for pid_controller.py
