@@ -153,7 +153,8 @@ if __name__ == "__main__":
     plt.show()
 
 
-
+#This method is for testing purposes only! Made for more parameterization
+#TODO: Replace the main version with this?
 def simulation(robot, noise, goals, kp, ki, kd):
     #Larger epsilons means a larger turning radius
     EPSILON = 0.2
