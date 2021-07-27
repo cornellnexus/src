@@ -1,15 +1,20 @@
 import unittest
-import node_test
-import sim_traj_test
+import compilation_tests.node_test as node_test
+import compilation_tests.sim_traj_test as sim_traj_test
+import compilation_tests.pid_controller_test as pid_controller_test 
+import compilation_tests.state_manager_test as state_manager_test 
 
 '''
-Runs tests files
+Runs all compilation test files as individual modules
 '''
 
 loader = unittest.TestLoader()
 suite  = unittest.TestSuite()
 
-suite.addTests(loader.loadTestsFromModule(node_test))
-suite.addTests(loader.loadTestsFromModule(sim_traj_test))
+#adding tests: 
+compilation_tests = [node_test, sim_traj_test, pid_controller_test, state_manager_test]
+for test_case in compilation_tests: 
+    suite.addTests(loader.loadTestsFromModule(test_case))
+
 runner = unittest.TextTestRunner(verbosity=3)
 result = runner.run(suite)
