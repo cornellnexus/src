@@ -1,5 +1,6 @@
 from queue import PriorityQueue
 
+#TODO: documentation
 class Astar():
     
     #A* Algorithm (hardcoded inputs)

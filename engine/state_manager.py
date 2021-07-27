@@ -1,13 +1,13 @@
 #external libraries
 import enum 
 #internal classes
-from path_traversal import PathTraversal
-from astar import Astar
-from startup import Startup #TODO
-from docking import Docking 
-from docked import Docked 
-from manual import Manual 
-from safehold import Safehold
+from engine.path_traversal import PathTraversal
+from engine.astar import Astar
+from engine.startup import Startup #TODO
+from engine.docking import Docking 
+from engine.docked import Docked 
+from engine.manual import Manual 
+from engine.safehold import Safehold
 
 # if (rpi): 
 # else if (desktop):
@@ -30,7 +30,7 @@ class State(enum.Enum):
   def get_state(self): 
     return self.current_state
 
-class StateManage: 
+class StateManager: 
   def execute(self): 
     #TODO: probably want to initialize State somewhere outside of this function.
     state = State.get_state()
@@ -53,7 +53,7 @@ class StateManage:
     elif (state == Docking):
       Docking.execute_docking() #TODO: write execute function 
     elif (state == Docked):
-      State.Docked.execute_docked() #TODO: write execute function 
+      Docked.execute_docked() #TODO: write execute function 
     elif (state == Manual):
       Manual.execute_manual() #TODO: write execute function 
     elif (state == Safehold): 
