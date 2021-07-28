@@ -1,6 +1,8 @@
 from queue import PriorityQueue
 
-#TODO: documentation
+"""Astar is the path traversal algorithm that models the most efficient path from a selected grid node in the beach filtering
+    traversal path back to the base station, or from the base station to the last grid node the robot was at."""
+
 class Astar():
     
     #A* Algorithm (hardcoded inputs)

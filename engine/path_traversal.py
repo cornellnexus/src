@@ -1,13 +1,12 @@
 import numpy as np
 import math
-
 from collections import deque
 from engine.grid import Grid
 from engine.kinematics import limit_cmds, feedback_lin, integrate_odom
 from engine.pid_controller import PID
 from engine.robot import Robot
  
- #TODO: documentation
+"""Path Traversal lays out the path the robot will traverse in order to scan the beach and filter out plastics and microplastics"""
 class PathTraversal():
   def engine():
     # Initialize robot
