@@ -49,7 +49,8 @@ class Robot:
 
     def turn(self, turn_angle, dt=1):
         # Turns robot, where turn_angle is given in radians
-        self.state[2] = np.round(self.state[2] + (turn_angle * dt),3)
+        clamp_angle = (self.state[2] + (turn_angle * dt)) % (2*math.pi)
+        self.state[2] = np.round(clamp_angle,3)
         if self.is_sim:
             self.truthpose = np.append(self.truthpose,np.transpose(self.state), 0)
 
