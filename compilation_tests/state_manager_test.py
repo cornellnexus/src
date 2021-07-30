@@ -17,10 +17,13 @@ class StateTest(unittest.TestCase):
 class StateManagerTest(unittest.TestCase): 
     def test_startup(self): 
         state_obj = state_manager.State()
-        state_manager_obj = state_manager.StateManager()
         state_obj.set_state("startup")
-        test_val = state_manager_obj.execute()
-        print(test_val)
+        state_manager_obj = state_manager.StateManager()
+        # state_obj.set_state("startup")
+        # print(state_obj.get_state())
+        # state_manager_obj.
+        # test_val = state_manager_obj.execute()
+        # print(test_val)
         # self.assertEqual("executed", test_val)
     # def test_path_traversal(self): 
     #     pass 
