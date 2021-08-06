@@ -5,7 +5,52 @@ class Astar():
     
     #A* Algorithm (hardcoded inputs)
     #Hardcoded: ROWS, SCREEN WIDTH, STARTING NODE, ENDING NODE
-    
+    def make_grid(rows, width):
+        grid = []
+        gap = width // rows
+        for i in range(rows):
+            grid.append([])
+            for j in range(rows):
+                node = Node(i, j, gap, rows)
+                grid[i].append(node)
+        return grid    
+
+    def heuristic(p1, p2):
+        x1, y1 = p1
+        x2, y2 = p2
+        return abs(x1 - x2) + abs(y1 - y2)
+
+    def algorithm(grid, start, end):
+        count = 0
+        open_set = PriorityQueue()
+        open_set.put((0, count, start))
+        came_from = {}
+        g_score = {node: float("inf") for row in grid for node in row}
+        g_score[start] = 0
+        f_score = {node: float("inf") for row in grid for node in row}
+        f_score[start] = heuristic(start.get_pos(), end.get_pos())
+
+        # Mirrors open_set, is used to check if something is inside the queue
+        open_set_hash = {start}
+
+        while not open_set.empty():
+            current = open_set.get()[2]  # Gets node
+            open_set_hash.remove(current)
+
+            for neighbor in current.neighbors:
+                temp_g_score = g_score[current] + 1  # Since path lengths are all 1
+
+                if temp_g_score < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = temp_g_score
+                    f_score[neighbor] = temp_g_score + \
+                        heuristic(neighbor.get_pos(), end.get_pos())
+                    if neighbor not in open_set_hash:
+                        count += 1
+                        open_set.put((f_score[neighbor], count, neighbor))
+                        open_set_hash.add(neighbor)
+        return False
+
     def main():
         ROWS = 30
         width = 600
@@ -14,53 +59,8 @@ class Astar():
         start = Node(start_row, start_col, width,ROWS)
         end = Node(end_row, end_col, width, ROWS)
 
-        def make_grid(rows, width):
-            grid = []
-            gap = width // rows
-            for i in range(rows):
-                grid.append([])
-                for j in range(rows):
-                    node = Node(i, j, gap, rows)
-                    grid[i].append(node)
-            return grid
-
         grid = make_grid(ROWS, width)
-
-        def heuristic(p1, p2):
-            x1, y1 = p1
-            x2, y2 = p2
-            return abs(x1 - x2) + abs(y1 - y2)
         
-        def algorithm(grid, start, end):
-            count = 0
-            open_set = PriorityQueue()
-            open_set.put((0, count, start))
-            came_from = {}
-            g_score = {node: float("inf") for row in grid for node in row}
-            g_score[start] = 0
-            f_score = {node: float("inf") for row in grid for node in row}
-            f_score[start] = heuristic(start.get_pos(), end.get_pos())
-
-            # Mirrors open_set, is used to check if something is inside the queue
-            open_set_hash = {start}
-
-            while not open_set.empty():
-                current = open_set.get()[2]  # Gets node
-                open_set_hash.remove(current)
-
-                for neighbor in current.neighbors:
-                    temp_g_score = g_score[current] + 1  # Since path lengths are all 1
-
-                    if temp_g_score < g_score[neighbor]:
-                        came_from[neighbor] = current
-                        g_score[neighbor] = temp_g_score
-                        f_score[neighbor] = temp_g_score + \
-                            heuristic(neighbor.get_pos(), end.get_pos())
-                        if neighbor not in open_set_hash:
-                            count += 1
-                            open_set.put((f_score[neighbor], count, neighbor))
-                            open_set_hash.add(neighbor)
-            return False
         algorithm(grid, start, end)
 
 
@@ -80,22 +80,3 @@ class Node:
 
     def get_pos(self):
         return self.row, self.col
-
-    def update_neighbors(self, grid):
-        self.neighbors = []
-        # DOWN
-        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():
-            self.neighbors.append(grid[self.row + 1][self.col])
-
-        # UP
-        if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():
-            self.neighbors.append(grid[self.row - 1][self.col])
-        # RIGHT
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():
-            self.neighbors.append(grid[self.row][self.col + 1])
-        # LEFT
-        if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():
-            self.neighbors.append(grid[self.row][self.col - 1])
-
-    def __lt__(self, other):
-        return False
