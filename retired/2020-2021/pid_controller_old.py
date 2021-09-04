@@ -18,15 +18,19 @@ class Encoder(object):
         encoder = DigitalInputDevice(pin)
         encoder.when_activated = self._increment
         encoder.when_deactivated = self._increment
+
     def reset(self):
         self._value = 0
+
     def _increment(self):
         self._value += 1
+
     @property
     def value(self):
         return self._value
 
-r = Robot((10,9), (8,7))
+
+r = Robot((10, 9), (8, 7))
 e1 = Encoder(17)
 e2 = Encoder(18)
 
@@ -43,18 +47,16 @@ while True:
     e1_error = TARGET - e1.value
     e2_error = TARGET - e2.value
 
-
-    # Potential Fix: the integral branch doesn't seem to be taking integral, it's just summing up the errors. 
+    # Potential Fix: the integral branch doesn't seem to be taking integral, it's just summing up the errors.
     # I think the example code simplifies it to sum of error instead of actually taking integral
     # e1_integral = e1_integral_prior + e1_error * SAMPLETIME
     # e2_integral = e2_integral_prior + e2_error * SAMPLETIME
-    
-    e1_derivative = (e1_error - e1_prev_error)/ SAMPLETIME
-    e2_derivative = (e2_error - e2_prev_error)/ SAMPLETIME
 
+    e1_derivative = (e1_error - e1_prev_error) / SAMPLETIME
+    e2_derivative = (e2_error - e2_prev_error) / SAMPLETIME
 
     m1_speed += (e1_error * KP) + e1_derivative * KD + (e1_sum_error * KI)
-    m2_speed += (e2_error * KP) + e2_derivative * KD  + (e2_sum_error * KI)
+    m2_speed += (e2_error * KP) + e2_derivative * KD + (e2_sum_error * KI)
 
     m1_speed = max(min(1, m1_speed), 0)
     m2_speed = max(min(1, m2_speed), 0)

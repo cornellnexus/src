@@ -20,7 +20,7 @@ class GUI:
             self.moveRobot(x, y)
 
     def moveRobot(self, x, y):
-        self.canvas.coords(self.robot, x-5, y-5, x+5, y+5)
+        self.canvas.coords(self.robot, x - 5, y - 5, x + 5, y + 5)
         self.canvas.update()
         self.canvas.after(300)
 

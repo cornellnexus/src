@@ -85,7 +85,7 @@ def engine_pid_desktop():
             # TODO: Calling update wrong - if confirmed, also fix in engine_pid
             x_vel = loc_pid.update(x_error)
             y_vel = loc_pid.update(y_error)
-            
+
             # pass in predicted_loc, predicted_head
             v_w = feedback_lin(predicted_loc, x_vel, y_vel, 0.2)
             scaled_v_w = limit_cmds(v_w[0], v_w[1], MAX_V, WHEEL_TO_CENTER)
@@ -153,7 +153,6 @@ def engine_pid_desktop():
 
 if __name__ == "__main__":
     engine_pid_desktop()
-
 
 # -----------------------------PLOT PATH----------------------------------------
 # we should make this a function

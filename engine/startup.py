@@ -1,6 +1,6 @@
-#TODO: documentation
-class Startup(): 
-    def execute_startup(): 
-        pass 
-        #TODO
-        pass 
+# TODO: documentation
+class Startup():
+    def execute_startup():
+        pass
+        # TODO
+        pass

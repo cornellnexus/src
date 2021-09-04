@@ -1,14 +1,11 @@
-#file for testing gps data
+# file for testing gps data
 import RPi.GPIO as GPIO
 import time
 
 from electrical.commands import *
 from electrical.gpio import *
 
-
-
-
-#comment out one of the tests to run
+# comment out one of the tests to run
 ############################### Testing GPS ##################################
 # ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 5)
 # 
@@ -24,7 +21,7 @@ from electrical.gpio import *
 #         print("Time out! exit. \n")
 #         sys.exit()
 #     print_gps(decoded_line)
-  
+
 ############################### Testing GPIO #################################
 stopTime = time.time() + 10
 while time.time() < stopTime:
@@ -33,4 +30,3 @@ while time.time() < stopTime:
 stop()
 
 GPIO.cleanup()
-

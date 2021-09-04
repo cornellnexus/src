@@ -10,7 +10,7 @@ import time
 # import adafruit_lsm9ds1
 
 
-#Motor Driver
+# Motor Driver
 in1 = 5
 in2 = 6
 in3 = 19
@@ -18,18 +18,17 @@ in4 = 26
 enA = 13
 enB = 12
 
-#IMU
+# IMU
 imu_sda = 2
 imu_scl = 3
 
-#Sonar
+# Sonar
 sonar_trig = 23
-sonar_echo = 24 #double check this order
+sonar_echo = 24  # double check this order
 
-#RF Module 
+# RF Module
 rf_tx = 14
 rf_rx = 15
-
 
 # def setup():
 #     GPIO.setmode(GPIO.BCM)
@@ -58,6 +57,3 @@ rf_rx = 15
 
 # setup()
 # GPIO.cleanup()
-
-
-

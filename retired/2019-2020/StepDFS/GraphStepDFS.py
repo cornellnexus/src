@@ -9,9 +9,8 @@ import numpy
 
 
 class Graph:
-
-    #xMax = 10
-    #yMax = 10
+    # xMax = 10
+    # yMax = 10
 
     # Dictionary to hold the created coordinates. Key is an (x,y) pair, and value
     # is a coordinate object.
@@ -64,15 +63,15 @@ class Graph:
 
             vertex.setTraversed(True)
             (x, y) = vertex.getCoords()
-            #print("X AND Y" + str((x,y)))
+            # print("X AND Y" + str((x,y)))
 
             if not vertex.getObstacle():
-                #print("NOT OBSTACLE")
+                # print("NOT OBSTACLE")
                 rawCoordsTraversed.append((x, y))
 
             for neighbor in vertex.getNeighbors():
                 stack.append(neighbor)
-                #print("Neighbor: " + str(neighbor))
+                # print("Neighbor: " + str(neighbor))
 
         return rawCoordsTraversed
 
@@ -82,7 +81,7 @@ class Graph:
 
         vertex = stack.pop()
 
-        if not(vertex.getTraversed()):
+        if not (vertex.getTraversed()):
             vertex.setTraversed(True)
             (x, y) = vertex.getCoords()
 
@@ -94,7 +93,7 @@ class Graph:
 
         return (rawCoordsTraversed, stack)
 
-    #prevStep = (rawCoordsTraversed, stack)
+    # prevStep = (rawCoordsTraversed, stack)
 
     def DFSStep(self, prevStep):
         stack = prevStep[1]
@@ -106,7 +105,7 @@ class Graph:
         else:
             vertex = stack.pop()
 
-            if not(vertex.getTraversed()):
+            if not (vertex.getTraversed()):
                 vertex.setTraversed(True)
                 (x, y) = vertex.getCoords()
 
@@ -124,7 +123,7 @@ class Graph:
     # created using parameters x and y, and the value of the new object is returned
     # Precondition: x and y are floats
     def checkIfCoordinateInCoordsDictElseGenerateNode(self, x, y):
-        #print("here 3")
+        # print("here 3")
         if (x, y) in self.coordinates:
             print("NEIGHBOR NODE FOUND")
             return self.coordinates.get((x, y))
@@ -154,7 +153,7 @@ class Graph:
                 neighborX, neighborY)
             coordinateNode.addNeighbor(neighborNode)
         # else:
-            #print("Oout of Bouds: " + str(neighborX) + ", " +  str(neighborY))
+        # print("Oout of Bouds: " + str(neighborX) + ", " +  str(neighborY))
 
     # Creates neighbors for a single node
     # Precondition: the coordinate at (x,y) is already created and can be found in the
@@ -169,25 +168,25 @@ class Graph:
         print("lat step: " + str(self.lat_step))
         print("long step: " + str(self.long_step))
 
-        #self.lat_step = round(self.lat_step,5)
-        #self.long_step = round(self.long_step,5)
+        # self.lat_step = round(self.lat_step,5)
+        # self.long_step = round(self.long_step,5)
 
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x, y+self.long_step)  # Neighbor above
+            coordinateToAddNeighborsTo, x, y + self.long_step)  # Neighbor above
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x, y-self.long_step)  # Neighbor below
+            coordinateToAddNeighborsTo, x, y - self.long_step)  # Neighbor below
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x+self.lat_step, y)  # Neighbor to the right
+            coordinateToAddNeighborsTo, x + self.lat_step, y)  # Neighbor to the right
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x-self.lat_step, y)  # Neighbor to the left
+            coordinateToAddNeighborsTo, x - self.lat_step, y)  # Neighbor to the left
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x+self.lat_step, y+self.long_step)  # Diagnol upper right neighbor
+            coordinateToAddNeighborsTo, x + self.lat_step, y + self.long_step)  # Diagnol upper right neighbor
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x-self.lat_step, y+self.long_step)  # Diagnoal upper left neighbor
+            coordinateToAddNeighborsTo, x - self.lat_step, y + self.long_step)  # Diagnoal upper left neighbor
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x+self.lat_step, y-self.long_step)  # Diagnoal lower right
+            coordinateToAddNeighborsTo, x + self.lat_step, y - self.long_step)  # Diagnoal lower right
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x-self.lat_step, y-self.long_step)  # Diagnol lower left
+            coordinateToAddNeighborsTo, x - self.lat_step, y - self.long_step)  # Diagnol lower left
 
     # Auto-creates coordinates given xMax and yMax. This is our old hard-coded version
     # of created the coordinates.
@@ -210,7 +209,7 @@ class Graph:
         # long_base_unit = 10**long_10th
         # self.long_step = long_base_unit / 2
         self.long_step = round((self.long_max - self.long_min) / 9, 5)
-        #print("Long_step = " + str(self.long_step))
+        # print("Long_step = " + str(self.long_step))
 
     # Initializes latitude step based on the user inputs latitude min/max
     def generateLatStep(self):
@@ -224,17 +223,17 @@ class Graph:
         # self.lat_step = lat_base_unit / 2
 
         self.lat_step = round((self.lat_max - self.lat_min) / 9, 5)
-        #print("Lat_step = " + str(self.lat_step))
+        # print("Lat_step = " + str(self.lat_step))
 
     # Initializes all the coordinates based on the boundary and longitude/latitude steps
     # Adds coordinate (x,y) pairs [the keys], to the dictionary coordinates
     # Given and lat and longi, a coordinate is created if it in not in the dictionary. Then
     # the neighbors of (lat,longi) are created and put into the dictionary if not already.
     def generateCoordinates(self):
-        #coord = []
+        # coord = []
 
-        for lat in numpy.arange(self.lat_min, self.lat_max+self.lat_step, self.lat_step):
-            for longi in numpy.arange(self.long_min, self.long_max+self.long_step, self.long_step):
+        for lat in numpy.arange(self.lat_min, self.lat_max + self.lat_step, self.lat_step):
+            for longi in numpy.arange(self.long_min, self.long_max + self.long_step, self.long_step):
                 # coord.append((lat,longi))
 
                 lat = round(lat, 5)
@@ -270,10 +269,8 @@ class Graph:
         print("STARTING DFS TRAVERSAL: " + str(x) + ", " + str(y))
         return self.performIterativeDFSAlgorithmm(self.coordinates[(x, y)])
 
-
-# Starts the DFS traversal
+    # Starts the DFS traversal
     # Precondition: (x,y) must be a key value in dictionary coordinates
-
 
     def startDFSNina(self, x, y):
         print("STARTING DFS TRAVERSAL: " + str(x) + ", " + str(y))

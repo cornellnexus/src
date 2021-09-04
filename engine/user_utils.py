@@ -3,22 +3,24 @@ Asks the user to provide long min, long max, lat min, lat max.
 Precondition: Minimum float values must be less than maximum float values
 Returns the values in the format: (long_min, long_max, lat_min, lat_max)
 """
+
+
 def get_coord_inputs():
-        try:
-            lat_min = float(input ("Enter minimum latitude: "))
-            lat_max = float(input("Enter maximum latitude: "))
-            if lat_max <= lat_min:
-                raise Exception ("The maximum latitude must be larger"  
-                                    " than the minimum latitude")
-            long_min = float(input("Enter minimum longitude: "))
-            long_max = float(input("Enter maximum longitude: "))
-            if long_max <= long_min:
-                raise Exception ("The maximum longitude must be larger"
-                                    " than the minimum longitude")
-            
-            return (lat_min, lat_max, long_min, long_max)
-        except ValueError:
-            print("Please enter a number")
+    try:
+        lat_min = float(input("Enter minimum latitude: "))
+        lat_max = float(input("Enter maximum latitude: "))
+        if lat_max <= lat_min:
+            raise Exception("The maximum latitude must be larger"
+                            " than the minimum latitude")
+        long_min = float(input("Enter minimum longitude: "))
+        long_max = float(input("Enter maximum longitude: "))
+        if long_max <= long_min:
+            raise Exception("The maximum longitude must be larger"
+                            " than the minimum longitude")
+
+        return (lat_min, lat_max, long_min, long_max)
+    except ValueError:
+        print("Please enter a number")
 
 
 """Asks the user in the terminal whether they want to display the traversal in 

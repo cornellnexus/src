@@ -31,12 +31,12 @@ prevStep = ([], [])
 
 
 def animate(i):
-    points = ax.scatter(xcoords[:i+1], ycoords[:i+1], zorder=1,
+    points = ax.scatter(xcoords[:i + 1], ycoords[:i + 1], zorder=1,
                         alpha=1, c='r', s=10)
 
     # points = ax.scatter(df.longitude[:i+1], df.latitude[:i+1], zorder=1,
     #                     alpha=1, c='r', s=10)
-    #ax.set_data(df.longitude[:i+1], df.latitude[:i+1])
+    # ax.set_data(df.longitude[:i+1], df.latitude[:i+1])
     return
 
 
@@ -50,17 +50,17 @@ def update(event):
 
     print("clicked start")
 
-    while(dfsRunning):
+    while (dfsRunning):
         plt.pause(1)
 
         counter = counter + 1
-        if not(started):
+        if not (started):
             prevStep = graph.startDFSNina(42.4596, -76.5119)
             started = True
 
             newPoint = prevStep[0][-1]
-            xcoords = xcoords+[newPoint[0]]
-            ycoords = ycoords+[newPoint[1]]
+            xcoords = xcoords + [newPoint[0]]
+            ycoords = ycoords + [newPoint[1]]
 
             # # get the current points as numpy array with shape  (N, 2)
             # array = plot.get_offsets()
@@ -80,15 +80,15 @@ def update(event):
         else:
             print(counter)
             # if special indicator in stack
-            if(prevStep[1] == [] or prevStep[1][0] == "DONE"):
+            if (prevStep[1] == [] or prevStep[1][0] == "DONE"):
                 dfsRunning = False
                 break
             else:
                 prevStep = graph.DFSStep(prevStep)
 
                 newPoint = prevStep[0][-1]
-                xcoords = xcoords+[newPoint[0]]
-                ycoords = ycoords+[newPoint[1]]
+                xcoords = xcoords + [newPoint[0]]
+                ycoords = ycoords + [newPoint[1]]
 
                 # # get the current points as numpy array with shape  (N, 2)
                 # array = plot.get_offsets()
@@ -104,7 +104,7 @@ def update(event):
                 plt.scatter(xcoords, ycoords, zorder=5)
                 # plt.draw()
 
-    #anim = animation.FuncAnimation(fig, animate, repeat=False, interval=250)
+    # anim = animation.FuncAnimation(fig, animate, repeat=False, interval=250)
     # plt.show()
     return
 

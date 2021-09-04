@@ -24,9 +24,9 @@ class ExtendedKalmanFilter:
 
         # Set kalman gain
         kalman_gain = (
-            sigma_bar
-            * np.transpose(self.jac_H)
-            * inv(self.jac_H * sigma_bar * np.transpose(self.jac_H) + self.Q)
+                sigma_bar
+                * np.transpose(self.jac_H)
+                * inv(self.jac_H * sigma_bar * np.transpose(self.jac_H) + self.Q)
         )
 
         # Update
@@ -51,13 +51,17 @@ if __name__ == "__main__":
     initial_mu = np.array([[10], [10]])
     initial_sigma = np.array([[5, 0], [0, 5]])
 
+
     def g_gps(pose, u):
         return pose
 
+
     G_gps_jac = np.array([[1, 0], [0, 1]])
+
 
     def h_gps(pose):
         return pose
+
 
     H_gps_jac = np.array([[1, 0], [0, 1]])
 

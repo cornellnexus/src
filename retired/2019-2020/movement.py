@@ -38,23 +38,23 @@ class Commands:
         self.back_right_rpm = 0
 
     def calc_steps(self, dist, rpm):
-        circumference = self.radius*2*math.pi
-        min_num = (dist/circumference)/rpm
+        circumference = self.radius * 2 * math.pi
+        min_num = (dist / circumference) / rpm
         sec_num = min_num * 60
-        return sec_num/self.time_step
+        return sec_num / self.time_step
 
     def move_in_line(self, dist, rpm):
 
         self.front_left_rpm = rpm
         self.front_right_rpm = rpm
-        dist_per_time_step = (rpm/60)*self.time_step*self.radius*2*math.pi
+        dist_per_time_step = (rpm / 60) * self.time_step * self.radius * 2 * math.pi
         steps_to_travel = self.calc_steps(dist, rpm)
 
         while (steps_to_travel > 0):
             self.x += float(dist_per_time_step) * \
-                math.sin(math.radians(self.heading))
+                      math.sin(math.radians(self.heading))
             self.y += float(dist_per_time_step) * \
-                math.cos(math.radians(self.heading))
+                      math.cos(math.radians(self.heading))
             self.write_coords()
             steps_to_travel -= 1
             time.sleep(self.time_step)
@@ -63,9 +63,9 @@ class Commands:
 
     def move_with_key(self, dist):
         self.x += float(dist) * \
-            math.sin(math.radians(self.heading))
+                  math.sin(math.radians(self.heading))
         self.y += float(dist) * \
-            math.cos(math.radians(self.heading))
+                  math.cos(math.radians(self.heading))
         self.write_coords()
         self.print_coords()
         # self.write_coords()
@@ -76,7 +76,7 @@ class Commands:
         self.print_coords()
         # self.write_coords()
 
-    #deg in degrees
+    # deg in degrees
 
     def turn_in_place(self, deg):
         # change rpm for each of the wheels, for a certain amount of time

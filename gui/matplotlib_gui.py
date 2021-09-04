@@ -13,7 +13,9 @@ matplotlib.use('TkAgg')
 '''
 Set up window
 '''
-def setup(bounds): 
+
+
+def setup(bounds):
     longMin, longMax, latMin, latMax = bounds
     BoundaryBox = [longMin, longMax, latMin, latMax]
     ruh_m = plt.imread('map.png')
@@ -29,15 +31,19 @@ def setup(bounds):
     fig.set_size_inches(6, 5)
     return fig, ax
 
+
 '''
 Create circle patch object to represent moving robot, and wedge patch for
 robot's heading
 '''
+
+
 def make_robot_symbol():
     circle_patch = plt.Circle((5, 5), 0.1, fc='black')
     wedge_patch = patch.Wedge(
         (5, 1), 1, 30, 50, animated=True, fill=False, width=.9, ec='r', hatch='xx')
     return circle_patch, wedge_patch
+
 
 def init():
     circle_patch.center = (5, 5)
@@ -46,10 +52,13 @@ def init():
     ax.add_patch(wedge_patch)
     return circle_patch, wedge_patch
 
+
 '''
 Update circle and wedge patch poses arbitrarily with each time step, to 
 simulate movement
 '''
+
+
 def animate(i):
     x, y = circle_patch.center
     x = 5 + 3 * np.sin(np.radians(i))
@@ -64,18 +73,21 @@ def animate(i):
     # print(wedge_patch.center)
     return circle_patch, wedge_patch
 
+
 '''
 Returns information required to show the animated plot corresponding to the 
 given bounds.
 '''
+
+
 def get_graph_info(bounds):
     global fig, ax, circle_patch, wedge_patch
     fig, ax = setup(bounds)
     circle_patch, wedge_patch = make_robot_symbol()
-    #Begins the animation
+    # Begins the animation
     anim = animation.FuncAnimation(fig, animate,
-                               init_func=init,
-                               frames=360,
-                               interval=20,
-                               blit=True)
+                                   init_func=init,
+                                   frames=360,
+                                   interval=20,
+                                   blit=True)
     return plt, anim

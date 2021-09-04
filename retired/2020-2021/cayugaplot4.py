@@ -45,6 +45,7 @@ circle_patch = plt.Circle((5, 5), 0.1, fc='black')
 wedge_patch = patch.Wedge(
     (5, 1), 1, 30, 50, animated=True, fill=False, width=.9, ec='r', hatch='xx')
 
+
 def init():
     circle_patch.center = (5, 5)
     ax.add_patch(circle_patch)
@@ -52,10 +53,13 @@ def init():
     ax.add_patch(wedge_patch)
     return circle_patch, wedge_patch
 
+
 '''
 Update circle and wedge patch poses arbitrarily with each time step, to 
 simulate movement
 '''
+
+
 def animate(i):
     x, y = circle_patch.center
     x = 5 + 3 * np.sin(np.radians(i))
@@ -70,6 +74,7 @@ def animate(i):
     print(wedge_patch.theta1, wedge_patch.theta2)
     print(wedge_patch.center)
     return circle_patch, wedge_patch
+
 
 '''
 Begins the animation

@@ -26,23 +26,31 @@ TURQUOISE = (64, 224, 208)
 '''
 Calculate the distance between two Euclidean points
 '''
+
+
 def heuristic(p1, p2):
     x1, y1 = p1
     x2, y2 = p2
     return abs(x1 - x2) + abs(y1 - y2)
 
+
 '''
 Draws a path from the current node
 '''
+
+
 def reconstruct_path(came_from, current, draw):
     while current in came_from:
         current = came_from[current]
         current.make_path()
         draw()
 
+
 '''
 Implementation of the a* algorithm
 '''
+
+
 def algorithm(draw, grid, start, end):
     count = 0
     open_set = PriorityQueue()
@@ -78,7 +86,7 @@ def algorithm(draw, grid, start, end):
                 came_from[neighbor] = current
                 g_score[neighbor] = temp_g_score
                 f_score[neighbor] = temp_g_score + \
-                    heuristic(neighbor.get_pos(), end.get_pos())
+                                    heuristic(neighbor.get_pos(), end.get_pos())
                 if neighbor not in open_set_hash:
                     count += 1
                     open_set.put((f_score[neighbor], count, neighbor))
@@ -91,10 +99,13 @@ def algorithm(draw, grid, start, end):
 
     return False
 
+
 '''
 A Node is a cell which composes part of the graph that our robot is localized
 in.
 '''
+
+
 class Node:
     def __init__(self, row, col, width, total_rows):
         self.row = row
@@ -182,11 +193,11 @@ def make_grid(rows, width):
 
 
 def draw_grid(win, rows, width):
-    gap = width//rows
+    gap = width // rows
     for i in range(rows):
         pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
     for j in range(rows):
-        pygame.draw.line(win, GREY, (j * gap, 0), (j*gap, width))
+        pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
 
 def draw(win, grid, rows, width):

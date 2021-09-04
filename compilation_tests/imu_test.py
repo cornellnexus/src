@@ -4,7 +4,7 @@ import board
 import busio
 from adafruit_lsm9ds1 import LSM9DS1_I2C
 
-#random change message 
+# random change message
 
 # --------------------------------READ ME BEFORE LOOKING AT CODE-------------------------------
 """

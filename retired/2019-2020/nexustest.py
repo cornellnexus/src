@@ -12,7 +12,10 @@
 #     print(b)
 import serial
 import time
+
 ser = serial.Serial('COM3', 115200)  # serial port
+
+
 class Sensor_Data:
     def __init__(self):
         self.accel_x = 0
@@ -25,6 +28,7 @@ class Sensor_Data:
         self.gyro_y = 0
         self.gyro_z = 0
         self.iteration = 0
+
     def set_IMU_all(self, cur_data):
         self.accel_x = cur_data[0]
         self.accel_y = cur_data[1]
@@ -36,6 +40,7 @@ class Sensor_Data:
         self.gyro_y = cur_data[7]
         self.gyro_z = cur_data[8]
         self.iteration = cur_data[9]
+
     def print_data(self):
         print("a_x: " + str(self.accel_x))
         print("a_y: " + str(self.accel_y))
@@ -46,8 +51,12 @@ class Sensor_Data:
         print("g_x: " + str(self.gyro_x))
         print("g_y: " + str(self.gyro_y))
         print("g_z: " + str(self.gyro_z))
+
+
 cur_data = []
 readings = []
+
+
 #
 #
 # def parse_reading(str):
@@ -56,7 +65,6 @@ readings = []
 
 
 def parse_whole_reading(str):
-
     s = Sensor_Data()
     a_x_index = str.index("a_x")
     a_y_index = str.index("a_y")
@@ -70,16 +78,16 @@ def parse_whole_reading(str):
     c_index = str.index("c")
     grouping = []
     print("here2")
-    grouping.append(str[a_x_index+4:a_y_index-1])
-    grouping.append(str[a_y_index+4:a_z_index-1])
-    grouping.append(str[a_z_index+4:m_x_index-1])
-    grouping.append(str[m_x_index+4:m_y_index-1])
-    grouping.append(str[m_y_index+4:m_z_index-1])
-    grouping.append(str[m_z_index+4:g_x_index-1])
-    grouping.append(str[g_x_index+4:g_y_index-1])
-    grouping.append(str[g_y_index+4:g_z_index-1])
-    grouping.append(str[g_z_index+4:c_index-1])
-    grouping.append(str[c_index+2:])
+    grouping.append(str[a_x_index + 4:a_y_index - 1])
+    grouping.append(str[a_y_index + 4:a_z_index - 1])
+    grouping.append(str[a_z_index + 4:m_x_index - 1])
+    grouping.append(str[m_x_index + 4:m_y_index - 1])
+    grouping.append(str[m_y_index + 4:m_z_index - 1])
+    grouping.append(str[m_z_index + 4:g_x_index - 1])
+    grouping.append(str[g_x_index + 4:g_y_index - 1])
+    grouping.append(str[g_y_index + 4:g_z_index - 1])
+    grouping.append(str[g_z_index + 4:c_index - 1])
+    grouping.append(str[c_index + 2:])
 
     s.set_IMU_all(grouping)
     readings.append(s)
