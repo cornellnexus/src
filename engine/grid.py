@@ -1,7 +1,6 @@
 # from node import *
 from engine.node import Node
 import numpy as np
-import serial
 import geopy.distance
 import matplotlib.pyplot as pltß
 from haversine import haversine, Unit
