@@ -1,0 +1,55 @@
+
+Get path, convert into queue
+Initialize robot
+
+while queue is not empty:
+    pop off target node [lawn mower traversal]
+    read current location from sensors [predicted_loc]
+    get distance_from_target
+    
+    while distance_from_target > gps_noise_range:
+        
+        move forward
+        update predicted location with new position
+        update distance from target
+
+    now we're at target node
+
+    if at top of grid:
+        turn right
+    if at bottom of grid (but not starting corner):
+        turn left 
+    
+
+-----------------------------UPDATED WITH PID-----------------------------------
+
+Get path, convert into queue
+Initialize robot
+INITIALIZE PIDS:
+
+while queue is not empty:
+    pop off target node [lawn mower traversal]
+
+    read current location from sensors [predicted_loc]
+    get distance_from_target
+    
+    while DISTANCE FROM TARGET > ALLOWED_NOISE:
+        UPDATE LOCATION PID WITH NEW TARGET NODE [TARGET NODE IS CORNER(?)]
+        UPDATE HEADING PID WITH TARGET ANGLE [ZERO AT THE BEGINNING]
+        VELOCITY = LOCATION PID.update()
+        ANGULAR VELOCITY = HEADING PID.update()
+        move forward (SEND VELOCITY, ANGULAR VELOCITY CMD) #ELECTRICAL CONVERTS TO PWM/EXACT MOTOR COMMANDS
+        SLEEP(TIME INTERVAL) # WAIT FOR ROBOT TO MOVE
+        update predicted location with new position
+        update distance from target       
+
+    (ideally take into account the time required for the robot to stop)    
+    now we're at target node (APPROXIMATELY)
+    SEND ANG VELOCITY/VELOCITY CMD AS ZERO #ANG VELOCITY BASED ON PREVIOUS TURNS
+
+    WHILE CURRENT ANGLE != DESIRED ANGLE: #DESIRED ANGLE UPDATED BASED ON PREVIOUS TURNS
+        if at top of grid:
+            turn right
+        if at bottom of grid (but not starting corner):
+            turn left 
+        sleep(time interval)
