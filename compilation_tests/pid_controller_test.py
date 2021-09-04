@@ -4,22 +4,6 @@ import unittest
 '''
 Unit tests for pid_controller.py
 '''
-
-"""
-Test cases: 
-1. Output Limits are none, Kp > 0, other gains are 0 
-2. Output Limits are none Ki > 0, other gains are 0
-3. Output Limits are none, Kd > 0, other gains are 0 
-4. Output Limits are none, Kp, Ki > 0, Kd = 0 
-5. Output Limits are none, gains are all > 0 
-6. Output Limits are not none (what is expected behavior in this condition?)
-  ==> Will anything happen? 
-7. Output Limits are none, gains entered are negative 
-  ==> Shouldn't be negative gains (need to implement a try-expect statement)
-8. Test with sample time? 
-9. Test with target?
-10. Test error calculation? 
-"""
 class TestPosPIDController(unittest.TestCase):
   def test_gains_no_lim(self): 
     positive_pid = pid_controller.PID(Kp = 3.5, Ki = 10.0, Kd = 0.5, target = 0, 

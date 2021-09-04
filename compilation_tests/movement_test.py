@@ -1,9 +1,5 @@
 #file for testing gps data
-import csv
-import os, sys
-import pynmea2
 import RPi.GPIO as GPIO
-import serial
 import time
 
 from electrical.commands import *

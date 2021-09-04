@@ -65,20 +65,6 @@ class TestGenerateNodes(unittest.TestCase):
 
       all_nodes_traveled_to = simulation(r2d2, NOISE_RANGE, goals, Kp, Ki, Kd)
       self.assertEqual([True] * 3, all_nodes_traveled_to[0:3])
-
-    # def test_minimal_noise(self):
-    #   r2d2 = Robot(-5,-10,math.pi/2)
-    #   NOISE_RANGE = 0.1
-
-    #   goals = np.array([[-5,-10],[-5,-5],[-5,0],[-5,5],[-5,10],[0,10],[0,5],\
-    #   [0,0],[0,-5],[0,-10],[5,-10],[5,-5],[5,0],[5,5],[5,10],[10,10],[10,5],\
-    #   [10,0],[10,-5],[10,-10]])
-
-    #   Kp=1
-    #   Ki=0.1
-    #   Kd=0.1
-
-    #   simulation(r2d2, NOISE_RANGE, goals, Kp, Ki, Kd)
     
 class TestPlottingFunctions(unittest.TestCase):
   def test_waypoints_to_array(self):
