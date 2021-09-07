@@ -34,6 +34,8 @@ class StateManager:
   def execute(self): 
     self.state_obj = State()
     self.state = self.state_obj.get_state()
+    
+    
 
     #1. Change state if faults exist 
     # TODO: need a class that includes Faults (signal, suppress,override faults)
