@@ -15,9 +15,13 @@ from engine.robot import Robot
 
 def waypoints_to_array(waypoints):
     """
-    Tranforms a list of Node objects to a 1D np array of coordinates to be plotted
-    for easier plotting. 
+    Arguments:
+        waypoints: a list of Node objects
+
+    Returns:
+        waypoints_arr: a 1D np array of coordinates, each of which corresponds to a waypoint in waypoints
     """
+
     n = len(waypoints)
     waypoints_arr = np.empty([n, 2])
     for i in range(n):
@@ -29,7 +33,15 @@ def get_plot_boundaries(meters_grid, delta):
     """
     Given some grid to be plotted, and a delta value, returns the desired 
     x limits and y limits for the plot.
+
+    Arguments:
+        meters_grid: a Grid object
+        delta: the width of the border between
+    Returns:
+        xlim: a list containing the left and right boundaries of the grid, taking delta into account
+        ylim: a list containing the top and bottom boundaries of the grid, taking delta into account
     """
+
     size = np.shape(meters_grid)
     min_coords = meters_grid[0, 0].get_coords()
     max_coords = meters_grid[size[0] - 1, size[1] - 1].get_coords()
@@ -42,18 +54,16 @@ if __name__ == "__main__":
     # Initialize robot
     r2d2 = Robot(0, 0, math.pi / 2)
 
-    '''MOTION CONTROL'''
+    ''' ------------------ SETUP ----------------------- '''
     # Grid: Engineering Quad
     g = Grid(42.444250, 42.444599, -76.483682, -76.483276)
 
-    # pass in 'full' to get full traversal path
+    # Pass in 'full' to get full traversal path
     waypoints = g.get_waypoints('borders')
-
-    '''MOTION CONTROL'''
-    # simulated noise added to robot's state
-    NOISE_RANGE = .1
-
     goals = np.array(g.gps_waypoints)
+
+    # Amount of simulated noise added to robot's state
+    NOISE_RANGE = .1
 
     # Larger epsilons means a larger turning radius
     EPSILON = 0.2
@@ -71,6 +81,8 @@ if __name__ == "__main__":
     loc_pid_y = PID(
         Kp=1, Ki=0, Kd=0, target=0, sample_time=TIME_STEP, output_limits=(None, None)
     )
+
+    '''------------------- TRAVERSAL PHASE -------------------'''
 
     curr_goal_ind = 0
     num_goals = len(waypoints)
@@ -109,7 +121,7 @@ if __name__ == "__main__":
             distance_away = math.hypot(float(predicted_state[0]) - curr_goal[0], \
                                        float(predicted_state[1]) - curr_goal[1])
 
-        # Turning? Heading pid?
+    ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
 
     plt.style.use('seaborn-whitegrid')
     x_coords = r2d2.truthpose[:, 0]
@@ -159,8 +171,9 @@ if __name__ == "__main__":
     plt.show()
 
 
-# This method is for testing purposes only! Made for more parameterization
-# TODO: Replace the main version with this?
+''' ---------- FOR TESTING PURPOSES ONLY ---------------'''
+
+
 def simulation(robot, noise, goals, kp, ki, kd):
     # Larger epsilons means a larger turning radius
     EPSILON = 0.2
