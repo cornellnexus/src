@@ -4,7 +4,6 @@ import sys
 import time
 import serial
 import difflib
-import pigpio
 from gpio import *
 
 tx = rf_tx
