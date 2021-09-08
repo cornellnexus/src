@@ -52,39 +52,10 @@ def get_plot_boundaries(meters_grid, delta):
 
 
 if __name__ == "__main__":
-    # Initialize robot
     r2d2 = Robot(0, 0, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_mode=2)
-
-    ''' ------------------ SETUP ----------------------- '''
-    # # Grid: Engineering Quad
-    # g = Grid(42.444250, 42.444599, -76.483682, -76.483276)
-    #
-    # # Pass in 'full' to get full traversal path
-    # waypoints = g.get_waypoints('borders')
-    # goals = np.array(g.gps_waypoints)
-    #
-    # # Amount of simulated noise added to robot's state
-    # NOISE_RANGE = .1
-    #
-    # # Larger epsilons means a larger turning radius
-    # EPSILON = 0.2
-    #
-    # # Used in limit_cmds
-    # MAX_V = 0.5
-    # ROBOT_RADIUS = 0.2
-    # ALLOWED_DIST_ERROR = 0.5  # was 0.5, weird when 10 and everything 0.1
-    # TIME_STEP = 0.1  # is this the time by which we are going to sleep after each movement?
-    #
-    # loc_pid_x = PID(
-    #     Kp=1, Ki=0, Kd=0, target=0, sample_time=TIME_STEP, output_limits=(None, None)
-    # )
-    #
-    # loc_pid_y = PID(
-    #     Kp=1, Ki=0, Kd=0, target=0, sample_time=TIME_STEP, output_limits=(None, None)
-    # )
-
     m = Mission(r2d2)
-    '''------------------- TRAVERSAL PHASE -------------------'''
+
+    '''------------------- MISSION EXECUTION -------------------'''
     m.execute_mission()
 
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
@@ -95,13 +66,12 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
-    goals = waypoints_to_array(m.waypoints)
+    goals = waypoints_to_array(m.all_waypoints)
     ax.plot(goals[:, 0], goals[:, 1], 'rx')
 
     xbounds, ybounds = get_plot_boundaries(m.grid.meters_grid, 5)
     plt.xlim(xbounds)
     plt.ylim(ybounds)
-    # plt.show()
 
     circle_patch = plt.Circle((5, 5), 1, fc="green")
     wedge_patch = patch.Wedge(
@@ -112,7 +82,6 @@ if __name__ == "__main__":
     def init():
         circle_patch.center = (0, 0)
         ax.add_patch(circle_patch)
-        # ax.add_patch(arc_patch)
         ax.add_patch(wedge_patch)
         return circle_patch, wedge_patch
 
@@ -124,9 +93,6 @@ if __name__ == "__main__":
         wedge_patch.update({"center": [x_coord, y_coord]})
         wedge_patch.theta1 = np.degrees(m.robot.truthpose[i, 2]) - 10
         wedge_patch.theta2 = np.degrees(m.robot.truthpose[i, 2]) + 10
-
-        # print(wedge_patch.theta1, wedge_patch.theta2)
-        # print(wedge_patch.center)
         return circle_patch, wedge_patch
 
 

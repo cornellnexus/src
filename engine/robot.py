@@ -30,8 +30,8 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, init_mode=1,
-                 init_charge=100, init_capacity=100, time_step=0.1):
+    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
+                 position_kd=0, position_noise=0, init_mode=1, time_step=0.1):
 
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -40,16 +40,20 @@ class Robot:
         self.epsilon = epsilon
         self.max_velocity = max_v
         self.radius = radius
-        self.battery = init_charge
-        self.waste_capacity = init_capacity
         self.time_step = time_step
+        self.position_kp = position_kp
+        self.position_ki = position_ki
+        self.position_kd = position_kd
+        self.position_noise = position_noise
 
         self.loc_pid_x = PID(
-            Kp=1, Ki=0, Kd=0, target=0, sample_time=self.time_step, output_limits=(None, None)
+            Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
+            output_limits=(None, None)
         )
 
         self.loc_pid_y = PID(
-            Kp=1, Ki=0, Kd=0, target=0, sample_time=self.time_step, output_limits=(None, None)
+            Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
+            output_limits=(None, None)
         )
 
     def travel(self, dist, turn_angle):
@@ -89,22 +93,22 @@ class Robot:
     def execute_setup(self):
         pass
 
-    def execute_traversal(self, waypoints, allowed_dist_error):
-        for curr_goal_ind in range(len(waypoints)):
-
-            curr_goal = waypoints[curr_goal_ind].get_coords()  # target coords (meters)
+    def execute_traversal(self, unvisited_waypoints, allowed_dist_error):
+        # for curr_goal_ind in range(len(waypoints)):
+        while unvisited_waypoints:
+            curr_waypoint = unvisited_waypoints[0].get_coords()
             predicted_state = self.state  # this will come from Kalman Filter
 
             # location error (in meters)
-            distance_away = math.hypot(float(predicted_state[0]) - curr_goal[0], \
-                                       float(predicted_state[1]) - curr_goal[1])
+            distance_away = math.hypot(float(predicted_state[0]) - curr_waypoint[0], \
+                                       float(predicted_state[1]) - curr_waypoint[1])
 
             while distance_away > allowed_dist_error:
-                # r2d2.state[0] = np.random.normal(r2d2.state[0],NOISE_RANGE)
-                # r2d2.state[1] = np.random.normal(r2d2.state[1],NOISE_RANGE)
+                self.state[0] = np.random.normal(self.state[0], self.position_noise)
+                self.state[1] = np.random.normal(self.state[1], self.position_noise)
 
-                x_error = curr_goal[0] - self.state[0]
-                y_error = curr_goal[1] - self.state[1]
+                x_error = curr_waypoint[0] - self.state[0]
+                y_error = curr_waypoint[1] - self.state[1]
 
                 x_vel = self.loc_pid_x.update(x_error)
                 y_vel = self.loc_pid_y.update(y_error)
@@ -121,10 +125,12 @@ class Robot:
                 # Get state after movement:
                 predicted_state = self.state  # this will come from Kalman Filter
                 # location error (in meters)
-                distance_away = math.hypot(float(predicted_state[0]) - curr_goal[0], \
-                                           float(predicted_state[1]) - curr_goal[1])
+                distance_away = math.hypot(float(predicted_state[0]) - curr_waypoint[0], \
+                                           float(predicted_state[1]) - curr_waypoint[1])
+            unvisited_waypoints.popleft()
 
         self.phase = Phase.COMPLETE
+        return unvisited_waypoints
 
     def execute_avoid_obstacle(self):
         pass
