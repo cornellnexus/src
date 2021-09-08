@@ -89,10 +89,10 @@ class Robot:
     def execute_setup(self):
         pass
 
-    def execute_traversal(self, unvisited_goals, allowed_dist_error):
-        for curr_goal_ind in range(len(unvisited_goals)):
+    def execute_traversal(self, waypoints, allowed_dist_error):
+        for curr_goal_ind in range(len(waypoints)):
 
-            curr_goal = unvisited_goals[curr_goal_ind].get_coords()  # target coords (meters)
+            curr_goal = waypoints[curr_goal_ind].get_coords()  # target coords (meters)
             predicted_state = self.state  # this will come from Kalman Filter
 
             # location error (in meters)

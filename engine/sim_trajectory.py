@@ -85,10 +85,7 @@ if __name__ == "__main__":
 
     m = Mission(r2d2)
     '''------------------- TRAVERSAL PHASE -------------------'''
-    print(m.unvisited_goals)
-    print("\n\n\n\n\n")
     m.execute_mission()
-    print(m.unvisited_goals)
 
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
 
@@ -121,12 +118,12 @@ if __name__ == "__main__":
 
 
     def animate(i):
-        x_coord = r2d2.truthpose[i, 0]
-        y_coord = r2d2.truthpose[i, 1]
+        x_coord = m.robot.truthpose[i, 0]
+        y_coord = m.robot.truthpose[i, 1]
         circle_patch.center = (x_coord, y_coord)
         wedge_patch.update({"center": [x_coord, y_coord]})
-        wedge_patch.theta1 = np.degrees(r2d2.truthpose[i, 2]) - 10
-        wedge_patch.theta2 = np.degrees(r2d2.truthpose[i, 2]) + 10
+        wedge_patch.theta1 = np.degrees(m.robot.truthpose[i, 2]) - 10
+        wedge_patch.theta2 = np.degrees(m.robot.truthpose[i, 2]) + 10
 
         # print(wedge_patch.theta1, wedge_patch.theta2)
         # print(wedge_patch.center)
@@ -134,7 +131,7 @@ if __name__ == "__main__":
 
 
     anim = animation.FuncAnimation(
-        fig, animate, init_func=init, frames=np.shape(r2d2.truthpose)[0], interval=20, blit=True
+        fig, animate, init_func=init, frames=np.shape(m.robot.truthpose)[0], interval=20, blit=True
     )
 
     plt.show()
