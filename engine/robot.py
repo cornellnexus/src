@@ -1,8 +1,13 @@
 import numpy as np
 import math
+from enum import Enum
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
-from enum import Enum
+
+import electrical.gps as gps 
+import electrical.imu as imu 
+import electrical.rf_module as rf_module
+
 
 """
 Defines a dummy robot to be used for debugging
@@ -91,7 +96,14 @@ class Robot:
         print('heading: ' + str(self.state[2]))
 
     def execute_setup(self):
-        pass
+        #turn on radio and send radio commands 
+        rf_module.startup() #TODO: complete function
+        #initilize GPS 
+        gps.startup() #TODO: connect gps startup function with rf_packet 
+        #initialize IMU 
+        imu.startup() #TODO: connect imu startup function with rf_packet
+        #check battery ?
+        #check bucket waste levels?
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error):
         # for curr_goal_ind in range(len(waypoints)):
