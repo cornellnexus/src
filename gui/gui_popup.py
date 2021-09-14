@@ -1,11 +1,20 @@
 '''
-gui_popup
+[gui_popup] contains functions for the initial pop-up window.
+The main functions of this file is [run_popup()].
+This will setup the pop-up window and manage the window activity.
+
+
+Purpose: The pop-up window will prompt the user to input information for the GUI settings (e.g. map bounds).
+
+Future Plans: If other featurue are added to the GUI, add necessary setup prompts and components to [set_up].
 '''
  
 import PySimpleGUI as sg
  
 '''
-Creates layout for the popup window
+Return a PySimpleGUI Window object.
+
+[set_up] creates the layout for the popup window.
 '''
 def set_up():
    layout = [[sg.Text('Enter Map Bounds:')],  
@@ -23,12 +32,19 @@ def set_up():
    return window   
  
 '''
-Runs the popup window. Input 0, 10, 0, 10 for the
-corresponding values below.
+Return (long_min, long_max, lat_min, lat_max) where (long_min, long_max, lat_min, lat_max) are 
+the minimum longitude, maximum longitude, minimum latitude, and maximum latitude respectively.
+
+[run_popup] runs the popup window. The <Submit> button will proceed to opening the GUI if inputs are valid. 
+The <Cancel> button and window close button will close out the pop-window and terminate the gui.py script.
+
+Example usage of pop-up window: Input 0, 10, 0, 10 for the minimum longitude, 
+maximum longitude, minimum latitude, and maximum latitude respectively. 
+This will set the map bounds accordingly on the GUI window after submit is pressed.
 '''
 def run_popup():
-   window = set_up()
-   popup_open = True
+   window = set_up() #Setup window
+   popup_open = True # Keeps track of pop-window status
    while popup_open: # The Event Loop
        event, values = window.read()
        #TODO fix close out window to not reference popup map bounds

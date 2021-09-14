@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import csv
 
 from matplotlib import animation as animation
 from matplotlib import patches as patch
@@ -114,6 +115,12 @@ if __name__ == "__main__":
 
             r2d2.travel(TIME_STEP * limited_cmd_v, TIME_STEP * limited_cmd_w)
             # sleep in real robot.
+
+            # write in csv
+            # with open('datastore.csv','a') as fd:
+            #     fd.write(str(r2d2.state[0])[1:-1]+','+str(r2d2.state[1])[1:-1]+','+str(r2d2.state[2])[1:-1]+'\n')
+            #
+            # time.sleep(0.2)
 
             # Get state after movement:
             predicted_state = r2d2.state  # this will come from Kalman Filter
