@@ -1,3 +1,14 @@
+'''
+[gui] is the main file that will execute the GUI window.
+Due to the nature of Matplotlib's animation module as well as other libraries we are importing,
+we cannot break these sections into different files.
+Thus, we will will break up the file into different sections:
+
+1. MATPLOTLIB ROBOT MAPPING
+2. DISPLAY IMAGES
+3. MANAGE GUI WINDOW
+
+'''
 import numpy as np
 import pandas as pd
 import matplotlib
@@ -8,6 +19,18 @@ from matplotlib.widgets import Button
 import sys
 #from csv.datastore import *
 
+import gui_popup #pop-up window
+
+import os.path
+import PIL.Image
+import io
+import base64
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import PySimpleGUI as sg
+# matplotlib.use('TkAgg')
+
+
+##### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING #####
 matplotlib.use('TkAgg')
 
 '''
@@ -68,17 +91,9 @@ def animate(i):
     return circle_patch, wedge_patch
 
 
-# import matplotlibGui
-import gui_popup
 
-import matplotlib
-import os.path
-import PIL.Image
-import io
-import base64
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import PySimpleGUI as sg
-matplotlib.use('TkAgg')
+
+##### END OF SECTION 1. MATPLOTLIB ROBOT MAPPING #####
 
 # ---------------------------- handle images -------------------------------------------------------------
 
