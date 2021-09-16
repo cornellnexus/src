@@ -4,20 +4,24 @@ from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from enum import Enum
 
-"""
-Defines a dummy robot to be used for debugging
-"""
 
 class Phase(Enum):
+    """
+    An enumeration of different robot phases.
+    """
     SETUP = 1
     TRAVERSE = 2
     AVOID_OBSTACLE = 3
     RETURN = 4
-    COMPLETE = 5
+    DOCKING = 5
+    COMPLETE = 6
+    FAULT = 7
 
 
 class Robot:
     """
+    A class whose objects contain robot-specific information, and methods to execute individual phases.
+
     Initializes the robot with the given position and heading.
     Parameters:
     state = Robot's state, np.array
@@ -31,12 +35,30 @@ class Robot:
     """
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
-                 position_kd=0, position_noise=0, init_mode=1, time_step=0.1):
+                 position_kd=0, position_noise=0, init_phase=1, time_step=0.1):
+        """
+        Arguments:
+            x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
+            the Robot's related Mission was initialized
+            y_pos: the y position of the robot
+            heading: the theta of the robot in radians, where North on the grid is equal to 0.
+            epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
+            max_v: the maximum velocity of the robot
+            radius: the radius of the robot
+            is_sim: False if the physical robot is being used, True otherwise
+            position_kp: the proportional factor of the position PID
+            position_kd: the derivative factor of the position PID
+            position_kd: the derivative factor of the position PID
+            position_noise: the flat amount of noise added to the robot's phase on each localization step
+            init_phase: the phase which the robot begins at
+            time_step: the amount of time that passes between each feedback loop cycle,
+                should only be used if is_sim is True
+        """
 
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
         self.is_sim = is_sim
-        self.phase = Phase(init_mode)
+        self.phase = Phase(init_phase)
         self.epsilon = epsilon
         self.max_velocity = max_v
         self.radius = radius
