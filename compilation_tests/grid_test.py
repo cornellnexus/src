@@ -1,8 +1,12 @@
 import unittest
 import matplotlib.pyplot as plt
 
-from engine.node import Node
 from engine.grid import Grid
+from engine.kinematics import get_vincenty_x, get_vincenty_y
+
+'''
+Visualization tests for grid.py
+'''
 
 
 def graph_traversal_path(g, map_name, distance_type, mode):
@@ -28,27 +32,26 @@ def graph_traversal_path(g, map_name, distance_type, mode):
         m_xlist.append(coords[0])
         m_ylist.append(coords[1])
 
+    # Plotting gps grid
     plot1 = plt.figure(1)
     plt.plot(gps_xlist, gps_ylist, marker='o', markerfacecolor='blue')
+    plt.plot(gps_xlist[0], gps_ylist[0], marker='o', markerfacecolor='red')
     plt.ylim(min(gps_ylist) - 0.000001, max(gps_ylist) + 0.000001)
     plt.xlim(min(gps_xlist) - 0.000001, max(gps_xlist) + 0.000001)
     plt.title('Grid in GPS coordinates')
-    # for i_x, i_y in zip(gps_xlist, gps_ylist):
-    #     plt.text(i_x, i_y, '({}, {})'.format(i_x, i_y))
 
+    # Plotting meters grid
     plot2 = plt.figure(2)
     plt.plot(m_xlist, m_ylist, marker='o', markerfacecolor='blue')
     plt.ylim(min(m_ylist) - 1, max(m_ylist) + 1)
     plt.xlim(min(m_xlist) - 1, max(m_xlist) + 1)
-    # for i_x, i_y in zip(m_xlist, m_ylist):
-    #     plt.text(i_x, i_y, '({}, {})'.format(i_x, i_y))
     plt.title(map_name + ' Grid Converted to Meters ' + '(' + distance_type + ')')
-    plt.show()
 
+    plt.show()
     plt.close()
 
 
-class TestGenerateNodes(unittest.TestCase):
+class VisualizeGrid(unittest.TestCase):
     # def test_jessica_house(self):
     # # g = Grid(34.23117305494089, 34.23120742746021, -119.00640453979496, -119.00629523978851)
     # g = Grid(-76.483682, -76.483276, 42.444250, 42.444599)
@@ -63,32 +66,33 @@ class TestGenerateNodes(unittest.TestCase):
         # g = Grid(42.444000, 42.444600, -76.483600, -76.483000)
         graph_traversal_path(g, 'Engineering Quad', 'Vincenty', 'full')
 
-    def test_border_nodes(self):
+
+class TestGrid(unittest.TestCase):
+    def test_borders_mode(self):
         count = 0
         g = Grid(42.444250, 42.444599, -76.483682, -76.483276)
         full_waypoints = g.get_waypoints('full')
         for nd in full_waypoints:
-            if nd.is_border_node(): count += 1
-        self.assertNotEqual(count, g.get_num_rows() * g.get_num_cols())
-        self.assertEqual(count, g.get_num_cols() * 2)
+            if nd.is_border_node():
+                count += 1
+        self.assertNotEqual(count, g.get_num_rows() * g.get_num_cols(), 'is_border_node flag is set correctly')
+        self.assertEqual(count, g.get_num_cols() * 2, 'is_border_node flag is set correctly')
+        border_waypoints = g.get_waypoints('borders')
+        border_node_count = (g.get_num_cols()*2)
+        self.assertEqual(len(border_waypoints), border_node_count)
+
+    def test_node_boundaries(self):
+        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        g = Grid(lat_min, lat_max, long_min, long_max)
+        full_waypoints = g.get_waypoints('full')
+
+        y_range = get_vincenty_y((lat_min, long_min), (lat_max, long_max))
+        x_range = get_vincenty_x((lat_min, long_min), (lat_max, long_max))
+        m_grid = g.meters_grid
+        upper_right_node_m = m_grid[g.get_num_rows()-1][g.get_num_cols()-1]
+        self.assertLessEqual(upper_right_node_m.get_coords()[0], x_range, "The meters grid shouldn't be larger than the lat bounds")
+        self.assertLessEqual(upper_right_node_m.get_coords()[1], y_range, "The meters grid shouldn't be larger than the long bounds")
 
 
 if __name__ == '__main__':
     unittest.main()
-
-################################################################################
-# Below is cayuga plot
-# g = Graph(42.4596, 42.4642, -76.5119, -76.5013)
-
-# testlist = []
-# xlist = []
-# ylist = []
-
-# for node in g.traversal_path:
-#     coords = node.get_coords()
-#     xlist.append(coords[0])
-#     ylist.append(coords[1])
-
-# plt.plot(xlist, ylist, marker='o', markerfacecolor='blue')
-# plt.ylim(-76.5149, -76.5000)
-# plt.xlim(42.4580, 42.4650)# g = Graph(42.444496,42.444543, -76.488495, -76.488419)
