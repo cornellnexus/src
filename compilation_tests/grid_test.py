@@ -5,7 +5,7 @@ from engine.grid import Grid
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 
 '''
-Visualization tests for grid.py
+Visualization and unit tests for grid.py
 '''
 
 
