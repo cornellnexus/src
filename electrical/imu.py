@@ -31,31 +31,31 @@ class IMU:
 
 # Writing to CSV:
 
-# csv_data = [] #initialize empty list to store imu data
-# original_time = time.time()
+csv_data = [] #initialize empty list to store imu data
+original_time = time.time()
 
-# #helper function to print sensor data in x, y, z
-# def pretty_print(data):
-#     data = list(data)
-#     coords = {
-#       "x" : data[0],
-#       "y" : data[1],
-#       "z" : data[2]
-#     }
-#     return coords
+#helper function to print sensor data in x, y, z
+def pretty_print(data):
+    data = list(data)
+    coords = {
+      "x" : data[0],
+      "y" : data[1],
+      "z" : data[2]
+    }
+    return coords
 
-# while time.time() < original_time + 15:
-#     acc = imu.acceleration
-#     mag = imu.magnetic
-#     gyro = imu.gyro
+while time.time() < original_time + 15:
+    acc = imu.acceleration
+    mag = imu.magnetic
+    gyro = imu.gyro
 
-#     combined_data = imu_format(acc, mag, gyro)
-#     print(combined_data)
-#     time.sleep(0.1)
+    combined_data = imu_format(acc, mag, gyro)
+    print(combined_data)
+    time.sleep(0.1)
 
-#     csv_data.append(combined_data)
+    csv_data.append(combined_data)
 
-# with open('imu_360.csv', 'w') as imu_file:
-#     for datum in csv_data: 
-#         imu_file.write(str(datum) + '\n')
-#         time.sleep(0.1)
+with open('imu_360.csv', 'w') as imu_file:
+    for datum in csv_data:
+        imu_file.write(str(datum) + '\n')
+        time.sleep(0.1)
