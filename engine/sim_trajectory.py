@@ -51,7 +51,8 @@ if __name__ == "__main__":
 
     '''MOTION CONTROL'''
     # simulated noise added to robot's state
-    NOISE_RANGE = .1
+    pos_noise_mu = .1
+    pos_noise_stdev = .2
 
     goals = np.array(g.gps_waypoints)
 
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     # Used in limit_cmds
     MAX_V = 0.5
     ROBOT_RADIUS = 0.2
-    ALLOWED_DIST_ERROR = 0.5  # was 0.5, weird when 10 and everything 0.1
+    ALLOWED_DIST_ERROR = .5  # was 0.5, weird when 10 and everything 0.1
     TIME_STEP = 0.1  # is this the time by which we are going to sleep after each movement?
 
     loc_pid_x = PID(
@@ -73,11 +74,13 @@ if __name__ == "__main__":
     )
 
     curr_goal_ind = 0
-    num_goals = len(waypoints)
+    # num_goals = len(waypoints)
+    num_goals = 2
 
     for curr_goal_ind in range(num_goals):  # TODO: while queue: should we switch to this format?
 
         curr_goal = waypoints[curr_goal_ind].get_coords()  # target coords (meters)
+        print(str(curr_goal))
         predicted_state = r2d2.state  # this will come from Kalman Filter
 
         # location error (in meters)
@@ -85,11 +88,22 @@ if __name__ == "__main__":
                                    float(predicted_state[1]) - curr_goal[1])
 
         while distance_away > ALLOWED_DIST_ERROR:
-            # r2d2.state[0] = np.random.normal(r2d2.state[0],NOISE_RANGE)
-            # r2d2.state[1] = np.random.normal(r2d2.state[1],NOISE_RANGE)
+            # print("TARGET X POSITION: " + str(curr_goal[1]))
+            # print("OUR X POSITION: " + str(r2d2.state[1]))
+            # print("DISTANCE AWAY: " + str(distance_away))
+            # print("changing to this number x: " + str(r2d2.state[0] + np.random.normal(pos_noise_mu, pos_noise_stdev)))
+            # print("instead of this number x: " + str(np.random.normal(r2d2.state[0], pos_noise_stdev)))
+            # print("distance away: " + str(distance_away))
+            # print("changing to this number y: " + str(r2d2.state[1] + np.random.normal(pos_noise_mu, pos_noise_stdev)))
+            # print("instead of this number y: " + str(np.random.normal(r2d2.state[1], pos_noise_stdev)))
+
+            r2d2.state[0] = r2d2.state[0] + np.random.normal(pos_noise_mu, pos_noise_stdev)
+            r2d2.state[1] = r2d2.state[1] + np.random.normal(pos_noise_mu, pos_noise_stdev)
 
             x_error = curr_goal[0] - r2d2.state[0]
+            print("X ERROR: " + str(x_error))
             y_error = curr_goal[1] - r2d2.state[1]
+            print("Y ERROR: " + str(y_error))
 
             x_vel = loc_pid_x.update(x_error)
             y_vel = loc_pid_y.update(y_error)
