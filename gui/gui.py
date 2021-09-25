@@ -10,12 +10,10 @@ Thus, we will will break up the file into different sections:
 
 '''
 import numpy as np
-import pandas as pd
 import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib import animation as animation
 from matplotlib import patches as patch
-from matplotlib.widgets import Button
 #from csv.datastore import *
 import gui_popup #pop-up window
 from images import get_images
@@ -210,6 +208,7 @@ def run_gui():
     while True:  # Event Loop
         event, values = window.read()
 
+        #TBD test code
         # f1 = open('datastore.csv', "r")
         # last_line = f1.readlines()[-1]
 
@@ -242,22 +241,25 @@ General Flow of GUI program:
 
 1. Open popup window to determine user inputs and store necessary information 
 (If the user inputted valid information/didn't close out of the window, continue)
-2. Use user input information to setup Matplotlib robot mapping animation
+2. Use user input information from the popup to setup Matplotlib robot mapping animation
 3. Open main GUI window
+4. Run GUI
 '''
+close_gui = gui_popup.run_popup()
+if not close_gui:
+    input_data = gui_popup.get_input_data() #Runs the gui popup asking for latitude and longitude bounds
+    bounds = input_data["long_min"], input_data["long_max"], input_data["lat_min"], input_data["lat_max"]
 
-bounds = gui_popup.run_popup() #Runs the gui popup asking for latitude and longitude bounds
-
-#Run the gui if the user doesn't close out of the window
-if bounds != None: #TODO check for window closing as well
-    fig, ax = setup(bounds)  # Set up matplotlib map figure
-    circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
-    # Begins the constant animation/updates of robot location and heading
-    anim = animation.FuncAnimation(fig, animate,
-                                   init_func=init,
-                                   frames=360,
-                                   interval=20,
-                                   blit=True)
-    run_gui() #Start up the main GUI window
+    #Run the gui if the user doesn't close out of the window
+    if bounds != None:
+        fig, ax = setup(bounds)  # Set up matplotlib map figure
+        circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
+        # Begins the constant animation/updates of robot location and heading
+        anim = animation.FuncAnimation(fig, animate,
+                                       init_func=init,
+                                       frames=360,
+                                       interval=20,
+                                       blit=True)
+        run_gui() #Start up the main GUI window
 
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################

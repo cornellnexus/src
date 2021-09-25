@@ -8,9 +8,9 @@ Purpose: The pop-up window will prompt the user to input information for the GUI
 
 Future Plans: If other featurue are added to the GUI, add necessary setup prompts and components to [set_up].
 '''
- 
+
 import PySimpleGUI as sg
- 
+
 
 def set_up():
     """
@@ -20,19 +20,19 @@ def set_up():
 
     """
     layout = [[sg.Text('Enter Map Bounds:')],
-           [sg.Text('Minimum Longitude:')],
-           [sg.InputText(key='-MINLONG-')],
-           [sg.Text('Maximum Longitude:')],
-           [sg.InputText(key='-MAXLONG-')],
-           [sg.Text('Minimum Lattitude:')],
-           [sg.InputText(key='-MINLAT-')],
-           [sg.Text('Maximum Lattitude:')],
-           [sg.InputText(key='-MAXLAT-')],
-           [sg.Button('Store Data')],
-           [sg.Submit(), sg.Cancel()]]
+              [sg.Text('Minimum Longitude:')],
+              [sg.InputText(key='-MINLONG-')],
+              [sg.Text('Maximum Longitude:')],
+              [sg.InputText(key='-MAXLONG-')],
+              [sg.Text('Minimum Lattitude:')],
+              [sg.InputText(key='-MINLAT-')],
+              [sg.Text('Maximum Lattitude:')],
+              [sg.InputText(key='-MAXLAT-')],
+              [sg.Button('Store Data')],
+              [sg.Submit(), sg.Cancel()]]
     window = sg.Window('Cornell Nexus', layout)
     return window
- 
+
 
 def run_popup():
     """
@@ -46,43 +46,59 @@ def run_popup():
     maximum longitude, minimum latitude, and maximum latitude respectively.
     This will set the map bounds accordingly on the GUI window after submit is pressed.
     """
-    window = set_up() #Setup window
-    popup_open = True # Keeps track of pop-window status
-    while popup_open: # The Event Loop
-       event, values = window.read()
-       #TODO fix close out window to not reference popup map bounds
-       if event == 'Cancel':
-           window.close()
-           popup_open = False
-           break
+    window = set_up()  # Setup window
+    popup_open = True  # Keeps track of pop-window status
+    close_gui = False
+    while popup_open:  # The Event Loop
+        event, values = window.read()
+        # TODO fix close out window to not reference popup map bounds
+        if event == 'Cancel':
+            popup_open = False
+            close_gui = True
+            window.close()
+            break
 
-       if event == sg.WIN_CLOSED:
-           popup_open = False
-           break
+        if event == sg.WIN_CLOSED:
+            popup_open = False
+            close_gui = True
+            break
 
-       if event == 'Store Data':
-           print("TODO")
-           break
+        if event == 'Store Data':
+            print("TODO")
+            break
 
-       try:
-           long_min = int(values['-MINLONG-'])
-           long_max = int(values['-MAXLONG-'])
-           lat_min = int(values['-MINLAT-'])
-           lat_max = int(values['-MAXLAT-'])
+        try:
+            long_min = int(values['-MINLONG-'])
+            long_max = int(values['-MAXLONG-'])
+            lat_min = int(values['-MINLAT-'])
+            lat_max = int(values['-MAXLAT-'])
 
-           if long_max <= long_min or lat_max <= lat_min:
-               sg.popup('Invalid map bounds')
-           else:
-               window.close()
-               return (long_min, long_max, lat_min, lat_max)
-               popup_open = False
-               break
-       except:
-           sg.popup('Invalid map bounds')
- 
-# def get_coord_inputs():
-#     return (long_min, long_max, lat_min, lat_max)
- 
- 
- 
+            if long_max <= long_min or lat_max <= lat_min:
+                sg.popup('Invalid map bounds')
+            else:
+                input_data["long_min"] = long_min
+                input_data["long_max"] = long_max
+                input_data["lat_min"] = lat_min
+                input_data["lat_max"] = lat_max
+                window.close()
+                popup_open = False
+                break
+        except:
+            sg.popup('Invalid map bounds')
 
+    return close_gui
+
+#Store user input data
+input_data = {
+    "long_min": None,
+    "long_max": None,
+    "lat_min": None,
+    "lat_max": None
+}
+
+
+def get_input_data():
+    """
+    Return a dictionary of data the user inputted into the pop-up window
+    """
+    return input_data
