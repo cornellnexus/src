@@ -14,10 +14,10 @@ class Grid():
     Instances represent the current grid of the robot's traversal.
 
     INSTANCE ATTRIBUTES:
-        # gps_grid
+        # gps_grid: 2D Node list
         # gps_waypoints: Ordered list of Node objects that have not yet been 
                           traversed by the robot. [Node list]
-        # meters_grid
+        # meters_grid: 2D Node list
 
         # nodes_dict: Dictionary of all Node objects in the grid
             - Keys are (y,x), aka (latitude, longitude), tuples.
@@ -54,8 +54,15 @@ class Grid():
 
         def generate_nodes(start_lat, start_long, rows, cols, step_size_m):
             """
-            Returns a grid of GPS Node objects [Node np array] and the GPS grid's
-            corresponding traversal path [Node list]. 
+            Returns:
+            # gps_grid: [Node numpy.array]
+                a grid of GPS Node objects
+            # gps_traversal_path: [Node list]
+                the GPS grid's corresponding traversal path
+            # true_max_lat: [float]
+                maximum latitude border of the GPS grid
+            # true_max_long: [float]
+                maximum longitude border of the GPD grid
             """
             gps_grid = np.ndarray([rows, cols], dtype=np.object)
             origin = (start_lat, start_long)
@@ -103,6 +110,7 @@ class Grid():
                     x_dist = get_vincenty_x(gps_origin, curr_coords)
                     y_dist = get_vincenty_y(gps_origin, curr_coords)
                     meters_grid[j, i] = Node(x_dist, y_dist, is_border)
+                    #TODO: check if this is okay Node creation
 
             return meters_grid
 
@@ -126,7 +134,15 @@ class Grid():
 
     def get_waypoints(self, mode='full'):
         """
-        Returns the GPS traversal path in terms of meters for the current grid. 
+        Returns the GPS traversal path in terms of meters for the current grid. [Node list].
+
+        Parameters:
+        -----------
+        mode: string
+            The type of traversal path that is desired.
+            'full': every single node of the grid
+            'borders': only the nodes in the top/bottom row of the grid
+
         """
         waypoints = []
         meters_grid = self.meters_grid
