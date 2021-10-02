@@ -3,6 +3,8 @@ import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from enum import Enum
+import os.path
+import time
 
 
 class Phase(Enum):
@@ -144,6 +146,15 @@ class Robot:
                 self.travel(self.time_step * limited_cmd_v, self.time_step * limited_cmd_w)
                 # sleep in real robot.
 
+                cwd = os.getcwd()
+                cd = cwd + "/csv"
+                # robot_loc_file = open((cd + '/datastore.csv'), "r")
+                # # write in csv
+                with open(cd + '/datastore.csv','a') as fd:
+                    fd.write(str(self.state[0])[1:-1]+','+str(self.state[1])[1:-1]+','+str(self.state[2])[1:-1]+'\n')
+
+                # time.sleep(0.2)
+                #
                 # Get state after movement:
                 predicted_state = self.state  # this will come from Kalman Filter
                 # location error (in meters)

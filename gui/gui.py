@@ -15,14 +15,27 @@ from matplotlib import pyplot as plt
 from matplotlib import animation as animation
 from matplotlib import patches as patch
 #from csv.datastore import *
-import gui_popup #pop-up window
-from images import get_images
+# import gui_popup #pop-up window
+from gui.gui_popup import *
+from gui.images import get_images
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
 
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
+
+import sys
+import os.path
+import PIL.Image
+import io
+import base64
+
+def get_path(folder):
+
+    cwd = os.getcwd()
+    sys.path.append(cwd + "/" + folder)
+    return sys.path
 
 def setup(bounds):
     """
@@ -38,7 +51,7 @@ def setup(bounds):
 
     longMin, longMax, latMin, latMax = bounds
     BoundaryBox = [longMin, longMax, latMin, latMax]
-    ruh_m = plt.imread('map.png')
+    ruh_m = plt.imread(get_path('gui')[-1] + '/map.png')
     fig, ax = plt.subplots(figsize=(8, 7))
     ax.set_title('Cayuga Lake Shore')
     ax.set_xlim(BoundaryBox[0], BoundaryBox[1])
@@ -93,19 +106,48 @@ def animate(i):
     Precondition: [i] is an integer.
     """
 
-    x, y = circle_patch.center
-    x = 5 + 3 * np.sin(np.radians(i))
-    y = 5 + 3 * np.cos(np.radians(i))
-    circle_patch.center = (x, y)
-    wedge_patch.update({'center': [x, y]})
-    wedge_patch.theta1 += (.5 * x)
-    wedge_patch.theta2 += (.5 * x)
-    wedge_patch.theta1 = wedge_patch.theta1 % 360
-    wedge_patch.theta2 = wedge_patch.theta2 % 360
+    # x, y = circle_patch.center
+    # x = 5 + 3 * np.sin(np.radians(i))
+    # y = 5 + 3 * np.cos(np.radians(i))
+    # circle_patch.center = (x, y)
+    # wedge_patch.update({'center': [x, y]})
+    # wedge_patch.theta1 += (.5 * x)
+    # wedge_patch.theta2 += (.5 * x)
+    # wedge_patch.theta1 = wedge_patch.theta1 % 360
+    # wedge_patch.theta2 = wedge_patch.theta2 % 360
+
     # print(wedge_patch.theta1, wedge_patch.theta2)
     # print(wedge_patch.center)
     # only getting called once 
     # should be getting called repeatedly
+
+    # cwd = os.getcwd()
+    # print(cwd)
+    # cd = cwd + "/csv"
+    # paths = sys.path.append(cd)
+
+    # print(paths)
+
+    # robot_loc_file = open('datastore.csv', "r")
+    try:
+        last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
+        # ..csvfile/
+        print(last_line.strip())
+        x, y, alpha = last_line.strip().split(',')
+        x = float(x)
+        y = float(y)
+        alpha = float(alpha)
+        print(x)
+        print(y)
+        print(alpha)
+        circle_patch.center = (x, y)
+        wedge_patch.update({'center': [x, y]})
+        wedge_patch.theta1 = (alpha - 20) % 360
+        wedge_patch.theta2 = (alpha + 20) % 360 #20 is a temporary constant we will use
+    except:
+        ###update slower + fix mag heading
+        print("no new location data")
+
     return circle_patch, wedge_patch
 
 
@@ -141,7 +183,7 @@ def setup_gui():
 
     data = {
         "current_output" : "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>.",
-        "current_data" : "Pounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\nTotal Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\nEstimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
+        "current_data" : "Robot Phase: ____\nPounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\nTotal Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\nEstimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
     }
     image_data = get_images();
     left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
@@ -151,7 +193,7 @@ def setup_gui():
                 [sg.Button('Submit', visible=False, bind_return_key=True)],
                 [sg.Multiline(data["current_output"], key = "-OUTPUT-", size=(40,8))],
                 [sg.Text("Current Coordinates: ______")],
-                [sg.Button('Autonomous'), sg.Button('Track Location')],
+                [sg.Button('Autonomous'), sg.Button('Track Location'), sg.Button('Traversal Phase')],
                 [sg.Multiline(data["current_data"], key = "-DATA-", size=(40,8))]
             ]
     
@@ -209,14 +251,23 @@ def run_gui():
         event, values = window.read()
 
         #TBD test code
-        # f1 = open('datastore.csv', "r")
-        # last_line = f1.readlines()[-1]
-
-        # print(last_line.strip()) 
+        # robot_loc_file = open('datastore.csv', "r") #open csv file of robot location
+        # # robot_loc_file = open('datastore.csv', "r")
+        # last_line = robot_loc_file.readlines()[-1] #get last line of csv file
+        # #..csvfile/
+        # print(last_line.strip())
+        # x, y, alpha = last_line.strip().split()
+        # print(x)
+        # print(y)
+        # print(alpha)
         # if store data toggled, store data function
         # update circle and wedge
         # wedge orientation corresponds to theta
         # print(row)
+
+        # f1 = open(inputFile, "r")
+        # last_line = f1.readlines()[-1]
+        # f1.close()
 
         if event == sg.WIN_CLOSED or event == 'Cancel':
             break
@@ -233,6 +284,7 @@ def run_gui():
             window['-COMMANDLINE-'].update("")
     window.close()
 
+
 #################### END OF SECTION 2. MANAGING GUI WINDOW ####################
 #################### BEGINNING OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################
 
@@ -245,9 +297,9 @@ General Flow of GUI program:
 3. Open main GUI window
 4. Run GUI
 '''
-close_gui = gui_popup.run_popup()
+close_gui = run_popup()
 if not close_gui:
-    input_data = gui_popup.get_input_data() #Runs the gui popup asking for latitude and longitude bounds
+    input_data = get_input_data() #Runs the gui popup asking for latitude and longitude bounds
     bounds = input_data["long_min"], input_data["long_max"], input_data["lat_min"], input_data["lat_max"]
 
     #Run the gui if the user doesn't close out of the window
@@ -255,11 +307,13 @@ if not close_gui:
         fig, ax = setup(bounds)  # Set up matplotlib map figure
         circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
         # Begins the constant animation/updates of robot location and heading
+        robot_loc_file = open((get_path('csv')[-1] + '/datastore.csv'), "r")  # open csv file of robot location
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,
                                        frames=360,
                                        interval=20,
                                        blit=True)
         run_gui() #Start up the main GUI window
-
+        print("closed csv")
+        robot_loc_file.close()
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################

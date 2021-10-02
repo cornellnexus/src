@@ -1,4 +1,5 @@
 import os
-from engine.sim_trajectory import *
-os.system("python sim_trajectory.py &")
-os.system("python gui.py &")
+#run using <python -m gui.together>
+
+os.system("python -m engine.sim_trajectory &")
+os.system("python -m gui.gui &")
