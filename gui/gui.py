@@ -130,23 +130,24 @@ def animate(i):
 
     # robot_loc_file = open('datastore.csv', "r")
     try:
-        last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
-        # ..csvfile/
-        print(last_line.strip())
-        x, y, alpha = last_line.strip().split(',')
-        x = float(x)
-        y = float(y)
-        alpha = float(alpha)
-        print(x)
-        print(y)
-        print(alpha)
-        circle_patch.center = (x, y)
-        wedge_patch.update({'center': [x, y]})
-        wedge_patch.theta1 = (alpha - 20) % 360
-        wedge_patch.theta2 = (alpha + 20) % 360 #20 is a temporary constant we will use
+            last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
+            # ..csvfile/
+            print(last_line.strip())
+            x, y, alpha = last_line.strip().split(',')
+            x = float(x)
+            y = float(y)
+            alpha = float(alpha)
+            print(x)
+            print(y)
+            print(alpha)
+            circle_patch.center = (x, y)
+            wedge_patch.update({'center': [x, y]})
+            wedge_patch.theta1 = (alpha - 20) % 360
+            wedge_patch.theta2 = (alpha + 20) % 360 #20 is a temporary constant we will use
     except:
-        ###update slower + fix mag heading
-        print("no new location data")
+            ###update slower + fix mag heading
+            print("no new location data")
+
 
     return circle_patch, wedge_patch
 
@@ -297,6 +298,7 @@ General Flow of GUI program:
 3. Open main GUI window
 4. Run GUI
 '''
+
 close_gui = run_popup()
 if not close_gui:
     input_data = get_input_data() #Runs the gui popup asking for latitude and longitude bounds
@@ -304,6 +306,7 @@ if not close_gui:
 
     #Run the gui if the user doesn't close out of the window
     if bounds != None:
+
         fig, ax = setup(bounds)  # Set up matplotlib map figure
         circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
         # Begins the constant animation/updates of robot location and heading

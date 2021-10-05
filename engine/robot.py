@@ -80,6 +80,18 @@ class Robot:
             output_limits=(None, None)
         )
 
+        cwd = os.getcwd()
+        cd = cwd + "/csv"
+        # write in csv
+        with open(cd + '/phases.csv', 'a') as fd:
+            fd.write(str(self.phase) + '\n')
+
+    def get_path(folder):
+
+        cwd = os.getcwd()
+        sys.path.append(cwd + "/" + folder)
+        return sys.path
+
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
         self.state = np.round(integrate_odom(self.state, dist, turn_angle), 3)
@@ -162,8 +174,17 @@ class Robot:
                                            float(predicted_state[1]) - curr_waypoint[1])
             unvisited_waypoints.popleft()
 
-        self.phase = Phase.COMPLETE
+        self.set_phase(Phase.COMPLETE)
+        # self.phase = Phase.COMPLETE
         return unvisited_waypoints
+
+    def set_phase(self, new_phase):
+        self.phase = new_phase
+
+        cwd = os.getcwd()
+        cd = cwd + "/csv"
+        with open(cd + '/phases.csv', 'a') as fd:
+            fd.write(str(self.phase)+ '\n')
 
     def execute_avoid_obstacle(self):
         pass
