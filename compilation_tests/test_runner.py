@@ -8,13 +8,19 @@ import compilation_tests.kinematics_test as kinematics_test
 
 '''
 Runs all compilation test files as individual modules
+
+Compilation test files DO NOT INCLUDE: 
+-gps_test
+-imu_test
+-mag_heading_test
+-movement_test
 '''
 
 loader = unittest.TestLoader()
 suite = unittest.TestSuite()
 
 # adding tests:
-compilation_tests = [node_test, sim_traj_test, pid_controller_test, state_manager_test, robot_test, kinematics_test]
+compilation_tests = [node_test, pid_controller_test, state_manager_test, robot_test, kinematics_test]
 for test_case in compilation_tests:
     suite.addTests(loader.loadTestsFromModule(test_case))
 
