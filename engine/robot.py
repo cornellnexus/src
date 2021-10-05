@@ -35,7 +35,7 @@ class Robot:
     """
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
-                 position_kd=0, position_noise=0, heading_kp=0, heading_ki=0, heading_kd=0, heading_noise=0,
+                 position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
                  init_phase=1, time_step=0.1):
         """
 
@@ -153,19 +153,20 @@ class Robot:
 
         predicted_state = self.state  # this will come from Kalman Filter
 
-        abs_heading_error = math.abs(target_heading-float(predicted_state[2]))
+        abs_heading_error = abs(target_heading-float(predicted_state[2]))
 
         while abs_heading_error > allowed_heading_error:
             self.state[2] = np.random.normal(self.state[2], self.heading_noise)
             theta_error = target_heading - self.state[2]
             w = self.head_pid.update(theta_error)  # angular velocity
+            _, limited_cmd_w = limit_cmds(0, w, self.max_velocity, self.radius)
 
-            limited_cmd_w = w  # TODO: Add feedback_lin and limit_cmds for angular velocity
             self.travel(0, self.time_step * limited_cmd_w)
             # sleep in real robot
+
             # Get state after movement:
-            predicted_state = self.state
-            abs_heading_error = math.abs(target_heading - float(predicted_state[2]))
+            predicted_state = self.state  # this will come from Kalman Filter
+            abs_heading_error = abs(target_heading - float(predicted_state[2]))
 
     def turn(self, turn_angle, dt=1):
         """
@@ -192,7 +193,7 @@ class Robot:
 
         while unvisited_waypoints:
             curr_waypoint = unvisited_waypoints[0].get_coords()
-            self.move_to_target_node(curr_waypoint, allowed_dist_error) # TODO: obstacle avoidance support
+            self.move_to_target_node(curr_waypoint, allowed_dist_error)  # TODO: add obstacle avoidance support
             unvisited_waypoints.popleft()
 
         self.phase = Phase.RETURN
@@ -204,7 +205,8 @@ class Robot:
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error):
         """
         Returns robot to base station when robot is in RETURN phase and switches to DOCKING.
-        :param base_loc: coordinates of the base station in the form (latitude, longitude)
+        :param base_loc: location of the base station in meters in the form (x, y)
+        :param base_angle: which direction the base station is facing in terms of unit circle (in radians)
         :param allowed_docking_pos_error: the maximum distance in meters the robot can be from "ready to dock" position
                 before it can start docking (must be small)
         :param allowed_heading_error: the maximum error in radians a robot can have to target heading while turning
@@ -213,13 +215,14 @@ class Robot:
         docking_dist_to_base = 1.0  # how close the robot should come to base before starting DOCKING
         dx = docking_dist_to_base * math.cos(base_angle)
         dy = docking_dist_to_base * math.sin(base_angle)
-        target_loc = meters_to_gps(base_loc[0], base_loc[1], dy, dx)
+        target_loc = (base_loc[0] + dx, base_loc[1] + dy)
 
-        self.move_to_target_node(target_loc, allowed_docking_pos_error)  # TODO: obstacle avoidance support
+        self.move_to_target_node(target_loc, allowed_docking_pos_error)  # TODO: add obstacle avoidance support
 
         # Face robot towards base station
         target_heading = base_angle + math.pi
         self.turn_to_target_heading(target_heading, allowed_heading_error)
+
         # RETURN phase complete:
         self.phase = Phase.DOCKING
 

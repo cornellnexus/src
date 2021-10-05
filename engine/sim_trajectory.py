@@ -53,13 +53,11 @@ def get_plot_boundaries(meters_grid, delta):
 
 
 if __name__ == "__main__":
-    r2d2 = Robot(0, 0, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_mode=2)
+    r2d2 = Robot(0, 0, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2)
     m = Mission(r2d2)
-
 
     '''------------------- MISSION EXECUTION -------------------'''
     m.execute_mission()
-
 
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
 
