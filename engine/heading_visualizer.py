@@ -4,6 +4,7 @@ from matplotlib import patches as patch
 import math
 import ast
 from engine.sensor_module import SensorModule
+from datetime import datetime
 
 if __name__ == "__main__":
 
@@ -27,10 +28,8 @@ if __name__ == "__main__":
     # Data reading setup
     if IS_LIVE_DATA:
         sensor_module = SensorModule(write=True)
-
-
     else:
-        with open("csv/imu_360_sample1.csv") as file:
+        with open("data/imu_360_sample1.csv") as file:
             imu_readings = file.readlines()
             imu_readings = [ast.literal_eval(line) for line in imu_readings]
 
