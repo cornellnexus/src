@@ -3,7 +3,6 @@ from matplotlib import animation as animation
 from matplotlib import patches as patch
 import math
 import ast
-import time
 from engine.sensor_module import SensorModule
 
 if __name__ == "__main__":
@@ -27,7 +26,9 @@ if __name__ == "__main__":
 
     # Data reading setup
     if IS_LIVE_DATA:
-        sensor_module = SensorModule()
+        sensor_module = SensorModule(write=True)
+
+
     else:
         with open("csv/imu_360_sample1.csv") as file:
             imu_readings = file.readlines()
