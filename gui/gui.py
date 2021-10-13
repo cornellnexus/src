@@ -9,27 +9,25 @@ Thus, we will will break up the file into different sections:
 3. GUI PROGRAM FLOW/SCRIPT
 
 '''
-import numpy as np
+
+from gui.gui_popup import *
+from gui.images import get_images
+
 import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib import animation as animation
 from matplotlib import patches as patch
-#from csv.datastore import *
-# import gui_popup #pop-up window
-from gui.gui_popup import *
-from gui.images import get_images
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
+
+import os
+import math
+import sys
 
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
 
-import sys
-import os.path
-import PIL.Image
-import io
-import base64
+
 
 def get_path(folder):
 
@@ -106,47 +104,20 @@ def animate(i):
     Precondition: [i] is an integer.
     """
 
-    # x, y = circle_patch.center
-    # x = 5 + 3 * np.sin(np.radians(i))
-    # y = 5 + 3 * np.cos(np.radians(i))
-    # circle_patch.center = (x, y)
-    # wedge_patch.update({'center': [x, y]})
-    # wedge_patch.theta1 += (.5 * x)
-    # wedge_patch.theta2 += (.5 * x)
-    # wedge_patch.theta1 = wedge_patch.theta1 % 360
-    # wedge_patch.theta2 = wedge_patch.theta2 % 360
-
-    # print(wedge_patch.theta1, wedge_patch.theta2)
-    # print(wedge_patch.center)
-    # only getting called once 
-    # should be getting called repeatedly
-
-    # cwd = os.getcwd()
-    # print(cwd)
-    # cd = cwd + "/csv"
-    # paths = sys.path.append(cd)
-
-    # print(paths)
-
-    # robot_loc_file = open('datastore.csv', "r")
     try:
             last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
-            # ..csvfile/
-            print(last_line.strip())
             x, y, alpha = last_line.strip().split(',')
             x = float(x)
             y = float(y)
             alpha = float(alpha)
-            print(x)
-            print(y)
-            print(alpha)
+            degrees = math.degrees(alpha)
             circle_patch.center = (x, y)
             wedge_patch.update({'center': [x, y]})
-            wedge_patch.theta1 = (alpha - 20) % 360
-            wedge_patch.theta2 = (alpha + 20) % 360 #20 is a temporary constant we will use
+            wedge_patch.theta1 = degrees - 10
+            wedge_patch.theta2 = degrees + 10 #10 is a temporary constant we will use
     except:
-            ###update slower + fix mag heading
-            print("no new location data")
+            # no new location data/waiting for new data
+            pass
 
 
     return circle_patch, wedge_patch
@@ -251,25 +222,6 @@ def run_gui():
     while True:  # Event Loop
         event, values = window.read()
 
-        #TBD test code
-        # robot_loc_file = open('datastore.csv', "r") #open csv file of robot location
-        # # robot_loc_file = open('datastore.csv', "r")
-        # last_line = robot_loc_file.readlines()[-1] #get last line of csv file
-        # #..csvfile/
-        # print(last_line.strip())
-        # x, y, alpha = last_line.strip().split()
-        # print(x)
-        # print(y)
-        # print(alpha)
-        # if store data toggled, store data function
-        # update circle and wedge
-        # wedge orientation corresponds to theta
-        # print(row)
-
-        # f1 = open(inputFile, "r")
-        # last_line = f1.readlines()[-1]
-        # f1.close()
-
         if event == sg.WIN_CLOSED or event == 'Cancel':
             break
         if event == 'Show':
@@ -311,6 +263,7 @@ if not close_gui:
         circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
         # Begins the constant animation/updates of robot location and heading
         robot_loc_file = open((get_path('csv')[-1] + '/datastore.csv'), "r")  # open csv file of robot location
+        # robot_loc_file.truncate(0)
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,
                                        frames=360,
@@ -319,4 +272,8 @@ if not close_gui:
         run_gui() #Start up the main GUI window
         print("closed csv")
         robot_loc_file.close()
+
+
+os.system("pkill -f engine.sim_trajectory") #once gui.gui.py is closed, also close engine.sim_trajectory.py
+
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################
