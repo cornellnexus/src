@@ -15,7 +15,7 @@ class SensorModule:
         """
         self.port = serial.Serial(port="/dev/tty.usbserial-017543DC", baudrate=57600, timeout=0)
         self.port.flushInput()
-        self.imu_dict = {}
+        self.imu_dict = {"mag_x": 0, "mag_y": 0}
         self.created = datetime.now().strftime("data/%d-%m-%Y_%H:%M:%S")
         self.write_data = write
 
@@ -30,7 +30,7 @@ class SensorModule:
                 self.imu_dict = ast.literal_eval(line.rstrip("\n"))
 
         if self.write_data:
-            imu_file = open("data/" + self.created + ".txt", 'w+')
+            imu_file = open(self.created + ".txt", 'w+')
             imu_file.write(json.dumps(self.imu_dict) + "\n")
             imu_file.close()
 

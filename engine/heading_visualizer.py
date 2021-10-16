@@ -44,7 +44,7 @@ if __name__ == "__main__":
     def animate(i):
         if IS_LIVE_DATA:
             sensor_module.update_imu_data()
-            middle_heading = math.degrees(math.atan2(sensor_module.imu_dict["mag_y"], sensor_module.imu_dict["mag_x"]))
+            middle_heading = math.degrees(math.atan2(sensor_module.imu_dict["mag"][1], sensor_module.imu_dict["mag"][0]))
         else:
             middle_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
 
@@ -55,5 +55,5 @@ if __name__ == "__main__":
         return circle_patch, wedge_patch
 
 
-    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=len(imu_readings) - 1, interval=20, blit=True)
+    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=10, interval=20, blit=True)
     plt.show()
