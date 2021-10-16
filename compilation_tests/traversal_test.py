@@ -5,10 +5,6 @@ import unittest
 from engine.grid import *
 from engine.robot import Robot
 from collections import deque
-"""
-THIS FILE IS OUTDATED. OUR IMPLEMENTATION OF TRAVERSAL HAS CHANGED. 
-Running this file will yield errors. 
-"""
 
 target = [0, 0]
 add_to_x = False
