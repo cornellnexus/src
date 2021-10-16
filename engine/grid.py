@@ -64,7 +64,7 @@ class Grid():
             # true_max_long: [float]
                 maximum longitude border of the GPD grid
             """
-            gps_grid = np.ndarray([rows, cols], dtype=np.object)
+            gps_grid = np.ndarray([rows, cols], dtype=object)
             origin = (start_lat, start_long)
             gps_traversal_path = []
 
@@ -99,7 +99,7 @@ class Grid():
             Returns a grid [Node np array] in units of meters that corresponds 
             to the gps_grid input. 
             """
-            meters_grid = np.ndarray(gps_grid.shape, dtype=np.object)
+            meters_grid = np.ndarray(gps_grid.shape, dtype=object)
             rows = gps_grid.shape[0]
             cols = gps_grid.shape[1]
             gps_origin = (gps_grid[0, 0]).get_coords()

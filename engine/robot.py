@@ -124,6 +124,7 @@ class Robot:
             # location error (in meters)
             distance_away = math.hypot(float(predicted_state[0]) - curr_waypoint[0], \
                                        float(predicted_state[1]) - curr_waypoint[1])
+            
 
             while distance_away > allowed_dist_error:
                 self.state[0] = np.random.normal(self.state[0], self.position_noise)
