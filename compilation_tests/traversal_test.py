@@ -12,6 +12,7 @@ target = [0, 0]
 add_to_x = False
 gps_noise_range = .3
 
+#Takes approx. 9 seconds for 5 tests
 class TestTraversalFunctions(unittest.TestCase):
 
     def test_init(self):
