@@ -38,27 +38,26 @@ class Robot:
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
                  init_phase=1, time_step=0.1):
         """
-
-        :param x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
-            the Robot's related Mission was initialized
-        :param y_pos: the y position of the robot
-        :param heading: the theta of the robot in radians, where North on the grid is equal to 0.
-        :param epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
-        :param max_v: the maximum velocity of the robot
-        :param radius: the radius of the robot
-        :param is_sim: False if the physical robot is being used, True otherwise
-        :param position_kp: the proportional factor of the position PID
-        :param position_ki: the integral factor of the position PID
-        :param position_kd: the derivative factor of the position PID
-        :param position_noise: the flat amount of noise added to the robot's phase on each localization step
+        Arguments:
+            x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
+                the Robot's related Mission was initialized
+            y_pos: the y position of the robot
+            heading: the theta of the robot in radians, where North on the grid is equal to 0.
+            epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
+            max_v: the maximum velocity of the robot
+            radius: the radius of the robot
+            is_sim: False if the physical robot is being used, True otherwise
+            position_ki: the integral factor of the position PID
+            position_kd: the derivative factor of the position PID
+            position_noise: the flat amount of noise added to the robot's phase on each localization step
             init_phase: the phase which the robot begins at
-        :param heading_kp: the proportional factor of the heading PID
-        :param heading_ki: the integral factor of the heading PID
-        :param heading_kd: the derivative factor of the heading PID
-        :param heading_noise: ?
-        :param init_phase: the phase which the robot begins at
-        :param time_step: the amount of time that passes between each feedback loop cycle,
-                should only be used if is_sim is True
+            heading_kp: the proportional factor of the heading PID
+            heading_ki: the integral factor of the heading PID
+            heading_kd: the derivative factor of the heading PID
+            heading_noise: ?
+            init_phase: the phase which the robot begins at
+            time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
+                is True
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -114,8 +113,10 @@ class Robot:
     def move_to_target_node(self, target, allowed_dist_error):
         """
         Moves robot to target + or - allowed_dist_error
-        :param target: target coordinates in the form (latitude, longitude)
-        :param allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
+
+        Arguments:
+            target: target coordinates in the form (latitude, longitude)
+            allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
                 have "visited" that node
         """
         predicted_state = self.state  # this will come from Kalman Filter
@@ -150,6 +151,14 @@ class Robot:
                                        float(predicted_state[1]) - target[1])
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error):
+        """
+        Turns robot in-place to target heading + or - allowed_heading_error, utilizing heading PID.
+
+        Arguments:
+            target_heading: the heading in radians the robot should approach at the end of in-place rotation.
+            allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
+                place.
+        """
 
         predicted_state = self.state  # this will come from Kalman Filter
 
@@ -170,7 +179,7 @@ class Robot:
 
     def turn(self, turn_angle, dt=1):
         """
-        Hardcoded turn
+        Hardcoded in-place rotation for testing purposes. Does not use heading PID. Avoid using in physical robot.
         """
         # Turns robot, where turn_angle is given in radians
         clamp_angle = (self.state[2] + (turn_angle * dt)) % (2 * math.pi)
@@ -205,12 +214,14 @@ class Robot:
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error):
         """
         Returns robot to base station when robot is in RETURN phase and switches to DOCKING.
-        :param base_loc: location of the base station in meters in the form (x, y)
-        :param base_angle: which direction the base station is facing in terms of unit circle (in radians)
-        :param allowed_docking_pos_error: the maximum distance in meters the robot can be from "ready to dock" position
+
+        Arguments:
+            base_loc: location of the base station in meters in the form (x, y)
+            base_angle: which direction the base station is facing in terms of unit circle (in radians)
+            allowed_docking_pos_error: the maximum distance in meters the robot can be from "ready to dock" position
                 before it can start docking (must be small)
-        :param allowed_heading_error: the maximum error in radians a robot can have to target heading while turning
-                in place.
+            allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
+                place.
         """
         docking_dist_to_base = 1.0  # how close the robot should come to base before starting DOCKING
         dx = docking_dist_to_base * math.cos(base_angle)

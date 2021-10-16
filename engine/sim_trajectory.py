@@ -79,11 +79,21 @@ if __name__ == "__main__":
         (5, 1), 3, 100, 80, animated=True, fill=False, width=2, ec="g", hatch="xx"
     )
 
+    # Plot base station:
+    circle_patch_base = plt.Circle((5, 5), 1, fc="red")
+    base_angle_degrees = math.degrees(m.base_station_angle)  # The heading of base station in degrees
+    wedge_patch_base = patch.Wedge(
+        m.base_station_loc, 3, base_angle_degrees-10, base_angle_degrees+10, fill=False, width=2, ec="r", hatch="xx"
+    )
+
 
     def init():
         circle_patch.center = (0, 0)
+        circle_patch_base.center = m.base_station_loc
         ax.add_patch(circle_patch)
         ax.add_patch(wedge_patch)
+        ax.add_patch(circle_patch_base)
+        ax.add_patch(wedge_patch_base)
         return circle_patch, wedge_patch
 
 

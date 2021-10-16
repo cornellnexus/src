@@ -10,17 +10,19 @@ class Mission:
                  allowed_dist_error=0.5, allowed_heading_error=0.1, base_station_loc=None,
                  base_station_angle=math.pi/2, allowed_docking_pos_error=0.1):
         """
-        :param robot: the Robot object linked to this Mission
-        :param grid: the Grid which the robot should traverse
-        :param grid_mode: "borders" if the grid's nodes should only include corner nodes, "full" if all nodes should be used
-        :param allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
+        Arguments:
+            robot: the Robot object linked to this Mission
+            grid: the Grid which the robot should traverse
+            grid_mode: "borders" if the grid's nodes should only include corner nodes, "full" if all nodes should be
+                used
+            allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
                 have "visited" that node
-        :param allowed_heading_error: the maximum error in radians a robot can have to target heading while turning
+            allowed_heading_error: the maximum error in radians a robot can have to target heading while turning
                 in place.
-        :param base_station_loc: location of the base station in meters in the form (x, y)
-        :param base_station_angle: which direction the base station is facing in terms of unit circle (in radians),
-                by default faces North (angle pi/2)
-        :param allowed_docking_pos_error: the maximum distance in meters the robot can be from "ready to dock" position
+            base_station_loc: location of the base station in GPS coordinates in the form (latitude, longitude)
+            base_station_angle: which direction the base station is facing in terms of unit circle (in radians), by
+                default faces North (angle pi/2)
+            allowed_docking_pos_error: the maximum distance in meters the robot can be from "ready to dock" position
                 before it can start docking.
         """
         self.robot = robot
