@@ -28,10 +28,12 @@ if __name__ == "__main__":
     # Data reading setup
     if IS_LIVE_DATA:
         sensor_module = SensorModule(write=True)
+        frames = 10
     else:
         with open("data/imu_360_sample1.csv") as file:
             imu_readings = file.readlines()
             imu_readings = [ast.literal_eval(line) for line in imu_readings]
+        frames=len(imu_readings) - 1
 
 
     def init():
@@ -44,7 +46,8 @@ if __name__ == "__main__":
     def animate(i):
         if IS_LIVE_DATA:
             sensor_module.update_imu_data()
-            middle_heading = math.degrees(math.atan2(sensor_module.imu_dict["mag_y"], sensor_module.imu_dict["mag_x"]))
+            middle_heading = math.degrees(math.atan2(sensor_module.imu_dict["mag"][1], sensor_module.imu_dict["mag"][0]))
+            print(middle_heading)
         else:
             middle_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
 
@@ -55,5 +58,5 @@ if __name__ == "__main__":
         return circle_patch, wedge_patch
 
 
-    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=len(imu_readings) - 1, interval=20, blit=True)
+    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=20, blit=True)
     plt.show()
