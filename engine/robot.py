@@ -19,6 +19,12 @@ class Phase(Enum):
     COMPLETE = 6
     FAULT = 7
 
+class Control_Mode(Enum):
+    """
+    An enumeration of different control modes
+    """
+    AUTONOMOUS = 1
+    MANUAL = 2
 
 class Robot:
     """
@@ -37,7 +43,7 @@ class Robot:
     """
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
-                 position_kd=0, position_noise=0, init_phase=1, time_step=0.1):
+                 position_kd=0, position_noise=0, init_phase=1, time_step=0.1, control_mode=1):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -55,6 +61,7 @@ class Robot:
             init_phase: the phase which the robot begins at
             time_step: the amount of time that passes between each feedback loop cycle,
                 should only be used if is_sim is True
+            control mode: the mode of the robot movement. Can be autonomous or manual
         """
 
         self.state = np.array([[x_pos], [y_pos], [heading]])
@@ -69,6 +76,7 @@ class Robot:
         self.position_ki = position_ki
         self.position_kd = position_kd
         self.position_noise = position_noise
+        self.control_mode = Control_Mode(control_mode)
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,

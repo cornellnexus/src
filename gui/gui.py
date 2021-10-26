@@ -27,7 +27,20 @@ import sys
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
 
+def get_control_mode(window):
+    """
+    Returns the last control mode given in the control_mode.csv file
+    """
+    path = get_path('csv')
+    file = open(path[len(path)-1]+"/control_mode_test.csv", "r")
+    try:
+        last_line = file.readlines()[-1]
+        control_mode = last_line[last_line.index(".")+1:len(last_line)]
+        window['-CONTROL_MODE_BUTTON-'].update(control_mode)
+    except:
+        pass
 
+    file.close()
 
 def get_path(folder):
 
@@ -172,7 +185,7 @@ def setup_gui():
                 [sg.Multiline(data["current_output"], key = "-OUTPUT-", size=(40,8))],
                 [sg.Text("Current Coordinates: ______")],
                 [sg.Text("Current Phase: ______", key = "-PHASE-")],
-                [sg.Button('Autonomous'), sg.Button('Track Location'), sg.Button('Traversal Phase')],
+                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase')],
                 [sg.Multiline(data["current_data"], key = "-DATA-", size=(40,8))]
             ]
     
@@ -216,7 +229,6 @@ def update_input(str, window, current_output):
     return new_output
 
 
-
 def run_gui():
     """
     Run the main GUI window.
@@ -251,6 +263,8 @@ def run_gui():
             window, data["current_output"])
             # Empty Command Line for next input
             window['-COMMANDLINE-'].update("")
+
+        get_control_mode(window)
     window.close()
 
 
