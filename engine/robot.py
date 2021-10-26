@@ -173,7 +173,6 @@ class Robot:
             unvisited_waypoints.popleft()
 
         self.set_phase(Phase.COMPLETE)
-        # self.phase = Phase.COMPLETE
         return unvisited_waypoints
 
     def set_phase(self, new_phase):

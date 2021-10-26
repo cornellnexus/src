@@ -119,6 +119,12 @@ def animate(i):
             # no new location data/waiting for new data
             pass
 
+    # try:
+    #         last_state_line = robot_state_file.readlines()[-1]
+    #         print("Last state: " + last_state_line.strip())
+    #         state = last_state_line.strip()
+    # except:
+    #         print("no new state data")
 
     return circle_patch, wedge_patch
 
@@ -165,6 +171,7 @@ def setup_gui():
                 [sg.Button('Submit', visible=False, bind_return_key=True)],
                 [sg.Multiline(data["current_output"], key = "-OUTPUT-", size=(40,8))],
                 [sg.Text("Current Coordinates: ______")],
+                [sg.Text("Current Phase: ______", key = "-PHASE-")],
                 [sg.Button('Autonomous'), sg.Button('Track Location'), sg.Button('Traversal Phase')],
                 [sg.Multiline(data["current_data"], key = "-DATA-", size=(40,8))]
             ]
@@ -209,6 +216,7 @@ def update_input(str, window, current_output):
     return new_output
 
 
+
 def run_gui():
     """
     Run the main GUI window.
@@ -221,6 +229,14 @@ def run_gui():
     current_row = 0
     while True:  # Event Loop
         event, values = window.read()
+
+        try:
+            last_phase_line = robot_phase_file.readlines()[-1].strip()
+            phase_loc = last_phase_line.find(".")
+            phase = last_phase_line[phase_loc+1:]
+            window["-PHASE-"].update("Current Phase: " + phase)
+        except:
+            pass
 
         if event == sg.WIN_CLOSED or event == 'Cancel':
             break
@@ -263,7 +279,7 @@ if not close_gui:
         circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
         # Begins the constant animation/updates of robot location and heading
         robot_loc_file = open((get_path('csv')[-1] + '/datastore.csv'), "r")  # open csv file of robot location
-        # robot_loc_file.truncate(0)
+        robot_phase_file = open((get_path('csv')[-1] + '/phases.csv'), "r")
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,
                                        frames=360,
@@ -272,7 +288,7 @@ if not close_gui:
         run_gui() #Start up the main GUI window
         print("closed csv")
         robot_loc_file.close()
-
+        robot_phase_file.close()
 
 os.system("pkill -f engine.sim_trajectory") #once gui.gui.py is closed, also close engine.sim_trajectory.py
 
