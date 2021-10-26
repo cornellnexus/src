@@ -31,6 +31,11 @@ class Grid:
             Returns the number of rows and columns needed for a grid, given
             latitude and longitude boundaries and a desired step size between
             nodes in meters.
+
+            Parameters:
+            -----------
+            # lat_min, lat_max, long_min, long_max: desired latitude and longitude boundaries of the grid [float]
+            # step_size_m: step size in between nodes of the grid [float]
             """
             y_range = get_vincenty_y((lat_min, long_min), (lat_max, long_max))
             x_range = get_vincenty_x((lat_min, long_min), (lat_max, long_max))
@@ -46,6 +51,14 @@ class Grid:
         def generate_nodes(start_lat, start_long, rows, cols, step_size_m):
             """
             Returns a list of Node objects that make up the entire grid. [Node list]
+
+            Parameters:
+            -----------
+            # start_lat: latitude coordinate of the robot's starting position [float]
+            # start_long: longitude coordinate of the robot's starting position [float]
+            # rows: # of rows in the grid [int]
+            # cols: # of cols in the grid [int]
+            # step_size_m: step size in between nodes of the grid (in meters) [float]
             """
             node_list = np.empty([rows, cols], dtype=np.object)
 
@@ -101,14 +114,19 @@ class Grid:
         Parameters:
         -----------
         # mode: The type of traversal path that is desired. [string]
-            'full': every single node of the grid
-            'borders': only the nodes in the top/bottom row of the grid
+            'lawn_full':
+                - lawnmower traversal using every single node of the grid
+                - starting node is the bottom left node of the grid
+
+            'lawn_border'
+                - lawnmower only the nodes in the top/bottom row of the grid
+                - starting node is the bottom left node of the grid
         """
         waypoints = []
         node_list = self.nodes
         rows = node_list.shape[0]
         cols = node_list.shape[1]
-        if mode == 'full':
+        if mode == 'lawn_full':
             for i in range(cols):
                 for j in range(rows):
                     if i % 2 == 0:
@@ -119,7 +137,7 @@ class Grid:
                         node = node_list[row_index, i]
                         waypoints.append(node)
         # 'borders' mode only traverses the nodes in the top and bottom rows of the grid
-        elif mode == 'borders':
+        elif mode == 'lawn_border':
             for i in range(cols):
                 if i % 2 == 0:
                     node1 = node_list[0, i]
