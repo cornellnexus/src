@@ -1,32 +1,22 @@
-# from node import *
 from engine.node import Node
 import numpy as np
-import geopy.distance
-import matplotlib.pyplot as pltß
-from haversine import haversine, Unit
-from vincenty import vincenty
-from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get_vincenty_y, get_haversine_x, \
-    get_haversine_y
+from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get_vincenty_y
 
 
-class Grid():
+class Grid:
     """
     Instances represent the current grid of the robot's traversal.
 
     INSTANCE ATTRIBUTES:
-        # gps_grid: 2D Node list
-        # gps_waypoints: Ordered list of Node objects that have not yet been 
-                          traversed by the robot. [Node list]
-        # meters_grid: 2D Node list
+        # nodes: 2D Node List representing all the Node objects that make up the grid. [[Node List] List]
+        # waypoints: Ordered list of Node objects to travel to that have not yet been traversed by the robot.
 
         # nodes_dict: Dictionary of all Node objects in the grid
             - Keys are (y,x), aka (latitude, longitude), tuples.
             - Values are Node objects
 
-        #lat_min: Minimum latitude boundary point of the actual map. [float]
-        #lat_max: Maximum latitude boundary point of the actual map. [float]
-        #long_min: Minimum longitude boundary point of the actual map. [float]
-        #long_max: Maximum longitude boundary point of the actual map. [float]
+        # lat_min, lat_max, long_min, long_max: // doesn't make sense to have this be the actual map should just be of our grid
+            minimum/maximum latitude/longitude boundary points of the actual map. [float]
 
         #num_rows: Number of rows of Nodes in the grid [int]
         #num_cols: Number of columns of Nodes in the grid. [int]
@@ -38,8 +28,14 @@ class Grid():
         # ----------- HELPER FUNCTIONS FOR GRID INITIALIZATION ------------# 
         def calc_step(lat_min, lat_max, long_min, long_max, step_size_m):
             """
-            Calculates the number of rows and columns needed for a grid with given 
-            latitude and longitude boundaries and a desired step size in meters. 
+            Returns the number of rows and columns needed for a grid, given
+            latitude and longitude boundaries and a desired step size between
+            nodes in meters.
+
+            Parameters:
+            -----------
+            # lat_min, lat_max, long_min, long_max: desired latitude and longitude boundaries of the grid [float]
+            # step_size_m: step size in between nodes of the grid [float]
             """
             y_range = get_vincenty_y((lat_min, long_min), (lat_max, long_max))
             x_range = get_vincenty_x((lat_min, long_min), (lat_max, long_max))
@@ -54,25 +50,22 @@ class Grid():
 
         def generate_nodes(start_lat, start_long, rows, cols, step_size_m):
             """
-            Returns:
-            # gps_grid: [Node numpy.array]
-                a grid of GPS Node objects
-            # gps_traversal_path: [Node list]
-                the GPS grid's corresponding traversal path
-            # true_max_lat: [float]
-                maximum latitude border of the GPS grid
-            # true_max_long: [float]
-                maximum longitude border of the GPD grid
+            Returns a list of Node objects that make up the entire grid. [Node list]
+
+            Parameters:
+            -----------
+            # start_lat: latitude coordinate of the robot's starting position [float]
+            # start_long: longitude coordinate of the robot's starting position [float]
+            # rows: # of rows in the grid [int]
+            # cols: # of cols in the grid [int]
+            # step_size_m: step size in between nodes of the grid (in meters) [float]
             """
-            gps_grid = np.ndarray([rows, cols], dtype=np.object)
-            origin = (start_lat, start_long)
-            gps_traversal_path = []
+            node_list = np.empty([rows, cols], dtype=np.object)
+
+            gps_origin = (start_lat, start_long)
 
             lat_step = meters_to_lat(step_size_m)
             long_step = meters_to_long(step_size_m, start_lat)
-
-            true_max_lat = start_lat + (rows - 1) * lat_step
-            true_max_long = start_long + (cols - 1) * long_step
 
             # Develop the gps grid and gps traversal path in order of lawnmower
             # traversal. 
@@ -80,39 +73,23 @@ class Grid():
                 for j in range(rows):
                     is_border = (j == 0 or j == rows - 1)
                     if i % 2 == 0:
-                        node = Node(origin[0] + j * lat_step, origin[1] + i * long_step, is_border)
-                        gps_traversal_path.append(node)
-                        gps_grid[j, i] = node
+                        lat = gps_origin[0] + j * lat_step
+                        long = gps_origin[1] + i * long_step
+                        x = get_vincenty_x(gps_origin, (lat, long))
+                        y = get_vincenty_y(gps_origin, (lat, long))
+                        node = Node(lat, long, x, y, is_border)
+                        node_list[j, i] = node
                     elif i % 2 == 1:
-                        lat_pos = origin[0] + \
+                        lat = gps_origin[0] + \
                                   ((rows - 1) * lat_step) - j * lat_step
-                        long_pos = origin[1] + i * long_step
-                        node = Node(lat_pos, long_pos, is_border)
-                        gps_traversal_path.append(node)
+                        long = gps_origin[1] + i * long_step
+                        x = get_vincenty_x(gps_origin, (lat, long))
+                        y = get_vincenty_y(gps_origin, (lat, long))
+                        node = Node(lat, long, x, y, is_border)
                         row_index = rows - (j + 1)
-                        gps_grid[row_index, i] = node
+                        node_list[row_index, i] = node
 
-            return gps_grid, gps_traversal_path, true_max_lat, true_max_long
-
-        def grid_convert(gps_grid):
-            """
-            Returns a grid [Node np array] in units of meters that corresponds 
-            to the gps_grid input. 
-            """
-            meters_grid = np.ndarray(gps_grid.shape, dtype=np.object)
-            rows = gps_grid.shape[0]
-            cols = gps_grid.shape[1]
-            gps_origin = (gps_grid[0, 0]).get_coords()
-            for i in range(cols):
-                for j in range(rows):
-                    is_border = (j == 0 or j == rows - 1)
-                    curr_coords = (gps_grid[j, i]).get_coords()
-                    x_dist = get_vincenty_x(gps_origin, curr_coords)
-                    y_dist = get_vincenty_y(gps_origin, curr_coords)
-                    meters_grid[j, i] = Node(x_dist, y_dist, is_border)
-                    #TODO: check if this is okay Node creation
-
-            return meters_grid
+            return node_list
 
         # ----------------- GRID INITIALIZATION BEGINS ------------------- #
         self.lat_min = lat_min
@@ -120,11 +97,9 @@ class Grid():
         self.long_min = long_min
         self.long_max = long_max
 
-        self.obstacle_length_limit = 10
         self.num_rows, self.num_cols = calc_step(lat_min, lat_max, long_min, long_max, STEP_SIZE_METERS)
-        self.gps_grid, self.gps_waypoints, self.true_lat_max, self.true_long_max = generate_nodes(
-            lat_min, long_min, self.num_rows, self.num_cols, STEP_SIZE_METERS)
-        self.meters_grid = grid_convert(self.gps_grid)
+
+        self.nodes = generate_nodes(lat_min, long_min, self.num_rows, self.num_cols, STEP_SIZE_METERS)
 
     def get_num_rows(self):
         return self.num_rows
@@ -134,41 +109,44 @@ class Grid():
 
     def get_waypoints(self, mode='full'):
         """
-        Returns the GPS traversal path in terms of meters for the current grid. [Node list].
+        Returns the robot's traversal path for the current grid. [Node list].
 
         Parameters:
         -----------
-        mode: string
-            The type of traversal path that is desired.
-            'full': every single node of the grid
-            'borders': only the nodes in the top/bottom row of the grid
+        # mode: The type of traversal path that is desired. [string]
+            'lawn_full':
+                - lawnmower traversal using every single node of the grid
+                - starting node is the bottom left node of the grid
 
+            'lawn_border'
+                - lawnmower only the nodes in the top/bottom row of the grid
+                - starting node is the bottom left node of the grid
         """
         waypoints = []
-        meters_grid = self.meters_grid
-        rows = meters_grid.shape[0]
-        cols = meters_grid.shape[1]
-        if mode == 'full':
+        node_list = self.nodes
+        rows = node_list.shape[0]
+        cols = node_list.shape[1]
+        if mode == 'lawn_full':
             for i in range(cols):
                 for j in range(rows):
                     if i % 2 == 0:
-                        node = meters_grid[j, i]
+                        node = node_list[j, i]
                         waypoints.append(node)
                     elif i % 2 == 1:
                         row_index = rows - (j + 1)
-                        node = meters_grid[row_index, i]
+                        node = node_list[row_index, i]
                         waypoints.append(node)
         # 'borders' mode only traverses the nodes in the top and bottom rows of the grid
-        elif mode == 'borders':
+        elif mode == 'lawn_border':
             for i in range(cols):
                 if i % 2 == 0:
-                    node1 = meters_grid[0, i]
-                    node2 = meters_grid[rows - 1, i]
+                    node1 = node_list[0, i]
+                    node2 = node_list[rows - 1, i]
                     waypoints.append(node1)
                     waypoints.append(node2)
                 elif i % 2 == 1:
-                    node1 = meters_grid[rows - 1, i]
-                    node2 = meters_grid[0, i]
+                    node1 = node_list[rows - 1, i]
+                    node2 = node_list[0, i]
                     waypoints.append(node1)
                     waypoints.append(node2)
 
