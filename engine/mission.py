@@ -6,12 +6,12 @@ import math
 
 
 class Mission:
-    def __init__(self, robot, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276), grid_mode="borders",
-                 allowed_dist_error=0.5, allowed_heading_error=0.1, base_station_loc=None,
-                 base_station_angle=math.pi/2, allowed_docking_pos_error=0.1):
+    def __init__(self, robot, base_station, grid=Grid(42.444250, 42.444599, git, -76.483276),
+                 grid_mode="borders", allowed_dist_error=0.5, allowed_heading_error=0.1, allowed_docking_pos_error=0.1):
         """
         Arguments:
             robot: the Robot object linked to this Mission
+            base_station: the BaseStation object linked to this Mission.
             grid: the Grid which the robot should traverse
             grid_mode: "borders" if the grid's nodes should only include corner nodes, "full" if all nodes should be
                 used
@@ -19,9 +19,6 @@ class Mission:
                 have "visited" that node
             allowed_heading_error: the maximum error in radians a robot can have to target heading while turning
                 in place.
-            base_station_loc: location of the base station in GPS coordinates in the form (latitude, longitude)
-            base_station_angle: which direction the base station is facing in terms of unit circle (in radians), by
-                default faces North (angle pi/2)
             allowed_docking_pos_error: the maximum distance in meters the robot can be from "ready to dock" position
                 before it can start docking.
         """
@@ -31,14 +28,11 @@ class Mission:
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
         self.allowed_heading_error = allowed_heading_error
-        self.base_station_angle = base_station_angle
+        self.base_station_angle = base_station.heading
         self.allowed_docking_pos_error = allowed_docking_pos_error
-        if base_station_loc:
-            x = get_vincenty_x((grid.lat_min, grid.long_min), base_station_loc)
-            y = get_vincenty_y((grid.lat_min, grid.long_min), base_station_loc)
-            self.base_station_loc = (x, y)
-        else:
-            self.base_station_loc = (0, 0)
+        x = get_vincenty_x((grid.lat_min, grid.long_min), base_station.position)
+        y = get_vincenty_y((grid.lat_min, grid.long_min), base_station.position)
+        self.base_station_loc = (x, y)
 
     def execute_mission(self):
         """

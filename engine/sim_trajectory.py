@@ -10,6 +10,7 @@ from engine.grid import Grid
 from engine.kinematics import limit_cmds, feedback_lin
 from engine.pid_controller import PID
 from engine.robot import Robot
+from engine.base_station import BaseStation
 from engine.mission import Mission
 
 '''PLOTTING'''
@@ -54,7 +55,8 @@ def get_plot_boundaries(meters_grid, delta):
 
 if __name__ == "__main__":
     r2d2 = Robot(0, 0, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2)
-    m = Mission(r2d2)
+    base_r2d2 = BaseStation((42.444250, -76.483682))
+    m = Mission(r2d2, base_r2d2)
 
     '''------------------- MISSION EXECUTION -------------------'''
     m.execute_mission()
