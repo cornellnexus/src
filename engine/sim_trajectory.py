@@ -10,6 +10,7 @@ from engine.grid import Grid
 from engine.kinematics import limit_cmds, feedback_lin
 from engine.pid_controller import PID
 from engine.robot import Robot
+from engine.base_station import BaseStation
 from engine.mission import Mission
 
 '''PLOTTING'''
@@ -27,39 +28,38 @@ def waypoints_to_array(waypoints):
     n = len(waypoints)
     waypoints_arr = np.empty([n, 2])
     for i in range(n):
-        waypoints_arr[i, :] = np.asarray(waypoints[i].get_coords())
+        waypoints_arr[i, :] = np.asarray(waypoints[i].get_m_coords())
     return waypoints_arr
 
 
-def get_plot_boundaries(meters_grid, delta):
+def get_plot_boundaries(nodes, delta):
     """
     Given some grid to be plotted, and a delta value, returns the desired 
     x limits and y limits for the plot.
 
     Arguments:
-        meters_grid: a Grid object
+        nodes: a Grid object
         delta: the width of the border between
     Returns:
         xlim: a list containing the left and right boundaries of the grid, taking delta into account
         ylim: a list containing the top and bottom boundaries of the grid, taking delta into account
     """
 
-    size = np.shape(meters_grid)
-    min_coords = meters_grid[0, 0].get_coords()
-    max_coords = meters_grid[size[0] - 1, size[1] - 1].get_coords()
+    size = np.shape(nodes)
+    min_coords = nodes[0, 0].get_m_coords()
+    max_coords = nodes[size[0] - 1, size[1] - 1].get_m_coords()
     xlim = [min_coords[0] - delta, max_coords[0] + delta]
     ylim = [min_coords[1] - delta, max_coords[1] + delta]
     return xlim, ylim
 
 
 if __name__ == "__main__":
-    r2d2 = Robot(0, 0, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2)
-    m = Mission(r2d2)
-
+    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2)  # Start position should be base.
+    base_r2d2 = BaseStation((42.444250, -76.483682))
+    m = Mission(r2d2, base_r2d2)
 
     '''------------------- MISSION EXECUTION -------------------'''
     m.execute_mission()
-
 
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
 
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     goals = waypoints_to_array(m.all_waypoints)
     ax.plot(goals[:, 0], goals[:, 1], 'rx')
 
-    xbounds, ybounds = get_plot_boundaries(m.grid.meters_grid, 5)
+    xbounds, ybounds = get_plot_boundaries(m.grid.nodes, 5)
     plt.xlim(xbounds)
     plt.ylim(ybounds)
 
@@ -81,11 +81,21 @@ if __name__ == "__main__":
         (5, 1), 3, 100, 80, animated=True, fill=False, width=2, ec="g", hatch="xx"
     )
 
+    # Plot base station:
+    circle_patch_base = plt.Circle((5, 5), 1, fc="red")
+    base_angle_degrees = math.degrees(m.base_station_angle)  # The heading of base station in degrees
+    wedge_patch_base = patch.Wedge(
+        m.base_station_loc, 3, base_angle_degrees-10, base_angle_degrees+10, fill=False, width=2, ec="r", hatch="xx"
+    )
+
 
     def init():
         circle_patch.center = (0, 0)
+        circle_patch_base.center = m.base_station_loc
         ax.add_patch(circle_patch)
         ax.add_patch(wedge_patch)
+        ax.add_patch(circle_patch_base)
+        ax.add_patch(wedge_patch_base)
         return circle_patch, wedge_patch
 
 
