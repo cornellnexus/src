@@ -117,18 +117,15 @@ class Robot:
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
 
-    def execute_setup(self):
-        if (not self.is_sim): 
-            #checker that we are setting up rpi instead of base station
-            rf_module.startup_rpi() #turn on radio and send radio commands 
-            #initilize GPS 
-            gps.startup() #TODO: connect gps startup function with rf_packet 
-            #initialize IMU 
-            imu.startup() #TODO: connect imu startup function with rf_packet
-            #check battery ?
-            #check bucket waste levels?
-        else: 
-            pass
+    def execute_setup(self, radio_session):
+        #turn on radio communication between rpi and base station
+        radio_session.startup_rpi()
+        radio_session.startup_base()
+
+        #initilize GPS 
+        gps.startup() #TODO: connect gps startup function with rf_packet 
+        #initialize IMU 
+        imu.startup() #TODO: connect imu startup function with rf_packet      
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error):
         # for curr_goal_ind in range(len(waypoints)):

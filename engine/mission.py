@@ -1,6 +1,7 @@
 from collections import deque
 from engine.grid import Grid
 from engine.robot import Phase
+from electrical.rf_module import Device, RadioSession
 
 
 class Mission:
@@ -19,6 +20,9 @@ class Mission:
         self.all_waypoints = self.grid.get_waypoints(grid_mode)
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
+        self.rpi_device = Device(0, '/dev/ttyS0')
+        self.base_device = Device(1, '/dev/ttyS0') #temp
+        self.radio_session = RadioSession(self.rpi_device)
 
     def execute_mission(self):
         """
@@ -27,7 +31,7 @@ class Mission:
         """
         while self.robot.phase != Phase.COMPLETE:
             if self.robot.phase == Phase.SETUP:
-                self.robot.execute_setup()
+                self.robot.execute_setup(self.radio_session)
 
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,

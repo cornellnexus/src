@@ -4,8 +4,8 @@ import time
 
 """ This module receives the serially transmitted data from the rf module"""
 class Device: 
-    def __init__(self, device_number, port ='/dev/ttyS0'):
-        self.ser = serial.Serial('/dev/ttyS0', 57600)
+    def __init__(self, device_number, port):
+        self.ser = serial.Serial(port, 57600)
         self.connected = False
         self.device = device_number
 class RadioSession:
