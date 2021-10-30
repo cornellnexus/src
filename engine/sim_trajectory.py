@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import csv
 
 from matplotlib import animation as animation
 from matplotlib import patches as patch
@@ -55,8 +56,10 @@ if __name__ == "__main__":
     r2d2 = Robot(0, 0, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_mode=2)
     m = Mission(r2d2)
 
+
     '''------------------- MISSION EXECUTION -------------------'''
     m.execute_mission()
+
 
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
 
