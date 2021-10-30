@@ -3,59 +3,47 @@ import serial
 import time 
 
 """ This module receives the serially transmitted data from the rf module"""
-class RadioSession:
-    def __init__(self, port='/dev/ttyS0', device = 0):
+class Device: 
+    def __init__(self, device_number, port ='/dev/ttyS0'):
         self.ser = serial.Serial('/dev/ttyS0', 57600)
-        self.baudrate = 57600
-        self.port = port
-        self.connect = False
-        self.device_list = [0, 1, 2] #to do: figure out better way to do this
-        self.device = device
-        self.SYN = False 
-        self.SYNACK = False 
-        self.ACK = False 
-        self.FIN = False
+        self.connected = False
+        self.device = device_number
+class RadioSession:
+    def __init__(self, device):
+        #'sr': start (rpi)
+        #'sb': start (base station)
+        #'dr': data (rpi) 
+        #'db': data (base station)
+        self.packet_type = ['sr', 'sb', 'dr', 'db']
+        self.device = device 
+        self.device_list = [0, 1] #0 is rpi, 1 is base station
 
     def receive_data(self):
         byte_data = self.ser.readline()
         return byte_data
 
-    def transmit_data(self,t_data):
-        cast_data = bytes((str(t_data) + '\n'), encoding= 'utf-8')
+    def transmit_data(self,data, packet_type):
+        assert(isinstance(packet_type), str)
+        cast_data = bytes((packet_type + str(data) + '\n'), encoding= 'utf-8')
         self.ser.write(cast_data)
 
-    #implementation of 3-way handshake
-    #raspberry pi serves as "client" in 3-way handshake
+    #implementation of 2-way handshake
+    #raspberry pi serves as "client" in 2-way handshake
     #returns True if Rpi successfully set up 
     def startup_rpi(self): 
         if (self.device != 0): #self.device should be 0
             return "error, set device to 0" 
         while (not self.connect): #while rpi not connected to base station
-            if (not self.SYNACK): #receiving device has not confirmed data received
-                self.transmit_data("SYN") #send first data
-                receive = self.receive_data() #receive
-                if (receive == "SYNACK"):
-                    self.SYNACK = True 
-            else: 
-                if (not self.FIN):
-                    self.transmit_data("ACK")
-                    receive = self.receive_data() #receive
-                    if (receive == "FIN"):
-                        self.FIN = True
-                        self.connect = True
-        return True
-            
+            self.transmit_data('sr')
+            receive = self.receive_data()
+            if (receive == 'sb'):
+                self.connect = True
+
     def startup_base(self):
         if (self.device != 1): 
             return "error, set device to 1"
         while (not self.connect): #while rpi not connected to base station
             receive = self.receive_data()
-            if (not self.SYN): #not receiving first SYN command
-                if (receive == "SYN"):
-                    self.transmit("SYNACK")
-                    self.SYN = True
-            elif (not self.ACK):
-                if (receive == "ACK"):
-                    self.transmit("FIN")
-                    self.ACK = True 
-        return True 
+            if (receive == 'sr'):
+                self.transmit('sb')
+                self.connect = True
