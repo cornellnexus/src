@@ -201,7 +201,7 @@ class Robot:
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error):
 
         while unvisited_waypoints:
-            curr_waypoint = unvisited_waypoints[0].get_coords()
+            curr_waypoint = unvisited_waypoints[0].get_m_coords()
             self.move_to_target_node(curr_waypoint, allowed_dist_error)  # TODO: add obstacle avoidance support
             unvisited_waypoints.popleft()
 
