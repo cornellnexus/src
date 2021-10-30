@@ -2,31 +2,19 @@ class Node:
     """ Instances represent the position node of the robot's graph traversal.
 
         INSTANCE ATTRIBUTES:
-        lat: latitude GPS coordinate (y) [float]
-        long: longitude GPS coordinate (x) [float]
-
-        x: x position (meters) [float]
-        y: y position (meters) [float]
-
-        status: current status of the node [int]
-            [0 = not traversed, 1 = traversed, 2 = obstacle]
-
-        is_border: type of node on the grid
-            [0 = not on the border of the grid, 1 = on the border of the grid]
+        lat: latitude coordinate (y) [int]
+        long: longitude coordinate (x) [int]
+        status: current status of the node
+            [0 = not traversed, 1 = traversed, 2 = obstacle] 
     """
 
-    def __init__(self, lat, long, x, y, is_border='0', status=0):
-        self.lat = lat
-        self.long = long
-        self.x = x
-        self.y = y
+    def __init__(self, y, x, is_border='0', status=0):
+        self.lat = y
+        self.long = x
         self.is_border = is_border
         self.status = status
 
-    def get_m_coords(self):
-        return (self.x, self.y)
-
-    def get_gps_coords(self):
+    def get_coords(self):
         return (self.lat, self.long)
 
     def is_border_node(self):
