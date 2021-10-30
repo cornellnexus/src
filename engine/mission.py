@@ -25,13 +25,15 @@ class Mission:
         Activates the main control loop. Depending on the robot's phase, different motion control algorithms are
         activated.
         """
+        time_limit = 0
         while self.robot.phase != Phase.COMPLETE:
             if self.robot.phase == Phase.SETUP:
                 self.robot.execute_setup()
 
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
-                                                                       self.allowed_dist_error)
+                                                                       self.allowed_dist_error, self.grid,
+                                                                       self.robot.control_mode, time_limit)
 
             elif self.robot.phase == Phase.AVOID_OBSTACLE:
                 self.robot.execute_avoid_obstacle()
