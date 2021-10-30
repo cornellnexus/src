@@ -47,6 +47,7 @@ class Robot:
             max_v: the maximum velocity of the robot
             radius: the radius of the robot
             is_sim: False if the physical robot is being used, True otherwise
+            position_kp: the proportional factor of the position PID
             position_ki: the integral factor of the position PID
             position_kd: the derivative factor of the position PID
             position_noise: the flat amount of noise added to the robot's phase on each localization step
