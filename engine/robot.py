@@ -209,13 +209,21 @@ class Robot:
         pass
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, grid, control_mode, time_limit):
-        match control_mode:
-            case Control_Mode.LAWNMOVER:
-                self.lawn_mover(unvisited_waypoints, allowed_dist_error)
-            case Control_Mode.ROOMBA:
-                self.roomba_mover(grid, time_limit)
+        if control_mode == Control_Mode.LAWNMOVER:
+            self.lawn_mover(unvisited_waypoints, allowed_dist_error)
+        elif control_mode == Control_Mode.ROOMBA:
+            self.roomba_mover(grid, time_limit)
 
     def lawn_mover(self, unvisited_waypoints, allowed_dist_error):        
+        """ Move the robot in a lawn_mover-like manner.
+
+            Args:
+                unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
+                allowed_dist_error (Double): the maximum distance in meters that the robot can be from a node for the robot to
+                have "visited" that node
+            Returns:
+                unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
+        """
         while unvisited_waypoints:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
             self.move_to_target_node(curr_waypoint, allowed_dist_error)  # TODO: add obstacle avoidance support
@@ -225,7 +233,14 @@ class Robot:
         return unvisited_waypoints
 
     def roomba_mover(self, grid, time_limit):
-        # move the robot in a roomba-like manner
+        """ Move the robot in a roomba-like manner.
+
+            Args:
+                grid (Grid): The grid that the roomba will move in
+                time_limit (Double): How long the robot will move using roomba mode
+            Returns:
+                None
+        """
         move_dist = 3  # how much the robot moves in meter
         turn_dist = .5233  # how much the robot turns in rads
         dt = 0
