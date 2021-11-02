@@ -19,6 +19,8 @@ class SensorModule:
         self.created = datetime.now().strftime("data/%d-%m-%Y_%H:%M:%S")
         self.write_data = write
 
+        self.gps_dict = {"long": 0, "lat": 0}
+
     def update_imu_data(self):
         """
         Retrieves 9-degree IMU data from the Raspberry Pi.
@@ -33,4 +35,18 @@ class SensorModule:
             imu_file = open(self.created + ".txt", 'w+')
             imu_file.write(json.dumps(self.imu_dict) + "\n")
             imu_file.close()
+
+    def updata_gps_data(self):
+      """
+        Retrieves GPS data from the Raspberry Pi.
+        Writes GPS data to a file if self.write is True.
+      """
+      if self.port.in_waiting > 0:
+        line = self.port.readline().decode("utf-8")
+        self.gps_dict = ast.literal_eval(line.rstrip("\n"))
+      
+      if self.write_data:
+        gps_file = open(self.created + "_gps" + ".txt", 'w+')
+        gps_file.write(json.dumps(self.gps_dict) + "\n")
+        gps_file.close()
 
