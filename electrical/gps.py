@@ -15,11 +15,9 @@ class GPS:
 
     def get_gps(self):
         gps_line = str(self.ser.readline())
-        decoded_line = gps_line[2:-5]
-        while decoded_line.find('GGA') < 0:
+        while decoded_line.find("GGA") > 0:
             gps_line = str(self.ser.readline())
-            decoded_line = gps_line[2:-5]
-        coord = self.parse_gps(decoded_line)
+        coord = self.parse_gps(gps_line)
         if coord is not None:
             return (coord)
 
@@ -30,5 +28,5 @@ class GPS:
 
     def parse_gps(self, gps_line):
         msg = pynmea2.parse(gps_line)
-        data = (msg.longitude, msg.latitude)
+        data = {"long": msg.longitude, "lat": msg.latitude}
         return (data)
