@@ -151,3 +151,9 @@ class Grid:
                     waypoints.append(node2)
 
         return waypoints
+
+    def x_range(self):
+        return get_vincenty_x((self.lat_min, self.long_min), (self.lat_max, self.long_max))
+
+    def y_range(self):
+        return get_vincenty_y((self.lat_min, self.long_min), (self.lat_max, self.long_max))
