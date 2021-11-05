@@ -16,7 +16,7 @@ gps_sense = GPS() # Need to make sure serial port doesn't conflict with IMU
 #test_dict = {"one": 1, "two": 2, "three": 3}
 
 # Send data from IMU if True. Else send data from GPS
-imu_send = True
+imu_send = False
 
 while True:
   if imu_send == True:

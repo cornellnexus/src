@@ -5,18 +5,20 @@ import time
 import pynmea2
 import csv
 from gpio import *
+from ublox_gps import UbloxGps
 
 
 class GPS:
     def __init__(self):
         self.ser = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
+        self.gps = UbloxGps(port)
 
     """ get_gps: returns the coordinate (long, lat)"""
 
     def get_gps(self):
-        gps_line = str(self.ser.readline())
-        while decoded_line.find("GGA") > 0:
-            gps_line = str(self.ser.readline())
+        gps_line = str(gps.stream_nmea())
+        while gps_line.find("GGA") < 0:
+            gps_line = str(gps.stream_nmea())
         coord = self.parse_gps(gps_line)
         if coord is not None:
             return (coord)
