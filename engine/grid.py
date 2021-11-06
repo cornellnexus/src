@@ -81,7 +81,7 @@ class Grid:
                         node_list[j, i] = node
                     elif i % 2 == 1:
                         lat = gps_origin[0] + \
-                                  ((rows - 1) * lat_step) - j * lat_step
+                              ((rows - 1) * lat_step) - j * lat_step
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
@@ -151,9 +151,3 @@ class Grid:
                     waypoints.append(node2)
 
         return waypoints
-
-    def x_range(self):
-        return get_vincenty_x((self.lat_min, self.long_min), (self.lat_max, self.long_max))
-
-    def y_range(self):
-        return get_vincenty_y((self.lat_min, self.long_min), (self.lat_max, self.long_max))

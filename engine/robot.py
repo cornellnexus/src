@@ -43,7 +43,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=0.1, control_mode=1):
+                 init_phase=1, time_step=0.1, control_mode=1, move_dist=.5, turn_angle=1):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -66,6 +66,7 @@ class Robot:
             init_phase: the phase which the robot begins at
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
+            control_mode: the traversal mode the robot begins with
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -84,6 +85,8 @@ class Robot:
         self.heading_kd = heading_kd
         self.heading_noise = heading_noise
         self.control_mode = Control_Mode(control_mode)
+        self.move_dist = move_dist
+        self.turn_angle = turn_angle #in rads
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -207,18 +210,18 @@ class Robot:
     def execute_setup(self):
         pass
 
-    def execute_traversal(self, unvisited_waypoints, allowed_dist_error, grid, control_mode, time_limit):
+    def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit, radius):
         if control_mode == Control_Mode.LAWNMOVER:
             self.lawn_mover(unvisited_waypoints, allowed_dist_error)
         elif control_mode == Control_Mode.ROOMBA:
-            self.roomba_mover(grid, time_limit)
+            self.roomba_mover(base_station_loc, time_limit, radius, error=allowed_dist_error)
 
     def lawn_mover(self, unvisited_waypoints, allowed_dist_error):
         """ Move the robot in a lawn_mover-like manner.
             Args:
                 unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
-                allowed_dist_error (Double): the maximum distance in meters that the robot can be from a node for the robot to
-                have "visited" that node
+                allowed_dist_error (Double): the maximum distance in meters that the robot can be from a node for the
+                    robot to have "visited" that node
             Returns:
                 unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
         """
@@ -230,30 +233,32 @@ class Robot:
         self.phase = Phase.RETURN
         return unvisited_waypoints
 
-    def roomba_mover(self, grid, time_limit):
+    def roomba_mover(self, base_station_loc, time_limit, radius, error):
         """ Move the robot in a roomba-like manner.
             Args:
-                grid (Grid): The grid that the roomba will move in
+                base_station_loc (Tuple): The (x,y) location of the base station
                 time_limit (Double): How long the robot will move using roomba mode
+                radius (Double): Maximum radius from the base station that the robot can move
+                error (Double): Maximum distance in meters that the robot can be from the radius for the robot to "be"
+                    at the maximum radius
             Returns:
                 None
         """
-        move_dist = 0.5  # how much the robot moves in meter
-        turn_dist = 1  # how much the robot turns in rads
         dt = 0
+        move_dt = 1 # match of move_forward
         exit_boolean = False # battery_limit, time_limit, battery_capacity is full
         while not exit_boolean:
 
             curr_x = self.state[0]
             curr_y = self.state[1]
-            # lowerleft (lower bound) of the grid is 0,0. upperright bound would be difference between max and min
-            roomba_out_of_x_bound = curr_x < 0 or curr_x > grid.x_range()
-            roomba_out_of_y_bound = curr_y < 0 or curr_y > grid.y_range()
-            if roomba_out_of_x_bound or roomba_out_of_y_bound:
-                self.move_forward(-move_dist)
-                self.turn(turn_dist)
+            new_x = curr_x + self.move_dist * math.cos(self.state[2]) * move_dt
+            new_y = curr_y + self.move_dist * math.sin(self.state[2]) * move_dt
+            next_radius = math.sqrt(abs(new_x-base_station_loc[0])**2 + abs(new_y-base_station_loc[1])**2)
+            if next_radius+error > radius:
+                self.move_forward(-self.move_dist)
+                self.turn(self.turn_angle)
             else:
-                self.move_forward(move_dist)
+                self.move_forward(self.move_dist)
             dt += 1
             exit_boolean = (dt > time_limit)
         self.phase = Phase.COMPLETE
