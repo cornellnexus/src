@@ -1,13 +1,13 @@
 from collections import deque
 from engine.grid import Grid
-from engine.robot import Phase
+from engine.robot import Phase, Traversal
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 import math
 
 
 class Mission:
     def __init__(self, robot, base_station, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
-                 grid_mode="lawn_border", allowed_dist_error=0.5, allowed_heading_error=0.1,
+                 grid_mode="lawn_border", traversal_mode=Traversal.SPIRAL, allowed_dist_error=0.5, allowed_heading_error=0.1,
                  allowed_docking_pos_error=0.1):
         """
         Arguments:
@@ -25,7 +25,11 @@ class Mission:
         """
         self.robot = robot
         self.grid = grid
-        self.all_waypoints = self.grid.get_waypoints(grid_mode)
+        self.traversal_mode = traversal_mode
+        if self.traversal_mode == Traversal.LAWNMOWER:
+            self.all_waypoints = self.grid.get_lawnmower_waypoints(grid_mode)
+        else:
+            self.all_waypoints = self.grid.get_spiral_waypoints()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
         self.allowed_heading_error = allowed_heading_error

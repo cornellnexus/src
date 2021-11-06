@@ -107,7 +107,7 @@ class Grid:
     def get_num_cols(self):
         return self.num_cols
 
-    def get_waypoints(self, mode='full'):
+    def get_lawnmower_waypoints(self, mode='full'):
         """
         Returns the robot's traversal path for the current grid. [Node list].
 
@@ -150,4 +150,39 @@ class Grid:
                     waypoints.append(node1)
                     waypoints.append(node2)
 
+        return waypoints
+
+    def get_spiral_waypoints(self):
+        """
+        Returns the robot's spiral traversal path for the current grid using every
+        single node of the grid. [Node list].
+        """
+        waypoints = []
+        node_list = self.nodes
+        rows = node_list.shape[0]
+        cols = node_list.shape[1]
+
+        col = 0  # start at bottom left corner
+        row = 0
+
+        step_col = (1, 0, -1, 0)  # these tuples simulate the robot's next movement based on turn state
+        step_row = (0, 1, 0, -1)
+        turn_state = 0  # turn_state is a variable that must be between 0..3
+
+        for _ in range(rows * cols):  # for loop over all nodes
+            node = node_list[row, col]
+            waypoints.append(node)
+
+            next_col = col + step_col[turn_state]
+            next_row = row + step_row[turn_state]
+            if 0 <= next_col < cols and 0 <= next_row < rows and not node_list[next_row, next_col] in waypoints:
+                col = next_col
+                row = next_row
+            else:
+                turn_state = (turn_state + 1) % 4
+                next_col = col + step_col[turn_state]
+                next_row = row + step_row[turn_state]
+                col = next_col
+                row = next_row
+        waypoints.reverse()
         return waypoints
