@@ -12,6 +12,7 @@ from engine.pid_controller import PID
 from engine.robot import Robot
 from engine.base_station import BaseStation
 from engine.mission import Mission
+from engine.robot import Control_Mode
 
 '''PLOTTING'''
 
@@ -54,7 +55,7 @@ def get_plot_boundaries(nodes, delta):
 
 
 if __name__ == "__main__":
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, control_mode=2)  # Start position should be base.
+    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, control_mode=Control_Mode.ROOMBA)  # Start position should be base.
     base_r2d2 = BaseStation((42.444250, -76.483682))
     m = Mission(r2d2, base_r2d2)
 
@@ -69,12 +70,22 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
-    goals = waypoints_to_array(m.all_waypoints)
-    ax.plot(goals[:, 0], goals[:, 1], 'rx')
+    margin = 5
+    init_x = m.base_station_loc[0]
+    init_y = m.base_station_loc[1]
 
-    xbounds, ybounds = get_plot_boundaries(m.grid.nodes, 5)
-    plt.xlim(xbounds)
-    plt.ylim(ybounds)
+    if r2d2.control_mode == Control_Mode.LAWNMOWER:
+        goals = waypoints_to_array(m.all_waypoints)
+        ax.plot(goals[:, 0], goals[:, 1], 'rx')
+
+        xbounds, ybounds = get_plot_boundaries(m.grid.nodes, margin)
+        plt.xlim(xbounds)
+        plt.ylim(ybounds)
+
+    elif r2d2.control_mode == Control_Mode.ROOMBA:
+        range = m.roomba_radius + margin
+        plt.xlim([init_x-range, init_x+range])
+        plt.ylim([init_y-range, init_y+range])
 
     circle_patch = plt.Circle((5, 5), 1, fc="green")
     wedge_patch = patch.Wedge(
