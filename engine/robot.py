@@ -3,7 +3,9 @@ import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, meters_to_gps
 from engine.pid_controller import PID
 from enum import Enum
-
+import os.path
+import time
+import sys
 
 class Phase(Enum):
     """
@@ -66,9 +68,9 @@ class Robot:
             init_phase: the phase which the robot begins at
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
-            control_mode: the traversal mode the robot begins with
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt
+            control mode: the mode of the robot movement. 
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -104,6 +106,18 @@ class Robot:
             Kp=self.heading_kp, Ki=self.heading_ki, Kd=self.heading_kd, target=0, sample_time=self.time_step,
             output_limits=(None, None)
         )
+
+        cwd = os.getcwd()
+        cd = cwd + "/csv"
+        # write in csv
+        with open(cd + '/phases.csv', 'a') as fd:
+            fd.write(str(self.phase) + '\n')
+
+    def get_path(folder):
+
+        cwd = os.getcwd()
+        sys.path.append(cwd + "/" + folder)
+        return sys.path
 
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
@@ -157,6 +171,14 @@ class Robot:
 
             self.travel(self.time_step * limited_cmd_v, self.time_step * limited_cmd_w)
             # sleep in real robot.
+
+            # write robot location and mag heading in csv (for gui to display)
+            cwd = os.getcwd()
+            cd = cwd + "/csv"
+            with open(cd + '/datastore.csv', 'a') as fd:
+                fd.write(
+                    str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
+            time.sleep(0.01)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
@@ -233,7 +255,7 @@ class Robot:
             self.move_to_target_node(curr_waypoint, allowed_dist_error)  # TODO: add obstacle avoidance support
             unvisited_waypoints.popleft()
 
-        self.phase = Phase.RETURN
+        self.set_phase(Phase.RETURN)
         return unvisited_waypoints
 
     def traverse_roomba(self, base_station_loc, time_limit, roomba_radius):
@@ -263,6 +285,13 @@ class Robot:
             exit_boolean = (dt > time_limit)
         self.phase = Phase.COMPLETE
         return None
+    def set_phase(self, new_phase):
+        self.phase = new_phase
+
+        cwd = os.getcwd()
+        cd = cwd + "/csv"
+        with open(cd + '/phases.csv', 'a') as fd:
+            fd.write(str(self.phase)+ '\n')
 
     def execute_avoid_obstacle(self):
         pass
@@ -291,7 +320,7 @@ class Robot:
         self.turn_to_target_heading(target_heading, allowed_heading_error)
 
         # RETURN phase complete:
-        self.phase = Phase.DOCKING
+        self.set_phase(Phase.DOCKING)
 
     def execute_docking(self):
-        self.phase = Phase.COMPLETE  # temporary for simulation purposes
+        self.set_phase(Phase.COMPLETE) # temporary for simulation purposes
