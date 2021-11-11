@@ -107,51 +107,6 @@ class Grid:
     def get_num_cols(self):
         return self.num_cols
 
-    def get_lawnmower_waypoints(self, mode='full'):
-        """
-        Returns the robot's traversal path for the current grid. [Node list].
-
-        Parameters:
-        -----------
-        # mode: The type of traversal path that is desired. [string]
-            'lawn_full':
-                - lawnmower traversal using every single node of the grid
-                - starting node is the bottom left node of the grid
-
-            'lawn_border'
-                - lawnmower only the nodes in the top/bottom row of the grid
-                - starting node is the bottom left node of the grid
-        """
-        waypoints = []
-        node_list = self.nodes
-        rows = node_list.shape[0]
-        cols = node_list.shape[1]
-        if mode == 'lawn_full':
-            for i in range(cols):
-                for j in range(rows):
-                    if i % 2 == 0:
-                        node = node_list[j, i]
-                        waypoints.append(node)
-                    elif i % 2 == 1:
-                        row_index = rows - (j + 1)
-                        node = node_list[row_index, i]
-                        waypoints.append(node)
-        # 'borders' mode only traverses the nodes in the top and bottom rows of the grid
-        elif mode == 'lawn_border':
-            for i in range(cols):
-                if i % 2 == 0:
-                    node1 = node_list[0, i]
-                    node2 = node_list[rows - 1, i]
-                    waypoints.append(node1)
-                    waypoints.append(node2)
-                elif i % 2 == 1:
-                    node1 = node_list[rows - 1, i]
-                    node2 = node_list[0, i]
-                    waypoints.append(node1)
-                    waypoints.append(node2)
-
-        return waypoints
-
     def get_spiral_waypoints(self):
         """
         Returns the robot's spiral traversal path for the current grid using every
@@ -172,7 +127,6 @@ class Grid:
         for _ in range(rows * cols):  # for loop over all nodes
             node = node_list[row, col]
             waypoints.append(node)
-
             next_col = col + step_col[turn_state]
             next_row = row + step_row[turn_state]
             if 0 <= next_col < cols and 0 <= next_row < rows and not node_list[next_row, next_col] in waypoints:
@@ -185,4 +139,76 @@ class Grid:
                 col = next_col
                 row = next_row
         waypoints.reverse()
+        return waypoints
+
+    def get_lawnmower_waypoints(self):
+        """
+        Returns the robot's lawnmower traversal path for the current grid using every
+        single node of the grid. Starting node is the bottom left node of the list. Node list].
+        """
+        waypoints = []
+        node_list = self.nodes
+        rows = node_list.shape[0]
+        cols = node_list.shape[1]
+        for i in range(cols):
+            for j in range(rows):
+                if i % 2 == 0:
+                    node = node_list[j, i]
+                    waypoints.append(node)
+                elif i % 2 == 1:
+                    row_index = rows - (j + 1)
+                    node = node_list[row_index, i]
+                    waypoints.append(node)
+        return waypoints
+
+    def get_border_waypoints(self):
+        """
+        Returns the robot's lawnmower border traversal path for the current grid using every
+        only nodes in the top/bottom row of the grid. Starting node is the bottom left
+        node of the list. [Node list].
+        """
+        waypoints = []
+        node_list = self.nodes
+        rows = node_list.shape[0]
+        cols = node_list.shape[1]
+        for i in range(cols):
+            if i % 2 == 0:
+                node1 = node_list[0, i]
+                node2 = node_list[rows - 1, i]
+                waypoints.append(node1)
+                waypoints.append(node2)
+            elif i % 2 == 1:
+                node1 = node_list[rows - 1, i]
+                node2 = node_list[0, i]
+                waypoints.append(node1)
+                waypoints.append(node2)
+        return waypoints
+
+    def get_waypoints(self, mode='lawn_full'):
+        """
+        Returns the robot's traversal path for the current grid. [Node list].
+
+        Parameters:
+        -----------
+        # mode: The type of traversal path that is desired. [string]
+            'lawn_full':
+                - lawnmower traversal using every single node of the grid
+                - starting node is the bottom left node of the grid
+
+            'lawn_border'
+                - lawnmower only the nodes in the top/bottom row of the grid
+                - starting node is the bottom left node of the grid
+
+            'spiral'
+                -spiral traversal using every single node of the grid
+                -starting node varies based on the width/height of the grid
+        """
+        if mode == 'lawn_full':
+            waypoints = self.get_lawnmower_waypoints()
+        elif mode == 'lawn_border':
+            waypoints = self.get_border_waypoints()
+        elif mode == 'spiral':
+            waypoints = self.get_spiral_waypoints()
+        else:
+            raise ValueError('You did not enter a valid mode', mode)
         return waypoints

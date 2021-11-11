@@ -23,7 +23,8 @@ class Traversal(Enum):
     An enumeration of different robot traversal modes.
     """
     LAWNMOWER = 1
-    SPIRAL = 2
+    LAWNMOWER_B = 2
+    SPIRAL = 3
 
 
 class Robot:
@@ -44,7 +45,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, init_traversal=2, time_step=0.1):
+                 init_phase=1, init_traversal=1, time_step=0.1):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -65,7 +66,7 @@ class Robot:
             heading_kd: the derivative factor of the heading PID
             heading_noise: ?
             init_phase: the phase which the robot begins at
-            init_traversal: the traversal which the robot begins at
+            init_traversal: the traversal with which the robot begins
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
         """
