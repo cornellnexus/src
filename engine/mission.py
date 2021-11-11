@@ -6,9 +6,8 @@ import math
 
 
 class Mission:
-    def __init__(self, robot, base_station, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
-                 allowed_dist_error=0.5, allowed_heading_error=0.1,
-                 allowed_docking_pos_error=0.1):
+    def __init__(self, robot, base_station, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),                 allowed_dist_error=0.5, allowed_heading_error=0.1,
+                 allowed_docking_pos_error=0.1, time_limit=1000, roomba_radius=10):
         """
         Arguments:
             robot: the Robot object linked to this Mission
@@ -20,6 +19,8 @@ class Mission:
                 in place.
             allowed_docking_pos_error: the maximum distance in meters the robot can be from "ready to dock" position
                 before it can start docking.
+            time_limit: the maximum time the robot can execute roomba traversal mode
+            roomba_radius: the maximum radius from the base station that the robot in roomba traversal mode can move
         """
         self.robot = robot
         self.grid = grid
@@ -38,6 +39,8 @@ class Mission:
         x = get_vincenty_x((grid.lat_min, grid.long_min), base_station.position)
         y = get_vincenty_y((grid.lat_min, grid.long_min), base_station.position)
         self.base_station_loc = (x, y)
+        self.time_limit = time_limit
+        self.roomba_radius = roomba_radius
 
     def execute_mission(self):
         """
@@ -50,7 +53,9 @@ class Mission:
 
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
-                                                                       self.allowed_dist_error)
+                                                                       self.allowed_dist_error, self.base_station_loc,
+                                                                       self.robot.control_mode, self.time_limit,
+                                                                       self.roomba_radius)
 
             elif self.robot.phase == Phase.AVOID_OBSTACLE:
                 self.robot.execute_avoid_obstacle()
