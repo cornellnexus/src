@@ -71,8 +71,6 @@ if __name__ == "__main__":
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
     margin = 5
-    init_x = m.base_station_loc[0]
-    init_y = m.base_station_loc[1]
 
     if r2d2.control_mode == Control_Mode.LAWNMOWER:
         goals = waypoints_to_array(m.all_waypoints)
@@ -84,6 +82,8 @@ if __name__ == "__main__":
 
     elif r2d2.control_mode == Control_Mode.ROOMBA:
         range = m.roomba_radius + margin
+        init_x = m.base_station_loc[0]
+        init_y = m.base_station_loc[1]
         plt.xlim([init_x-range, init_x+range])
         plt.ylim([init_y-range, init_y+range])
 

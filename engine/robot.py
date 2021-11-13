@@ -68,7 +68,7 @@ class Robot:
                 is True
             control_mode: the traversal mode the robot begins with
             move_dist: the distance in meters that the robot moves per time dt
-            turn_angle: the angle in radians that the robot turns per time dt
+            turn_angle: the angle in radians that the robot turns per time dt regardless of time step
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -88,7 +88,7 @@ class Robot:
         self.heading_noise = heading_noise
         self.control_mode = Control_Mode(control_mode)
         self.move_dist = move_dist
-        self.turn_angle = turn_angle/time_step
+        self.turn_angle = turn_angle/time_step #dividing by time_step ignores the effect of time_step on absolute radians turned
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
