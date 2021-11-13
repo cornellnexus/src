@@ -86,6 +86,9 @@ if __name__ == "__main__":
         init_y = m.base_station_loc[1]
         plt.xlim([init_x-range, init_x+range])
         plt.ylim([init_y-range, init_y+range])
+        circle = plt.Circle((init_x, init_y), m.roomba_radius)
+        ax.add_patch(circle)
+
 
     circle_patch = plt.Circle((5, 5), 1, fc="green")
     wedge_patch = patch.Wedge(
