@@ -54,7 +54,7 @@ def get_plot_boundaries(nodes, delta):
 
 
 if __name__ == "__main__":
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, init_traversal = 1, control_mode=1)  # Start position should be base.
+    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, control_mode=4)  # Start position should be base.
     base_r2d2 = BaseStation((42.444250, -76.483682))
     m = Mission(r2d2, base_r2d2)
 

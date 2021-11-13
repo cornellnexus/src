@@ -163,7 +163,7 @@ class Grid:
 
     def get_border_waypoints(self):
         """
-        Returns the robot's lawnmower border traversal path for the current grid using every
+        Returns the robot's lawnmower border traversal path for the current grid using
         only nodes in the top/bottom row of the grid. Starting node is the bottom left
         node of the list. [Node list].
         """
@@ -196,12 +196,13 @@ class Grid:
                 - starting node is the bottom left node of the grid
 
             'lawn_border'
-                - lawnmower only the nodes in the top/bottom row of the grid
+                - lawnmower traversal using only the nodes in the top/bottom row of the grid
                 - starting node is the bottom left node of the grid
 
             'spiral'
                 -spiral traversal using every single node of the grid
                 -starting node varies based on the width/height of the grid
+                -ending node is the bottom left node of the grid
         """
         if mode == 'lawn_full':
             waypoints = self.get_lawnmower_waypoints()

@@ -17,21 +17,16 @@ class Phase(Enum):
     COMPLETE = 6
     FAULT = 7
 
-class Control_Mode(Enum):
+
+class ControlMode(Enum):
     """
     An enumeration of different control modes
     """
     LAWNMOWER = 1
-    ROOMBA = 2
-    MANUAL = 3
-
-class Traversal(Enum):
-    """
-    An enumeration of different robot traversal modes.
-    """
-    LAWNMOWER = 1
     LAWNMOWER_B = 2
     SPIRAL = 3
+    ROOMBA = 4
+    MANUAL = 5
 
 
 class Robot:
@@ -52,7 +47,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, init_traversal=1,  time_step=1, control_mode=1, move_dist=.5, turn_angle=3):
+                 init_phase=1, time_step=1, control_mode=1, move_dist=.5, turn_angle=3):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -73,7 +68,6 @@ class Robot:
             heading_kd: the derivative factor of the heading PID
             heading_noise: ?
             init_phase: the phase which the robot begins at
-            init_traversal: the traversal with which the robot begins
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
             control_mode: the traversal mode the robot begins with
@@ -84,7 +78,6 @@ class Robot:
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
         self.is_sim = is_sim
         self.phase = Phase(init_phase)
-        self.traversal = Traversal(init_traversal)
         self.epsilon = epsilon
         self.max_velocity = max_v
         self.radius = radius
@@ -97,7 +90,7 @@ class Robot:
         self.heading_ki = heading_ki
         self.heading_kd = heading_kd
         self.heading_noise = heading_noise
-        self.control_mode = Control_Mode(control_mode)
+        self.control_mode = ControlMode(control_mode)
         self.move_dist = move_dist
         self.turn_angle = turn_angle
 
@@ -225,13 +218,13 @@ class Robot:
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius):
-        if control_mode == Control_Mode.LAWNMOWER:
-            self.traverse_lawnmower(unvisited_waypoints, allowed_dist_error)
-        elif control_mode == Control_Mode.ROOMBA:
+        if control_mode == ControlMode.ROOMBA:
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
+        else:
+            self.traverse_standard(unvisited_waypoints, allowed_dist_error)
 
-    def traverse_lawnmower(self, unvisited_waypoints, allowed_dist_error):
-        """ Move the robot in a lawn_mover-like manner.
+    def traverse_standard(self, unvisited_waypoints, allowed_dist_error):
+        """ Move the robot by following the traversal path given by [unvisited_waypoints].
             Args:
                 unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
                 allowed_dist_error (Double): the maximum distance in meters that the robot can be from a node for the

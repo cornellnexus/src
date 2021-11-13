@@ -1,6 +1,6 @@
 from collections import deque
 from engine.grid import Grid
-from engine.robot import Phase, Traversal
+from engine.robot import Phase, ControlMode
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 import math
 
@@ -24,13 +24,7 @@ class Mission:
         """
         self.robot = robot
         self.grid = grid
-        if self.robot.traversal == Traversal.LAWNMOWER:
-            self.all_waypoints = self.grid.get_waypoints('lawn_full')
-        elif self.robot.traversal == Traversal.LAWNMOWER_B:
-            self.all_waypoints = self.grid.get_waypoints('lawn_border')
-        elif self.robot.traversal == Traversal.SPIRAL:
-            print('hello')
-            self.all_waypoints = self.grid.get_waypoints('spiral')
+        self.all_waypoints = self.get_waypoints()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
         self.allowed_heading_error = allowed_heading_error
@@ -41,6 +35,20 @@ class Mission:
         self.base_station_loc = (x, y)
         self.time_limit = time_limit
         self.roomba_radius = roomba_radius
+
+    def get_waypoints(self):
+        """
+        Returns the robot's traversal path based upon the robot's control mode. If robot is
+        in Roomba mode, returns empty list.
+        """
+        if self.robot.control_mode == ControlMode.LAWNMOWER:
+            return self.grid.get_waypoints('lawn_full')
+        elif self.robot.control_mode == ControlMode.LAWNMOWER_B:
+            return self.grid.get_waypoints('lawn_border')
+        elif self.robot.control_mode == ControlMode.SPIRAL:
+            return self.grid.get_waypoints('spiral')
+        else:
+            return []
 
     def execute_mission(self):
         """
