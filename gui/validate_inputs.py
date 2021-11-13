@@ -1,3 +1,6 @@
+import os
+import sys
+
 import serial
 import statistics
 import time
@@ -15,6 +18,7 @@ ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
 
 def update_gui():
     packets = []
+    robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r+")  # open csv file of robot data
     while True:
         while len(packets) < 5:
             packet = ser.readline()
@@ -22,6 +26,13 @@ def update_gui():
                 packets.append(packet)
         valid_packet = validate_packet(packets)
 
+        robot_data_file.write(valid_packet + '\n')
+
+def get_path(folder):
+
+    cwd = os.getcwd()
+    sys.path.append(cwd + "/" + folder)
+    return sys.path
 
 def get_values(data):
     '''
