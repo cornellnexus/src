@@ -240,7 +240,7 @@ def run_gui():
 
     current_row = 0
     while True:  # Event Loop
-        event, values = window.read()
+        event, values = window.read(timeout=10)
 
         try:
             last_phase_line = robot_phase_file.readlines()[-1].strip()

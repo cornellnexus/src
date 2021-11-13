@@ -173,7 +173,7 @@ class Robot:
             with open(cd + '/datastore.csv', 'a') as fd:
                 fd.write(
                     str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
-            time.sleep(0.01)
+            # time.sleep(0.01)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
