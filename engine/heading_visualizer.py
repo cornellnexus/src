@@ -4,6 +4,7 @@ from matplotlib import patches as patch
 import math
 import ast
 from engine.sensor_module import SensorModule
+from engine.ekf import ExtendedKalmanFilter
 from datetime import datetime
 
 if __name__ == "__main__":
@@ -26,6 +27,8 @@ if __name__ == "__main__":
         (0, 0), 3, 100, 80, animated=True, fill=False, width=2, ec="g", hatch="xx")
 
     # Data reading setup
+    position_ekf = ExtendedKalmanFilter()
+
     if IS_LIVE_DATA:
         sensor_module = SensorModule(write=True)
         frames = 10
@@ -46,11 +49,15 @@ if __name__ == "__main__":
     def animate(i):
         if IS_LIVE_DATA:
             sensor_module.update_imu_data()
+            sensor_module.update_gps_data()
             middle_heading = math.degrees(math.atan2(sensor_module.imu_dict["mag"][1], sensor_module.imu_dict["mag"][0]))
             print(middle_heading)
+
+
         else:
             middle_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
 
+        circle_patch.center = (xcoord, ycoord)
         wedge_patch.update({"center": [0, 0]})
         wedge_patch.theta1 = middle_heading - 10
         wedge_patch.theta2 = middle_heading + 10

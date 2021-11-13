@@ -5,6 +5,39 @@ from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 
 
+class PositionEKF:
+    def __init__(self, init_mu, init_sigma):
+        self.mu = init_mu
+        self.sigma = init_sigma
+        self.predict_func_jacobian = np.array([[1, 0], [0, 1]])
+        self.measurement_func_jacobian = np.array([[1, 0], [0, 1]])
+        self.process_noise = np.array([[10, 0], [0, 10]])
+        self.measurement_noise([[5, 0], [0, 5]])
+
+    @staticmethod
+    def prediction_func(self, pose, control):
+        return pose
+
+    @staticmethod
+    def measurement_func(self, pose):
+        return pose
+
+    def localize(self, control, measurement):
+        mu_bar = self.prediction_func((self.mu, control))
+        sigma_bar = self.predict_func_jacobian * self.sigma * \
+                    np.transpose(self.predict_func_jacobian + self.process_noise)
+
+        kalman_gain = \
+            (sigma_bar
+             * np.transpose(self.measurement_func_jacobian)
+             * inv(self.measurement_func_jacobian * sigma_bar *
+                   np.transpose(self.measurement_func_jacobian) + self.Q))
+
+        self.mu = mu_bar + (kalman_gain @ (measurement - self.measurement_func(mu_bar)))
+        kh = kalman_gain * self.measurement_func_jacobian
+        self.sigma = (np.eye(np.size(kh, 0)) - kh) @ sigma_bar
+
+
 class ExtendedKalmanFilter:
     def __init__(self, initial_mu, initial_sigma, g, G, h, H, R, Q):
         self.mu = initial_mu

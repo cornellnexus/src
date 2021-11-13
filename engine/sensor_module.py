@@ -32,21 +32,20 @@ class SensorModule:
                 self.imu_dict = ast.literal_eval(line.rstrip("\n"))
 
         if self.write_data:
-            imu_file = open(self.created + ".txt", 'w+')
+            imu_file = open("IMU_" + self.created + ".txt", 'w+')
             imu_file.write(json.dumps(self.imu_dict) + "\n")
             imu_file.close()
 
-    def updata_gps_data(self):
-      """
-        Retrieves GPS data from the Raspberry Pi.
-        Writes GPS data to a file if self.write is True.
-      """
-      if self.port.in_waiting > 0:
-        line = self.port.readline().decode("utf-8")
-        self.gps_dict = ast.literal_eval(line.rstrip("\n"))
-      
-      if self.write_data:
-        gps_file = open(self.created + "_gps" + ".txt", 'w+')
-        gps_file.write(json.dumps(self.gps_dict) + "\n")
-        gps_file.close()
+    def update_gps_data(self):
+        """
+          Retrieves GPS data from the Raspberry Pi.
+          Writes GPS data to a file if self.write is True.
+        """
+        if self.port.in_waiting > 0:
+            line = self.port.readline().decode("utf-8")
+            self.gps_dict = ast.literal_eval(line.rstrip("\n"))
 
+        if self.write_data:
+            gps_file = open("GPS_" + self.created + ".txt", 'w+')
+            gps_file.write(json.dumps(self.gps_dict) + "\n")
+            gps_file.close()
