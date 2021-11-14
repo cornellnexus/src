@@ -141,7 +141,7 @@ class Grid:
         waypoints.reverse()
         return waypoints
 
-    def get_lawnmower_waypoints(self):
+    def get_all_lawnmower_waypoints(self):
         """
         Returns the robot's lawnmower traversal path for the current grid using every
         single node of the grid. Starting node is the bottom left node of the list. Node list].
@@ -161,7 +161,7 @@ class Grid:
                     waypoints.append(node)
         return waypoints
 
-    def get_border_waypoints(self):
+    def get_border_lawnmower_waypoints(self):
         """
         Returns the robot's lawnmower border traversal path for the current grid using
         only nodes in the top/bottom row of the grid. Starting node is the bottom left
@@ -184,32 +184,35 @@ class Grid:
                 waypoints.append(node2)
         return waypoints
 
-    def get_waypoints(self, mode='lawn_full'):
+    def get_waypoints(self, mode):
         """
         Returns the robot's traversal path for the current grid. [Node list].
+        Returns empty list if [mode] is not one of [ControlMode.LAWNMOWER],
+        [ControlMODE.LAWNMOWER_B], or [ControlMODE.SPIRAL].
 
         Parameters:
         -----------
-        # mode: The type of traversal path that is desired. [string]
-            'lawn_full':
+        # mode: The type of traversal path that is desired. [ControlMode].
+            LAWNMOWER:
                 - lawnmower traversal using every single node of the grid
                 - starting node is the bottom left node of the grid
 
-            'lawn_border'
+            LAWNMOWER_B:
                 - lawnmower traversal using only the nodes in the top/bottom row of the grid
                 - starting node is the bottom left node of the grid
 
-            'spiral'
+            SPIRAL:
                 -spiral traversal using every single node of the grid
                 -starting node varies based on the width/height of the grid
                 -ending node is the bottom left node of the grid
         """
-        if mode == 'lawn_full':
-            waypoints = self.get_lawnmower_waypoints()
-        elif mode == 'lawn_border':
-            waypoints = self.get_border_waypoints()
-        elif mode == 'spiral':
+        from engine.mission import ControlMode  # import placed here to avoid circular import
+        if mode == ControlMode.LAWNMOWER:
+            waypoints = self.get_all_lawnmower_waypoints()
+        elif mode == ControlMode.LAWNMOWER_B:
+            waypoints = self.get_border_lawnmower_waypoints()
+        elif mode == ControlMode.SPIRAL:
             waypoints = self.get_spiral_waypoints()
         else:
-            raise ValueError('You did not enter a valid mode', mode)
+            return []
         return waypoints
