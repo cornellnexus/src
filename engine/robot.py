@@ -43,7 +43,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=1, control_mode=1, move_dist=.5, turn_angle=3):
+                 init_phase=1, time_step=0.1, control_mode=1, move_dist=.5, turn_angle=3):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -68,7 +68,7 @@ class Robot:
                 is True
             control_mode: the traversal mode the robot begins with
             move_dist: the distance in meters that the robot moves per time dt
-            turn_angle: the angle in radians that the robot turns per time dt
+            turn_angle: the angle in radians that the robot turns per time dt regardless of time step
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -88,7 +88,7 @@ class Robot:
         self.heading_noise = heading_noise
         self.control_mode = Control_Mode(control_mode)
         self.move_dist = move_dist
-        self.turn_angle = turn_angle
+        self.turn_angle = turn_angle/time_step #dividing by time_step ignores the effect of time_step on absolute radians turned
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
