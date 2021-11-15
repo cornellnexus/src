@@ -207,9 +207,9 @@ class Grid:
                 -ending node is the bottom left node of the grid
         """
         from engine.mission import ControlMode  # import placed here to avoid circular import
-        if mode == ControlMode.LAWNMOWER:
+        if mode == ControlMode.LAWNMOWER_FULL:
             waypoints = self.get_all_lawnmower_waypoints()
-        elif mode == ControlMode.LAWNMOWER_B:
+        elif mode == ControlMode.LAWNMOWER_BORDERS:
             waypoints = self.get_border_lawnmower_waypoints()
         elif mode == ControlMode.SPIRAL:
             waypoints = self.get_spiral_waypoints()

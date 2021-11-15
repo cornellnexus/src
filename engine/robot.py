@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, meters_to_gps
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from enum import Enum
 
@@ -36,7 +36,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3):
+                 init_phase=1, time_step=.1, move_dist=.5, turn_angle=3):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -78,7 +78,8 @@ class Robot:
         self.heading_kd = heading_kd
         self.heading_noise = heading_noise
         self.move_dist = move_dist
-        self.turn_angle = turn_angle/time_step #dividing by time_step ignores the effect of time_step on absolute radians turned
+        self.turn_angle = turn_angle/time_step  # dividing by time_step ignores the effect of time_step on absolute
+        # radians turned
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -204,8 +205,7 @@ class Robot:
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius):
-        from engine.mission import ControlMode  # import statement placed here to avoid circular import
-        if control_mode == ControlMode.ROOMBA:
+        if control_mode == 4:  # Roomba mode
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
         else:
             self.traverse_standard(unvisited_waypoints, allowed_dist_error)

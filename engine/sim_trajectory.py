@@ -1,20 +1,15 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import csv
 
 from matplotlib import animation as animation
 from matplotlib import patches as patch
 
-from engine.grid import Grid
-from engine.kinematics import limit_cmds, feedback_lin
-from engine.pid_controller import PID
 from engine.robot import Robot
+from engine.robot import Phase
 from engine.base_station import BaseStation
 from engine.mission import Mission
 from engine.mission import ControlMode
-
-'''PLOTTING'''
 
 
 def waypoints_to_array(waypoints):
@@ -55,9 +50,9 @@ def get_plot_boundaries(nodes, delta):
 
 
 if __name__ == "__main__":
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2)  # Start position should be base.
+    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=Phase.TRAVERSE)
     base_r2d2 = BaseStation((42.444250, -76.483682))
-    m = Mission(robot=r2d2, base_station=base_r2d2, init_control_mode=1)
+    m = Mission(robot=r2d2, base_station=base_r2d2, init_control_mode=ControlMode.LAWNMOWER_BORDERS)
 
     '''------------------- MISSION EXECUTION -------------------'''
     m.execute_mission()
@@ -88,7 +83,6 @@ if __name__ == "__main__":
         xbounds, ybounds = get_plot_boundaries(m.grid.nodes, margin)
         plt.xlim(xbounds)
         plt.ylim(ybounds)
-
 
     circle_patch = plt.Circle((5, 5), 1, fc="green")
     wedge_patch = patch.Wedge(

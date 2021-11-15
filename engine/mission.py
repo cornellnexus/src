@@ -3,15 +3,14 @@ from engine.robot import Phase
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum
 from engine.grid import Grid
-import math
 
 
 class ControlMode(Enum):
     """
     An enumeration of different control modes
     """
-    LAWNMOWER = 1
-    LAWNMOWER_B = 2
+    LAWNMOWER_FULL = 1
+    LAWNMOWER_BORDERS = 2
     SPIRAL = 3
     ROOMBA = 4
     MANUAL = 5
