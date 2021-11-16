@@ -72,15 +72,15 @@ class LocalizationEKF:
         """
         return np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    def predict_step(self, mu_prev, sigma_prev, control):
+    def predict_step(self, control):
         """
         Returns the distribution of the robot's state after the prediction step of the EKF, based
         on the robot's controls.
         [mu_bar, sigma_bar]
         """
-        jac_G = self.get_g_jac(mu_prev, control)
-        mu_bar = self.get_predicted_state((mu_prev, control))
-        sigma_bar = jac_G * sigma_prev * np.transpose(jac_G) + self.R
+        jac_G = self.get_g_jac(self.mu, control)
+        mu_bar = self.get_predicted_state((self.mu, control))
+        sigma_bar = jac_G * self.sigma * np.transpose(jac_G) + self.R
 
         return mu_bar, sigma_bar
 
