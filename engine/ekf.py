@@ -1,5 +1,7 @@
 import numpy as np
 from numpy.linalg import inv
+from engine.kinematics import integrate_odom
+import math
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
@@ -8,38 +10,104 @@ import matplotlib.transforms as transforms
 class LocalizationEKF:
     """
     An implementation of the EKF localization for the robot.
+
+    INSTANCE ATTRIBUTES:
+        # mu: the mean of the distribution [float]
+        # sigma: the standard deviation of the distribution [float]
+        # R: process noise covariance matrix [n-by-n], where n=3 dimensions of state
+        # Q: measurement noise covariance matrix [k-by-k], where k=3 dimensions of measurements
+
     """
     def __init__(self, init_mu, init_sigma):
         self.mu = init_mu
         self.sigma = init_sigma
-        self.predict_func_jacobian = np.array([[1, 0], [0, 1]])
-        self.measurement_func_jacobian = np.array([[1, 0], [0, 1]])
-        self.process_noise = np.array([[10, 0], [0, 10]])
-        self.measurement_noise([[5, 0], [0, 5]])
+        self.R = np.array([[10, 0], [0, 10]])  # process noise matrix
+        self.Q = ([[5, 0], [0, 5]])  # measurement noise matrix
 
     @staticmethod
-    def prediction_func(self, pose, control):
-        return pose
+    def get_predicted_state(self, pose, control):
+        """
+        g function
+        Returns the predicted robot pose in the inertial frame based on integrating odometry measurements.
+        [3-by-1 Numpy array] where n = 3 dimensions of state
+        """
+        return integrate_odom(pose, control[0], control[1])
 
     @staticmethod
-    def measurement_func(self, pose):
-        return pose
+    def get_g_jac(self, pose, control):
+        """
+        G Jacobian
+        Parameters:
+        ----------
+        # pose: robot's state
+        # control: 2-by-1 vector of [d, phi]
+        """
+        theta_prev = pose[2]
+        d = control[0]
+        phi = control[1]
+        if phi == 0:
+            G = np.array([[1, 0, - d * math.sin(theta_prev)],
+                          [0, 1, d*math.cos(theta_prev)],
+                          [0, 0, 1]])
+        else:
+            theta_t = [0,0,1];
+            x_t = [1, 0, d / phi * (math.cos(theta_prev + phi) - math.cos(theta_prev))];
+            y_t = [0, 1, - d / phi * (-math.sin(theta_prev + phi) + math.sin(theta_prev))];
+            G = np.array([x_t, y_t, theta_t])
+        return G
 
-    def localize(self, control, measurement):
-        # TODO: currently, both predict and update steps are tied into one function. Should be separated
-        mu_bar = self.prediction_func((self.mu, control))
-        sigma_bar = self.predict_func_jacobian * self.sigma * \
-                    np.transpose(self.predict_func_jacobian + self.process_noise)
+    @staticmethod
+    def get_expected_measurement(self, pose):
+        """
+        h function
+        Returns the expected measurement of the robot, given the robot's current state. [3-by-1 Numpy array], where
+        k = 3 dimensions of measurements
+        """
+        expected_measurement = pose
+        return expected_measurement
 
+    def get_h_jac(self, pose):
+        """
+        H Jacobian
+        """
+        return np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+
+    def predict_step(self, mu_prev, sigma_prev, control):
+        """
+        Returns the distribution of the robot's state after the prediction step of the EKF, based
+        on the robot's controls.
+        [mu_bar, sigma_bar]
+        """
+        jac_G = self.get_g_jac(mu_prev, control)
+        mu_bar = self.get_predicted_state((mu_prev, control))
+        sigma_bar = jac_G * sigma_prev * np.transpose(jac_G) + self.R
+
+        return mu_bar, sigma_bar
+
+    def update_step(self, mu_bar, sigma_bar, measurement):
+        jac_H = self.get_h_jac(mu_bar)
         kalman_gain = \
-            (sigma_bar
-             * np.transpose(self.measurement_func_jacobian)
-             * inv(self.measurement_func_jacobian * sigma_bar *
-                   np.transpose(self.measurement_func_jacobian) + self.Q))
+            (sigma_bar * np.transpose(jac_H) * inv(jac_H * sigma_bar * np.transpose(jac_H) + self.Q))
 
-        self.mu = mu_bar + (kalman_gain @ (measurement - self.measurement_func(mu_bar)))
-        kh = kalman_gain * self.measurement_func_jacobian
+        self.mu = mu_bar + (kalman_gain @ (measurement - self.get_expected_measurement(mu_bar)))
+        kh = kalman_gain * jac_H
         self.sigma = (np.eye(np.size(kh, 0)) - kh) @ sigma_bar
+
+    # def localize(self, control, measurement):
+    #     # TODO: currently, both predict and update steps are tied into one function. Should be separated
+    #     mu_bar = self.prediction_func((self.mu, control))
+    #     sigma_bar = self.predict_func_jacobian * self.sigma * \
+    #                 np.transpose(self.predict_func_jacobian + self.process_noise)
+    #
+    #     kalman_gain = \
+    #         (sigma_bar
+    #          * np.transpose(self.measurement_func_jacobian)
+    #          * inv(self.measurement_func_jacobian * sigma_bar *
+    #                np.transpose(self.measurement_func_jacobian) + self.Q))
+    #
+    #     self.mu = mu_bar + (kalman_gain @ (measurement - self.measurement_func(mu_bar)))
+    #     kh = kalman_gain * self.measurement_func_jacobian
+    #     self.sigma = (np.eye(np.size(kh, 0)) - kh) @ sigma_bar
 
 #
 # class ExtendedKalmanFilter:
