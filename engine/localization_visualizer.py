@@ -22,18 +22,19 @@ class DataType(IntEnum):
 Command-line arguments:
 live - 0 if using data from file, 1 if using data from active sensor
 data - 0 if heading visualization desired (IMU), 1 if position visualization desired (GPS), 
-       2 if both heading and location visualization ddesired (IMU and GPS) 
+       2 if both heading and location visualization ddesired (IMU and GPS)
+ekf -  0 if raw measurements should be visualized, 1 if EKF should be used
 """
 if __name__ == "__main__":
-    # Constants
+    # Settings, can be changed as desired
     zone = ENGINEERING_QUAD  # Used for GPS visualization
     zone_photo = "geo_images/engineering_quad.png"
     imu_data_file = "data/imu_360_sample1.csv"
     gps_data_file = "data/GPS_13-11-2021_14:18:15.txt"
 
     # Read command-line arguments
-    if len(sys.argv) != 3 or "live=" not in sys.argv[1] or "data=" not in sys.argv[2] \
-            or len(sys.argv[1]) != 6 or len(sys.argv[2]) != 6:
+    if len(sys.argv) != 4 or "live=" not in sys.argv[1] or "data=" not in sys.argv[2] or "ekf=" not in sys.argv[3]\
+            or len(sys.argv[1]) != 6 or len(sys.argv[2]) != 6 or len(sys.argv[3]) != 5:
         sys.exit("Two inputs required, and must be of this format: live=<0 (Live data) or 1 (Data from file)> and "
                  "data=<0 (IMU) or 1 (GPS) or 2 (IMU and GPS)>")
 
@@ -46,6 +47,11 @@ if __name__ == "__main__":
     if data_type != "1" and data_type != "2" and data_type != "3":
         sys.exit("The value of the data argument must be 0, 1, or 2.")
     data_type = int(data_type)
+
+    use_ekf = sys.argv[3][sys.argv[3].index("=")+1:]
+    if use_ekf != "0" and use_ekf != "1":
+        sys.exit("The value of the ekf argument must be 0 or 1.")
+    use_ekf = int(use_ekf)
 
     # Plot setup
     fig = plt.figure()
@@ -97,6 +103,9 @@ if __name__ == "__main__":
             frames = len(gps_readings)
         else:
             frames = min(len(imu_readings) - 1, len(gps_readings) - 1)
+
+    # EKF setup
+
 
     def init():
         circle_patch.center = (0, 0)
