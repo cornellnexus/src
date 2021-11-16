@@ -9,7 +9,7 @@
 #define IN1 4
 #define IN2 5
 #define INT_PIN 2
-#define ENA 7
+#define ENA 10
 #define PPR 500
 #define GR 38.3 // Gear ratio
 
@@ -28,7 +28,9 @@ const double angDis = PI / (PPR * GR);
 int run_time = 20;
 unsigned long time_elapsed = 0;
 
-int motor_speed;
+int motor_speed = 200;
+
+PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 
 //MOTOR DRIVER: Definitions Arduino pins connected to input H Bridge
 
@@ -52,17 +54,18 @@ void loop() {
   time_elapsed = millis();
   
   // Stop updating everything if we run for more than 20sec
-  if (time_elapsed >= 20000)
-    while(1);  
+//  if (time_elapsed >= 20000)
+//    while(1);  
   
-  Serial.println(pulse_counter * angDis);
+//  Serial.println(pulse_counter * angDis);
 
+  motor_forward();
   // Put control loop here
 }
 
 void motor_forward( void ) {
   digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
+  digitalWrite(IN2, HIGH);
 
   // Send PWM output from CTRL loop
   analogWrite(ENA, motor_speed);
