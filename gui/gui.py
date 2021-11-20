@@ -27,26 +27,58 @@ import sys
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
 
+auto = False
+last_msg = ''
+
 def get_control_mode(window):
     """
     Returns the last control mode given in the control_mode.csv file
     """
+    global auto
+    global last_msg
     path = get_path('csv')
-    file = open(path[len(path)-1]+"/control_mode_test.csv", "r")
+    file = open(path[len(path) - 1] + "/control_mode_test.csv", "r")
     try:
         last_line = file.readlines()[-1]
-        control_mode = last_line[last_line.index(".")+1:len(last_line)]
-        window['-CONTROL_MODE_BUTTON-'].update(control_mode)
+        control_mode = last_line[last_line.index(".") + 1:len(last_line)]
+        if last_msg != control_mode:
+            if control_mode == 'Manual':
+                auto = False
+            else:
+                auto = True
+        last_msg = control_mode
     except:
         pass
-
     file.close()
 
-def get_path(folder):
+def manual_mode_actions(window, event):
+    if auto:
+        window['-CONTROL_MODE_BUTTON-'].update('Manual')  # shows what the button will do, not what it does
+        window['-LEFT_KEY-'].update(visible=False)
+        window['-UP_KEY-'].update(visible=False)
+        window['-RIGHT_KEY-'].update(visible=False)
+        window['-DOWN_KEY-'].update(visible=False)
+    else:
+        window['-LEFT_KEY-'].update(visible=True)
+        window['-UP_KEY-'].update(visible=True)
+        window['-RIGHT_KEY-'].update(visible=True)
+        window['-DOWN_KEY-'].update(visible=True)
+        if event == 'a' or event == 'Left':
+            print('left')
+        elif event == 'w' or event == 'Up':
+            print('forward')
+        elif event == 'd' or event == 'Right':
+            print('right')
+        elif event == 's' or event == 'Down':
+            print('backward')
+        window['-CONTROL_MODE_BUTTON-'].update('Autonomous')
 
+
+def get_path(folder):
     cwd = os.getcwd()
     sys.path.append(cwd + "/" + folder)
     return sys.path
+
 
 def setup(bounds):
     """
@@ -89,6 +121,7 @@ def make_robot_symbol():
         (5, 1), 1, 30, 50, animated=True, fill=False, width=.9, ec='r', hatch='xx')
     return circle_patch, wedge_patch
 
+
 def init():
     """
     Return Matplotlib Circle [circle_patch] and Matplotlib patches.Wedge [wedge_patch].
@@ -102,6 +135,7 @@ def init():
     ax.add_patch(wedge_patch)
     print('init')
     return circle_patch, wedge_patch
+
 
 def animate(i):
     """
@@ -118,19 +152,19 @@ def animate(i):
     """
 
     try:
-            last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
-            x, y, alpha = last_line.strip().split(',')
-            x = float(x)
-            y = float(y)
-            alpha = float(alpha)
-            degrees = math.degrees(alpha)
-            circle_patch.center = (x, y)
-            wedge_patch.update({'center': [x, y]})
-            wedge_patch.theta1 = degrees - 10
-            wedge_patch.theta2 = degrees + 10 #10 is a temporary constant we will use
+        last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
+        x, y, alpha = last_line.strip().split(',')
+        x = float(x)
+        y = float(y)
+        alpha = float(alpha)
+        degrees = math.degrees(alpha)
+        circle_patch.center = (x, y)
+        wedge_patch.update({'center': [x, y]})
+        wedge_patch.theta1 = degrees - 10
+        wedge_patch.theta2 = degrees + 10  # 10 is a temporary constant we will use
     except:
-            # no new location data/waiting for new data
-            pass
+        # no new location data/waiting for new data
+        pass
 
     # try:
     #         last_state_line = robot_state_file.readlines()[-1]
@@ -164,6 +198,12 @@ def draw_figure(canvas, figure):
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
 
+
+def place(elem, size=(None, None)):
+    # https://stackoverflow.com/questions/62238574/update-not-changing-visibility-in-pysimplegui
+    return sg.Column([[elem]], size=size, pad=(0, 0), element_justification='center')
+
+
 def setup_gui():
     """
     Return [(window, data)], a 2-tuple of a PySimpleGUI window object, containing the GUI window information,
@@ -171,32 +211,42 @@ def setup_gui():
 
     Initialize and setup the GUI window.
     """
-
+    global auto
     data = {
-        "current_output" : "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>.",
-        "current_data" : "Robot Phase: ____\nPounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\nTotal Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\nEstimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
+        "current_output": "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>.",
+        "current_data": "Robot Phase: ____\nPounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\nTotal Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\nEstimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
     }
     image_data = get_images();
-    left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
+    left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])],
+                [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
     right_col = [
-                [sg.Image(key='-LOGO-', data=image_data[3])], 
-                [sg.InputText(size=(30,1), key="-COMMANDLINE-")], 
-                [sg.Button('Submit', visible=False, bind_return_key=True)],
-                [sg.Multiline(data["current_output"], key = "-OUTPUT-", size=(40,8))],
-                [sg.Text("Current Coordinates: ______")],
-                [sg.Text("Current Phase: ______", key = "-PHASE-")],
-                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase')],
-                [sg.Multiline(data["current_data"], key = "-DATA-", size=(40,8))]
-            ]
-    
+        [sg.Image(key='-LOGO-', data=image_data[3])],
+        [sg.InputText(size=(30, 1), key="-COMMANDLINE-")],
+        [sg.Button('Submit', visible=False, bind_return_key=True)],
+        [sg.Multiline(data["current_output"], key="-OUTPUT-", size=(40, 8))],
+        [sg.Text("Current Coordinates: ______")],
+        [sg.Text("Current Phase: ______", key="-PHASE-")],
+        [sg.Button('Autonomous', key="-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'),
+         sg.Button('Traversal Phase')],
+        [place(sg.Button('Left', visible=False, key="-LEFT_KEY-")),
+         place(sg.Button('Up', visible=False, key="-UP_KEY-")),
+         place(sg.Button('Right', visible=False, key="-RIGHT_KEY-")),
+         place(sg.Button('Down', visible=False, key="-DOWN_KEY-"))],
+        [sg.Multiline(data["current_data"], key="-DATA-", size=(40, 8))]
+    ]
+
     layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(), \
-    sg.Column(right_col, element_justification='c')]]
+               sg.Column(right_col, element_justification='c')]]
 
     # create the form and show it without the plot
     window = sg.Window('Cornell Nexus', layout, finalize=True, \
-    element_justification='center', font='Helvetica 18', location=(0,0), \
-    size=(1200,700), resizable=True)
-    
+                       element_justification='center', font='Helvetica 18', location=(0, 0), \
+                       size=(1200, 700), resizable=True, return_keyboard_events = True)
+
+    window.bind('<Up>', 'Up')
+    window.bind('<Left>', 'Left')
+    window.bind('<Down>', 'Down')
+    window.bind('<Right>', 'Right')
     fig = plt.gcf()
     # add the plot to the window
     fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
@@ -220,12 +270,12 @@ def update_input(str, window, current_output):
     """
 
     if str == "print_coords":
-        #update the output
+        # update the output
         new_output = "Current Coordinates: (0,1)" + "\n" + current_output
     else:
         new_output = "<" + str + "> is not a valid command. Please try again. " \
-        + "\n" + current_output
-    window['-OUTPUT-'].update(new_output) 
+                     + "\n" + current_output
+    window['-OUTPUT-'].update(new_output)
     return new_output
 
 
@@ -235,7 +285,6 @@ def run_gui():
 
     Contains main control loop, which constantly checks for user interaction with the window and adjusts accordingly.
     """
-
     window, data = setup_gui()
 
     current_row = 0
@@ -245,7 +294,7 @@ def run_gui():
         try:
             last_phase_line = robot_phase_file.readlines()[-1].strip()
             phase_loc = last_phase_line.find(".")
-            phase = last_phase_line[phase_loc+1:]
+            phase = last_phase_line[phase_loc + 1:]
             window["-PHASE-"].update("Current Phase: " + phase)
         except:
             pass
@@ -254,17 +303,23 @@ def run_gui():
             break
         if event == 'Show':
             # Update the "output" text element to be the value of "commandline" 
-            #element
+            # element
             window['-OUTPUT-'].update(values['-COMMANDLINE-'])
             break
         if event == 'Submit':
-            print('Command entered: %s'% window['-COMMANDLINE-'].get())
+            print('Command entered: %s' % window['-COMMANDLINE-'].get())
             data["current_output"] = update_input(window['-COMMANDLINE-'].get(), \
-            window, data["current_output"])
+                                                  window, data["current_output"])
             # Empty Command Line for next input
             window['-COMMANDLINE-'].update("")
-
+        if event == '-CONTROL_MODE_BUTTON-':
+            global auto
+            auto = not auto
         get_control_mode(window)
+        manual_mode_actions(window, event)
+#        print(event)
+
+
     window.close()
 
 
@@ -283,12 +338,11 @@ General Flow of GUI program:
 
 close_gui = run_popup()
 if not close_gui:
-    input_data = get_input_data() #Runs the gui popup asking for latitude and longitude bounds
+    input_data = get_input_data()  # Runs the gui popup asking for latitude and longitude bounds
     bounds = input_data["long_min"], input_data["long_max"], input_data["lat_min"], input_data["lat_max"]
 
-    #Run the gui if the user doesn't close out of the window
+    # Run the gui if the user doesn't close out of the window
     if bounds != None:
-
         fig, ax = setup(bounds)  # Set up matplotlib map figure
         circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
         # Begins the constant animation/updates of robot location and heading
@@ -299,11 +353,11 @@ if not close_gui:
                                        frames=360,
                                        interval=20,
                                        blit=True)
-        run_gui() #Start up the main GUI window
+        run_gui()  # Start up the main GUI window
         print("closed csv")
         robot_loc_file.close()
         robot_phase_file.close()
 
-os.system("pkill -f engine.sim_trajectory") #once gui.gui.py is closed, also close engine.sim_trajectory.py
+os.system("pkill -f engine.sim_trajectory")  # once gui.gui.py is closed, also close engine.sim_trajectory.py
 
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################
