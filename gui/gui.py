@@ -12,6 +12,7 @@ Thus, we will will break up the file into different sections:
 
 from gui.gui_popup import *
 from gui.images import get_images
+from gui.robot_data import RobotData
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -172,21 +173,18 @@ def setup_gui():
     Initialize and setup the GUI window.
     """
 
-    data = {
-        "current_output" : "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>.",
-        "current_data" : "Robot Phase: ____\nPounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\nTotal Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\nEstimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
-    }
+
     image_data = get_images();
     left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
     right_col = [
                 [sg.Image(key='-LOGO-', data=image_data[3])], 
-                [sg.InputText(size=(30,1), key="-COMMANDLINE-")], 
+                [sg.InputText(size=(30,1), key="-COMMANDLINE-", font=('Courier New', 20))],
                 [sg.Button('Submit', visible=False, bind_return_key=True)],
-                [sg.Multiline(data["current_output"], key = "-OUTPUT-", size=(40,8))],
+                [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8), disabled=True, font=('Courier New', 20))],
                 [sg.Text("Current Coordinates: ______")],
                 [sg.Text("Current Phase: ______", key = "-PHASE-")],
                 [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase')],
-                [sg.Multiline(data["current_data"], key = "-DATA-", size=(40,8))]
+                [sg.Multiline(str(robot_data), key = "-DATA-", size=(40,8), disabled=True, font=('Courier New', 20))]
             ]
     
     layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(), \
@@ -200,10 +198,10 @@ def setup_gui():
     fig = plt.gcf()
     # add the plot to the window
     fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
-    return (window, data)
+    return window
 
 
-def update_input(str, window, current_output):
+def update_input(str, window):
     """
     Return the String [new_output]
 
@@ -228,6 +226,22 @@ def update_input(str, window, current_output):
     window['-OUTPUT-'].update(new_output) 
     return new_output
 
+def update_robot_data(window):
+    """
+
+    Args:
+        window: PySimpleGUI main window
+
+    Updates the data multiline textbook to display current robot telemetry data
+
+    """
+    try:
+        packet = robot_data_file.readlines()[-1]
+        robot_data.update_data(packet)
+        window['-DATA-'].update(str(robot_data))
+    except:
+        pass
+
 
 def run_gui():
     """
@@ -236,7 +250,7 @@ def run_gui():
     Contains main control loop, which constantly checks for user interaction with the window and adjusts accordingly.
     """
 
-    window, data = setup_gui()
+    window = setup_gui()
 
     current_row = 0
     while True:  # Event Loop
@@ -259,12 +273,13 @@ def run_gui():
             break
         if event == 'Submit':
             print('Command entered: %s'% window['-COMMANDLINE-'].get())
-            data["current_output"] = update_input(window['-COMMANDLINE-'].get(), \
-            window, data["current_output"])
+            global current_output
+            current_output = update_input(window['-COMMANDLINE-'].get(), window)
             # Empty Command Line for next input
             window['-COMMANDLINE-'].update("")
 
         get_control_mode(window)
+        update_robot_data(window)
     window.close()
 
 
@@ -294,6 +309,11 @@ if not close_gui:
         # Begins the constant animation/updates of robot location and heading
         robot_loc_file = open((get_path('csv')[-1] + '/datastore.csv'), "r")  # open csv file of robot location
         robot_phase_file = open((get_path('csv')[-1] + '/phases.csv'), "r")
+        robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
+
+        current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
+        robot_data = RobotData("phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000")
+
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,
                                        frames=360,
@@ -303,7 +323,9 @@ if not close_gui:
         print("closed csv")
         robot_loc_file.close()
         robot_phase_file.close()
+        robot_data_file.close()
 
 os.system("pkill -f engine.sim_trajectory") #once gui.gui.py is closed, also close engine.sim_trajectory.py
+os.system("pkill -f gui.validate_inputs") #once gui.gui.py is closed, also close gui.validate_inputs.py
 
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################

@@ -22,7 +22,7 @@ def update_gui():
     while True:
         while len(packets) < 5:
             # packet = ser.readline()
-            packet = input("Enter data: ")
+            packet = input("Enter data: ") # use this for testing purposes
             if 80 < len(packet) < 150:  # check if packet length is appropriate
                 packets.append(packet)
         valid_packet = validate_packet(packets)
@@ -192,29 +192,18 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
     deci_difference = desired_decimal_length - current_deci_len
 
     if int_difference < 0:
-        # print("indiff < 0")
         # shrink:
         print("value too large?? possibly round?")
     else:
         # extend: add 0's to the beginning to extend integer value
-        # print("indiff >= 0 of " + s)
         int_buffer = "0" * int_difference
-        # print("intbuff " + int_buffer)
         s = int_buffer + s
-        # print("resulting s " + s)
 
     if deci_difference < 0:
-        # print("decidiff < 0")
         # shrink: cut off extra decimal values
-        # print("len " + str(len(s)))
-        # print("decidiff " + str(deci_difference))
-        # print("lastindex " + str(len(s) + deci_difference))
         s = s[0:len(s) + deci_difference]
-
-        # print("new s " + s)
     else:
         # extend: add 0's to the end to extend decimal values
-        # print(s +" with deci_diff " +str(deci_difference))
         deci_buffer = "0" * deci_difference
         s = s + deci_buffer
 
@@ -284,44 +273,9 @@ def get_coord(coords):
     return (str(x_median), str(y_median))
 
 
-update_gui()
-#### From raspberry pi
-# Robot Phase: phse (mission)
-# [SETUP: 0, AVOID_OBSTACLE: 1, RETURN: 2, DOCKING: 3, COMPLETE: 4]
-# Pounds of Collected Plastic: p_weight
-# Acceleration: acc (imu)
-# Current Distance to Next Node: n_dist (mission)
-# Rotation: rot (imu)
-# Last Node Visited: last_n (mission)
-# Velocity: vel (imu)
-# Next Node to Visit: next_n (mission)
-# Current Coordinates: coords
-# Battery level: bat
-
-
 # send 5 packets, then pause, then repeat/continue
 # "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000"
 ### preset length: 131 characters
-
-
-# case by case check each parameter with each other in helpers;
-# phase: for each check valid number, remove invalids, take phase with max freq
-
-# p_weight, acc, dist, rot, vel, bat: median
-
-# last_n, next_n, coords: median of x and y
-
-
-# return final_packet
-#
-
-
-### Port
-# 017543DC
-
-### Structure
-# "phse:stuff,acc: stuf"
-# "id:data1,next_id:data2,...,last_id:data3"
 
 #### From raspberry pi
 # Robot Phase: phse (mission)
@@ -338,11 +292,3 @@ update_gui()
 
 ## Calculated here
 # Total Area Traversed: area_t (using prev nodes)
-
-
-# the plan:
-## Read 1 line/packet each with 10 ids, aim for 3x each
-## Set up csv for current info -- OMIT
-## Error checking
-## Send correct terms to another csv
-## read cleaned up csv in gui
