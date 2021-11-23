@@ -1,21 +1,31 @@
 from collections import deque
-from engine.grid import Grid
 from engine.robot import Phase
 from engine.kinematics import get_vincenty_x, get_vincenty_y
-import math
+from enum import Enum
+from engine.grid import Grid
+
+
+class ControlMode(Enum):
+    """
+    An enumeration of different control modes
+    """
+    LAWNMOWER_FULL = 1
+    LAWNMOWER_BORDERS = 2
+    SPIRAL = 3
+    ROOMBA = 4
+    MANUAL = 5
 
 
 class Mission:
-    def __init__(self, robot, base_station, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
-                 grid_mode="lawn_border", allowed_dist_error=0.5, allowed_heading_error=0.1,
-                 allowed_docking_pos_error=0.1, time_limit=1000, roomba_radius=10):
+    def __init__(self, robot, base_station, init_control_mode, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
+                 allowed_dist_error=0.5, allowed_heading_error=0.1, allowed_docking_pos_error=0.1,
+                 time_limit=50000, roomba_radius=20):
         """
         Arguments:
             robot: the Robot object linked to this Mission
             base_station: the BaseStation object linked to this Mission.
+            init_control_mode: the traversal mode linked to this Mission.
             grid: the Grid which the robot should traverse
-            grid_mode: "borders" if the grid's nodes should only include corner nodes, "full" if all nodes should be
-                used
             allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
                 have "visited" that node
             allowed_heading_error: the maximum error in radians a robot can have to target heading while turning
@@ -27,7 +37,8 @@ class Mission:
         """
         self.robot = robot
         self.grid = grid
-        self.all_waypoints = self.grid.get_waypoints(grid_mode)
+        self.control_mode = ControlMode(init_control_mode)
+        self.all_waypoints = self.grid.get_waypoints(self.control_mode)
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
         self.allowed_heading_error = allowed_heading_error
@@ -51,7 +62,7 @@ class Mission:
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
                                                                        self.allowed_dist_error, self.base_station_loc,
-                                                                       self.robot.control_mode, self.time_limit,
+                                                                       self.control_mode, self.time_limit,
                                                                        self.roomba_radius)
 
             elif self.robot.phase == Phase.AVOID_OBSTACLE:
