@@ -12,6 +12,7 @@ Thus, we will will break up the file into different sections:
 
 from gui.gui_popup import *
 from gui.images import get_images
+from gui.transmit_output import send_lines
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -92,6 +93,10 @@ def send_commands(window, command):
     file = open(path[len(path) - 1] + "/robot_command.csv", "a")
     file.write(command+"\n")
     file.close()
+    file = open(path[len(path) - 1] + "/robot_command_history.csv", "a")
+    file.write(command+"\n")
+    file.close()
+    send_lines()
 
 
 def get_path(folder):
@@ -345,7 +350,6 @@ def run_gui():
             auto = not auto
         get_control_mode(window)
         manual_mode_actions(window, event)
-#        print(event)
 
 
     window.close()
