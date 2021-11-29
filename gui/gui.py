@@ -70,7 +70,7 @@ def manual_mode_actions(window, event):
             print('left')
         elif event == 'w' or event == 'Up' or event == '-UP_KEY-':
             window['-UP_KEY-'].update(button_color=('black', 'white'))
-            send_commands(window, 'up')
+            send_commands(window, 'forward')
             print('forward')
         elif event == 'd' or event == 'Right' or event == '-RIGHT_KEY-':
             window['-RIGHT_KEY-'].update(button_color=('black', 'white'))
@@ -78,7 +78,7 @@ def manual_mode_actions(window, event):
             print('right')
         elif event == 's' or event == 'Down' or event == '-DOWN_KEY-':
             window['-DOWN_KEY-'].update(button_color=('black', 'white'))
-            send_commands(window, 'down')
+            send_commands(window, 'backward')
             print('backward')
         else:
             window['-LEFT_KEY-'].update(button_color=(sg.theme_button_color()))
