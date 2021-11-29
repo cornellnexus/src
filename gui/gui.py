@@ -63,14 +63,23 @@ def manual_mode_actions(window, event):
         window['-UP_KEY-'].update(visible=True)
         window['-RIGHT_KEY-'].update(visible=True)
         window['-DOWN_KEY-'].update(visible=True)
-        if event == 'a' or event == 'Left':
+        if event == 'a' or event == 'Left' or event == '-LEFT_KEY-':
+            window['-LEFT_KEY-'].update(button_color=('black', 'white'))
             print('left')
-        elif event == 'w' or event == 'Up':
+        elif event == 'w' or event == 'Up' or event == '-UP_KEY-':
+            window['-UP_KEY-'].update(button_color=('black', 'white'))
             print('forward')
-        elif event == 'd' or event == 'Right':
+        elif event == 'd' or event == 'Right' or event == '-RIGHT_KEY-':
+            window['-RIGHT_KEY-'].update(button_color=('black', 'white'))
             print('right')
-        elif event == 's' or event == 'Down':
+        elif event == 's' or event == 'Down' or event == '-DOWN_KEY-':
+            window['-DOWN_KEY-'].update(button_color=('black', 'white'))
             print('backward')
+        else:
+            window['-LEFT_KEY-'].update(button_color=(sg.theme_button_color()))
+            window['-UP_KEY-'].update(button_color=(sg.theme_button_color()))
+            window['-RIGHT_KEY-'].update(button_color=(sg.theme_button_color()))
+            window['-DOWN_KEY-'].update(button_color=(sg.theme_button_color()))
         window['-CONTROL_MODE_BUTTON-'].update('Autonomous')
 
 
@@ -243,14 +252,22 @@ def setup_gui():
                        element_justification='center', font='Helvetica 18', location=(0, 0), \
                        size=(1200, 700), resizable=True, return_keyboard_events = True)
 
-    window.bind('<Up>', 'Up')
-    window.bind('<Left>', 'Left')
-    window.bind('<Down>', 'Down')
-    window.bind('<Right>', 'Right')
+    addKeyBinds(window)
+
     fig = plt.gcf()
     # add the plot to the window
     fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
     return (window, data)
+
+def addKeyBinds(window):
+    window.bind('<Up>', 'Up')
+    window.bind('<Left>', 'Left')
+    window.bind('<Down>', 'Down')
+    window.bind('<Right>', 'Right')
+    window.bind('a', 'Left')
+    window.bind('w', 'Up')
+    window.bind('s', 'Down')
+    window.bind('d', 'Right')
 
 
 def update_input(str, window, current_output):
