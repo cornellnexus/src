@@ -65,15 +65,19 @@ def manual_mode_actions(window, event):
         window['-DOWN_KEY-'].update(visible=True)
         if event == 'a' or event == 'Left' or event == '-LEFT_KEY-':
             window['-LEFT_KEY-'].update(button_color=('black', 'white'))
+            send_commands(window, 'left')
             print('left')
         elif event == 'w' or event == 'Up' or event == '-UP_KEY-':
             window['-UP_KEY-'].update(button_color=('black', 'white'))
+            send_commands(window, 'up')
             print('forward')
         elif event == 'd' or event == 'Right' or event == '-RIGHT_KEY-':
             window['-RIGHT_KEY-'].update(button_color=('black', 'white'))
+            send_commands(window, 'right')
             print('right')
         elif event == 's' or event == 'Down' or event == '-DOWN_KEY-':
             window['-DOWN_KEY-'].update(button_color=('black', 'white'))
+            send_commands(window, 'down')
             print('backward')
         else:
             window['-LEFT_KEY-'].update(button_color=(sg.theme_button_color()))
@@ -81,6 +85,13 @@ def manual_mode_actions(window, event):
             window['-RIGHT_KEY-'].update(button_color=(sg.theme_button_color()))
             window['-DOWN_KEY-'].update(button_color=(sg.theme_button_color()))
         window['-CONTROL_MODE_BUTTON-'].update('Autonomous')
+
+
+def send_commands(window, command):
+    path = get_path('csv')
+    file = open(path[len(path) - 1] + "/robot_command.csv", "a")
+    file.write(command+"\n")
+    file.close()
 
 
 def get_path(folder):
