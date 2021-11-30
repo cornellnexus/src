@@ -20,7 +20,7 @@ class SensorModule:
         self.port = serial.Serial(port="/dev/tty.usbserial-017543DC", baudrate=57600, timeout=0)
         self.port.flushInput()
         self.imu_dict = {"mag": {"x": 0, "y": 0}}
-        self.created = datetime.now().strftime("%d-%m-%Y_%H:%M:%S")
+        self.created = datetime.now().strftime("%d-%m-%Y_%H_%M_%S")
         self.write_data = write
 
         self.gps_dict = {"lon": 0, "lat": 0}
