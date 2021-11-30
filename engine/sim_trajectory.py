@@ -1,19 +1,15 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import csv
 
 from matplotlib import animation as animation
 from matplotlib import patches as patch
 
-from engine.grid import Grid
-from engine.kinematics import limit_cmds, feedback_lin
-from engine.pid_controller import PID
 from engine.robot import Robot
+from engine.robot import Phase
 from engine.base_station import BaseStation
 from engine.mission import Mission
-
-'''PLOTTING'''
+from engine.mission import ControlMode
 
 
 def waypoints_to_array(waypoints):
@@ -54,9 +50,9 @@ def get_plot_boundaries(nodes, delta):
 
 
 if __name__ == "__main__":
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, control_mode=2)  # Start position should be base.
+    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=Phase.TRAVERSE)
     base_r2d2 = BaseStation((42.444250, -76.483682))
-    m = Mission(r2d2, base_r2d2)
+    m = Mission(robot=r2d2, base_station=base_r2d2, init_control_mode=ControlMode.LAWNMOWER_BORDERS)
 
     '''------------------- MISSION EXECUTION -------------------'''
     m.execute_mission()
@@ -69,12 +65,24 @@ if __name__ == "__main__":
     fig, ax = plt.subplots()
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
-    goals = waypoints_to_array(m.all_waypoints)
-    ax.plot(goals[:, 0], goals[:, 1], 'rx')
+    margin = 5
 
-    xbounds, ybounds = get_plot_boundaries(m.grid.nodes, 5)
-    plt.xlim(xbounds)
-    plt.ylim(ybounds)
+    if m.control_mode == ControlMode.ROOMBA:
+        range = m.roomba_radius + margin
+        init_x = m.base_station_loc[0]
+        init_y = m.base_station_loc[1]
+        plt.xlim([init_x-range, init_x+range])
+        plt.ylim([init_y-range, init_y+range])
+        circle = plt.Circle((init_x, init_y), m.roomba_radius)
+        ax.add_patch(circle)
+
+    elif m.control_mode != ControlMode.MANUAL:
+        goals = waypoints_to_array(m.all_waypoints)
+        ax.plot(goals[:, 0], goals[:, 1], 'rx')
+
+        xbounds, ybounds = get_plot_boundaries(m.grid.nodes, margin)
+        plt.xlim(xbounds)
+        plt.ylim(ybounds)
 
     circle_patch = plt.Circle((5, 5), 1, fc="green")
     wedge_patch = patch.Wedge(
