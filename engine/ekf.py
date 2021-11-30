@@ -12,11 +12,15 @@ class LocalizationEKF:
     An implementation of the EKF localization for the robot.
 
     INSTANCE ATTRIBUTES:
-        # mu: the mean of the distribution [float]
-        # sigma: the standard deviation of the distribution [float]
-        # R: process noise covariance matrix [n-by-n], where n=3 dimensions of state
-        # Q: measurement noise covariance matrix [k-by-k], where k=3 dimensions of measurements
+        # mu: the mean of the robot state distribution, in the form [[x],[y],[z]]. [3x1 np array]
 
+        # sigma: the standard deviation of the robot state distribution. [3x3 np array]
+
+        # R: the process noise covariance matrix [3x3 np array].
+            Note: The dimensions of R are n-by-n, where n is the degrees of freedom of the robot state. (n=3)
+
+        # Q: measurement noise covariance matrix [3x3 np array]
+            Note: The dimensions of Q are k-by-k, where k is the degrees of freedom of the measurement. (k=3)
     """
     def __init__(self, init_mu, init_sigma):
         self.mu = init_mu
@@ -28,8 +32,15 @@ class LocalizationEKF:
     def get_predicted_state(self, pose, control):
         """
         g function
-        Returns the predicted robot pose in the inertial frame based on integrating odometry measurements.
-        [3-by-1 Numpy array] where n = 3 dimensions of state
+        Given a robot pose at time step t, and the controls of the robot at time t-1,
+        returns the predicted robot pose at the next time step t+1 in the inertial frame based on odometry measurements.
+        [3-by-1 Numpy array].
+
+        Parameters:
+        -----------
+        # pose: the 3-by-1 Numpy array representing the robot's pose. [x; y; theta]
+        # control: the 2-by-1 Numpy array representing the robot's odometry measurements. [d, phi],
+                   where d = distance traveled in the time step and phi = angle turned in the time step
         """
         return integrate_odom(pose, control[0], control[1])
 
@@ -37,6 +48,8 @@ class LocalizationEKF:
     def get_g_jac(self, pose, control):
         """
         G Jacobian
+        Returns the Jacobian of the g function.
+
         Parameters:
         ----------
         # pose: robot's state
@@ -62,6 +75,9 @@ class LocalizationEKF:
         h function
         Returns the expected measurement of the robot, given the robot's current state. [3-by-1 Numpy array], where
         k = 3 dimensions of measurements
+
+        Parameters:
+        # pose: robot's state
         """
         expected_measurement = pose
         return expected_measurement
@@ -69,6 +85,10 @@ class LocalizationEKF:
     def get_h_jac(self, pose):
         """
         H Jacobian
+        Returns the Jacobian of the h function.
+
+        Parameters:
+        # pose: robot's state
         """
         return np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
@@ -85,6 +105,11 @@ class LocalizationEKF:
         return mu_bar, sigma_bar
 
     def update_step(self, mu_bar, sigma_bar, measurement):
+        """
+        Returns the distribution of the robot's state after the update step of the EKF, based
+        on the robot's sensor measurements.
+        [mu, sigma]
+        """
         jac_H = self.get_h_jac(mu_bar)
         kalman_gain = \
             (sigma_bar * np.transpose(jac_H) * inv(jac_H * sigma_bar * np.transpose(jac_H) + self.Q))
