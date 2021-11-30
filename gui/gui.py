@@ -312,7 +312,7 @@ if not close_gui:
         robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
 
         current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
-        robot_data = RobotData("phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000")
+        robot_data = RobotData("phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
 
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,

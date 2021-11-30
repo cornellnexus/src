@@ -16,6 +16,7 @@ class RobotData(object):
         next_n: Coordinates of the next node to visit [tuple of float > 0]
         coord: Coordinates of the robot [tuple of float > 0]
         bat: Remaining battery percentage [int > 0]
+        ctrl: Robot control mode [int from 1-5]
     """
 
     def update_data(self, packet):
@@ -30,6 +31,7 @@ class RobotData(object):
         self.next_n = get_tuple_value(packet_data[7])
         self.coord = get_tuple_value(packet_data[8])
         self.bat = get_integer_value(packet_data[9])
+        self.ctrl = get_integer_value(packet_data[10])
 
         # calculate total area traversed
 
@@ -47,6 +49,7 @@ class RobotData(object):
         self.next_n = get_tuple_value(packet_data[7])
         self.coord = get_tuple_value(packet_data[8])
         self.bat = get_integer_value(packet_data[9])
+        self.ctrl = get_integer_value(packet_data[10])
 
     def __str__(self):
         p = str(Phase(self.phase+1))
@@ -59,5 +62,7 @@ class RobotData(object):
                "\nVelocity: " + str(self.vel) + " m/s"\
                "\nNext Node to Visit: " + str(self.next_n) + \
                "\nCurrent Coordinates: " + str(self.coord) + \
-               "\nBattery Level: " + str(self.bat)
+               "\nBattery Level: " + str(self.bat) + \
+               "\nControl Mode: " + str(self.ctrl) 
+
         # "\nTotal Area Traversed: " + self.area

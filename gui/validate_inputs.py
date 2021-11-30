@@ -10,7 +10,7 @@ def update_gui():
     '''
 
     Reads telemetry data packets from raspberry pi, which ideally of the following format
-    "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000"
+    "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1"
 
     From every 5 data packets, a single data packet is created to estimate the packets. This single data packet
     is written to robot_data.csv, so we can accurately display current information regarding the robot on the GUI.
@@ -119,6 +119,7 @@ def validate_packet(packets):
     next_ns = []
     coords = []
     batts = []
+    ctrls = []
 
     for packet in packets:
         packet_data = packet.split(";")
@@ -132,8 +133,9 @@ def validate_packet(packets):
         next_ns.append(get_tuple_value(packet_data[7]))
         coords.append(get_tuple_value(packet_data[8]))
         batts.append(get_integer_value(packet_data[9]))
+        ctrls.append(get_integer_value(packet_data[10]))
 
-    phase = get_phase(phases)
+    phase = get_mode(phases)
     weight = get_median(weights)
     acc = get_median(accs)
     n_dist = get_median(n_dists)
@@ -143,33 +145,36 @@ def validate_packet(packets):
     next_n = get_coord(next_ns)
     coord = get_coord(coords)
     batt = get_median(batts)
+    ctrl = get_mode(ctrls)
 
     # return packet with combined data --> need to extend or shrink value to match data string
-    return build_validated_packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt)
+    return build_validated_packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl)
 
 
-def build_validated_packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt):
+def build_validated_packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl):
     '''
 
     Args:
         phase: string representing phase value, must be a single digit such as "0"
         weight: string representing weight value
         acc: string representing acceleration value
-        n_dist: string representing the next node distance
+        n_dist: tuple of strings representing the next node distance
         rot: string representing rotation value
-        last_n: string representing the coordinates of the last node visited
+        last_n: tuple of strings representing the coordinates of the last node visited
         vel: string representing velocity value
-        next_n: string representing the coordinates of the next node to visit
-        coord: string representing the coordinates of the robot
+        next_n: tuple of strings representing the coordinates of the next node to visit
+        coord: tuple of strings representing the coordinates of the robot. Ex: ("6.0", "7.0")
         batt: string representing the remaining battery percentage
+        ctrl: string representing control mode value, must be a single digit such as “1"
+
 
     Returns: string of the following format using correcting size of args
-    "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000"
+    "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1"
     '''
-    return "phse:" + str(phase) + ";p_weight:" + str(fix_data_size(weight, 2, 1)) + ";acc:" + str(fix_data_size(acc, 1, 2)) + ";n_dist:" + \
-           str(fix_data_size(n_dist, 2, 1)) + ";rot:" + str(fix_data_size(rot, 2, 2)) + ";last_n:" + str(fix_tuple_size(last_n, 3, 2)) + \
+    return "phse:" + phase + ";p_weight:" + fix_data_size(weight, 2, 1) + ";acc:" + fix_data_size(acc, 1, 2) + ";n_dist:" + \
+           fix_data_size(n_dist, 2, 1) + ";rot:" + fix_data_size(rot, 2, 2) + ";last_n:" + fix_tuple_size(last_n, 3, 2) + \
            ";vel:" + fix_data_size(vel, 1, 2) + ";next_n:" + fix_tuple_size(next_n, 3, 2) + \
-           ";coords:" + str(fix_tuple_size(coord, 3, 2)) + ";bat:" + str(fix_data_size(batt+".0", 3, -1))
+           ";coords:" + fix_tuple_size(coord, 3, 2) + ";bat:" + fix_data_size(batt+".0", 3, -1) + ";ctrl:" + ctrl
 
 
 def fix_data_size(s, desired_int_length, desired_decimal_length):
@@ -185,6 +190,7 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
     1 digit after the decimal point (desired_decimal_length).
 
     '''
+
     separator_index = s.find(".")
     current_int_len = len(s[0:separator_index])
     current_deci_len = len(s[separator_index + 1:])
@@ -228,18 +234,18 @@ def fix_tuple_size(t, desired_int_length, desired_decimal_length, ):
             fix_data_size(t[1], desired_int_length, desired_decimal_length)
 
 
-def get_phase(phases):
+def get_mode(data):
     '''
 
     Args:
-        phases: list of floats representing phase values
+        data: list of floats representing data values, such as phases or control modes
 
-    Returns: a single string of the mode of [phases] of format "0"
+    Returns: a single string of the mode of [data] of format "0"
 
     '''
-    processed_phases = [x for x in phases if x <= 4]
-    final_phase = statistics.mode(processed_phases)
-    return str(int(final_phase))
+    processed_data = [x for x in data if x <= 7]
+    final_data = statistics.mode(processed_data)
+    return str(int(final_data))
 
 
 def get_median(data_list):
