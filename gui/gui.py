@@ -12,7 +12,7 @@ Thus, we will will break up the file into different sections:
 
 from gui.gui_popup import *
 from gui.images import get_images
-from gui.transmit_output import send_lines
+from gui.transmit_output import send_command_lines
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -30,6 +30,19 @@ matplotlib.use('TkAgg')
 
 auto = False
 last_msg = ''
+
+def write_autonomous(auto):
+    if auto == True:
+        command = 'Control_Mode.Autonomous'
+    else:
+        command = 'Control_Mode.Manual'
+    path = get_path('csv')
+    file = open(path[len(path) - 1] + "/control_mode_test.csv", "a")
+    file.write(command+"\n")
+    file.close()
+    file = open(path[len(path) - 1] + "/control_mode_history.csv", "a")
+    file.write(command+"\n")
+    file.close()
 
 def get_control_mode(window):
     """
@@ -66,19 +79,19 @@ def manual_mode_actions(window, event):
         window['-DOWN_KEY-'].update(visible=True)
         if event == 'a' or event == 'Left' or event == '-LEFT_KEY-':
             window['-LEFT_KEY-'].update(button_color=('black', 'white'))
-            send_commands(window, 'left')
+            send_commands('left')
             print('left')
         elif event == 'w' or event == 'Up' or event == '-UP_KEY-':
             window['-UP_KEY-'].update(button_color=('black', 'white'))
-            send_commands(window, 'forward')
+            send_commands('forward')
             print('forward')
         elif event == 'd' or event == 'Right' or event == '-RIGHT_KEY-':
             window['-RIGHT_KEY-'].update(button_color=('black', 'white'))
-            send_commands(window, 'right')
+            send_commands('right')
             print('right')
         elif event == 's' or event == 'Down' or event == '-DOWN_KEY-':
             window['-DOWN_KEY-'].update(button_color=('black', 'white'))
-            send_commands(window, 'backward')
+            send_commands('backward')
             print('backward')
         else:
             window['-LEFT_KEY-'].update(button_color=(sg.theme_button_color()))
@@ -88,7 +101,7 @@ def manual_mode_actions(window, event):
         window['-CONTROL_MODE_BUTTON-'].update('Autonomous')
 
 
-def send_commands(window, command):
+def send_commands(command):
     path = get_path('csv')
     file = open(path[len(path) - 1] + "/robot_command.csv", "a")
     file.write(command+"\n")
@@ -96,7 +109,7 @@ def send_commands(window, command):
     file = open(path[len(path) - 1] + "/robot_command_history.csv", "a")
     file.write(command+"\n")
     file.close()
-    send_lines()
+    send_command_lines()
 
 
 def get_path(folder):
@@ -348,6 +361,7 @@ def run_gui():
         if event == '-CONTROL_MODE_BUTTON-':
             global auto
             auto = not auto
+            write_autonomous()
         get_control_mode(window)
         manual_mode_actions(window, event)
 
