@@ -166,10 +166,10 @@ def build_validated_packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n,
     Returns: string of the following format using correcting size of args
     "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000"
     '''
-    return "phse:" + phase + ";p_weight:" + fix_data_size(weight, 2, 1) + ";acc:" + fix_data_size(acc, 1, 2) + ";n_dist:" + \
-           fix_data_size(n_dist, 2, 1) + ";rot:" + fix_data_size(rot, 2, 2) + ";last_n:" + fix_tuple_size(last_n, 3, 2) + \
+    return "phse:" + str(phase) + ";p_weight:" + str(fix_data_size(weight, 2, 1)) + ";acc:" + str(fix_data_size(acc, 1, 2)) + ";n_dist:" + \
+           str(fix_data_size(n_dist, 2, 1)) + ";rot:" + str(fix_data_size(rot, 2, 2)) + ";last_n:" + str(fix_tuple_size(last_n, 3, 2)) + \
            ";vel:" + fix_data_size(vel, 1, 2) + ";next_n:" + fix_tuple_size(next_n, 3, 2) + \
-           ";coords:" + fix_tuple_size(coord, 3, 2) + ";bat:" + fix_data_size(batt+".0", 3, -1)
+           ";coords:" + str(fix_tuple_size(coord, 3, 2)) + ";bat:" + str(fix_data_size(batt+".0", 3, -1))
 
 
 def fix_data_size(s, desired_int_length, desired_decimal_length):
