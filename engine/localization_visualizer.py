@@ -30,7 +30,7 @@ if __name__ == "__main__":
     zone = ENGINEERING_QUAD  # Used for GPS visualization
     zone_photo = "geo_images/engineering_quad.png"
     imu_data_file = "data/imu_360_sample1.csv"
-    gps_data_file = "data/GPS_13-11-2021_14:18:15.txt"
+    gps_data_file = "data/GPS_22-11-2021.txt"
 
     # Read command-line arguments
     if len(sys.argv) != 4 or "live=" not in sys.argv[1] or "data=" not in sys.argv[2] or "ekf=" not in sys.argv[3]\
