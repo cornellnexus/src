@@ -2,20 +2,33 @@ import time
 import board
 import busio
 import adafruit_lsm9ds1
-from gpio import *
 
+#---------------------------README-------------------------
+# This file needs to go on the raspberry pi
+#----------------------------------------------------------
 
 class IMU:
+    
+    i2c = busio.I2C(board.SCL, board.SDA)
+    imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+
     def __init__(self):
-        self.i2c = busio.I2C(imu_scl, imu_sda)
-        self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
-        self.acc = self.imu.acceleration
-        self.mag = self.imu.magnetic
-        self.gyro = self.imu.gyro
+         self.acc = 0
+         self.mag = 0
+         self.gyro = 0
 
     """get_imu returns acc, mag, gyro data formatted in a dictionary"""
+    
+    def set_num_dec(self, num, reading):
+        x = round(reading[0], num)
+        y = round(reading[1], num)
+        z = round(reading[2], num)
+        return x, y, z
 
     def get_imu(self):
+        self.acc = self.set_num_dec(3, tuple(self.imu.acceleration))
+        self.gyro = self.set_num_dec(3, tuple(self.imu.gyro))
+        self.mag = self.set_num_dec(3, tuple(self.imu.magnetic))
         combined_data = self.imu_format(self.acc, self.mag, self.gyro)
         return combined_data
 
@@ -23,16 +36,21 @@ class IMU:
 
     def imu_format(self, acc, mag, gyro):
         imu_dict = {
-            "acc": tuple(acc),
-            "mag": tuple(mag),
-            "gyro": tuple(gyro),
+         "acc": acc,
+         "mag": mag,
+         "gyro": gyro
         }
         return imu_dict
+    
+    def write_to_csv(data_arr, file):
+        with open(file, "w") as imu_file:
+            for datum in data_arr: 
+                imu_file.write(str(datum) + '\n')
 
-# Writing to CSV:
 
-csv_data = [] #initialize empty list to store imu data
-original_time = time.time()
+# Simple starter test program that just prints IMU values in a neat fashion
+'''
+sensor = IMU()
 
 #helper function to print sensor data in x, y, z
 def pretty_print(data):
@@ -44,18 +62,25 @@ def pretty_print(data):
     }
     return coords
 
-while time.time() < original_time + 15:
-    acc = imu.acceleration
-    mag = imu.magnetic
-    gyro = imu.gyro
+while True:
 
-    combined_data = imu_format(acc, mag, gyro)
-    print(combined_data)
-    time.sleep(0.1)
+    combined_data = sensor.get_imu()
+    
+    format_data_acc = pretty_print(combined_data["acc"])
+    format_data_mag = pretty_print(combined_data["mag"])
+    format_data_gyr = pretty_print(combined_data["gyro"])
+    
+    print(format_data_acc["z"])
+#    print(format_data_acc["y"])
+#    print(format_data_acc["x"])
 
-    csv_data.append(combined_data)
+#    print(format_data_mag["z"])
+#    print(format_data_mag["y"])
+#    print(format_data_mag["x"])
 
-with open('imu_360.csv', 'w') as imu_file:
-    for datum in csv_data:
-        imu_file.write(str(datum) + '\n')
-        time.sleep(0.1)
+#    print(format_data_gyr["z"])
+#    print(format_data_gyr["y"])
+#    print(format_data_gyr["x"])
+    print("\n")
+    time.sleep(0.05)
+'''
