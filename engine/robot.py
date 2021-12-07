@@ -6,6 +6,8 @@ from enum import Enum
 import os.path
 import time
 import sys
+from engine.manual import Manual
+
 
 class Phase(Enum):
     """
@@ -80,7 +82,7 @@ class Robot:
         self.heading_kd = heading_kd
         self.heading_noise = heading_noise
         self.move_dist = move_dist
-        self.turn_angle = turn_angle/time_step  # dividing by time_step ignores the effect of time_step on absolute
+        self.turn_angle = turn_angle / time_step  # dividing by time_step ignores the effect of time_step on absolute
         # radians turned
 
         self.loc_pid_x = PID(
@@ -189,7 +191,7 @@ class Robot:
 
         predicted_state = self.state  # this will come from Kalman Filter
 
-        abs_heading_error = abs(target_heading-float(predicted_state[2]))
+        abs_heading_error = abs(target_heading - float(predicted_state[2]))
 
         while abs_heading_error > allowed_heading_error:
             self.state[2] = np.random.normal(self.state[2], self.heading_noise)
@@ -229,6 +231,8 @@ class Robot:
                           roomba_radius):
         if control_mode == 4:  # Roomba mode
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
+        elif control_mode == 1:  # manual mode
+            manual = Manual()
         else:
             self.traverse_standard(unvisited_waypoints, allowed_dist_error)
 
@@ -259,14 +263,14 @@ class Robot:
                 None
         """
         dt = 0
-        exit_boolean = False # battery_limit, time_limit, battery_capacity is full
+        exit_boolean = False  # battery_limit, time_limit, battery_capacity is full
         while not exit_boolean:
 
             curr_x = self.state[0]
             curr_y = self.state[1]
             new_x = curr_x + self.move_dist * math.cos(self.state[2]) * self.time_step
             new_y = curr_y + self.move_dist * math.sin(self.state[2]) * self.time_step
-            next_radius = math.sqrt(abs(new_x-base_station_loc[0])**2 + abs(new_y-base_station_loc[1])**2)
+            next_radius = math.sqrt(abs(new_x - base_station_loc[0]) ** 2 + abs(new_y - base_station_loc[1]) ** 2)
             if next_radius > roomba_radius:
                 self.move_forward(-self.move_dist)
                 self.turn(self.turn_angle)
@@ -276,13 +280,14 @@ class Robot:
             exit_boolean = (dt > time_limit)
         self.phase = Phase.COMPLETE
         return None
+
     def set_phase(self, new_phase):
         self.phase = new_phase
 
         cwd = os.getcwd()
         cd = cwd + "/csv"
         with open(cd + '/phases.csv', 'a') as fd:
-            fd.write(str(self.phase)+ '\n')
+            fd.write(str(self.phase) + '\n')
 
     def execute_avoid_obstacle(self):
         pass
@@ -314,4 +319,4 @@ class Robot:
         self.set_phase(Phase.DOCKING)
 
     def execute_docking(self):
-        self.set_phase(Phase.COMPLETE) # temporary for simulation purposes
+        self.set_phase(Phase.COMPLETE)  # temporary for simulation purposes

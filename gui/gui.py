@@ -31,6 +31,7 @@ matplotlib.use('TkAgg')
 
 auto = False
 last_msg = ''
+last_ctrl = ''
 
 def write_autonomous(auto):
     if auto == True:
@@ -45,26 +46,20 @@ def write_autonomous(auto):
     file.write(command+"\n")
     file.close()
 
-def get_control_mode(window):
+def get_control_mode():
     """
     Returns the last control mode given in the control_mode.csv file
     """
     global auto
     global last_msg
-    path = get_path('csv')
-    file = open(path[len(path) - 1] + "/control_mode_test.csv", "r")
-    try:
-        last_line = file.readlines()[-1]
-        control_mode = last_line[last_line.index(".") + 1:len(last_line)]
-        if last_msg != control_mode:
-            if control_mode == 'Manual':
-                auto = False
-            else:
-                auto = True
-        last_msg = control_mode
-    except:
-        pass
-    file.close()
+    control_mode = robot_data.control_mode()
+    print(control_mode)
+    if last_msg != control_mode:
+        if control_mode == 5:
+            auto = False
+        else:
+            auto = True
+    last_msg = control_mode
 
 def manual_mode_actions(window, event):
     if auto:
@@ -379,8 +374,8 @@ def run_gui():
         if event == '-CONTROL_MODE_BUTTON-':
             global auto
             auto = not auto
-            write_autonomous()
-        get_control_mode(window)
+            write_autonomous(auto)
+        get_control_mode()
         update_robot_data(window)
         manual_mode_actions(window, event)
 
@@ -416,7 +411,7 @@ if not close_gui:
         robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
 
         current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
-        robot_data = RobotData("phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000")
+        robot_data = RobotData("phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
 
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,

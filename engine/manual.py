@@ -2,13 +2,13 @@
 import os
 import sys
 from electrical.commands import *
-from engine.robot import Control_Mode
+from engine.mission import ControlMode
 
 
 class Manual():
 
     def __init__(self, control_mode):
-        self.control_mode = Control_Mode(control_mode)
+        self.control_mode = ControlMode(control_mode)
 
     def get_control_mode(self):
         robot_command_file = open((self.get_path('csv')[-1] + '/control_mode_test.csv'), "r+")
@@ -18,7 +18,7 @@ class Manual():
         last_line = last_line.strip()
         control_mode = last_line[last_line.index(".") + 1:len(last_line)]
         if control_mode == 'Manual':
-            return Control_Mode.MANUAL
+            return ControlMode.MANUAL
         elif control_mode == 'Autonomous':
             return self.control_mode
 
