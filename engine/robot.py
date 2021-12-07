@@ -205,15 +205,15 @@ class Robot:
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
 
-    def execute_setup(self, radio_session):
-        #turn on radio communication between rpi and base station
+    def execute_setup(self, radio_session, gps, imu):
         radio_session.startup_rpi()
         radio_session.startup_base()
+        gps_setup = gps.startup() 
+        imu_setup = imu.startup()
+        radio_connected = radio_session.device.connected 
 
-        #initilize GPS 
-        gps.startup() #TODO: connect gps startup function with rf_packet 
-        #initialize IMU 
-        imu.startup() #TODO: connect imu startup function with rf_packet      
+        if (radio_connected and gps_setup and imu_setup): 
+            self.phase = Phase.TRAVERSE
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius):

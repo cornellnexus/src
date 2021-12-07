@@ -1,6 +1,8 @@
 from collections import deque
 from engine.robot import Phase
 from electrical.rf_module import Device, RadioSession
+from electrical.gps import GPS
+from electrical.imu import IMU
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum
 from engine.grid import Grid
@@ -45,6 +47,8 @@ class Mission:
         self.rpi_device = Device(0, '/dev/ttyS0')
         self.base_device = Device(1, '/dev/ttyS0') #temp
         self.radio_session = RadioSession(self.rpi_device)
+        self.gps = GPS() #TODO: will this be a problem if we have multiple serials initialized? 
+        self.imu = IMU() 
         self.allowed_heading_error = allowed_heading_error
         self.base_station_angle = base_station.heading
         self.allowed_docking_pos_error = allowed_docking_pos_error
@@ -61,7 +65,7 @@ class Mission:
         """
         while self.robot.phase != Phase.COMPLETE:
             if self.robot.phase == Phase.SETUP:
-                self.robot.execute_setup(self.radio_session)
+                self.robot.execute_setup(self.radio_session, self.gps, self.imu)
 
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,

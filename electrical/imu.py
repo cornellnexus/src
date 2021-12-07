@@ -3,10 +3,7 @@ import board
 import busio
 import adafruit_lsm9ds1
 
-#---------------------------README-------------------------
-# This file needs to go on the raspberry pi
-#----------------------------------------------------------
-
+""" Module that includes functions for IMU sensor"""
 class IMU:
     
     i2c = busio.I2C(board.SCL, board.SDA)
@@ -17,7 +14,7 @@ class IMU:
          self.mag = 0
          self.gyro = 0
 
-    """get_imu returns acc, mag, gyro data formatted in a dictionary"""
+    """get_imu: returns acc, mag, gyro data formatted in a dictionary"""
     
     def set_num_dec(self, num, reading):
         x = round(reading[0], num)
@@ -32,7 +29,7 @@ class IMU:
         combined_data = self.imu_format(self.acc, self.mag, self.gyro)
         return combined_data
 
-    """imu_format is a helper function to combine IMU sensors together"""
+    """imu_format: a helper function to combine IMU sensors together"""
 
     def imu_format(self, acc, mag, gyro):
         imu_dict = {
@@ -47,40 +44,9 @@ class IMU:
             for datum in data_arr: 
                 imu_file.write(str(datum) + '\n')
 
-
-# Simple starter test program that just prints IMU values in a neat fashion
-'''
-sensor = IMU()
-
-#helper function to print sensor data in x, y, z
-def pretty_print(data):
-    data = list(data)
-    coords = {
-      "x" : data[0],
-      "y" : data[1],
-      "z" : data[2]
-    }
-    return coords
-
-while True:
-
-    combined_data = sensor.get_imu()
     
-    format_data_acc = pretty_print(combined_data["acc"])
-    format_data_mag = pretty_print(combined_data["mag"])
-    format_data_gyr = pretty_print(combined_data["gyro"])
-    
-    print(format_data_acc["z"])
-#    print(format_data_acc["y"])
-#    print(format_data_acc["x"])
-
-#    print(format_data_mag["z"])
-#    print(format_data_mag["y"])
-#    print(format_data_mag["x"])
-
-#    print(format_data_gyr["z"])
-#    print(format_data_gyr["y"])
-#    print(format_data_gyr["x"])
-    print("\n")
-    time.sleep(0.05)
-'''
+    """ startup: function that checks the imu data for acc, mag, gyro   
+        returns True when IMU is setup properly, False if not"""
+    def startup(self):
+        pass #need to define what starting up an IMU entails 
+        #calibrate function?
