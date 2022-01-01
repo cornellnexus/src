@@ -129,6 +129,7 @@ class Robot:
         if self.is_sim:
             self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
 
+
     def move_to_target_node(self, target, allowed_dist_error):
         """
         Moves robot to target + or - allowed_dist_error
@@ -204,6 +205,7 @@ class Robot:
             predicted_state = self.state  # this will come from Kalman Filter
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
 
+
     def turn(self, turn_angle):
         """
         Hardcoded in-place rotation for testing purposes. Does not use heading PID. Avoid using in physical robot.
@@ -214,16 +216,20 @@ class Robot:
         if self.is_sim:
             self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
 
+
     def get_state(self):
         return self.state
+
 
     def print_current_state(self):
         # Prints current robot state
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
 
+
     def execute_setup(self):
         pass
+
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius):
@@ -231,6 +237,7 @@ class Robot:
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
         else:
             self.traverse_standard(unvisited_waypoints, allowed_dist_error)
+
 
     def traverse_standard(self, unvisited_waypoints, allowed_dist_error):
         """ Move the robot by following the traversal path given by [unvisited_waypoints].
@@ -248,6 +255,7 @@ class Robot:
 
         self.set_phase(Phase.RETURN)
         return unvisited_waypoints
+
 
     def traverse_roomba(self, base_station_loc, time_limit, roomba_radius):
         """ Move the robot in a roomba-like manner.
@@ -276,6 +284,8 @@ class Robot:
             exit_boolean = (dt > time_limit)
         self.phase = Phase.COMPLETE
         return None
+
+
     def set_phase(self, new_phase):
         self.phase = new_phase
 
@@ -284,8 +294,10 @@ class Robot:
         with open(cd + '/phases.csv', 'a') as fd:
             fd.write(str(self.phase)+ '\n')
 
+
     def execute_avoid_obstacle(self):
         pass
+
 
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error):
         """
@@ -312,6 +324,7 @@ class Robot:
 
         # RETURN phase complete:
         self.set_phase(Phase.DOCKING)
+
 
     def execute_docking(self):
         self.set_phase(Phase.COMPLETE) # temporary for simulation purposes

@@ -110,7 +110,7 @@ def validate_packet(packets):
     Returns: a single packet string of data representing median/average of valid packets in [packets].
     '''
     phases = []
-    weights = []
+    weights = [] 
     accs = []
     n_dists = []
     rots = []

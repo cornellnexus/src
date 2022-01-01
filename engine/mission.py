@@ -50,7 +50,8 @@ class Mission:
         self.time_limit = time_limit
         self.roomba_radius = roomba_radius
 
-    def execute_mission(self):
+
+    def execute_mission(self, database):
         """
         Activates the main control loop. Depending on the robot's phase, different motion control algorithms are
         activated.
@@ -74,4 +75,7 @@ class Mission:
 
             elif self.robot.phase == Phase.DOCKING:
                 self.robot.execute_docking()
+            
+            #update the database with the most recent state
+            database.update_data("phase", self.phase)
 

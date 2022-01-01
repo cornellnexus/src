@@ -10,6 +10,11 @@ from engine.robot import Phase
 from engine.base_station import BaseStation
 from engine.mission import Mission
 from engine.mission import ControlMode
+from engine.database import DataBase
+
+import logging
+import threading
+import time
 
 
 def waypoints_to_array(waypoints):
@@ -52,10 +57,19 @@ def get_plot_boundaries(nodes, delta):
 if __name__ == "__main__":
     r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=Phase.TRAVERSE)
     base_r2d2 = BaseStation((42.444250, -76.483682))
+    database = DataBase()
     m = Mission(robot=r2d2, base_station=base_r2d2, init_control_mode=ControlMode.LAWNMOWER_BORDERS)
 
+    # def retrieve_data(name):
+    #     logging.info("Thread %s: starting", name)
+    #     time.sleep(2)
+    #     phse = core_data["phse"]
+    #     # packet = bleh
+    #     logging.info("Thread %s: finishing", name)
     '''------------------- MISSION EXECUTION -------------------'''
-    m.execute_mission()
+    # packet_maker = threading.Thread(target=retrieve_data, args=(1,), daemon=True)
+    m.execute_mission(database) #create a thread to run main mission
+    #another thread to read robot properties
 
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
 
