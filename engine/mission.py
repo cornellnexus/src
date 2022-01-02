@@ -64,18 +64,19 @@ class Mission:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
                                                                        self.allowed_dist_error, self.base_station_loc,
                                                                        self.control_mode, self.time_limit,
-                                                                       self.roomba_radius)
+                                                                       self.roomba_radius, database)
 
             elif self.robot.phase == Phase.AVOID_OBSTACLE:
                 self.robot.execute_avoid_obstacle()
 
             elif self.robot.phase == Phase.RETURN:
                 self.robot.execute_return(self.base_station_loc, self.base_station_angle,
-                                          self.allowed_docking_pos_error, self.allowed_heading_error)
+                                          self.allowed_docking_pos_error, self.allowed_heading_error, database)
 
             elif self.robot.phase == Phase.DOCKING:
                 self.robot.execute_docking()
             
             #update the database with the most recent state
-            database.update_data("phase", self.phase)
+            database.update_data("phase", self.robot.phase)
+
 

@@ -71,22 +71,8 @@ class TestDataBase(unittest.TestCase):
         for expected_ans, database in testcases:
             for (ans, name) in expected_ans:
                 self.assertEqual(ans, database.get_data(name))
-        # self.assertEqual(2, self.db_initial.get_data("phase"))
-        # self.assertEqual([10, 20, 50], self.db_initial.get_data("state"))
-        # self.assertEqual(False, self.db_initial.get_data("is_sim"))
-        # self.assertEqual(0.2, self.db_initial.get_data("time_step"))
-        # self.assertEqual(2, self.db_initial.get_data("weight"))
-        # self.assertEqual(98, self.db_initial.get_data("battery"))
-        # self.assertEqual(0.6, self.db_initial.get_data("move_dist"))
-        # self.assertEqual([4.25, 3.2, 0.1], self.db_initial.get_data("acceleration"))
-        # self.assertEqual([0.1, 0.2, 0.3], self.db_initial.get_data("magnetic_field"))
-        # self.assertEqual([0.5, 0.2, 0.6], self.db_initial.get_data("gyro_rotation"))
-        # self.assertEqual([0.12, 1.7, 9.2], self.db_initial.get_data("position_pid"))
-        # self.assertEqual(0.23, self.db_initial.get_data("position_noise"))
-        # self.assertEqual([0.2, 0.4, 0.16], self.db_initial.get_data("heading_pid"))
 
     def test_update_data(self):
-
         self.db.update_data("phase", 1)
         self.db.update_data("state", 3, 1, 20)
         self.db.update_data("state", y=5)

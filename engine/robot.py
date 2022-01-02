@@ -115,7 +115,6 @@ class Robot:
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
         self.state = np.round(integrate_odom(self.state, dist, turn_angle), 3)
-
         # if it is a simulation,
         if self.is_sim:
             self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
@@ -132,7 +131,7 @@ class Robot:
             self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
 
 
-    def move_to_target_node(self, target, allowed_dist_error):
+    def move_to_target_node(self, target, allowed_dist_error, database):
         """
         Moves robot to target + or - allowed_dist_error
 
@@ -176,11 +175,14 @@ class Robot:
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
+            database.update_data("state", self.state[0], self.state[1], self.state[2])
+            # print(database.get_data("state"))
+
             # location error (in meters)
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
 
-    def turn_to_target_heading(self, target_heading, allowed_heading_error):
+    def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
         Turns robot in-place to target heading + or - allowed_heading_error, utilizing heading PID.
 
@@ -205,6 +207,10 @@ class Robot:
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
+            database.update_data("state", self.state[0], self.state[1], self.state[2])
+            # print(database.get_data("state"))
+
+
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
 
 
@@ -234,14 +240,14 @@ class Robot:
 
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
-                          roomba_radius):
+                          roomba_radius, database):
         if control_mode == 4:  # Roomba mode
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
         else:
-            self.traverse_standard(unvisited_waypoints, allowed_dist_error)
+            self.traverse_standard(unvisited_waypoints, allowed_dist_error, database)
 
 
-    def traverse_standard(self, unvisited_waypoints, allowed_dist_error):
+    def traverse_standard(self, unvisited_waypoints, allowed_dist_error, database):
         """ Move the robot by following the traversal path given by [unvisited_waypoints].
             Args:
                 unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
@@ -252,7 +258,7 @@ class Robot:
         """
         while unvisited_waypoints:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
-            self.move_to_target_node(curr_waypoint, allowed_dist_error)  # TODO: add obstacle avoidance support
+            self.move_to_target_node(curr_waypoint, allowed_dist_error, database)  # TODO: add obstacle avoidance support
             unvisited_waypoints.popleft()
 
         self.set_phase(Phase.RETURN)
@@ -301,7 +307,7 @@ class Robot:
         pass
 
 
-    def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error):
+    def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """
         Returns robot to base station when robot is in RETURN phase and switches to DOCKING.
 
@@ -318,11 +324,11 @@ class Robot:
         dy = docking_dist_to_base * math.sin(base_angle)
         target_loc = (base_loc[0] + dx, base_loc[1] + dy)
 
-        self.move_to_target_node(target_loc, allowed_docking_pos_error)  # TODO: add obstacle avoidance support
+        self.move_to_target_node(target_loc, allowed_docking_pos_error, database)  # TODO: add obstacle avoidance support
 
         # Face robot towards base station
         target_heading = base_angle + math.pi
-        self.turn_to_target_heading(target_heading, allowed_heading_error)
+        self.turn_to_target_heading(target_heading, allowed_heading_error, database)
 
         # RETURN phase complete:
         self.set_phase(Phase.DOCKING)
