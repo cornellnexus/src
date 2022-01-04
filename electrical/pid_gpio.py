@@ -10,13 +10,14 @@
 import gpio
 import RPi.GPIO as GPIO
 
-class PID_GPIO:
+
+class PidGpio:
 
     # Define wheel radius and
     def __init__(self, wheel_r, vm_load1, vm_load2, L, R):
-        self.wheel_r   = wheel_r
-        self.vm_load1  = vm_load1
-        self.vm_load2  = vm_load2
+        self.wheel_r = wheel_r
+        self.vm_load1 = vm_load1
+        self.vm_load2 = vm_load2
         self.L = L
         self.R = R
 
@@ -38,15 +39,15 @@ class PID_GPIO:
             vr = vel
             vl = vel
         else:
-            vr = omega*(self.R + self.L/2)
-            vl = omega*(self.R - self.L/2)
+            vr = omega * (self.R + self.L / 2)
+            vl = omega * (self.R - self.L / 2)
 
-        omega_r = vr*self.wheel_r
-        omega_l = vl*self.wheel_r
+        omega_r = vr * self.wheel_r
+        omega_l = vl * self.wheel_r
 
         # Define and cap duty cycles if they are above max
-        dc1 = omega_r/self.vm_load1
-        dc2 = omega_l/self.vm_load2
+        dc1 = omega_r / self.vm_load1
+        dc2 = omega_l / self.vm_load2
         if dc1 > 100:
             dc1 = 100
         if dc2 > 100:
@@ -54,5 +55,3 @@ class PID_GPIO:
 
         self.p1.ChangeDutyCycle(dc1)
         self.p2.ChangeDutyCycle(dc2)
-
-
