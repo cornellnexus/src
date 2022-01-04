@@ -44,9 +44,9 @@ class Mission:
         self.all_waypoints = self.grid.get_waypoints(self.control_mode)
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
-        self.rpi_device = Device(0, '/dev/ttyS0')
-        self.base_device = Device(1, '/dev/ttyS0') #temp
-        self.radio_session = RadioSession(self.rpi_device)
+        self.robot_device = Device(0, '/dev/ttyS0')
+        self.basestation_device = Device(1, '/dev/ttyS0') #temp
+        self.radio_session = RadioSession(self.robot_device)
         self.gps = GPS() #TODO: will this be a problem if we have multiple serials initialized? 
         self.imu = IMU() 
         self.allowed_heading_error = allowed_heading_error
@@ -65,7 +65,7 @@ class Mission:
         """
         while self.robot.phase != Phase.COMPLETE:
             if self.robot.phase == Phase.SETUP:
-                self.robot.execute_setup(self.radio_session, self.gps, self.imu)
+                self.robot.execute_setup(self.robot_device, self.radio_session, self.gps, self.imu)
 
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,

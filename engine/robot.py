@@ -205,11 +205,14 @@ class Robot:
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
 
-    def execute_setup(self, radio_session, gps, imu):
-        radio_session.startup_rpi()
-        radio_session.startup_base()
-        gps_setup = gps.startup() 
-        imu_setup = imu.startup()
+    def execute_setup(self, robot_device, radio_session, gps, imu):
+        if (robot_device == 0): 
+            gps_setup = gps.startup() 
+            imu_setup = imu.startup()
+            radio_session.startup_robot()
+        else: 
+            radio_session.startup_basestation()
+        
         radio_connected = radio_session.device.connected 
 
         if (radio_connected and gps_setup and imu_setup): 

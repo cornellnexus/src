@@ -30,7 +30,7 @@ class RadioSession:
     #implementation of 2-way handshake
     #raspberry pi serves as "client" in 2-way handshake
     #returns True if Rpi successfully set up 
-    def startup_rpi(self): 
+    def startup_robot(self): 
         if (self.device != 0): #self.device should be 0
             return "error, set device to 0" 
         while (not self.connect): #while rpi not connected to base station
@@ -39,7 +39,7 @@ class RadioSession:
             if (receive == 'sb'):
                 self.connect = True
 
-    def startup_base(self):
+    def startup_basestation(self):
         if (self.device != 1): 
             return "error, set device to 1"
         while (not self.connect): #while rpi not connected to base station

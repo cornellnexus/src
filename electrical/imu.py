@@ -48,5 +48,14 @@ class IMU:
     """ startup: function that checks the imu data for acc, mag, gyro   
         returns True when IMU is setup properly, False if not"""
     def startup(self):
-        pass #need to define what starting up an IMU entails 
-        #calibrate function?
+        imu_data = []
+        count = 0
+        while (len(imu_data) < 25): 
+            count += 1 
+            data = self.get_imu()
+            if (data.get("acc") != 0 and data.get("mag") != 0 and data.get("gyro")!=0): 
+                imu_data.add(data)
+            if (count > 500): 
+                return False
+        #TODO: Call IMU calibration code
+        return True 
