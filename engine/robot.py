@@ -62,7 +62,8 @@ class Robot:
                 is True
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
-            weight: the weight of the trash the robot has collected
+            plastic_weight: the weight of the trash the robot has collected
+            battery: the battery of the robot
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -83,7 +84,12 @@ class Robot:
         self.move_dist = move_dist
         self.turn_angle = turn_angle/time_step  # dividing by time_step ignores the effect of time_step on absolute
         # radians turned
-        self.weight = plastic_weight
+        self.plastic_weight = plastic_weight
+        self.battery = 100 # TEMPORARY
+        self.acceleration = 0 # TEMPORARY
+        self.magnetic_field = 0 # TEMPORARY
+        self.gyro_rotation = 0  # TEMPORARY
+
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -175,8 +181,8 @@ class Robot:
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
+            # TODO: Do we want to update self.state with this new predicted state????
             database.update_data("state", self.state[0], self.state[1], self.state[2])
-            # print(database.get_data("state"))
 
             # location error (in meters)
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
@@ -207,8 +213,8 @@ class Robot:
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
+            # TODO: Do we want to update self.state with this new predicted state????
             database.update_data("state", self.state[0], self.state[1], self.state[2])
-            # print(database.get_data("state"))
 
 
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
@@ -236,7 +242,7 @@ class Robot:
 
 
     def execute_setup(self):
-        pass
+        self.set_phase(Phase.TRAVERSE)
 
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,

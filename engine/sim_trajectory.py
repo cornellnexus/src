@@ -55,19 +55,21 @@ def get_plot_boundaries(nodes, delta):
 
 
 if __name__ == "__main__":
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=Phase.TRAVERSE)
+    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=Phase.SETUP)
     base_r2d2 = BaseStation((42.444250, -76.483682))
-    database = DataBase()
+    database = DataBase(r2d2)
     m = Mission(robot=r2d2, base_station=base_r2d2, init_control_mode=ControlMode.LAWNMOWER_BORDERS)
 
     # def retrieve_data(name):
     #     logging.info("Thread %s: starting", name)
     #     time.sleep(2)
     #     phse = core_data["phse"]
-    #     # packet = bleh
+    #     packet = "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1"
+    #     ser.sendpacket()
     #     logging.info("Thread %s: finishing", name)
     '''------------------- MISSION EXECUTION -------------------'''
     # packet_maker = threading.Thread(target=retrieve_data, args=(1,), daemon=True)
+
     m.execute_mission(database) #create a thread to run main mission
     #another thread to read robot properties
 

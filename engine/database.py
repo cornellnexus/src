@@ -1,8 +1,6 @@
 class DataBase: 
 
-    def __init__(self, phase = 0, state = [0, 0, 0], is_sim = True, time_step =.1, weight = 0, battery = 0,
-                 move_dist = .5, acceleration = [0, 0, 0], magnetic_field = [0, 0, 0], gyro_rotation = [0, 0, 0],
-                 position_pid = [0, 0, 0], position_noise = 0, heading_pid = [0, 0, 0]):
+    def __init__(self, robot):
         """
         Database Parameters:
             phase: 
@@ -11,36 +9,33 @@ class DataBase:
                     the Robot's related Mission was initialized
                 y_pos: the y position of the robot
                 heading: the theta of the robot in radians, where North on the grid is equal to 0.
-            time_step: amount of time that passes between each feedback loop cycle, only used if is_sim is True
             position_pid: position PID in format of [proportional factor, integral factor, derivative factor]
             position_noise: the flat amount of noise added to the robot's phase on each localization step
             heading_pid: heading PID in format of [proportional factor, integral factor, derivative factor]           
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step 
-            weight: the weight of the trash the robot has collected
+            plastic_weight: the plastic_weight of the trash the robot has collected
         """
         self.core_data = {
-            "phase" : phase,
-            "state" : state,
-            "is_sim" : is_sim,
-            "time_step" : time_step,
-            "weight" : weight, #not detected by sensors yet
-            "battery" : battery, #not detected by sensors yet
-            "move_dist" : move_dist,
-            "acceleration" : acceleration, #not called in main algorithm yet
-            "magnetic_field" : magnetic_field, #not called in main algorithm yet
-            "gyro_rotation" : gyro_rotation, #not called in main algorithm yet
-            "position_pid" : position_pid,
-            "position_noise" : position_noise,
-            "heading_pid" : heading_pid
+            "phase" : robot.phase,
+            "state" : robot.state,
+            "is_sim" : robot.is_sim,
+            "plastic_weight" : robot.plastic_weight, #not detected by sensors yet
+            "battery" : robot.battery, #not detected by sensors yet
+            "move_dist" : robot.move_dist,
+            "acceleration" : robot.acceleration, #not called in main algorithm yet
+            "magnetic_field" : robot.magnetic_field, #not called in main algorithm yet
+            "gyro_rotation" : robot.gyro_rotation, #not called in main algorithm yet
+            "position_pid" : (robot.position_kp, robot.position_ki, robot.position_kd),
+            "position_noise" : robot.position_noise,
+            "heading_pid" : (robot.heading_kp, robot.heading_ki, robot.heading_kd)
         }
 
     def __str__(self):
         return "phase: " + str(self.core_data["phase"]) + ",\n" + \
                "state [x, y, heading]: " + str(self.core_data["state"]) + ",\n" + \
                "is_sim: " + str(self.core_data["is_sim"]) + ",\n" + \
-               "time_step: " + str(self.core_data["time_step"]) + ",\n" + \
-               "weight: " + str(self.core_data["weight"]) + ",\n" + \
+               "plastic_weight: " + str(self.core_data["plastic_weight"]) + ",\n" + \
                "battery: " + str(self.core_data["battery"]) + ",\n" + \
                "move_dist: " + str(self.core_data["move_dist"]) + ",\n" + \
                "acceleration [x, y, z]: " + str(self.core_data["acceleration"]) + ",\n" + \
@@ -50,7 +45,7 @@ class DataBase:
                "position_noise: " + str(self.core_data["position_noise"]) + ",\n" + \
                "heading_pid [proportional factor, integral factor, derivative factor]: " + str(self.core_data["heading_pid"])
 
-
+# position pid, position noise, heading pid
 
     def get_data(self, name):
         return self.core_data[name]
