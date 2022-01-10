@@ -1,4 +1,4 @@
-from gui.validate_inputs import get_integer_value, get_tuple_value, get_float_value
+from gui.retrieve_inputs import get_integer_value, get_tuple_value, get_float_value
 from engine.robot import Phase
 
 class RobotData(object):

@@ -1,4 +1,5 @@
-class DataBase: 
+from engine.packet import Packet
+class DataBase:
 
     def __init__(self, robot):
         """
@@ -17,18 +18,18 @@ class DataBase:
             plastic_weight: the plastic_weight of the trash the robot has collected
         """
         self.core_data = {
-            "phase" : robot.phase,
-            "state" : robot.state,
-            "is_sim" : robot.is_sim,
-            "plastic_weight" : robot.plastic_weight, #not detected by sensors yet
-            "battery" : robot.battery, #not detected by sensors yet
-            "move_dist" : robot.move_dist,
-            "acceleration" : robot.acceleration, #not called in main algorithm yet
-            "magnetic_field" : robot.magnetic_field, #not called in main algorithm yet
-            "gyro_rotation" : robot.gyro_rotation, #not called in main algorithm yet
-            "position_pid" : (robot.position_kp, robot.position_ki, robot.position_kd),
-            "position_noise" : robot.position_noise,
-            "heading_pid" : (robot.heading_kp, robot.heading_ki, robot.heading_kd)
+            "phase": robot.phase,
+            "state": robot.state,
+            "is_sim": robot.is_sim,
+            "plastic_weight": robot.plastic_weight,  # not detected by sensors yet
+            "battery": robot.battery,  # not detected by sensors yet
+            "move_dist": robot.move_dist,
+            "acceleration": robot.acceleration,  # not called in main algorithm yet
+            "magnetic_field": robot.magnetic_field,  # not called in main algorithm yet
+            "gyro_rotation": robot.gyro_rotation,  # not called in main algorithm yet
+            "position_pid": (robot.position_kp, robot.position_ki, robot.position_kd),
+            "position_noise": robot.position_noise,
+            "heading_pid": (robot.heading_kp, robot.heading_ki, robot.heading_kd)
         }
 
     def __str__(self):
@@ -41,17 +42,18 @@ class DataBase:
                "acceleration [x, y, z]: " + str(self.core_data["acceleration"]) + ",\n" + \
                "magnetic_field [x, y, z]: " + str(self.core_data["magnetic_field"]) + ",\n" + \
                "gyro_rotation [x, y, z]: " + str(self.core_data["gyro_rotation"]) + ",\n" + \
-               "position_pid [proportional factor, integral factor, derivative factor]: " + str(self.core_data["position_pid"]) + ",\n" + \
+               "position_pid [proportional factor, integral factor, derivative factor]: " + str(
+            self.core_data["position_pid"]) + ",\n" + \
                "position_noise: " + str(self.core_data["position_noise"]) + ",\n" + \
-               "heading_pid [proportional factor, integral factor, derivative factor]: " + str(self.core_data["heading_pid"])
+               "heading_pid [proportional factor, integral factor, derivative factor]: " + str(
+            self.core_data["heading_pid"])
 
-# position pid, position noise, heading pid
+    # position pid, position noise, heading pid
 
     def get_data(self, name):
         return self.core_data[name]
 
-
-    def update_data(self, name, x = None, y = None, z = None):
+    def update_data(self, name, x=None, y=None, z=None):
         '''
 
         Args:
@@ -78,3 +80,9 @@ class DataBase:
                 self.core_data[name] = [self.core_data[name][0], self.core_data[name][1], z]
         else:
             self.core_data[name] = x
+
+    def make_packet(self):
+        coords = str(self.get_data("state")[0]) + "," + str(self.get_data("state")[1])
+        Packet(str(self.get_data("phase")), str(self.get_data("plastic_weight")), str(self.get_data("acceleration")),\
+               "00.0", "00.00", "000.00,000.00", "0.00", "000.00,000.00", coords, str(self.get_data("battery")), "1")
+        return str(Packet)
