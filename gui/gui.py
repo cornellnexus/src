@@ -183,7 +183,7 @@ def setup_gui():
                 [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8), disabled=True, font=('Courier New', 20))],
                 [sg.Text("Current Coordinates: ______")],
                 [sg.Text("Current Phase: ______", key = "-PHASE-")],
-                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase')],
+                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation')],
                 [sg.Multiline(str(robot_data), key = "-DATA-", size=(40,8), disabled=True, font=('Courier New', 20))]
             ]
     
@@ -251,7 +251,8 @@ def run_gui():
     """
 
     window = setup_gui()
-
+    # os.system("python -m gui.retrieve_inputs &")
+    # os.system("python -m engine.sim_trajectory")
     current_row = 0
     while True:  # Event Loop
         event, values = window.read(timeout=10)
@@ -277,6 +278,9 @@ def run_gui():
             current_output = update_input(window['-COMMANDLINE-'].get(), window)
             # Empty Command Line for next input
             window['-COMMANDLINE-'].update("")
+        if event == 'Simulation':
+            os.system("python -m gui.retrieve_inputs &")
+            os.system("python -m engine.sim_trajectory")
 
         get_control_mode(window)
         update_robot_data(window)
@@ -295,7 +299,7 @@ General Flow of GUI program:
 3. Open main GUI window
 4. Run GUI
 '''
-
+print("starting gui")
 close_gui = run_popup()
 if not close_gui:
     input_data = get_input_data() #Runs the gui popup asking for latitude and longitude bounds
@@ -312,7 +316,7 @@ if not close_gui:
         robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
 
         current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
-        robot_data = RobotData("phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
+        robot_data = RobotData("phse:1;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
 
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,
@@ -326,6 +330,6 @@ if not close_gui:
         robot_data_file.close()
 
 os.system("pkill -f engine.sim_trajectory") #once gui.gui.py is closed, also close engine.sim_trajectory.py
-os.system("pkill -f gui.validate_inputs") #once gui.gui.py is closed, also close gui.validate_inputs.py
+os.system("pkill -f gui.retrieve_inputs") #once gui.gui.py is closed, also close gui.retrieve_inputs.py
 
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################

@@ -2,7 +2,8 @@ import os
 import sys
 import serial
 import statistics
-from engine.packet import Packet
+from engine.packet import *
+from gui.robot_data import get_tuple_value, get_integer_value, get_float_value
 # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
 
 
@@ -17,20 +18,33 @@ def update_gui():
 
     '''
     packets = []
-    robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "a")  # open csv file of robot data
 
+    rpi_to_gui = open((get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "r")  # open csv file of rpi to gui data
+    print("starting retrieve inputs")
+    # robot_data_file.write("start\n")
     while True:
         while len(packets) < 5:
             # packet = ser.readline()
-            packet = input("Enter data: ") # use this for testing purposes
-            if 80 < len(packet) < 150:  # check if packet length is appropriate
-                packets.append(packet)
+            # packet = input("Enter data: ") # use this for testing purposes
+            try:
+                packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
+                print("packet is " + packet)
+                if 80 < len(packet) < 150:  # check if packet length is appropriate
+                    packets.append(packet)
+                    print("appending packet")
+                    # robot_data_file.write("test\n")
+            except:
+                pass
+        print("validating packet")
         valid_packet = validate_packet(packets)
-
-        robot_data_file.write(str(valid_packet) + '\n')
+        robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "a")  # open csv file of robot data
+        robot_data_file.write(valid_packet + '\n')
+        robot_data_file.close()
+        print("write " + valid_packet + " to csv")
         packets = []
 
-    robot_data_file.close()
+    rpi_to_gui.close()
+
 
 
 def get_path(folder):
@@ -45,62 +59,6 @@ def get_path(folder):
     return sys.path
 
 
-def get_values(packet):
-    '''
-    Args:
-        packet: a string of format "id:value"
-
-    Returns: string of [data]'s numeric value (substring after :)
-    '''
-    separator_index = packet.find(":")
-    if separator_index == -1:
-        print("data corruption")
-        raise Exception()
-    return packet[separator_index + 1:]
-
-
-def get_integer_value(packet):
-    '''
-
-    Args:
-        packet: a string of format "id:value"
-
-    Returns: integer of "value"
-
-    '''
-    return int(get_values(packet))
-
-
-def get_float_value(packet):
-    '''
-
-    Args:
-        packet: a string of format "id:value"
-
-    Returns: float of "value"
-
-    '''
-    return float(get_values(packet))
-
-
-def get_tuple_value(data):
-    '''
-
-    Args:
-        data: a string of format "id:value"
-
-    Returns: tuple of floats of "value"
-
-    '''
-    s = get_values(data)
-    separator_index = s.find(",")
-    if separator_index == -1:
-        print("tuple data corruption")
-        raise Exception()
-    fst = s[:separator_index]
-    snd = s[separator_index + 1:]
-    return (float(fst), float(snd))
-
 
 def validate_packet(packets):
     '''
@@ -110,7 +68,7 @@ def validate_packet(packets):
     Returns: a single packet string of data representing median/average of valid packets in [packets].
     '''
     phases = []
-    weights = [] 
+    weights = []
     accs = []
     n_dists = []
     rots = []
@@ -148,7 +106,7 @@ def validate_packet(packets):
     ctrl = get_mode(ctrls)
 
     # return packet with combined data --> need to extend or shrink value to match data string
-    return Packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl)
+    return str(Packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl))
 
 
 def get_mode(data):
@@ -195,6 +153,8 @@ def get_coord(coords):
     y_median = get_median(y)
     return (str(x_median), str(y_median))
 
+
+update_gui()
 # send 5 packets, then pause, then repeat/continue
 # "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000"
 ### preset length: 131 characters

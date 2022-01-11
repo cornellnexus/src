@@ -1,4 +1,4 @@
-phase:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1
-phase:1;p_weight:02.0;acc:3.00;n_dist:04.0;rot:05.00;last_n:006.00,007.00;vel:8.00;next_n:009.00,010.00;coord:011.00,012.00;batt:013;ctrl:5
-phase:1;p_weight:02.0;acc:3.00;n_dist:04.0;rot:05.00;last_n:006.00,007.00;vel:8.00;next_n:009.00,010.00;coord:011.00,012.00;batt:013;ctrl:5
-phase:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1
+phase:2;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:017.76,027.97;batt:100;ctrl:1
+phase:2;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:017.76,031.84;batt:100;ctrl:1
+phase:2;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:019.77,018.79;batt:100;ctrl:1
+phase:2;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:010.41,022.74;batt:100;ctrl:1

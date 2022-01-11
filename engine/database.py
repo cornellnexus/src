@@ -1,4 +1,5 @@
 from engine.packet import Packet
+from engine.robot import Phase
 class DataBase:
 
     def __init__(self, robot):
@@ -81,8 +82,28 @@ class DataBase:
         else:
             self.core_data[name] = x
 
+    def phase_as_value(self):
+        phase = self.get_data("phase")
+        if phase == Phase.SETUP:
+            return "1"
+        elif phase == Phase.TRAVERSE:
+            return "2"
+        elif phase == Phase.AVOID_OBSTACLE:
+            return "3"
+        elif phase == Phase.RETURN:
+            return "4"
+        elif phase == Phase.DOCKING:
+            return "5"
+        elif phase == Phase.COMPLETE:
+            return "6"
+        elif phase == Phase.FAULT:
+            return "7"
+        else:
+            raise Exception()
+
     def make_packet(self):
-        coords = str(self.get_data("state")[0]) + "," + str(self.get_data("state")[1])
-        Packet(str(self.get_data("phase")), str(self.get_data("plastic_weight")), str(self.get_data("acceleration")),\
+        coords = (str(self.get_data("state")[0][0]), str(self.get_data("state")[1][0]))
+        packet = Packet(self.phase_as_value(), str(self.get_data("plastic_weight")), str(self.get_data("acceleration")),\
                "00.0", "00.00", "000.00,000.00", "0.00", "000.00,000.00", coords, str(self.get_data("battery")), "1")
-        return str(Packet)
+
+        return str(packet)

@@ -17,6 +17,10 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
     '''
 
     separator_index = s.find(".")
+    has_deci = True
+    if separator_index == -1:
+        has_deci = False
+        separator_index = len(s)
     current_int_len = len(s[0:separator_index])
     current_deci_len = len(s[separator_index + 1:])
     int_difference = desired_int_length - current_int_len
@@ -30,6 +34,8 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
         int_buffer = "0" * int_difference
         s = int_buffer + s
 
+    if not has_deci:
+        s = s + "."
     if deci_difference < 0:
         # shrink: cut off extra decimal values
         s = s[0:len(s) + deci_difference]
@@ -41,7 +47,7 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
     return s
 
 
-def fix_tuple_size(t, desired_int_length, desired_decimal_length, ):
+def fix_tuple_size(t, desired_int_length, desired_decimal_length):
     '''
 
     Args:
@@ -50,7 +56,7 @@ def fix_tuple_size(t, desired_int_length, desired_decimal_length, ):
         desired_decimal_length: integer representing the number of digits that should appear after the decimal point
 
     Returns: string representing a tuple of same numeric values as [t] with the correct size/length for each entry.
-    For example, fix_data_size(("10","9"), 3, 1) should output ("010.0","009.0"), which contains of the same numeric
+    For example, fix_tuple_size(("10","9"), 3, 1) should output "010.0,009.0", which contains of the same numeric
     values as [t]. Note that there are 3 digits before the decimal point (desire_int_length) and 1 digit after the
     decimal point (desired_decimal_length) for both the first and second tuple parameters.
 

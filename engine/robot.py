@@ -19,6 +19,11 @@ class Phase(Enum):
     COMPLETE = 6
     FAULT = 7
 
+def get_path(folder):
+
+    cwd = os.getcwd()
+    sys.path.append(cwd + "/" + folder)
+    return sys.path
 
 class Robot:
     """
@@ -112,12 +117,6 @@ class Robot:
         with open(cd + '/phases.csv', 'a') as fd:
             fd.write(str(self.phase) + '\n')
 
-    def get_path(folder):
-
-        cwd = os.getcwd()
-        sys.path.append(cwd + "/" + folder)
-        return sys.path
-
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
         self.state = np.round(integrate_odom(self.state, dist, turn_angle), 3)
@@ -177,7 +176,7 @@ class Robot:
             with open(cd + '/datastore.csv', 'a') as fd:
                 fd.write(
                     str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
-            # time.sleep(0.01)
+            time.sleep(0.001)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
