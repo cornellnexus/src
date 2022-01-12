@@ -55,5 +55,4 @@ class IMU:
                 imu_data.append(data)
             if (count > 250): 
                 return False
-        #TODO: Call IMU calibration code
         return True 

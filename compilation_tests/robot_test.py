@@ -37,7 +37,7 @@ class TestSetup(unittest.TestCase):
         {"long": 5.0, "lat": 5.0}, {"long": 5.0, "lat": 5.0}, {"long": 5.0, "lat": 5.0}, {"long": 5.0, "lat": 5.0}, 
         {"long": 10.0, "lat": 10.0}, {"long": 10.0, "lat": 10.0}, {"long": 10.0, "lat": 10.0}, {"long": 10.0, "lat": 10.0}]
 
-        def setup():
+        def gps_setup():
             count = 0 
             gps_data = []
             while (len(gps_data) < 25): 
@@ -49,11 +49,36 @@ class TestSetup(unittest.TestCase):
                     return False 
             return True
 
-        self.assertEqual(True, setup())
+        self.assertEqual(True, gps_setup())
 
     #test_imu_setup contains simulated gps data
     def test_imu_setup(self):
-        pass 
+        sim_data = [{"acc":0, "mag":0, "gyro":0}, {"acc":0, "mag":0, "gyro":0}, {"acc":0, "mag":0, "gyro":0},
+        {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, 
+        {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, 
+        {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10},
+        {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10},
+        {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10},
+        {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10},
+        {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10},
+        {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10},
+        {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}, {"acc":10, "mag":10, "gyro":10}
+        ] 
+        
+        def imu_setup():
+            imu_data = []
+            count = 0
+            while (len(imu_data) < 25): 
+                count += 1 
+                data = sim_data[count]
+                if (data.get("acc") != 0 and data.get("mag") != 0 and data.get("gyro")!=0): 
+                    imu_data.append(data)
+                if (count > 50): 
+                    return False
+            return True 
+
+        self.assertEqual(True, imu_setup())
+        
 
     #test_radio_session_setup contains simulated serial data
     def test_radio_session_setup(self):
