@@ -2,18 +2,24 @@ from sys import is_finalizing
 import serial 
 import time 
 
-""" This module receives the serially transmitted data from the rf module"""
+""" This module receives the serially transmitted data from the rf module """
 class Device: 
     def __init__(self, device_number, port):
         self.ser = serial.Serial(port, 57600)
         self.connected = False
         self.device = device_number
+
+
+""" RadioSession establishes the function calls needed between two devices """
 class RadioSession:
     def __init__(self, device):
-        #'sr': start (rpi)
-        #'sb': start (base station)
-        #'dr': data (rpi) 
-        #'db': data (base station)
+        """
+            Communication package headings:
+            'sr': start (rpi)
+            'sb': start (base station)
+            'dr': data (rpi) 
+            'db': data (base station) 
+        """
         self.packet_type = ['sr', 'sb', 'dr', 'db']
         self.device = device 
         self.device_list = [0, 1] #0 is rpi, 1 is base station
@@ -30,7 +36,7 @@ class RadioSession:
     #implementation of 2-way handshake
     #raspberry pi serves as "client" in 2-way handshake
     #returns True if Rpi successfully set up 
-    def startup_robot(self): 
+    def setup_robot(self): 
         if (self.device != 0): #self.device should be 0
             return "error, set device to 0" 
         while (not self.connect): #while rpi not connected to base station
@@ -39,7 +45,7 @@ class RadioSession:
             if (receive == 'sb'):
                 self.connect = True
 
-    def startup_basestation(self):
+    def setup_basestation(self):
         if (self.device != 1): 
             return "error, set device to 1"
         while (not self.connect): #while rpi not connected to base station

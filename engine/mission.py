@@ -7,6 +7,11 @@ from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum
 from engine.grid import Grid
 
+import serial 
+import board
+import busio
+import adafruit_lsm9ds1
+
 
 class ControlMode(Enum):
     """
@@ -44,11 +49,13 @@ class Mission:
         self.all_waypoints = self.grid.get_waypoints(self.control_mode)
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
+        self.init_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
+        self.init_i2c = busio.I2C(board.SCL, board.SDA)
         self.robot_device = Device(0, '/dev/ttyS0')
-        self.basestation_device = Device(1, '/dev/ttyS0') #temp
+        # self.basestation_device = Device(1, '/dev/ttyS0') #temp
         self.radio_session = RadioSession(self.robot_device)
-        self.gps = GPS() #TODO: will this be a problem if we have multiple serials initialized? 
-        self.imu = IMU() 
+        self.gps = GPS(self.init_serial) 
+        self.imu = IMU(self.init_i2c) 
         self.allowed_heading_error = allowed_heading_error
         self.base_station_angle = base_station.heading
         self.allowed_docking_pos_error = allowed_docking_pos_error

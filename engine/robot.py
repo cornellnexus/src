@@ -3,10 +3,9 @@ import math
 from enum import Enum
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
-
-import electrical.gps as gps 
-import electrical.imu as imu 
-import electrical.rf_module as rf_module
+# import electrical.gps as gps 
+# import electrical.imu as imu 
+# import electrical.rf_module as rf_module
 
 
 
@@ -207,11 +206,11 @@ class Robot:
 
     def execute_setup(self, robot_device, radio_session, gps, imu):
         if (robot_device == 0): 
-            gps_setup = gps.startup() 
-            imu_setup = imu.startup()
-            radio_session.startup_robot()
+            gps_setup = gps.setup() 
+            imu_setup = imu.setup()
+            radio_session.setup_robot()
         else: 
-            radio_session.startup_basestation()
+            radio_session.setup_basestation()
         
         radio_connected = radio_session.device.connected 
 

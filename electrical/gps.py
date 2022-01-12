@@ -9,8 +9,8 @@ from ublox_gps import UbloxGps
 
 
 class GPS:
-    def __init__(self):
-        self.ser = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
+    def __init__(self, init_serial):
+        self.ser = init_serial
         self.gps = UbloxGps(self.ser)
 
     """ get_gps: returns the coordinate (long, lat)"""
@@ -37,17 +37,17 @@ class GPS:
         data = {"long": msg.longitude, "lat": msg.latitude}
         return (data)
 
-    """ startup: function that checks the gps data for longitude and latitude 
+    """ setup: function that checks the gps data for longitude and latitude 
         is not 0 when robot is in startup phase. 
         returns True when GPS is setup properly, False if not"""
-    def startup(self): 
+    def setup(self): 
         gps_data = []
         count = 0 
         while (len(gps_data) < 25): 
             count += 1 
             data = self.get_gps()
             if (data.get("long") != 0 and data.get("lat") != 0): 
-                gps_data.add(data)
-            if (count > 500): 
+                gps_data.append(data)
+            if (count > 200): 
                 return False
         return True 

@@ -5,14 +5,12 @@ import adafruit_lsm9ds1
 
 """ Module that includes functions for IMU sensor"""
 class IMU:
-    
-    i2c = busio.I2C(board.SCL, board.SDA)
-    imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
-
-    def __init__(self):
-         self.acc = 0
-         self.mag = 0
-         self.gyro = 0
+    def __init__(self, init_i2c):
+        i2c = init_i2c
+        self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+        self.acc = 0
+        self.mag = 0
+        self.gyro = 0
 
     """get_imu: returns acc, mag, gyro data formatted in a dictionary"""
     
@@ -45,17 +43,17 @@ class IMU:
                 imu_file.write(str(datum) + '\n')
 
     
-    """ startup: function that checks the imu data for acc, mag, gyro   
+    """ setup: function that checks the imu data for acc, mag, gyro   
         returns True when IMU is setup properly, False if not"""
-    def startup(self):
+    def setup(self):
         imu_data = []
         count = 0
         while (len(imu_data) < 25): 
             count += 1 
             data = self.get_imu()
             if (data.get("acc") != 0 and data.get("mag") != 0 and data.get("gyro")!=0): 
-                imu_data.add(data)
-            if (count > 500): 
+                imu_data.append(data)
+            if (count > 250): 
                 return False
         #TODO: Call IMU calibration code
         return True 
