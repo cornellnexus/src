@@ -2,12 +2,17 @@ from sys import is_finalizing
 import serial 
 import time 
 
-""" This module receives the serially transmitted data from the rf module """
+""" This module receives the serially transmitted data from the radio frequency (rf) module """
 class Device: 
-    def __init__(self, device_number, port):
-        self.ser = serial.Serial(port, 57600)
+    def __init__(self, serial, device_number):
+        """ 
+            Device Numbers: 
+            0: robot's radio
+            1: base station radio
+        """
+        self.ser = serial
         self.connected = False
-        self.device = device_number
+        self.device_number = device_number
 
 
 """ RadioSession establishes the function calls needed between two devices """
@@ -15,14 +20,13 @@ class RadioSession:
     def __init__(self, device):
         """
             Communication package headings:
-            'sr': start (rpi)
+            'sr': start (robot)
             'sb': start (base station)
-            'dr': data (rpi) 
+            'dr': data (robot) 
             'db': data (base station) 
         """
         self.packet_type = ['sr', 'sb', 'dr', 'db']
-        self.device = device 
-        self.device_list = [0, 1] #0 is rpi, 1 is base station
+        self.device = device
 
     def receive_data(self):
         byte_data = self.ser.readline()
@@ -33,23 +37,21 @@ class RadioSession:
         cast_data = bytes((packet_type + str(data) + '\n'), encoding= 'utf-8')
         self.ser.write(cast_data)
 
-    #implementation of 2-way handshake
-    #raspberry pi serves as "client" in 2-way handshake
-    #returns True if Rpi successfully set up 
+    #implementation of 2-way handshake between the robot and basestation/gui for serial data transmission
     def setup_robot(self): 
-        if (self.device != 0): #self.device should be 0
-            return "error, set device to 0" 
-        while (not self.connect): #while rpi not connected to base station
+        if (self.device.device_number != 0): #self.device should be 0
+            print("error, set device to 0")
+        while (not self.device.connected): #while rpi not connected to base station
             self.transmit_data('sr')
             receive = self.receive_data()
             if (receive == 'sb'):
-                self.connect = True
+                self.device.connected = True
 
     def setup_basestation(self):
-        if (self.device != 1): 
-            return "error, set device to 1"
-        while (not self.connect): #while rpi not connected to base station
+        if (self.device.device_number != 1): 
+            print("error, set device to 1")
+        while (not self.device.connected): #while rpi not connected to base station
             receive = self.receive_data()
             if (receive == 'sr'):
-                self.transmit('sb')
-                self.connect = True
+                self.transmit_data('sb') 
+                self.device.connected = True
