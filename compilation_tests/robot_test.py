@@ -1,5 +1,6 @@
 from engine.robot import Robot
 from electrical.rf_module import Device, RadioSession
+from electrical.motor_controller import MotorController
 # from electrical.gps import GPS
 # from electrical.imu import IMU
 import copy
@@ -78,6 +79,14 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(robot_radio_session.device.device_number, 0)
         self.assertEqual(base_station_device.device_number, 1)
 
+    #test motor_controller_setup calls the motor controller setup function, which will 
+    #print a series of commands. Make sure they are in the order of: 
+    #'go_forward', 'turn_left', 'turn_right', 'reverse', 'stop'
+    def test_motor_controller_setup(self): 
+        robot = Robot(x_pos = 0, y_pos = 0, heading = 0, epsilon = 0, max_v = 0, radius = 1, is_sim = True)
+        motor_controller = MotorController(robot)
+        self.assertEqual(motor_controller.is_sim, True)
+        motor_controller.setup()
 
 class TestNodes(unittest.TestCase):
     # set up parameters for robot

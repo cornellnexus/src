@@ -204,11 +204,12 @@ class Robot:
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
 
-    def execute_setup(self, robot_device, radio_session, gps, imu):
+    def execute_setup(self, robot_device, radio_session, gps, imu, motor_controller):
         if (robot_device == 0): 
             gps_setup = gps.setup() 
             imu_setup = imu.setup()
             radio_session.setup_robot()
+            motor_controller.setup(self.is_sim)
         else: 
             radio_session.setup_basestation()
         
