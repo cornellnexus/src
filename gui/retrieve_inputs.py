@@ -155,22 +155,3 @@ def get_coord(coords):
 
 
 update_gui()
-# send 5 packets, then pause, then repeat/continue
-# "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000"
-### preset length: 131 characters
-
-#### From raspberry pi
-# Robot Phase: phse (mission)
-# [SETUP: 0, AVOID_OBSTACLE: 1, RETURN: 2, DOCKING: 3, COMPLETE: 4]
-# Pounds of Collected Plastic: p_weight
-# Acceleration: acc (imu)
-# Current Distance to Next Node: n_dist (mission)
-# Rotation: rot (imu)
-# Last Node Visited: last_n (mission)
-# Velocity: vel (imu)
-# Next Node to Visit: next_n (mission)
-# Current Coordinates: coords
-# Battery level: bat
-
-## Calculated here
-# Total Area Traversed: area_t (using prev nodes)
