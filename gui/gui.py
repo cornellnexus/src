@@ -25,6 +25,10 @@ import os
 import math
 import sys
 
+import logging
+import threading
+import time
+
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
 
@@ -249,10 +253,17 @@ def run_gui():
 
     Contains main control loop, which constantly checks for user interaction with the window and adjusts accordingly.
     """
+    def run_simulation(name):
+        logging.info("Thread %s: starting", name)
+        os.system("python -m gui.retrieve_inputs &")
+        os.system("python -m engine.sim_trajectory")
+        logging.info("Thread %s: finishing", name)
+
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
 
     window = setup_gui()
-    # os.system("python -m gui.retrieve_inputs &")
-    # os.system("python -m engine.sim_trajectory")
     current_row = 0
     while True:  # Event Loop
         event, values = window.read(timeout=10)
@@ -279,8 +290,8 @@ def run_gui():
             # Empty Command Line for next input
             window['-COMMANDLINE-'].update("")
         if event == 'Simulation':
-            os.system("python -m gui.retrieve_inputs &")
-            os.system("python -m engine.sim_trajectory")
+            simulation_thread = threading.Thread(target=run_simulation, args=(1,), daemon=True)
+            simulation_thread.start()
 
         get_control_mode(window)
         update_robot_data(window)
