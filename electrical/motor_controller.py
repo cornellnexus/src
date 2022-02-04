@@ -26,11 +26,12 @@ class MotorController:
             e2 = GPIO.PWM(self.enB, 600)
             e1.start(100)
             e2.start(100)
-        self.go_forward()
-        self.turn_left()
-        self.turn_right()
-        self.reverse()
-        self.stop()
+        if self.is_sim: 
+            self.go_forward()
+            self.turn_left()
+            self.turn_right()
+            self.reverse()
+            self.stop()
 
     # stops the robot 
     def stop(self):

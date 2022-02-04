@@ -43,6 +43,9 @@ class Mission:
                 before it can start docking.
             time_limit: the maximum time the robot can execute roomba traversal mode
             roomba_radius: the maximum radius from the base station that the robot in roomba traversal mode can move
+        
+        Important: All the ports of the electrical classes (ie. Serial) need to be updated to the respective 
+                    ports they are connected to on the computer running the code.
         """
         self.robot = robot
         self.grid = grid
@@ -50,7 +53,7 @@ class Mission:
         self.all_waypoints = self.grid.get_waypoints(self.control_mode)
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
-        self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
+        self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
         self.radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio device
         self.robot_radio_device = Device(0, self.radio_serial) 
         # self.basestation_radio_device = Device(1, '/dev/ttyS0') #base station radio device
