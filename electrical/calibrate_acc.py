@@ -6,6 +6,8 @@ from adafruit_lsm9ds1 import LSM9DS1_I2C
 
 i2c = busio.I2C(board.SCL, board.SDA)
 sensor = LSM9DS1_I2C(i2c)
+global running_amin
+global running_amax
 running_amin = (32767, 32767, 32767)
 running_amax = (-32768, -32768, -32768)
 
@@ -22,8 +24,6 @@ def accel_cal_aux():
 
     Precondition: None.
     """
-    global running_amin
-    global running_amax
 
     accel_x, accel_y, accel_z = sensor.acceleration
 
@@ -31,9 +31,8 @@ def accel_cal_aux():
 
     time.sleep(3)
 
-
-    running_amin = tuple(map(lambda x, y: min(x,y), running_amin, accel_tuple))
-    running_amax = tuple(map(lambda x, y: max(x,y), running_amax, accel_tuple))
+    running_amin = tuple(map(lambda x, y: min(x,y), accel_tuple))
+    running_amax = tuple(map(lambda x, y: max(x,y), accel_tuple))
 
     t_end = time.time() + 60
     while time.time() < t_end:

@@ -12,24 +12,49 @@ class IMU:
         self.mag = 0
         self.gyro = 0
 
-    """get_imu: returns acc, mag, gyro data formatted in a dictionary"""
-    
+
     def set_num_dec(self, num, reading):
+        """
+        Returns rounded values of the [reading] to [num] digits.
+        
+        Parameters: [reading] is the data value from the IMU
+                    [num] is the number of digits to round [reading] to.
+        
+        Preconditions: [reading] is an integer
+                       [num] is an integer
+    """
         x = round(reading[0], num)
         y = round(reading[1], num)
         z = round(reading[2], num)
         return x, y, z
 
+
     def get_imu(self):
+        """
+        Returns acc, mag, gyro data formatted in a dictionary.
+        """
+
         self.acc = self.set_num_dec(3, tuple(self.imu.acceleration))
         self.gyro = self.set_num_dec(3, tuple(self.imu.gyro))
         self.mag = self.set_num_dec(3, tuple(self.imu.magnetic))
         combined_data = self.imu_format(self.acc, self.mag, self.gyro)
         return combined_data
 
-    """imu_format: a helper function to combine IMU sensors together"""
 
     def imu_format(self, acc, mag, gyro):
+        """
+        Returns the IMU sensor readings of the accelerometer, magnetometer, and gyroscope
+        as a dictionary for formatting purposes.
+
+        Parameters: [acc] is the accelerometer X, Y, Z axis values as a 3-tuple of m/s^2 values
+                    [mag] is the magnetometer X, Y, Z axis values as a 3-tuple of gauss values
+                    [gyro] is the gyroscope X, Y, Z axis values as a 3-tuple of rad/s values
+        
+        Preconditions: 
+                    [acc] is a tuple of three ints
+                    [mag] is a tuple of three ints 
+                    [gyro] is a tuple of three ints
+        """
         imu_dict = {
          "acc": acc,
          "mag": mag,
@@ -37,15 +62,24 @@ class IMU:
         }
         return imu_dict
     
+
     def write_to_csv(data_arr, file):
+        """
+        Writes [data_arr] to a csv [file].
+        """
         with open(file, "w") as imu_file:
             for datum in data_arr: 
                 imu_file.write(str(datum) + '\n')
 
     
-    """ setup: function that checks the imu data for acc, mag, gyro   
-        returns True when IMU is setup properly, False if not"""
     def setup(self):
+        """ 
+        Returns True when IMU is setup properly, False if not.
+        Checks the IMU is setup by ensuring that at least 25 IMU readings of 
+        (acc, mag, gyro) data is not equal to 0. If this condition is satisfied, the
+        function returns True. If the IMU continues reading 0s more than a count of 
+        250 times, then this function returns False. 
+        """
         imu_data = []
         count = 0
         while (len(imu_data) < 25): 
