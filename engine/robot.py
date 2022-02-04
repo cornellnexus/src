@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, meters_to_gps
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from enum import Enum
 
@@ -36,7 +36,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=0.1):
+                 init_phase=1, time_step=.1, move_dist=.5, turn_angle=3):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -56,9 +56,10 @@ class Robot:
             heading_ki: the integral factor of the heading PID
             heading_kd: the derivative factor of the heading PID
             heading_noise: ?
-            init_phase: the phase which the robot begins at
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
+            move_dist: the distance in meters that the robot moves per time dt
+            turn_angle: the angle in radians that the robot turns per time dt regardless of time step
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -76,6 +77,9 @@ class Robot:
         self.heading_ki = heading_ki
         self.heading_kd = heading_kd
         self.heading_noise = heading_noise
+        self.move_dist = move_dist
+        self.turn_angle = turn_angle/time_step  # dividing by time_step ignores the effect of time_step on absolute
+        # radians turned
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -100,11 +104,11 @@ class Robot:
         if self.is_sim:
             self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
 
-    def move_forward(self, dist, dt=1):
+    def move_forward(self, dist):
         # Moves robot forward by distance dist
         # dist is in meters
-        new_x = self.state[0] + dist * math.cos(self.state[2]) * dt
-        new_y = self.state[0] + dist * math.sin(self.state[2]) * dt
+        new_x = self.state[0] + dist * math.cos(self.state[2]) * self.time_step
+        new_y = self.state[1] + dist * math.sin(self.state[2]) * self.time_step
         self.state[0] = np.round(new_x, 3)
         self.state[1] = np.round(new_y, 3)
 
@@ -178,12 +182,12 @@ class Robot:
             predicted_state = self.state  # this will come from Kalman Filter
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
 
-    def turn(self, turn_angle, dt=1):
+    def turn(self, turn_angle):
         """
         Hardcoded in-place rotation for testing purposes. Does not use heading PID. Avoid using in physical robot.
         """
         # Turns robot, where turn_angle is given in radians
-        clamp_angle = (self.state[2] + (turn_angle * dt)) % (2 * math.pi)
+        clamp_angle = (self.state[2] + (turn_angle * self.time_step)) % (2 * math.pi)
         self.state[2] = np.round(clamp_angle, 3)
         if self.is_sim:
             self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
@@ -199,7 +203,22 @@ class Robot:
     def execute_setup(self):
         pass
 
-    def execute_traversal(self, unvisited_waypoints, allowed_dist_error):
+    def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
+                          roomba_radius):
+        if control_mode == 4:  # Roomba mode
+            self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
+        else:
+            self.traverse_standard(unvisited_waypoints, allowed_dist_error)
+
+    def traverse_standard(self, unvisited_waypoints, allowed_dist_error):
+        """ Move the robot by following the traversal path given by [unvisited_waypoints].
+            Args:
+                unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
+                allowed_dist_error (Double): the maximum distance in meters that the robot can be from a node for the
+                    robot to have "visited" that node
+            Returns:
+                unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
+        """
         while unvisited_waypoints:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
             self.move_to_target_node(curr_waypoint, allowed_dist_error)  # TODO: add obstacle avoidance support
@@ -207,6 +226,34 @@ class Robot:
 
         self.phase = Phase.RETURN
         return unvisited_waypoints
+
+    def traverse_roomba(self, base_station_loc, time_limit, roomba_radius):
+        """ Move the robot in a roomba-like manner.
+            Args:
+                base_station_loc (Tuple): The (x,y) location of the base station
+                time_limit (Double): How long the robot will move using roomba mode
+                roomba_radius (Double): Maximum radius from the base station that the robot can move
+            Returns:
+                None
+        """
+        dt = 0
+        exit_boolean = False # battery_limit, time_limit, battery_capacity is full
+        while not exit_boolean:
+
+            curr_x = self.state[0]
+            curr_y = self.state[1]
+            new_x = curr_x + self.move_dist * math.cos(self.state[2]) * self.time_step
+            new_y = curr_y + self.move_dist * math.sin(self.state[2]) * self.time_step
+            next_radius = math.sqrt(abs(new_x-base_station_loc[0])**2 + abs(new_y-base_station_loc[1])**2)
+            if next_radius > roomba_radius:
+                self.move_forward(-self.move_dist)
+                self.turn(self.turn_angle)
+            else:
+                self.move_forward(self.move_dist)
+            dt += 1
+            exit_boolean = (dt > time_limit)
+        self.phase = Phase.COMPLETE
+        return None
 
     def execute_avoid_obstacle(self):
         pass
