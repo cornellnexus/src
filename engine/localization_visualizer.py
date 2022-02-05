@@ -5,11 +5,14 @@ from matplotlib import patches as patch
 import ast
 import sys
 import math
+import numpy as np
 from enum import IntEnum
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from engine.sensor_module import SensorModule
 from constants.geo_fences import ENGINEERING_QUAD
+from engine.ekf import LocalizationEKF
+
 
 
 class DataType(IntEnum):
@@ -104,9 +107,47 @@ if __name__ == "__main__":
         else:
             frames = min(len(imu_readings) - 1, len(gps_readings) - 1)
 
+
     # EKF setup
+    if use_ekf:
+        #Get the first GPS coordinate
+        first_gps_coord = (gps_readings[0]["lat"], gps_readings[0]["lon"])
+        first_imu_reading = (imu_readings[0]["mag"]["x"], imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["z"])
+
+        # mu: the mean of the robot state distribution, in the form [[x],[y],[z]]. [3x1 np array]
+        # sigma: the standard deviation of the robot state distribution. [3x3 np array]
+       
+        # mu is meters from start position (bottom left position)
+        mu = np.array([0, 0, first_imu_reading[3]])
+        
+        #confidence of mu, set it to high b/c not confident, algo brings it down
+        sigma = np.array([[[10, 0, 0], [0, 10, 0]], [[0, 0, 10]]])
+       
+        ekf = LocalizationEKF.EKF(mu,sigma)
+
+        if data_type == DataType.IMU_AND_GPS and not is_live:
+            for i in range(1, frames):
+                gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
+                imu_reading = (imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["z"])
+
+                #predicted 
+                #position from time t, controls from time t-1
 
 
+                #control: d and phi (may be the same as v and omega) [connected to motor readings?]
+                control = np.array([0,1])
+               
+                #predict step according to ekf
+                #control is like how the motor is moving? (connect motor movement to x&y)
+                mu_bar, sigma_bar = LocalizationEKF.predict_step(control)
+
+                measurements = np.array([0, 1, 2]) 
+                #see google doc for calculation of measurements
+                #update_step(self, mu_bar, sigma_bar, measurement):
+                #update_step is a procedure, attributes updated in this method
+                LocalizationEKF.update_step(mu_bar, sigma_bar, measurements)
+
+    
     def init():
         circle_patch.center = (0, 0)
         if data_type == DataType.GPS_ONLY:

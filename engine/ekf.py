@@ -79,6 +79,10 @@ class LocalizationEKF:
         Parameters:
         # pose: robot's state
         """
+        #First get data, convert data to how it relates to our pose 
+        #GPS -> meters away from origin 
+        # o           o          o X           o
+
         expected_measurement = pose
         return expected_measurement
 
@@ -117,6 +121,7 @@ class LocalizationEKF:
         self.mu = mu_bar + (kalman_gain @ (measurement - self.get_expected_measurement(mu_bar)))
         kh = kalman_gain * jac_H
         self.sigma = (np.eye(np.size(kh, 0)) - kh) @ sigma_bar
+
 
     # def localize(self, control, measurement):
     #     # TODO: currently, both predict and update steps are tied into one function. Should be separated
