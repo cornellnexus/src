@@ -178,7 +178,7 @@ def setup_gui():
     """
 
 
-    image_data = get_images();
+    image_data = get_images()
     left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
     right_col = [
                 [sg.Image(key='-LOGO-', data=image_data[3])], 
