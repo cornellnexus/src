@@ -9,7 +9,7 @@ import numpy as np
 from enum import IntEnum
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
-from engine.sensor_module import SensorModule
+# from engine.sensor_module import SensorModule
 from constants.geo_fences import ENGINEERING_QUAD
 from engine.ekf import LocalizationEKF
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         # sigma: the standard deviation of the robot state distribution. [3x3 np array]
        
         # mu is meters from start position (bottom left position)
-        mu = np.array([0, 0, first_imu_reading[3]])
+        mu = np.array([0, 0, Math.pi / 2])
         
         #confidence of mu, set it to high b/c not confident, algo brings it down
         sigma = np.array([[[10, 0, 0], [0, 10, 0]], [[0, 0, 10]]])
