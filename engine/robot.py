@@ -6,8 +6,6 @@ from enum import Enum
 import os.path
 import time
 import sys
-from engine.manual import Manual
-
 
 class Phase(Enum):
     """
@@ -21,6 +19,11 @@ class Phase(Enum):
     COMPLETE = 6
     FAULT = 7
 
+def get_path(folder):
+
+    cwd = os.getcwd()
+    sys.path.append(cwd + "/" + folder)
+    return sys.path
 
 class Robot:
     """
@@ -40,7 +43,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=.1, move_dist=.5, turn_angle=3):
+                 init_phase=1, time_step=.1, move_dist=.5, turn_angle=3, plastic_weight = 0):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -64,6 +67,8 @@ class Robot:
                 is True
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
+            plastic_weight: the weight of the trash the robot has collected
+            battery: the battery of the robot
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -82,8 +87,14 @@ class Robot:
         self.heading_kd = heading_kd
         self.heading_noise = heading_noise
         self.move_dist = move_dist
-        self.turn_angle = turn_angle / time_step  # dividing by time_step ignores the effect of time_step on absolute
+        self.turn_angle = turn_angle/time_step  # dividing by time_step ignores the effect of time_step on absolute
         # radians turned
+        self.plastic_weight = plastic_weight
+        self.battery = 100 # TEMPORARY
+        self.acceleration = 0 # TEMPORARY
+        self.magnetic_field = 0 # TEMPORARY
+        self.gyro_rotation = 0  # TEMPORARY
+
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -106,16 +117,9 @@ class Robot:
         with open(cd + '/phases.csv', 'a') as fd:
             fd.write(str(self.phase) + '\n')
 
-    def get_path(folder):
-
-        cwd = os.getcwd()
-        sys.path.append(cwd + "/" + folder)
-        return sys.path
-
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
         self.state = np.round(integrate_odom(self.state, dist, turn_angle), 3)
-
         # if it is a simulation,
         if self.is_sim:
             self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
@@ -131,7 +135,8 @@ class Robot:
         if self.is_sim:
             self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
 
-    def move_to_target_node(self, target, allowed_dist_error):
+
+    def move_to_target_node(self, target, allowed_dist_error, database):
         """
         Moves robot to target + or - allowed_dist_error
 
@@ -171,15 +176,18 @@ class Robot:
             with open(cd + '/datastore.csv', 'a') as fd:
                 fd.write(
                     str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
-            # time.sleep(0.01)
+            time.sleep(0.001)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
+            # TODO: Do we want to update self.state with this new predicted state????
+            database.update_data("state", self.state[0], self.state[1], self.state[2])
+
             # location error (in meters)
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
 
-    def turn_to_target_heading(self, target_heading, allowed_heading_error):
+    def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
         Turns robot in-place to target heading + or - allowed_heading_error, utilizing heading PID.
 
@@ -191,7 +199,7 @@ class Robot:
 
         predicted_state = self.state  # this will come from Kalman Filter
 
-        abs_heading_error = abs(target_heading - float(predicted_state[2]))
+        abs_heading_error = abs(target_heading-float(predicted_state[2]))
 
         while abs_heading_error > allowed_heading_error:
             self.state[2] = np.random.normal(self.state[2], self.heading_noise)
@@ -204,7 +212,12 @@ class Robot:
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
+            # TODO: Do we want to update self.state with this new predicted state????
+            database.update_data("state", self.state[0], self.state[1], self.state[2])
+
+
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
+
 
     def turn(self, turn_angle):
         """
@@ -216,33 +229,30 @@ class Robot:
         if self.is_sim:
             self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
 
+
     def get_state(self):
         return self.state
+
 
     def print_current_state(self):
         # Prints current robot state
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
 
+
     def execute_setup(self):
-        pass
+        self.set_phase(Phase.TRAVERSE)
+
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
-                          roomba_radius):
-        # Since robot.py is ran on the robot, robot_data should automatically account for the initial control_mode wanted (param when first running execute_traversal).
-        # Therefore, no need to write serially the control_mode passed in execute traversal. Instead, need to have a gate to first start executing passed control_mode, then another loop to continuously check for interruption.
-        manual = Manual(control_mode)
+                          roomba_radius, database):
         if control_mode == 4:  # Roomba mode
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
-        elif control_mode == 1:  # manual mode
-            manual = Manual()
-            manual.execute_manual() # placeholder until we are able to interrupt the autonomous movement. It needs to
-            # somehow keep reading the robot state to determine whether someone wants to make it manual while also
-            # not infinitely spawning these methods.
         else:
-            self.traverse_standard(unvisited_waypoints, allowed_dist_error)
+            self.traverse_standard(unvisited_waypoints, allowed_dist_error, database)
 
-    def traverse_standard(self, unvisited_waypoints, allowed_dist_error):
+
+    def traverse_standard(self, unvisited_waypoints, allowed_dist_error, database):
         """ Move the robot by following the traversal path given by [unvisited_waypoints].
             Args:
                 unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
@@ -253,11 +263,12 @@ class Robot:
         """
         while unvisited_waypoints:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
-            self.move_to_target_node(curr_waypoint, allowed_dist_error)  # TODO: add obstacle avoidance support
+            self.move_to_target_node(curr_waypoint, allowed_dist_error, database)  # TODO: add obstacle avoidance support
             unvisited_waypoints.popleft()
 
         self.set_phase(Phase.RETURN)
         return unvisited_waypoints
+
 
     def traverse_roomba(self, base_station_loc, time_limit, roomba_radius):
         """ Move the robot in a roomba-like manner.
@@ -269,14 +280,14 @@ class Robot:
                 None
         """
         dt = 0
-        exit_boolean = False  # battery_limit, time_limit, battery_capacity is full
+        exit_boolean = False # battery_limit, time_limit, battery_capacity is full
         while not exit_boolean:
 
             curr_x = self.state[0]
             curr_y = self.state[1]
             new_x = curr_x + self.move_dist * math.cos(self.state[2]) * self.time_step
             new_y = curr_y + self.move_dist * math.sin(self.state[2]) * self.time_step
-            next_radius = math.sqrt(abs(new_x - base_station_loc[0]) ** 2 + abs(new_y - base_station_loc[1]) ** 2)
+            next_radius = math.sqrt(abs(new_x-base_station_loc[0])**2 + abs(new_y-base_station_loc[1])**2)
             if next_radius > roomba_radius:
                 self.move_forward(-self.move_dist)
                 self.turn(self.turn_angle)
@@ -287,18 +298,21 @@ class Robot:
         self.phase = Phase.COMPLETE
         return None
 
+
     def set_phase(self, new_phase):
         self.phase = new_phase
 
         cwd = os.getcwd()
         cd = cwd + "/csv"
         with open(cd + '/phases.csv', 'a') as fd:
-            fd.write(str(self.phase) + '\n')
+            fd.write(str(self.phase)+ '\n')
+
 
     def execute_avoid_obstacle(self):
         pass
 
-    def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error):
+
+    def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """
         Returns robot to base station when robot is in RETURN phase and switches to DOCKING.
 
@@ -315,14 +329,15 @@ class Robot:
         dy = docking_dist_to_base * math.sin(base_angle)
         target_loc = (base_loc[0] + dx, base_loc[1] + dy)
 
-        self.move_to_target_node(target_loc, allowed_docking_pos_error)  # TODO: add obstacle avoidance support
+        self.move_to_target_node(target_loc, allowed_docking_pos_error, database)  # TODO: add obstacle avoidance support
 
         # Face robot towards base station
         target_heading = base_angle + math.pi
-        self.turn_to_target_heading(target_heading, allowed_heading_error)
+        self.turn_to_target_heading(target_heading, allowed_heading_error, database)
 
         # RETURN phase complete:
         self.set_phase(Phase.DOCKING)
 
+
     def execute_docking(self):
-        self.set_phase(Phase.COMPLETE)  # temporary for simulation purposes
+        self.set_phase(Phase.COMPLETE) # temporary for simulation purposes
