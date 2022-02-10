@@ -50,8 +50,7 @@ class Mission:
         self.time_limit = time_limit
         self.roomba_radius = roomba_radius
 
-
-    def execute_mission(self, database):
+    def execute_mission(self):
         """
         Activates the main control loop. Depending on the robot's phase, different motion control algorithms are
         activated.
@@ -64,19 +63,15 @@ class Mission:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
                                                                        self.allowed_dist_error, self.base_station_loc,
                                                                        self.control_mode, self.time_limit,
-                                                                       self.roomba_radius, database)
+                                                                       self.roomba_radius)
 
             elif self.robot.phase == Phase.AVOID_OBSTACLE:
                 self.robot.execute_avoid_obstacle()
 
             elif self.robot.phase == Phase.RETURN:
                 self.robot.execute_return(self.base_station_loc, self.base_station_angle,
-                                          self.allowed_docking_pos_error, self.allowed_heading_error, database)
+                                          self.allowed_docking_pos_error, self.allowed_heading_error)
 
             elif self.robot.phase == Phase.DOCKING:
                 self.robot.execute_docking()
-            
-            #update the database with the most recent state
-            database.update_data("phase", self.robot.phase)
-
 
