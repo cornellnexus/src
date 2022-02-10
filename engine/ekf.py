@@ -29,7 +29,7 @@ class LocalizationEKF:
         self.Q = ([[5, 0], [0, 5]])  # measurement noise matrix
 
     @staticmethod
-    def get_predicted_state(self, pose, control):
+    def get_predicted_state(pose, control):
         """
         g function
         Given a robot pose at time step t, and the controls of the robot at time t-1,
@@ -45,7 +45,7 @@ class LocalizationEKF:
         return integrate_odom(pose, control[0], control[1])
 
     @staticmethod
-    def get_g_jac(self, pose, control):
+    def get_g_jac(pose, control):
         """
         G Jacobian
         Returns the Jacobian of the g function.
@@ -102,8 +102,8 @@ class LocalizationEKF:
         on the robot's controls.
         [mu_bar, sigma_bar]
         """
-        jac_G = self.get_g_jac(self.mu, control)
-        mu_bar = self.get_predicted_state((self.mu, control))
+        jac_G = LocalizationEKF.get_g_jac(self.mu, control)
+        mu_bar = LocalizationEKF.get_predicted_state(self.mu, control)
         sigma_bar = jac_G * self.sigma * np.transpose(jac_G) + self.R
 
         return mu_bar, sigma_bar
@@ -113,6 +113,7 @@ class LocalizationEKF:
         Returns the distribution of the robot's state after the update step of the EKF, based
         on the robot's sensor measurements.
         [mu, sigma]
+        TODO: Fix this specification. update_step is a procedure and does not return anything.
         """
         jac_H = self.get_h_jac(mu_bar)
         kalman_gain = \

@@ -14,11 +14,10 @@ from constants.geo_fences import ENGINEERING_QUAD
 from engine.ekf import LocalizationEKF
 
 
-
 class DataType(IntEnum):
-    IMU_ONLY = 1
-    GPS_ONLY = 2
-    IMU_AND_GPS = 3
+    IMU_ONLY = 0
+    GPS_ONLY = 1
+    IMU_AND_GPS = 2
 
 
 """
@@ -47,7 +46,7 @@ if __name__ == "__main__":
     is_live = int(is_live)
 
     data_type = sys.argv[2][sys.argv[2].index("=")+1:]
-    if data_type != "1" and data_type != "2" and data_type != "3":
+    if data_type != "0" and data_type != "1" and data_type != "2":
         sys.exit("The value of the data argument must be 0, 1, or 2.")
     data_type = int(data_type)
 
@@ -110,42 +109,39 @@ if __name__ == "__main__":
 
     # EKF setup
     if use_ekf:
-        #Get the first GPS coordinate
+        # Get the first GPS coordinate
         first_gps_coord = (gps_readings[0]["lat"], gps_readings[0]["lon"])
-        first_imu_reading = (imu_readings[0]["mag"]["x"], imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["z"])
+        x_init, y_init = get_vincenty_x(zone[0], first_gps_coord), get_vincenty_y(zone[0], first_gps_coord)
+        heading_init = math.degrees(math.atan2(imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["x"]))
 
-        # mu: the mean of the robot state distribution, in the form [[x],[y],[z]]. [3x1 np array]
-        # sigma: the standard deviation of the robot state distribution. [3x3 np array]
-       
-        # mu is meters from start position (bottom left position)
-        mu = np.array([0, 0, Math.pi / 2])
-        
-        #confidence of mu, set it to high b/c not confident, algo brings it down
-        sigma = np.array([[[10, 0, 0], [0, 10, 0]], [[0, 0, 10]]])
-       
-        ekf = LocalizationEKF.EKF(mu,sigma)
+        # mu is meters from start position (bottom left position facing up)
+        mu = np.array([[x_init], [y_init], [heading_init]])
+
+        # confidence of mu, set it to high initially b/c not confident, algo brings it down
+        sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
+
+        ekf = LocalizationEKF(mu, sigma)
 
         if data_type == DataType.IMU_AND_GPS and not is_live:
             for i in range(1, frames):
+
+                # position from time t, controls from time t-1
+                # control: d and phi (may be the same as v and omega) [connected to motor readings?]
+                # control is like how the motor is moving? (connect motor movement to x&y)
+                # TODO: Get proper controls from motors and use predict step.
+                # control = np.array([0, 0])
+                # mu_bar, sigma_bar = ekf.predict_step(control)
+
+                mu_bar = ekf.mu  # temporary placeholder
+                sigma_bar = ekf.sigma  # temporary placeholder
+
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
-                imu_reading = (imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["z"])
+                x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord)
+                heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
 
-                #predicted 
-                #position from time t, controls from time t-1
+                measurements = np.array([x, y, heading])
 
-
-                #control: d and phi (may be the same as v and omega) [connected to motor readings?]
-                control = np.array([0,1])
-               
-                #predict step according to ekf
-                #control is like how the motor is moving? (connect motor movement to x&y)
-                mu_bar, sigma_bar = LocalizationEKF.predict_step(control)
-
-                measurements = np.array([0, 1, 2]) 
-                #see google doc for calculation of measurements
-                #update_step(self, mu_bar, sigma_bar, measurement):
-                #update_step is a procedure, attributes updated in this method
-                LocalizationEKF.update_step(mu_bar, sigma_bar, measurements)
+                ekf.update_step(mu_bar, sigma_bar, measurements)  # update_step is a procedure, attributes updated in this method.
 
     
     def init():
