@@ -121,29 +121,7 @@ if __name__ == "__main__":
         sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
 
         ekf = LocalizationEKF(mu, sigma)
-
-        if data_type == DataType.IMU_AND_GPS and not is_live:
-            for i in range(1, frames):
-
-                # position from time t, controls from time t-1
-                # control: d and phi (may be the same as v and omega) [connected to motor readings?]
-                # control is like how the motor is moving? (connect motor movement to x&y)
-                # TODO: Get proper controls from motors and use predict step.
-                # control = np.array([0, 0])
-                # mu_bar, sigma_bar = ekf.predict_step(control)
-
-                mu_bar = ekf.mu  # temporary placeholder
-                sigma_bar = ekf.sigma  # temporary placeholder
-
-                gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
-                x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord)
-                heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
-
-                measurements = np.array([x, y, heading])
-
-                ekf.update_step(mu_bar, sigma_bar, measurements)  # update_step is a procedure, attributes updated in this method.
-
-    
+        
     def init():
         circle_patch.center = (0, 0)
         if data_type == DataType.GPS_ONLY:
@@ -186,11 +164,29 @@ if __name__ == "__main__":
                 measurements = sensor_module.get_measurement(zone[0])
                 new_heading = measurements[2]
                 new_location = (measurements[0], measurements[1])
+           
+            elif not is_live and use_ekf: 
+                mu_bar = ekf.mu  # temporary placeholder
+                sigma_bar = ekf.sigma  # temporary placeholder
+
+                gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
+                x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord)
+                heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+
+                measurements = np.array([[x], [y], [heading]])
+
+                ekf.update_step(mu_bar, sigma_bar, measurements)  # update_step is a procedure, attributes updated in this method.
+                new_location = (ekf.mu[0][0], ekf.mu[1][0])
+                new_heading = ekf.mu[2][0]
 
             else:
+                
                 new_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
                 new_location = (get_vincenty_x(zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord))
+
+                # print(new_heading)
+                # print(new_location)
 
             circle_patch.center = new_location
             wedge_patch.update({"center": new_location})

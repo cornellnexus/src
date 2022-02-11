@@ -25,8 +25,8 @@ class LocalizationEKF:
     def __init__(self, init_mu, init_sigma):
         self.mu = init_mu
         self.sigma = init_sigma
-        self.R = np.array([[10, 0], [0, 10]])  # process noise matrix
-        self.Q = ([[5, 0], [0, 5]])  # measurement noise matrix
+        self.R = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])  # process noise matrix
+        self.Q = np.array([[5, 0, 0], [0, 5, 0], [0, 0, 5]])  # measurement noise matrix
 
     @staticmethod
     def get_predicted_state(pose, control):
@@ -70,7 +70,7 @@ class LocalizationEKF:
         return G
 
     @staticmethod
-    def get_expected_measurement(self, pose):
+    def get_expected_measurement(pose):
         """
         h function
         Returns the expected measurement of the robot, given the robot's current state. [3-by-1 Numpy array], where
@@ -115,11 +115,21 @@ class LocalizationEKF:
         [mu, sigma]
         TODO: Fix this specification. update_step is a procedure and does not return anything.
         """
+
         jac_H = self.get_h_jac(mu_bar)
+
         kalman_gain = \
             (sigma_bar * np.transpose(jac_H) * inv(jac_H * sigma_bar * np.transpose(jac_H) + self.Q))
-
-        self.mu = mu_bar + (kalman_gain @ (measurement - self.get_expected_measurement(mu_bar)))
+        expected_measurement = self.get_expected_measurement(mu_bar)
+        
+        # print("kalman_gain")
+        # print(kalman_gain)
+        # print("measurement")
+        # print(measurement)
+        # print("expected_measurement")
+        # print(expected_measurement)
+       
+        self.mu = mu_bar + (kalman_gain @ (measurement - expected_measurement))
         kh = kalman_gain * jac_H
         self.sigma = (np.eye(np.size(kh, 0)) - kh) @ sigma_bar
 
