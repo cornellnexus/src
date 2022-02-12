@@ -2,16 +2,10 @@ from collections import deque
 from electrical.motor_controller import MotorController
 from engine.robot import Phase
 from electrical.rf_module import Device, RadioSession
-from electrical.gps import GPS
-from electrical.imu import IMU
+
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum
 from engine.grid import Grid
-
-import serial 
-import board
-import busio
-import adafruit_lsm9ds1
 
 
 class ControlMode(Enum):
@@ -24,6 +18,18 @@ class ControlMode(Enum):
     ROOMBA = 4
     MANUAL = 5
 
+
+'''
+Electrical library imports
+(need these libraries to run mission out of the loop)
+Commented out for simulation testing purposes
+'''
+# from electrical.gps import GPS
+# from electrical.imu import IMU
+# import serial
+# import board
+# import busio
+# import adafruit_lsm9ds1
 
 class Mission:
     def __init__(self, robot, base_station, init_control_mode, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
