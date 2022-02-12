@@ -129,7 +129,7 @@ class TestNodes(unittest.TestCase):
 
     def test_move_forward_with_time(self):
         # Values calculated by hand based on kinematic equations
-        self.robot_three.move_forward(self.distance, 5)
+        self.robot_three.move_forward(5)
         new_x = -45
         new_y = 5
         new_theta = float(self.robot_two.state[2])
@@ -145,7 +145,7 @@ class TestNodes(unittest.TestCase):
         self.assertEqual(original_angle, self.robot_five.state[2])
 
     def test_turn_with_time(self):
-        self.robot_six.turn(math.pi / 2, 5)
+        self.robot_six.turn(math.pi / 2)
         self.assertEqual([4.712], self.robot_six.state[2])
 
 

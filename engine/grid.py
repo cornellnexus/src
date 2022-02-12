@@ -107,11 +107,7 @@ class Grid:
     def get_num_cols(self):
         return self.num_cols
 
-<<<<<<< HEAD
-    def get_waypoints(self, mode='lawn_full'):
-=======
     def get_spiral_waypoints(self):
->>>>>>> f9c01a07057283d9a8c533879d4a02e091055878
         """
         Returns the robot's spiral traversal path for the current grid using every
         single node of the grid. [Node list].
