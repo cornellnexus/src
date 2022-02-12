@@ -9,20 +9,49 @@ Thus, we will will break up the file into different sections:
 3. GUI PROGRAM FLOW/SCRIPT
 
 '''
-import numpy as np
+
+from gui.gui_popup import *
+from gui.images import get_images
+from gui.robot_data import RobotData
+
 import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib import animation as animation
 from matplotlib import patches as patch
-#from csv.datastore import *
-import gui_popup #pop-up window
-from images import get_images
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
 
+import os
+import math
+import sys
+
+import logging
+import threading
+import time
+
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
+
+def get_control_mode(window):
+    """
+    Returns the last control mode given in the control_mode.csv file
+    """
+    path = get_path('csv')
+    file = open(path[len(path)-1]+"/control_mode_test.csv", "r")
+    try:
+        last_line = file.readlines()[-1]
+        control_mode = last_line[last_line.index(".")+1:len(last_line)]
+        window['-CONTROL_MODE_BUTTON-'].update(control_mode)
+    except:
+        pass
+
+    file.close()
+
+def get_path(folder):
+
+    cwd = os.getcwd()
+    sys.path.append(cwd + "/" + folder)
+    return sys.path
 
 def setup(bounds):
     """
@@ -38,7 +67,7 @@ def setup(bounds):
 
     longMin, longMax, latMin, latMax = bounds
     BoundaryBox = [longMin, longMax, latMin, latMax]
-    ruh_m = plt.imread('map.png')
+    ruh_m = plt.imread(get_path('gui')[-1] + '/map.png')
     fig, ax = plt.subplots(figsize=(8, 7))
     ax.set_title('Cayuga Lake Shore')
     ax.set_xlim(BoundaryBox[0], BoundaryBox[1])
@@ -93,19 +122,28 @@ def animate(i):
     Precondition: [i] is an integer.
     """
 
-    x, y = circle_patch.center
-    x = 5 + 3 * np.sin(np.radians(i))
-    y = 5 + 3 * np.cos(np.radians(i))
-    circle_patch.center = (x, y)
-    wedge_patch.update({'center': [x, y]})
-    wedge_patch.theta1 += (.5 * x)
-    wedge_patch.theta2 += (.5 * x)
-    wedge_patch.theta1 = wedge_patch.theta1 % 360
-    wedge_patch.theta2 = wedge_patch.theta2 % 360
-    # print(wedge_patch.theta1, wedge_patch.theta2)
-    # print(wedge_patch.center)
-    # only getting called once 
-    # should be getting called repeatedly
+    try:
+            last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
+            x, y, alpha = last_line.strip().split(',')
+            x = float(x)
+            y = float(y)
+            alpha = float(alpha)
+            degrees = math.degrees(alpha)
+            circle_patch.center = (x, y)
+            wedge_patch.update({'center': [x, y]})
+            wedge_patch.theta1 = degrees - 10
+            wedge_patch.theta2 = degrees + 10 #10 is a temporary constant we will use
+    except:
+            # no new location data/waiting for new data
+            pass
+
+    # try:
+    #         last_state_line = robot_state_file.readlines()[-1]
+    #         print("Last state: " + last_state_line.strip())
+    #         state = last_state_line.strip()
+    # except:
+    #         print("no new state data")
+
     return circle_patch, wedge_patch
 
 
@@ -139,20 +177,18 @@ def setup_gui():
     Initialize and setup the GUI window.
     """
 
-    data = {
-        "current_output" : "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>.",
-        "current_data" : "Pounds of Collected Plastic: ____\nAcceleration: ____\nCurrent Distance to Next Node: ____\nTotal Area Traversed: ____\nRotation: ____\nLast Node Visited: ____\nEstimated Time of Arrival:____\nMotor Velocity: ____\nNext Node to Visit: ____"
-    }
-    image_data = get_images();
+
+    image_data = get_images()
     left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
     right_col = [
                 [sg.Image(key='-LOGO-', data=image_data[3])], 
-                [sg.InputText(size=(30,1), key="-COMMANDLINE-")], 
+                [sg.InputText(size=(30,1), key="-COMMANDLINE-", font=('Courier New', 20))],
                 [sg.Button('Submit', visible=False, bind_return_key=True)],
-                [sg.Multiline(data["current_output"], key = "-OUTPUT-", size=(40,8))],
+                [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8), disabled=True, font=('Courier New', 20))],
                 [sg.Text("Current Coordinates: ______")],
-                [sg.Button('Autonomous'), sg.Button('Track Location')],
-                [sg.Multiline(data["current_data"], key = "-DATA-", size=(40,8))]
+                [sg.Text("Current Phase: ______", key = "-PHASE-")],
+                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation')],
+                [sg.Multiline(str(robot_data), key = "-DATA-", size=(40,8), disabled=True, font=('Courier New', 20))]
             ]
     
     layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(), \
@@ -166,10 +202,10 @@ def setup_gui():
     fig = plt.gcf()
     # add the plot to the window
     fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
-    return (window, data)
+    return window
 
 
-def update_input(str, window, current_output):
+def update_input(str, window):
     """
     Return the String [new_output]
 
@@ -194,6 +230,22 @@ def update_input(str, window, current_output):
     window['-OUTPUT-'].update(new_output) 
     return new_output
 
+def update_robot_data(window):
+    """
+
+    Args:
+        window: PySimpleGUI main window
+
+    Updates the data multiline textbook to display current robot telemetry data
+
+    """
+    try:
+        packet = robot_data_file.readlines()[-1]
+        robot_data.update_data(packet)
+        window['-DATA-'].update(str(robot_data))
+    except:
+        pass
+
 
 def run_gui():
     """
@@ -201,22 +253,28 @@ def run_gui():
 
     Contains main control loop, which constantly checks for user interaction with the window and adjusts accordingly.
     """
+    def run_simulation(name):
+        logging.info("Thread %s: starting", name)
+        os.system("python -m gui.retrieve_inputs &")
+        os.system("python -m engine.sim_trajectory")
+        logging.info("Thread %s: finishing", name)
 
-    window, data = setup_gui()
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
 
+    window = setup_gui()
     current_row = 0
     while True:  # Event Loop
-        event, values = window.read()
+        event, values = window.read(timeout=10)
 
-        #TBD test code
-        # f1 = open('datastore.csv', "r")
-        # last_line = f1.readlines()[-1]
-
-        # print(last_line.strip()) 
-        # if store data toggled, store data function
-        # update circle and wedge
-        # wedge orientation corresponds to theta
-        # print(row)
+        try:
+            last_phase_line = robot_phase_file.readlines()[-1].strip()
+            phase_loc = last_phase_line.find(".")
+            phase = last_phase_line[phase_loc+1:]
+            window["-PHASE-"].update("Current Phase: " + phase)
+        except:
+            pass
 
         if event == sg.WIN_CLOSED or event == 'Cancel':
             break
@@ -227,11 +285,18 @@ def run_gui():
             break
         if event == 'Submit':
             print('Command entered: %s'% window['-COMMANDLINE-'].get())
-            data["current_output"] = update_input(window['-COMMANDLINE-'].get(), \
-            window, data["current_output"])
+            global current_output
+            current_output = update_input(window['-COMMANDLINE-'].get(), window)
             # Empty Command Line for next input
             window['-COMMANDLINE-'].update("")
+        if event == 'Simulation':
+            simulation_thread = threading.Thread(target=run_simulation, args=(1,), daemon=True)
+            simulation_thread.start()
+
+        get_control_mode(window)
+        update_robot_data(window)
     window.close()
+
 
 #################### END OF SECTION 2. MANAGING GUI WINDOW ####################
 #################### BEGINNING OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################
@@ -245,21 +310,37 @@ General Flow of GUI program:
 3. Open main GUI window
 4. Run GUI
 '''
-close_gui = gui_popup.run_popup()
+print("starting gui")
+close_gui = run_popup()
 if not close_gui:
-    input_data = gui_popup.get_input_data() #Runs the gui popup asking for latitude and longitude bounds
+    input_data = get_input_data() #Runs the gui popup asking for latitude and longitude bounds
     bounds = input_data["long_min"], input_data["long_max"], input_data["lat_min"], input_data["lat_max"]
 
     #Run the gui if the user doesn't close out of the window
     if bounds != None:
+
         fig, ax = setup(bounds)  # Set up matplotlib map figure
         circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
         # Begins the constant animation/updates of robot location and heading
+        robot_loc_file = open((get_path('csv')[-1] + '/datastore.csv'), "r")  # open csv file of robot location
+        robot_phase_file = open((get_path('csv')[-1] + '/phases.csv'), "r")
+        robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
+
+        current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
+        robot_data = RobotData("phse:1;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
+
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,
                                        frames=360,
                                        interval=20,
                                        blit=True)
         run_gui() #Start up the main GUI window
+        print("closed csv")
+        robot_loc_file.close()
+        robot_phase_file.close()
+        robot_data_file.close()
+
+os.system("pkill -f engine.sim_trajectory") #once gui.gui.py is closed, also close engine.sim_trajectory.py
+os.system("pkill -f gui.retrieve_inputs") #once gui.gui.py is closed, also close gui.retrieve_inputs.py
 
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################
