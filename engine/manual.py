@@ -6,6 +6,7 @@ from engine.mission import ControlMode
 
 
 class Manual():
+    # TODO: move functions from gui and robot here for proper categorization
 
     def __init__(self, control_mode):
         self.control_mode = ControlMode(control_mode)

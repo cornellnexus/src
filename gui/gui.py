@@ -33,6 +33,7 @@ import time
 matplotlib.use('TkAgg')
 
 def get_control_mode(window):
+    # TODO: Is this still how we are retrieving control_mode?
     """
     Returns the last control mode given in the control_mode.csv file
     """
@@ -46,6 +47,41 @@ def get_control_mode(window):
         pass
 
     file.close()
+
+def manual_mode_actions(window, event, curr_control_mode):
+    # TODO: continuously send info to database and have database sort.
+    if curr_control_mode == "AUTONOMOUS":
+        window['-CONTROL_MODE_BUTTON-'].update('Manual')  # shows what the button will do, not what it does
+        window['-LEFT_KEY-'].update(visible=False)
+        window['-UP_KEY-'].update(visible=False)
+        window['-RIGHT_KEY-'].update(visible=False)
+        window['-DOWN_KEY-'].update(visible=False)
+    else:
+        window['-CONTROL_MODE_BUTTON-'].update('Autonomous')
+        window['-LEFT_KEY-'].update(visible=True)
+        window['-UP_KEY-'].update(visible=True)
+        window['-RIGHT_KEY-'].update(visible=True)
+        window['-DOWN_KEY-'].update(visible=True)
+        # TODO: send info about key presses serially or to another file where robot.py can send. Problem is that robot.py will be on the robot already, so it'll have to call to computer to grab commands, which is then transmitted serially again. Alternative is to just send command serially with identifier and have robot interrupt auto and run serial commands
+        if event == 'a' or event == 'Left':
+            window['-LEFT_KEY-'].update(button_color=('black', 'white'))
+            print('left')
+        elif event == 'w' or event == 'Up':
+            window['-UP_KEY-'].update(button_color=('black', 'white'))
+            print('forward')
+        elif event == 'd' or event == 'Right':
+            window['-RIGHT_KEY-'].update(button_color=('black', 'white'))
+            print('right')
+        elif event == 's' or event == 'Down':
+            window['-DOWN_KEY-'].update(button_color=('black', 'white'))
+            print('backward')
+        else:
+            # TODO: If option 2 (send command serially with identifier), then have to send unique command to tell the robot to do nothing (doesn't continue moving after key not pressed) - PID stop or just let no power?
+            window['-LEFT_KEY-'].update(button_color=(sg.theme_button_color()))
+            window['-UP_KEY-'].update(button_color=(sg.theme_button_color()))
+            window['-RIGHT_KEY-'].update(button_color=(sg.theme_button_color()))
+            window['-DOWN_KEY-'].update(button_color=(sg.theme_button_color()))
+
 
 def get_path(folder):
 
@@ -169,6 +205,10 @@ def draw_figure(canvas, figure):
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
 
+def place(elem, size=(None, None)):
+    # https://stackoverflow.com/questions/62238574/update-not-changing-visibility-in-pysimplegui
+    return sg.Column([[elem]], size=size, pad=(0, 0), element_justification='center')
+
 def setup_gui():
     """
     Return [(window, data)], a 2-tuple of a PySimpleGUI window object, containing the GUI window information,
@@ -187,10 +227,12 @@ def setup_gui():
                 [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8), disabled=True, font=('Courier New', 20))],
                 [sg.Text("Current Coordinates: ______")],
                 [sg.Text("Current Phase: ______", key = "-PHASE-")],
-                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation')],
+                [sg.Button('CONTROL_MODE', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation')],
+                [place(sg.Button('Left', visible=False, key="-LEFT_KEY-")), place(sg.Button('Up', visible=False, key="-UP_KEY-")), place(sg.Button('Right', visible=False, key="-RIGHT_KEY-")), place(sg.Button('Down', visible=False, key="-DOWN_KEY-"))],
                 [sg.Multiline(str(robot_data), key = "-DATA-", size=(40,8), disabled=True, font=('Courier New', 20))]
             ]
-    
+    # TODO: Add Buttons for different autonomous modes in the list with "place(...)" and set them to invisible? hopefully that doesn't mess up the format. If it does, just alternate manual and autonomous to have even spacing
+
     layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(), \
     sg.Column(right_col, element_justification='c')]]
 
@@ -198,12 +240,23 @@ def setup_gui():
     window = sg.Window('Cornell Nexus', layout, finalize=True, \
     element_justification='center', font='Helvetica 18', location=(0,0), \
     size=(1200,700), resizable=True)
-    
+
+    add_key_binds(window)
+
     fig = plt.gcf()
     # add the plot to the window
     fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
     return window
 
+def add_key_binds(window):
+    window.bind('<Up>', 'Up')
+    window.bind('<Left>', 'Left')
+    window.bind('<Down>', 'Down')
+    window.bind('<Right>', 'Right')
+    window.bind('a', 'Left')
+    window.bind('w', 'Up')
+    window.bind('s', 'Down')
+    window.bind('d', 'Right')
 
 def update_input(str, window):
     """
@@ -265,6 +318,12 @@ def run_gui():
 
     window = setup_gui()
     current_row = 0
+    curr_control_mode = "AUTONOMOUS"
+    if robot_data.ctrl == 5:
+        window['-CONTROL_MODE_BUTTON-'].update('Autonomous')
+    else:
+        window['-CONTROL_MODE_BUTTON-'].update('Manual')
+        curr_control_mode = "MANUAL"
     while True:  # Event Loop
         event, values = window.read(timeout=10)
 
@@ -292,7 +351,27 @@ def run_gui():
         if event == 'Simulation':
             simulation_thread = threading.Thread(target=run_simulation, args=(1,), daemon=True)
             simulation_thread.start()
-
+        update_robot_data(window)
+        if event == '-CONTROL_MODE_BUTTON-':
+            robot_data_file = (get_path('csv')[-1] + '/robot_data.csv')
+            read_file = open(robot_data_file, "r+")
+            last_line = ""
+            for i in read_file.readlines()[-1:]:
+                last_line = i
+            read_file.close()
+            truncated_line = last_line[:last_line.index("ctrl")]
+            if robot_data.ctrl == 5:
+                curr_control_mode = "MANUAL"
+                # TODO: temporary set "auto" to ctrl 3. Probably getting last auto ctrl somewhere and grabbing that, or defaulting.
+                new_line = truncated_line + "ctrl:4"
+            else:
+                curr_control_mode = "AUTONOMOUS"
+                new_line = truncated_line + "ctrl:5"
+            write_file = open(robot_data_file, "a")
+            write_file.write("\n" + new_line)
+            write_file.close()
+        manual_mode_actions(window, event, curr_control_mode)
+        print("curr"+curr_control_mode)
         get_control_mode(window)
         update_robot_data(window)
     window.close()

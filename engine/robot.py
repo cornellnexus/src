@@ -270,7 +270,7 @@ class Robot:
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
         else:
             self.traverse_standard(unvisited_waypoints, allowed_dist_error, database)
-
+        # TODO: read data and if control_mode given is Manual, interrupt other threads. Gui should be sending command serially here? Or should there be some gate which allows commands to be sent serially?
 
     def traverse_standard(self, unvisited_waypoints, allowed_dist_error, database):
         """ Move the robot by following the traversal path given by [unvisited_waypoints].

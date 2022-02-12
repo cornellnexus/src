@@ -4,7 +4,7 @@ import sys
 import serial
 
 # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
-
+# TODO: move functions here from robot and gui for proper categorization. Step 2 would be making sure data is not corrupt
 def send_command_lines():
     # robot_command_file = open((get_path('csv')[-1] + '/robot_command.csv'), "r+")  # open csv file of robot data
     # lines = robot_command_file.readlines()
