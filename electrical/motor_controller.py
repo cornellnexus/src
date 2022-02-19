@@ -1,4 +1,3 @@
-import gpio
 import time
 from engine.robot import Robot
 if False: #change to True when running code on robot
@@ -76,19 +75,9 @@ class MotorController:
             GPIO.output([self.in2], GPIO.HIGH)
         time.sleep(1)
 
-# testing the functions to run under 10 seconds 
-# stopTime = time.time() + 5
-# while time.time() < stopTime:
-#     go_forward()
-# # # 
-# # stop()
-# # 
 
-# # cleans up all the ports used for motor driver 
-# GPIO.cleanup()
 
-#CHANGED: added pid_gpio
-class PidGpio:
+class MotorPID:
     def __init__(self, wheel_r, vm_load1, vm_load2, L, R):
         #super().__init__(robot)
         self.wheel_r = wheel_r
