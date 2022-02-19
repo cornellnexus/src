@@ -58,6 +58,7 @@ if __name__ == "__main__":
     base_r2d2 = BaseStation((42.444250, -76.483682))
     m = Mission(r2d2, base_r2d2)
 
+
     '''------------------- MISSION EXECUTION -------------------'''
     m.execute_mission()
 
