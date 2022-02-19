@@ -29,30 +29,23 @@ import sys
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
 
-# TODO: can change this all to be local variable that is passed between functions
 auto = False
 last_msg = ''
 last_ctrl = ''
 
-
-# TODO: change this to also write serially, like send command()
 def write_autonomous(auto):
-    if auto:
+    if auto == True:
         command = 'Control_Mode.Autonomous'
     else:
         command = 'Control_Mode.Manual'
     path = get_path('csv')
     file = open(path[len(path) - 1] + "/control_mode_test.csv", "a")
-    file.write(command + "\n")
+    file.write(command+"\n")
     file.close()
     file = open(path[len(path) - 1] + "/control_mode_history.csv", "a")
-    file.write(command + "\n")
+    file.write(command+"\n")
     file.close()
 
-
-# If changed to serially reading control_mode, I don't know whether you can read data serially twice (already read in
-# engine.manual.py). Or we can have it being read serially and also written to csv file. In that case, it would work
-# to have a file for control_modes that is only being read from the gui side.
 def get_control_mode():
     """
     Returns the last control mode given in the control_mode.csv file
@@ -60,13 +53,13 @@ def get_control_mode():
     global auto
     global last_msg
     control_mode = robot_data.control_mode()
+    print(control_mode)
     if last_msg != control_mode:
         if control_mode == 5:
             auto = False
         else:
             auto = True
     last_msg = control_mode
-
 
 def manual_mode_actions(window, event):
     if auto:
@@ -107,10 +100,10 @@ def manual_mode_actions(window, event):
 def send_commands(command):
     path = get_path('csv')
     file = open(path[len(path) - 1] + "/robot_command.csv", "a")
-    file.write(command + "\n")
+    file.write(command+"\n")
     file.close()
     file = open(path[len(path) - 1] + "/robot_command_history.csv", "a")
-    file.write(command + "\n")
+    file.write(command+"\n")
     file.close()
     send_command_lines()
 
@@ -262,9 +255,9 @@ def setup_gui():
                 [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
     right_col = [
         [sg.Image(key='-LOGO-', data=image_data[3])],
-        [sg.InputText(size=(30, 1), key="-COMMANDLINE-", font=('Courier New', 20))],
+        [sg.InputText(size=(30, 1), key="-COMMANDLINE-", font = ('Courier New', 20))],
         [sg.Button('Submit', visible=False, bind_return_key=True)],
-        [sg.Multiline(current_output, key="-OUTPUT-", size=(40, 8), disabled=True, font=('Courier New', 20))],
+        [sg.Multiline(current_output, key="-OUTPUT-", size=(40, 8), disabled = True, font = ('Courier New', 20))],
         [sg.Text("Current Coordinates: ______")],
         [sg.Text("Current Phase: ______", key="-PHASE-")],
         [sg.Button('Autonomous', key="-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'),
@@ -273,7 +266,7 @@ def setup_gui():
          place(sg.Button('Up', visible=False, key="-UP_KEY-")),
          place(sg.Button('Right', visible=False, key="-RIGHT_KEY-")),
          place(sg.Button('Down', visible=False, key="-DOWN_KEY-"))],
-        [sg.Multiline(str(robot_data), key="-DATA-", size=(40, 8), disabled=True, font=('Courier New', 20))]
+        [sg.Multiline(str(robot_data), key="-DATA-", size=(40, 8), disabled = True, font = ('Courier New', 20))]
     ]
 
     layout = [[sg.Column(left_col, element_justification='c'), sg.VSeperator(), \
@@ -282,7 +275,7 @@ def setup_gui():
     # create the form and show it without the plot
     window = sg.Window('Cornell Nexus', layout, finalize=True, \
                        element_justification='center', font='Helvetica 18', location=(0, 0), \
-                       size=(1200, 700), resizable=True, return_keyboard_events=True)
+                       size=(1200, 700), resizable=True, return_keyboard_events = True)
 
     addKeyBinds(window)
 
@@ -290,7 +283,6 @@ def setup_gui():
     # add the plot to the window
     fig_canvas_agg = draw_figure(window['-CANVAS-'].TKCanvas, fig)
     return window
-
 
 def addKeyBinds(window):
     window.bind('<Up>', 'Up')
@@ -327,7 +319,6 @@ def update_input(str, window):
                      + "\n" + current_output
     window['-OUTPUT-'].update(new_output)
     return new_output
-
 
 def update_robot_data(window):
     """
@@ -375,7 +366,7 @@ def run_gui():
             window['-OUTPUT-'].update(values['-COMMANDLINE-'])
             break
         if event == 'Submit':
-            print('Command entered: %s' % window['-COMMANDLINE-'].get())
+            print('Command entered: %s'% window['-COMMANDLINE-'].get())
             global current_output
             current_output = update_input(window['-COMMANDLINE-'].get(), window)
             # Empty Command Line for next input
@@ -387,6 +378,7 @@ def run_gui():
         get_control_mode()
         update_robot_data(window)
         manual_mode_actions(window, event)
+
 
     window.close()
 
@@ -419,8 +411,7 @@ if not close_gui:
         robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
 
         current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
-        robot_data = RobotData(
-            "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
+        robot_data = RobotData("phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
 
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,
@@ -433,7 +424,7 @@ if not close_gui:
         robot_phase_file.close()
         robot_data_file.close()
 
-os.system("pkill -f engine.sim_trajectory")  # once gui.gui.py is closed, also close engine.sim_trajectory.py
-os.system("pkill -f gui.validate_inputs")  # once gui.gui.py is closed, also close gui.validate_inputs.py
+os.system("pkill -f engine.sim_trajectory") #once gui.gui.py is closed, also close engine.sim_trajectory.py
+os.system("pkill -f gui.validate_inputs") #once gui.gui.py is closed, also close gui.validate_inputs.py
 
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################

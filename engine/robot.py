@@ -229,16 +229,10 @@ class Robot:
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius):
-        # Since robot.py is ran on the robot, robot_data should automatically account for the initial control_mode wanted (param when first running execute_traversal).
-        # Therefore, no need to write serially the control_mode passed in execute traversal. Instead, need to have a gate to first start executing passed control_mode, then another loop to continuously check for interruption.
-        manual = Manual(control_mode)
         if control_mode == 4:  # Roomba mode
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
         elif control_mode == 1:  # manual mode
             manual = Manual()
-            manual.execute_manual() # placeholder until we are able to interrupt the autonomous movement. It needs to
-            # somehow keep reading the robot state to determine whether someone wants to make it manual while also
-            # not infinitely spawning these methods.
         else:
             self.traverse_standard(unvisited_waypoints, allowed_dist_error)
 
