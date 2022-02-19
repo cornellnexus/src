@@ -1,11 +1,13 @@
 from engine.grid import *
 from engine.node import *
+from engine.robot import Robot
 from engine.user_utils import get_coord_inputs
-from electrical.commands import *
-from electrical.gps import *
+from electrical.motor_controller import MotorController
+from electrical.gps import GPS
 from collections import deque
 import csv
 import geopy
+import serial
 
 print("under the imports")
 
@@ -25,8 +27,9 @@ def engine():
 
     node1 = Node(-76.483682, 42.444250)
     node2 = Node(-76.483682, 42.444416)
-    # straightline path(
-
+    gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5))
+    robot = Robot(x_pos = 0, y_pos = 0, heading = 0, epsilon = 0, max_v = 0, radius = 1)
+    motor_controller = MotorController(robot)
     queue = [node1, node2]
 
     target_node = queue.pop()  # Next node to visit
@@ -47,14 +50,14 @@ def engine():
         print("DISTANCE FROM TARGET GREATER THAN NOISE RANGE")
 
         # move forward command; talk to electrical about moving
-        go_forward()
+        motor_controller.go_forward()
         print("MOVING FORWARD")
         predicted_loc = gps.get_gps()
         print("GPS PREDICTED LOCATION: " + str(predicted_loc))
         distance_from_target = geopy.distance.distance(predicted_loc, target_node.get_coords()).meters
 
         print("DISTANCE FROM  TAR GET : " + str(distance_from_target))
-    stop()
+    motor_controller.stop()
     print("STOP")
     # We are currently at target node (next_node)
 

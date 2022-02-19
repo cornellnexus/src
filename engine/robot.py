@@ -1,11 +1,20 @@
 import numpy as np
 import math
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, meters_to_gps
+from enum import Enum
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
+
+# import electrical.gps as gps 
+# import electrical.imu as imu 
+# import electrical.rf_module as rf_module
+
+
+
 from enum import Enum
 import os.path
 import time
 import sys
+
 
 class Phase(Enum):
     """
@@ -230,10 +239,23 @@ class Robot:
         # Prints current robot state
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
+        
 
-    def execute_setup(self):
-        pass
+    def execute_setup(self, robot_device, radio_session, gps, imu, motor_controller):
+        if (robot_device == 0): 
+            gps_setup = gps.setup() 
+            imu_setup = imu.setup()
+            radio_session.setup_robot()
+            motor_controller.setup(self.is_sim)
+        else: 
+            radio_session.setup_basestation()
+        
+        radio_connected = radio_session.device.connected 
 
+        if (radio_connected and gps_setup and imu_setup): 
+            self.phase = Phase.TRAVERSE
+
+            
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius):
         if control_mode == Control_Mode.LAWNMOWER:

@@ -1,60 +1,56 @@
-""" This module receives the serially transmitted data from the rf module"""
+from sys import is_finalizing
+import serial 
+import time 
 
-import sys
-import time
-import serial
-import difflib
-import pigpio
-from gpio import *
-
-tx = rf_tx
-rx = rf_rx
-
-# Ground Station 
-ser_gnd = serial.Serial(port="computer port", 9600, timeout=0)
-
-
-def gnd_receive():
-    while ser_gnd.inWaiting():
-        received_data_gnd = ser_gnd.readline()
-        print(received_data)
-        time.sleep(0.2)
+""" This module receives the serially transmitted data from the radio frequency (rf) module """
+class Device: 
+    def __init__(self, serial, device_number):
+        """ 
+            Device Numbers: 
+            0: robot's radio
+            1: base station radio
+        """
+        self.ser = serial
+        self.connected = False
+        self.device_number = device_number
 
 
-def gnd_transmit(data):
-    ser_gnd.write(data)
+""" RadioSession establishes the function calls needed between two devices """
+class RadioSession:
+    def __init__(self, device):
+        """
+            Communication package headings:
+            'sr': start (robot)
+            'sb': start (base station)
+            'dr': data (robot) 
+            'db': data (base station) 
+        """
+        self.device = device
 
+    def receive_data(self):
+        byte_data = self.ser.readline()
+        return byte_data
 
-# RPi Station
+    def transmit_data(self,data, packet_type):
+        assert(isinstance(packet_type), str)
+        cast_data = bytes((packet_type + str(data) + '\n'), encoding= 'utf-8')
+        self.ser.write(cast_data)
 
-def rpi_receive():
-    '''
-    input data to rpi by wrapping gpio pins as uart port.
-    '''
-    try:
-        pi = pigpio.pi()
-        pi.set_mode(rx, pigpio.INPUT)
-        pi.bb_serial_read_open(rx, 9600, 8)
+    #implementation of 2-way handshake between the robot and basestation/gui for serial data transmission
+    def setup_robot(self): 
+        if (self.device.device_number != 0): #self.device should be 0
+            print("error, set device to 0")
+        while (not self.device.connected): #while rpi not connected to base station
+            self.transmit_data('sr')
+            receive = self.receive_data()
+            if (receive == 'sb'):
+                self.device.connected = True
 
-        print("data - software serial: ")
-        while True:
-            (count, rf_data) = pi.bb_serial_read(rx)
-            if count:
-                print
-                rf_data
-        time.sleep(1)
-
-except:
-pi.bb_serial_read_close(rx)
-pi.stop()
-
-# ser_rpi = serial.Serial(port = "rpi port", 9600, timeout = 0)
-
-# def rpi_receive(): 
-#   while ser_rpi.inWaiting():  
-#       received_data_rpi = ser_rpi.readline()
-#       print(received_data)
-#       time.sleep(0.2)
-
-# def rpi_transmit(data):
-#   ser_rpi.write(data)
+    def setup_basestation(self):
+        if (self.device.device_number != 1): 
+            print("error, set device to 1")
+        while (not self.device.connected): #while rpi not connected to base station
+            receive = self.receive_data()
+            if (receive == 'sr'):
+                self.transmit_data('sb') 
+                self.device.connected = True

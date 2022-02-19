@@ -1,9 +1,9 @@
 # file for testing gps data
 import RPi.GPIO as GPIO
+from engine.robot import Robot
 import time
 
-from electrical.commands import *
-from electrical.gpio import *
+from electrical.motor_controller import MotorController
 
 # comment out one of the tests to run
 ############################### Testing GPS ##################################
@@ -23,10 +23,13 @@ from electrical.gpio import *
 #     print_gps(decoded_line)
 
 ############################### Testing GPIO #################################
+robot = Robot(x_pos = 0, y_pos = 0, heading = 0, epsilon = 0, max_v = 0, radius = 1)
+motor_controller = MotorController(robot)
+
 stopTime = time.time() + 10
 while time.time() < stopTime:
-    go_forward()
+    motor_controller.go_forward()
 
-stop()
+motor_controller.stop()
 
 GPIO.cleanup()
