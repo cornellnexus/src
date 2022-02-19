@@ -1,22 +1,11 @@
 from collections import deque
 from electrical.motor_controller import MotorController
+from engine.grid import Grid
 from engine.robot import Phase
 from electrical.rf_module import Device, RadioSession
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
-from enum import Enum
-from engine.grid import Grid
-
-
-class ControlMode(Enum):
-    """
-    An enumeration of different control modes
-    """
-    LAWNMOWER_FULL = 1
-    LAWNMOWER_BORDERS = 2
-    SPIRAL = 3
-    ROOMBA = 4
-    MANUAL = 5
+import math
 
 
 '''
@@ -32,15 +21,16 @@ Commented out for simulation testing purposes
 # import adafruit_lsm9ds1
 
 class Mission:
-    def __init__(self, robot, base_station, init_control_mode, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
-                 allowed_dist_error=0.5, allowed_heading_error=0.1, allowed_docking_pos_error=0.1,
-                 time_limit=50000, roomba_radius=20):
+    def __init__(self, robot, base_station, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
+                 grid_mode="lawn_border", allowed_dist_error=0.5, allowed_heading_error=0.1,
+                 allowed_docking_pos_error=0.1, time_limit=1000, roomba_radius=10):
         """
         Arguments:
             robot: the Robot object linked to this Mission
             base_station: the BaseStation object linked to this Mission.
-            init_control_mode: the traversal mode linked to this Mission.
             grid: the Grid which the robot should traverse
+            grid_mode: "borders" if the grid's nodes should only include corner nodes, "full" if all nodes should be
+                used
             allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
                 have "visited" that node
             allowed_heading_error: the maximum error in radians a robot can have to target heading while turning
@@ -55,8 +45,7 @@ class Mission:
         """
         self.robot = robot
         self.grid = grid
-        self.control_mode = ControlMode(init_control_mode)
-        self.all_waypoints = self.grid.get_waypoints(self.control_mode)
+        self.all_waypoints = self.grid.get_waypoints(grid_mode)
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
         self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
@@ -77,8 +66,7 @@ class Mission:
         self.time_limit = time_limit
         self.roomba_radius = roomba_radius
 
-
-    def execute_mission(self, database):
+    def execute_mission(self):
         """
         Activates the main control loop. Depending on the robot's phase, different motion control algorithms are
         activated.
@@ -90,20 +78,16 @@ class Mission:
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
                                                                        self.allowed_dist_error, self.base_station_loc,
-                                                                       self.control_mode, self.time_limit,
-                                                                       self.roomba_radius, database)
+                                                                       self.robot.control_mode, self.time_limit,
+                                                                       self.roomba_radius)
 
             elif self.robot.phase == Phase.AVOID_OBSTACLE:
                 self.robot.execute_avoid_obstacle()
 
             elif self.robot.phase == Phase.RETURN:
                 self.robot.execute_return(self.base_station_loc, self.base_station_angle,
-                                          self.allowed_docking_pos_error, self.allowed_heading_error, database)
+                                          self.allowed_docking_pos_error, self.allowed_heading_error)
 
             elif self.robot.phase == Phase.DOCKING:
                 self.robot.execute_docking()
-            
-            #update the database with the most recent state
-            database.update_data("phase", self.robot.phase)
-
 
