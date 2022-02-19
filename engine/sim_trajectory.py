@@ -67,6 +67,8 @@ if __name__ == "__main__":
     database = DataBase(r2d2)
     m = Mission(robot=r2d2, base_station=base_r2d2, init_control_mode=ControlMode.LAWNMOWER_BORDERS)
 
+    help = "DELETE THIS STRING AFTER MERGING INTO MASTER"
+
     def retrieve_data(name):
         logging.info("Thread %s: starting", name)
         while simulation_on:
