@@ -1,13 +1,11 @@
 import numpy as np
 import math
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, meters_to_gps
 from engine.pid_controller import PID
 from enum import Enum
 import os.path
 import time
 import sys
-from engine.manual import Manual
-
 
 class Phase(Enum):
     """
@@ -21,6 +19,13 @@ class Phase(Enum):
     COMPLETE = 6
     FAULT = 7
 
+class Control_Mode(Enum):
+    """
+    An enumeration of different control modes
+    """
+    LAWNMOWER = 1
+    ROOMBA = 2
+    MANUAL = 3
 
 class Robot:
     """
@@ -40,7 +45,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=.1, move_dist=.5, turn_angle=3):
+                 init_phase=1, time_step=1, control_mode=1, move_dist=.5, turn_angle=3):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -60,10 +65,12 @@ class Robot:
             heading_ki: the integral factor of the heading PID
             heading_kd: the derivative factor of the heading PID
             heading_noise: ?
+            init_phase: the phase which the robot begins at
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
             move_dist: the distance in meters that the robot moves per time dt
-            turn_angle: the angle in radians that the robot turns per time dt regardless of time step
+            turn_angle: the angle in radians that the robot turns per time dt
+            control mode: the mode of the robot movement. 
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -81,9 +88,9 @@ class Robot:
         self.heading_ki = heading_ki
         self.heading_kd = heading_kd
         self.heading_noise = heading_noise
+        self.control_mode = Control_Mode(control_mode)
         self.move_dist = move_dist
-        self.turn_angle = turn_angle / time_step  # dividing by time_step ignores the effect of time_step on absolute
-        # radians turned
+        self.turn_angle = turn_angle
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -191,7 +198,7 @@ class Robot:
 
         predicted_state = self.state  # this will come from Kalman Filter
 
-        abs_heading_error = abs(target_heading - float(predicted_state[2]))
+        abs_heading_error = abs(target_heading-float(predicted_state[2]))
 
         while abs_heading_error > allowed_heading_error:
             self.state[2] = np.random.normal(self.state[2], self.heading_noise)
@@ -229,15 +236,13 @@ class Robot:
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius):
-        if control_mode == 4:  # Roomba mode
+        if control_mode == Control_Mode.LAWNMOWER:
+            self.traverse_lawnmower(unvisited_waypoints, allowed_dist_error)
+        elif control_mode == Control_Mode.ROOMBA:
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
-        elif control_mode == 1:  # manual mode
-            manual = Manual()
-        else:
-            self.traverse_standard(unvisited_waypoints, allowed_dist_error)
 
-    def traverse_standard(self, unvisited_waypoints, allowed_dist_error):
-        """ Move the robot by following the traversal path given by [unvisited_waypoints].
+    def traverse_lawnmower(self, unvisited_waypoints, allowed_dist_error):
+        """ Move the robot in a lawn_mover-like manner.
             Args:
                 unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
                 allowed_dist_error (Double): the maximum distance in meters that the robot can be from a node for the
@@ -263,14 +268,14 @@ class Robot:
                 None
         """
         dt = 0
-        exit_boolean = False  # battery_limit, time_limit, battery_capacity is full
+        exit_boolean = False # battery_limit, time_limit, battery_capacity is full
         while not exit_boolean:
 
             curr_x = self.state[0]
             curr_y = self.state[1]
             new_x = curr_x + self.move_dist * math.cos(self.state[2]) * self.time_step
             new_y = curr_y + self.move_dist * math.sin(self.state[2]) * self.time_step
-            next_radius = math.sqrt(abs(new_x - base_station_loc[0]) ** 2 + abs(new_y - base_station_loc[1]) ** 2)
+            next_radius = math.sqrt(abs(new_x-base_station_loc[0])**2 + abs(new_y-base_station_loc[1])**2)
             if next_radius > roomba_radius:
                 self.move_forward(-self.move_dist)
                 self.turn(self.turn_angle)
@@ -280,14 +285,13 @@ class Robot:
             exit_boolean = (dt > time_limit)
         self.phase = Phase.COMPLETE
         return None
-
     def set_phase(self, new_phase):
         self.phase = new_phase
 
         cwd = os.getcwd()
         cd = cwd + "/csv"
         with open(cd + '/phases.csv', 'a') as fd:
-            fd.write(str(self.phase) + '\n')
+            fd.write(str(self.phase)+ '\n')
 
     def execute_avoid_obstacle(self):
         pass
@@ -319,4 +323,4 @@ class Robot:
         self.set_phase(Phase.DOCKING)
 
     def execute_docking(self):
-        self.set_phase(Phase.COMPLETE)  # temporary for simulation purposes
+        self.set_phase(Phase.COMPLETE) # temporary for simulation purposes
