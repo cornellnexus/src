@@ -25,7 +25,6 @@ class RadioSession:
             'dr': data (robot) 
             'db': data (base station) 
         """
-        self.packet_type = ['sr', 'sb', 'dr', 'db']
         self.device = device
 
     def receive_data(self):
