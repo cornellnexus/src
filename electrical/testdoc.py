@@ -1,4 +1,4 @@
-import motor_test
+import motor_controller
 import time
 
 # mc=motor_test.MotorController()
