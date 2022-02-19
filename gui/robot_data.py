@@ -1,59 +1,9 @@
+import os
+import sys
+
+from gui.validate_inputs import get_integer_value, get_tuple_value, get_float_value
 from engine.robot import Phase
 
-def get_values(packet):
-    '''
-    Args:
-        packet: a string of format "id:value"
-
-    Returns: string of [data]'s numeric value (substring after :)
-    '''
-    separator_index = packet.find(":")
-    if separator_index == -1:
-        print("data corruption")
-        raise Exception()
-    return packet[separator_index + 1:]
-
-def get_integer_value(packet):
-    '''
-
-    Args:
-        packet: a string of format "id:value"
-
-    Returns: integer of "value"
-
-    '''
-    return int(get_values(packet))
-
-
-def get_float_value(packet):
-    '''
-
-    Args:
-        packet: a string of format "id:value"
-
-    Returns: float of "value"
-
-    '''
-    return float(get_values(packet))
-
-
-def get_tuple_value(data):
-    '''
-
-    Args:
-        data: a string of format "id:value"
-
-    Returns: tuple of floats of "value"
-
-    '''
-    s = get_values(data)
-    separator_index = s.find(",")
-    if separator_index == -1:
-        print("tuple data corruption")
-        raise Exception()
-    fst = s[:separator_index]
-    snd = s[separator_index + 1:]
-    return (float(fst), float(snd))
 
 class RobotData(object):
     """
@@ -106,17 +56,20 @@ class RobotData(object):
         self.ctrl = get_integer_value(packet_data[10])
 
     def __str__(self):
-        p = str(Phase(self.phase))
-        return "Robot Phase: " + p[p.find(".")+1:] + \
-               "\nPounds of Collected Plastic: " + str(self.weight) + "g"+ \
+        p = str(Phase(self.phase + 1))
+        return "Robot Phase: " + p[p.find(".") + 1:] + \
+               "\nPounds of Collected Plastic: " + str(self.weight) + "g" + \
                "\nAcceleration: " + str(self.acc) + f" m/s\N{SUPERSCRIPT TWO}" + \
                "\nCurrent Distance to Next Node: " + str(self.n_dist) + \
                "\nRotation: " + str(self.rot) + \
                "\nLast Node Visited: " + str(self.last_n) + \
-               "\nVelocity: " + str(self.vel) + " m/s"\
-               "\nNext Node to Visit: " + str(self.next_n) + \
+               "\nVelocity: " + str(self.vel) + " m/s" \
+                                                "\nNext Node to Visit: " + str(self.next_n) + \
                "\nCurrent Coordinates: " + str(self.coord) + \
                "\nBattery Level: " + str(self.bat) + \
-               "\nControl Mode: " + str(self.ctrl) 
+               "\nControl Mode: " + str(self.ctrl)
 
         # "\nTotal Area Traversed: " + self.area
+
+    def control_mode(self):
+        return self.ctrl
