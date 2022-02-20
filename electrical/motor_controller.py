@@ -95,13 +95,19 @@ class PidGpio:
         self.vm_load2 = vm_load2
         self.L = L
         self.R = R
+        self.in1 = 5
+        self.in2 = 6
+        self.in3 = 19
+        self.in4 = 26
+        self.enA = 13
+        self.enB = 12
     
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup([gpio.in1, gpio.in2, gpio.in3, gpio.in4], GPIO.OUT, initial=GPIO.LOW)  
-        GPIO.setup([gpio.enA, gpio.enB], GPIO.OUT)  # EnA, EnB
+        GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  
+        GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
-        self.p1 = GPIO.PWM(gpio.enA, 50)
-        self.p2 = GPIO.PWM(gpio.enB, 50)
+        self.p1 = GPIO.PWM(self.enA, 50)
+        self.p2 = GPIO.PWM(self.enB, 50)
 
     #Start with 0% duty cycle
         self.p1.start(0)

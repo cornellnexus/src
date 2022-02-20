@@ -1,7 +1,7 @@
 import motor_controller
 import time
 
-# mc=motor_test.MotorController()
+# mc=motor_controller.MotorController()
 
 # mc.setup()
 
@@ -20,7 +20,7 @@ import time
 # while time.time() < stopTime3:
 	# mc.turn_left()
 	
-pid=motor_test.PidGpio(5,15,15,5,5)
+pid=motor_controller.PidGpio(5,15,15,5,5)
 
 stopTime4 = time.time() + 5
 while time.time() < stopTime4:
