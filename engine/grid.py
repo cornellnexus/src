@@ -2,6 +2,13 @@ from engine.node import Node
 import numpy as np
 from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get_vincenty_y
 
+# Create Grid (all Nodes not active) -> Display on GUI -> User selects Nodes -> Activate selected Nodes -> Completed Grid
+
+# How to traverse? Need the border nodes -> after initialization done, loop through, create list of border nodes (if any of
+# 9 bordering nodes are "empty", added as border. Also find the leftmost node (for starting).
+
+# Need the start node as well -> for lawnmower waypoints, need leftmost node (may be forced to repeat certain nodes)
+
 
 class Grid:
     """
@@ -20,6 +27,10 @@ class Grid:
 
         #num_rows: Number of rows of Nodes in the grid [int]
         #num_cols: Number of columns of Nodes in the grid. [int]
+
+        #leftmost_node: the leftmost active node in the Grid which is used as the start node in lawnmower and spiral traversal.
+        #leftmost_node_pos: the (row,col) position of the leftmost node
+        #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
     """
 
     def __init__(self, lat_min, lat_max, long_min, long_max):
@@ -71,13 +82,13 @@ class Grid:
             # traversal. 
             for i in range(cols):
                 for j in range(rows):
-                    is_border = (j == 0 or j == rows - 1)
+                    #is_border = (j == 0 or j == rows - 1)
                     if i % 2 == 0:
                         lat = gps_origin[0] + j * lat_step
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y, is_border)
+                        node = Node(lat, long, x, y) #, is_border)
                         node_list[j, i] = node
                     elif i % 2 == 1:
                         lat = gps_origin[0] + \
@@ -85,7 +96,7 @@ class Grid:
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y, is_border)
+                        node = Node(lat, long, x, y) #, is_border)
                         row_index = rows - (j + 1)
                         node_list[row_index, i] = node
 
@@ -100,12 +111,77 @@ class Grid:
         self.num_rows, self.num_cols = calc_step(lat_min, lat_max, long_min, long_max, STEP_SIZE_METERS)
 
         self.nodes = generate_nodes(lat_min, long_min, self.num_rows, self.num_cols, STEP_SIZE_METERS)
+        self.border_nodes = None
+        self.leftmost_node = None
+        self.leftmost_node_pos = None
 
     def get_num_rows(self):
         return self.num_rows
 
     def get_num_cols(self):
         return self.num_cols
+
+    def activate_node(self, row, col):
+        """
+        Activates the node at the given location.
+        """
+        self.nodes[row][col].activate()
+    
+    def activate_nodes(self, row, col, row_limit, col_limit):
+        """
+        Activates all the nodes in the given range.
+        """
+        for y in range(row, row_limit):
+            for x in range(col, col_limit):
+                self.activate_node(y, x)
+
+    def is_on_border(self, row, col, row_limit, col_limit):
+        """
+        Returns whether a particular nodes is on the border.
+
+        A node is on the border if any of the following conditions hold:
+        1. Any of its neighboring nodes are inactive.
+        2. It exists on the very edge of the grid.
+        """
+        min_col = max(0, col-1)
+        min_row = max(0, row-1)
+        max_col = min(col_limit, col+2)
+        max_row = min(row_limit, row+2)
+
+        #If this node is on the very edge of the grid, it is automatically a border node
+        if min_col == 0 or min_row == 0 or max_col == col_limit or max_row == row_limit:
+            return False
+
+        #If the node has a neighboring node that is inactive, it is a border node
+        for col in range (min_col, max_col):
+            for row in range (min_row, max_row):
+                if not self.nodes[row][col].is_active_node():
+                    return False
+        return True
+
+    def find_border_nodes(self):
+        """
+        Find all border nodes on the grid. 
+        """
+        node_list = self.nodes
+        border_list = []
+        cols = node_list.shape[1]
+        rows = node_list.shape[0]
+        leftmost_node = None
+        leftmost_node_pos = None
+        for row in range(rows):
+            for col in range(cols):
+                node = node_list[row][col]
+                if node.is_active(): #if this is an active node
+                    if self.is_on_border(row, col, rows, cols): #check is the node is on border
+                        node.set_border_node()
+                        border_list.append(node)
+                        if leftmost_node_pos is None or col < leftmost_node_pos[0]:
+                            leftmost_node = node
+                            leftmost_node_pos = (row, col)
+        self.border_nodes = border_list
+        self.leftmost_node = leftmost_node
+        self.leftmost_node_pos = leftmost_node_pos
 
     def get_spiral_waypoints(self):
         """
@@ -140,6 +216,24 @@ class Grid:
                 row = next_row
         waypoints.reverse()
         return waypoints
+    
+    def get_all_lawnmower_waypoints_adjustable(self):
+        waypoints = []
+        node_list = self.nodes
+        rows = node_list.shape[0]
+        cols = node_list.shape[1]
+        row, col = self.leftmost_node_pos
+        current_node = self.leftmost_node
+
+        #PSEUDO CODE
+        #check neighbors (eg. top, left, bottom, right)
+        #IDEA
+        #start at bottom left
+        #Go all the way up, at top, iterate back down, looking for an entry to turn into next col.
+        #Then, go all the way down.
+        #At bottom, iterate back up, looking for an entry to turn into next col.
+        #repeat
+
 
     def get_all_lawnmower_waypoints(self):
         """
