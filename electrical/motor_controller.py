@@ -1,6 +1,6 @@
 import time
 from engine.robot import Robot
-if False: #change to True when running code on robot
+if True: #change to True when running code on robot
     import RPi.GPIO as GPIO
 
 """ MotorController contains pinouts to configure motor controller, as well as 
@@ -78,7 +78,12 @@ class MotorController:
 
 #TODO: Add documentation here 
 class MotorPID:
-    def __init__(self, wheel_r, vm_load1, vm_load2, L, R):
+    def __init__(self, robot, wheel_r, vm_load1, vm_load2, L, R):
+        self.in1 = 5
+        self.in2 = 6
+        self.enA = 13   #PWM
+        self.enB = 12   #PWM
+        self.is_sim = robot.is_sim
         #super().__init__(robot)
         self.wheel_r = wheel_r
         self.vm_load1 = vm_load1
@@ -87,11 +92,11 @@ class MotorPID:
         self.R = R
     
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup([gpio.in1, gpio.in2], GPIO.OUT, initial=GPIO.LOW)  # In1, In2
-        GPIO.setup([gpio.enA, gpio.enB], GPIO.OUT)  # EnA, EnB
+        GPIO.setup([self.in1, self.in2], GPIO.OUT, initial=GPIO.LOW)  # In1, In2
+        GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
-        self.p1 = GPIO.PWM(gpio.enA, 50)
-        self.p2 = GPIO.PWM(gpio.enB, 50)
+        self.p1 = GPIO.PWM(self.enA, 50)
+        self.p2 = GPIO.PWM(self.enB, 50)
 
     #Start with 0% duty cycle
         self.p1.start(0)
