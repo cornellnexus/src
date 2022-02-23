@@ -6,12 +6,12 @@ if True: #change to True when running code on robot
 """ MotorController contains pinouts to configure motor controller, as well as 
     commands to physically move the robot. """
 class MotorController:
-    #Same definition as gpio.py, check which to keep
-    #check: used 'robot' for init, import has 'Robot'
     def __init__(self, robot):
         #raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
+        self.in3 = 19
+        self.in4 = 26
         self.enA = 13   #PWM
         self.enB = 12   #PWM
         self.is_sim = robot.is_sim
@@ -20,7 +20,7 @@ class MotorController:
     def setup(self):
         if not self.is_sim: 
             GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
-            GPIO.setup([self.in1, self.in2], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
+            GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
             self.e1 = GPIO.PWM(self.enA, 600)  # create object digital to analog conversion for PWM on port 25 at 1KHz
             self.e2 = GPIO.PWM(self.enB, 600)
@@ -46,24 +46,24 @@ class MotorController:
         if self.is_sim: 
             print('go_forward')
         else: 
-            GPIO.output([self.in1],GPIO.HIGH)
-            GPIO.output([self.in2], GPIO.HIGH)
+            GPIO.output([self.in1, self.in4], GPIO.HIGH)
+            GPIO.output([self.in2, self.in3], GPIO.HIGH)
 
     # reverses the robot
     def reverse(self):
         if self.is_sim: 
             print('reverse')
         else: 
-            GPIO.output([self.in2], GPIO.LOW)
-            GPIO.output([self.in1],GPIO.LOW)
+            GPIO.output([self.in2, self.in3], GPIO.LOW)
+            GPIO.output([self.in1, self.in4], GPIO.LOW)
 
     # turns the robot left for 1 second
     def turn_left(self):
         if self.is_sim: 
             print('turn_left')
         else: 
-            GPIO.output([self.in2],GPIO.LOW)
-            GPIO.output([self.in1], GPIO.HIGH)
+            GPIO.output([self.in2, self.in4], GPIO.LOW)
+            GPIO.output([self.in1, self.in3], GPIO.HIGH)
         time.sleep(1)
 
     # turns the robot right for 1 second
@@ -71,8 +71,8 @@ class MotorController:
         if self.is_sim:
             print('turn_right')
         else: 
-            GPIO.output([self.in1],GPIO.LOW)
-            GPIO.output([self.in2], GPIO.HIGH)
+            GPIO.output([self.in1, self.in3], GPIO.LOW)
+            GPIO.output([self.in2, self.in4], GPIO.HIGH)
         time.sleep(1)
 
 
@@ -90,9 +90,15 @@ class MotorPID:
         self.vm_load2 = vm_load2
         self.L = L
         self.R = R
+        self.in1 = 5
+        self.in2 = 6
+        self.in3 = 19
+        self.in4 = 26
+        self.enA = 13
+        self.enB = 12
     
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup([self.in1, self.in2], GPIO.OUT, initial=GPIO.LOW)  # In1, In2
+        GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  
         GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
         self.p1 = GPIO.PWM(self.enA, 50)
