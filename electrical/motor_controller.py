@@ -21,20 +21,20 @@ class MotorController:
 
     # checks all of the robot movements are functioning properly
     def setup(self):
-        if not self.is_sim: 
+        if self.is_sim: 
+            self.go_forward()
+            self.turn_left()
+            self.turn_right()
+            self.reverse()
+            self.stop()
+        else: 
             GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
             GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
             self.e1 = GPIO.PWM(self.enA, 600)  # create object digital to analog conversion for PWM on port 25 at 1KHz
             self.e2 = GPIO.PWM(self.enB, 600)
             self.e1.start(100)
-            self.e2.start(100)
-        else:
-            self.go_forward()
-            self.turn_left()
-            self.turn_right()
-            self.reverse()
-            self.stop()
+            self.e2.start(100)            
 
     # stops the robot 
     def stop(self):
@@ -110,18 +110,7 @@ class MotorPID:
         self.in4 = 26
         self.enA = 13
         self.enB = 12
-    
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  
-        GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
-        self.p1 = GPIO.PWM(self.enA, 50)
-        self.p2 = GPIO.PWM(self.enB, 50)
-
-    # Initialize PWM duty cycles as 0
-        self.p1.start(0)
-        self.p2.start(0)
-        
 
     # Change duty cycle for motors based on angular and linear velocities
     def motors(self, omega, vel):
@@ -142,6 +131,26 @@ class MotorPID:
             dc1 = 100
         if dc2 > 100:
             dc2 = 100
+        
+        if self.is_sim:
+            self.p1.ChangeDutyCycle(dc1)
+            self.p2.ChangeDutyCycle(dc2)
+        else: 
+            print("dc1: ", dc1, "and dc2: ", dc2)
 
-        self.p1.ChangeDutyCycle(dc1)
-        self.p2.ChangeDutyCycle(dc2)
+    def setup(self):
+        if self.is_sim: 
+            self.motors(0, 0)
+        else:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  
+            GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
+
+            self.p1 = GPIO.PWM(self.enA, 50)
+            self.p2 = GPIO.PWM(self.enB, 50)
+
+            # Initialize PWM duty cycles as 0
+            self.p1.start(0)
+            self.p2.start(0)
+
+            self.motors(0, 0)
