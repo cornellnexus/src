@@ -3,17 +3,20 @@ from engine.robot import Robot
 if True: #change to True when running code on robot
     import RPi.GPIO as GPIO
 
-""" MotorController contains pinouts to configure motor controller, as well as 
-    commands to physically move the robot. """
+
 class MotorController:
+    """ 
+    MotorController contains pinouts to configure motor controller, as well as 
+    commands to physically move the robot. 
+    """
     def __init__(self, robot):
         #raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
         self.in3 = 19
         self.in4 = 26
-        self.enA = 13   #PWM
-        self.enB = 12   #PWM
+        self.enA = 13   #PWM pin
+        self.enB = 12   #PWM pin
         self.is_sim = robot.is_sim
 
     # checks all of the robot movements are functioning properly
@@ -76,8 +79,19 @@ class MotorController:
         time.sleep(1)
 
 
-#TODO: Add documentation here 
 class MotorPID:
+    """ 
+    MotorPID contains pinouts to configure motor controller, PID tuning values for the 
+    motors, and can set motor torque according to input angular and linear velocities.
+
+    Attributes: 
+        robot: robot object 
+        wheel_r: the wheel radius 
+        vm_load1: maximum velocity can drive load1 #TODO: make this more descriptive
+        vm_load2: maximum velocity can drive load2 #TODO: make this more descriptive
+        L: radius of left motor #TODO: double check this 
+        R: radius of right motor #TODO: double check this
+    """
     def __init__(self, robot, wheel_r, vm_load1, vm_load2, L, R):
         self.in1 = 5
         self.in2 = 6
@@ -104,9 +118,10 @@ class MotorPID:
         self.p1 = GPIO.PWM(self.enA, 50)
         self.p2 = GPIO.PWM(self.enB, 50)
 
-    #Start with 0% duty cycle
+    # Initialize PWM duty cycles as 0
         self.p1.start(0)
         self.p2.start(0)
+        
 
     # Change duty cycle for motors based on angular and linear velocities
     def motors(self, omega, vel):
