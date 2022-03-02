@@ -125,8 +125,12 @@ class MotorPID:
         omega_l = vl * self.wheel_r
 
         # Define and cap duty cycles if they are above max
-        dc1 = omega_r / self.vm_load1
-        dc2 = omega_l / self.vm_load2
+        try: 
+            dc1 = omega_r / self.vm_load1
+            dc2 = omega_r / self.vm_load2
+        except: 
+            raise ZeroDivisionError("vm_load1 or vm_load2 is zero")
+
         if dc1 > 100:
             dc1 = 100
         if dc2 > 100:

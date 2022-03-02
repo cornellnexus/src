@@ -6,7 +6,7 @@ from engine.pid_controller import PID
 
 # import electrical.gps as gps 
 # import electrical.imu as imu 
-# import electrical.rf_module as rf_module
+# import electrical.radio_module as radio_module
 
 
 
@@ -249,12 +249,12 @@ class Robot:
         print('heading: ' + str(self.state[2]))
 
 
-    def execute_setup(self, robot_device, radio_session, gps, imu, motor_controller):
+    def execute_setup(self, robot_device, radio_session, gps, imu, pid_motor):
         if (robot_device == 0): 
             gps_setup = gps.setup() 
             imu_setup = imu.setup()
             radio_session.setup_robot()
-            motor_controller.setup(self.is_sim)
+            pid_motor.setup()
         else: 
             radio_session.setup_basestation()
         

@@ -1,5 +1,5 @@
 from engine.robot import Robot
-from electrical.rf_module import Device, RadioSession
+from electrical.radio_module import Device, RadioSession
 from electrical.motor_controller import MotorController
 # from electrical.gps import GPS
 # from electrical.imu import IMU

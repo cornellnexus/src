@@ -15,16 +15,18 @@ class Device:
         self.device_number = device_number
 
 
-""" RadioSession establishes the function calls needed between two devices """
 class RadioSession:
+    """
+    RadioSession establishes the function calls needed between two devices.
+
+    Communication package headings used when sending messages or parsing received messages:
+    'sr': start (robot)
+    'sb': start (base station)
+    'dr': data (robot) 
+    'db': data (base station) 
+    """
+
     def __init__(self, device):
-        """
-            Communication package headings:
-            'sr': start (robot)
-            'sb': start (base station)
-            'dr': data (robot) 
-            'db': data (base station) 
-        """
         self.device = device
 
     def receive_data(self):
@@ -37,6 +39,7 @@ class RadioSession:
         self.ser.write(cast_data)
 
     #implementation of 2-way handshake between the robot and basestation/gui for serial data transmission
+    #setup function called on the robot
     def setup_robot(self): 
         if (self.device.device_number != 0): #self.device should be 0
             print("error, set device to 0")
@@ -46,6 +49,7 @@ class RadioSession:
             if (receive == 'sb'):
                 self.device.connected = True
 
+    #setup function called on the base station 
     def setup_basestation(self):
         if (self.device.device_number != 1): 
             print("error, set device to 1")
