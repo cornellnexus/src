@@ -6,7 +6,7 @@ import time
 class RadioModuleTest: 
     """
     RadioModuleTest that tests the serial data transmission connection between two devices: robot 
-    and base station. 
+    and base station during the setup phase.
     """
     def run(self): 
         stop_time = time.time() + 50
