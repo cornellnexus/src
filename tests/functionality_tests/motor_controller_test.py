@@ -14,18 +14,18 @@ class MotorControllerTest:
 		self.mc = MotorController()
 		
 	def motor_controller_test_one(self): 
-		stopTime = time.time() + 3
-		while time.time() < stopTime:
+		stop_time = time.time() + 3
+		while time.time() <	stop_time:
 			self.mc.turn_right()
 	
 	def motor_controller_test_two(self): 
-		stopTime = time.time() + 2
-		while time.time() < stopTime:
+		stop_time = time.time() + 2
+		while time.time() <	stop_time:
 			self.mc.stop()
 	
 	def motor_controller_test_three(self): 
-		stopTime = time.time() + 3
-		while time.time() < stopTime:
+		stop_time = time.time() + 3
+		while time.time() <	stop_time:
 			self.mc.turn_left()
 
 	def run(self): 
@@ -48,18 +48,18 @@ class MotorPIDTest:
 		self.pid = MotorPID.PidGpio(5,15,15,5,5)
 	
 	def motor_pid_test_one(self): 
-		stopTime = time.time() + 5
-		while time.time() < stopTime:
+		stop_time = time.time() + 5
+		while time.time() <	stop_time:
 			self.pid.motors(0,30)
 	
 	def motor_pid_test_two(self): 
-		stopTime = time.time() + 5
-		while time.time() < stopTime:
+		stop_time = time.time() + 5
+		while time.time() <	stop_time:
 			self.pid.motors(0,0)
 	
 	def motor_pid_test_three(self): 
-		stopTime = time.time() + 5
-		while time.time() < stopTime:
+		stop_time = time.time() + 5
+		while time.time() <	stop_time:
 			self.pid.motors(20,30)
 
 	def run(self): 
