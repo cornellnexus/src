@@ -1,6 +1,9 @@
+from platform import node
 from engine.node import Node
 import numpy as np
 from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get_vincenty_y
+from enum import Enum
+
 
 # Create Grid (all Nodes not active) -> Display on GUI -> User selects Nodes -> Activate selected Nodes -> Completed Grid
 
@@ -173,7 +176,7 @@ class Grid:
             for col in range(cols):
                 node = node_list[row][col]
                 if node.is_active(): #if this is an active node
-                    if self.is_on_border(row, col, rows, cols): #check is the node is on border
+                    if self.is_on_border(row, col, rows, cols): #check if the node is on border
                         node.set_border_node()
                         border_list.append(node)
                         if leftmost_node_pos is None or col < leftmost_node_pos[0]:
@@ -182,6 +185,58 @@ class Grid:
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
         self.leftmost_node_pos = leftmost_node_pos
+    
+    def get_all_lawnmower_waypoints_adjustable(self):
+        class WaypointPhase(Enum):
+            UP = 1
+            DOWN = 2
+            DOWN_RIGHT = 3
+            UP_RIGHT = 4
+            TERMINATE = 5
+        
+        node_list = self.nodes
+        rows = node_list.shape[0]
+        cols = node_list.shape[1]
+        row, col = self.leftmost_node_pos
+        current_node = self.leftmost_node
+        waypoints = [current_node]
+        phase = WaypointPhase.DOWN
+
+        while (phase != WaypointPhase.TERMINATE):
+            if (phase == WaypointPhase.UP):
+                check_row = row - 1
+                check_col = col
+                if check_row > 0:
+                    top_neighbor = node_list[check_row][check_col]
+                    if top_neighbor.is_active():
+                        waypoints.append(top_neighbor)
+                        row = check_row
+                        col = check_col
+                    else:
+                        phase = WaypointPhase.RIGHT
+                else:
+                    phase = WaypointPhase.right
+            elif (phase == WaypointPhase.DOWN_RIGHT):
+                check_col = col + 1
+                check_row = row
+                if check_col < cols:
+                    right_neighbor = node_list[check_col][check_col]
+                    if right_neighbor.is_active():
+                        waypoints.append(right_neighbor)
+                        row = check_row
+                        col = check_col
+                    else:
+                        row = row 
+            elif (phase == WaypointPhase.DOWN):
+                return None
+
+        #PSEUDO CODE
+        #check neighbors (eg. top, left, bottom, right)
+        #start at bottom left
+        #Go all the way up, at top, iterate back down, looking for an entry to turn into next col.
+        #Then, go all the way down.
+        #At bottom, iterate back up, looking for an entry to turn into next col.
+        #repeat
 
     def get_spiral_waypoints(self):
         """
@@ -216,24 +271,6 @@ class Grid:
                 row = next_row
         waypoints.reverse()
         return waypoints
-    
-    def get_all_lawnmower_waypoints_adjustable(self):
-        waypoints = []
-        node_list = self.nodes
-        rows = node_list.shape[0]
-        cols = node_list.shape[1]
-        row, col = self.leftmost_node_pos
-        current_node = self.leftmost_node
-
-        #PSEUDO CODE
-        #check neighbors (eg. top, left, bottom, right)
-        #IDEA
-        #start at bottom left
-        #Go all the way up, at top, iterate back down, looking for an entry to turn into next col.
-        #Then, go all the way down.
-        #At bottom, iterate back up, looking for an entry to turn into next col.
-        #repeat
-
 
     def get_all_lawnmower_waypoints(self):
         """
