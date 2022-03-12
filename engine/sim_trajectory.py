@@ -1,20 +1,23 @@
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import csv
 
 from matplotlib import animation as animation
 from matplotlib import patches as patch
 
-from engine.grid import Grid
-from engine.kinematics import limit_cmds, feedback_lin
-from engine.pid_controller import PID
 from engine.robot import Robot
+from engine.robot import Phase
+from engine.robot import get_path
 from engine.base_station import BaseStation
 from engine.mission import Mission
+from engine.mission import ControlMode
+from engine.database import DataBase
 
-'''PLOTTING'''
+import logging
+import threading
+import time
 
+import sys, os
 
 def waypoints_to_array(waypoints):
     """
@@ -52,66 +55,106 @@ def get_plot_boundaries(nodes, delta):
     ylim = [min_coords[1] - delta, max_coords[1] + delta]
     return xlim, ylim
 
+def get_path(folder):
+
+    cwd = os.getcwd()
+    sys.path.append(cwd + "/" + folder)
+    return sys.path
 
 if __name__ == "__main__":
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, control_mode=2)  # Start position should be base.
+    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=Phase.SETUP)
     base_r2d2 = BaseStation((42.444250, -76.483682))
-    m = Mission(r2d2, base_r2d2)
+    database = DataBase(r2d2)
+    m = Mission(robot=r2d2, base_station=base_r2d2, init_control_mode=ControlMode.LAWNMOWER_BORDERS)
 
-
+    def retrieve_data(name):
+        logging.info("Thread %s: starting", name)
+        while simulation_on:
+            packet = database.make_packet()
+            #send packet to gui
+            rpi_to_gui.write(str(packet) + '\n')
+            logging.info("Sent packet: " + packet)
+            time.sleep(0.1)
+        logging.info("Thread %s: finishing", name)
+        rpi_to_gui.close()
     '''------------------- MISSION EXECUTION -------------------'''
-    m.execute_mission()
+    global simulation_on
+    simulation_on = True
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
 
-    ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
+    rpi_to_gui = open((get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "a")  # open csv file of rpi to gui data
 
-    plt.style.use('seaborn-whitegrid')
-    x_coords = m.robot.truthpose[:, 0]
-    y_coords = m.robot.truthpose[:, 1]
-    fig, ax = plt.subplots()
-    ax.plot(x_coords, y_coords, '-b')
-    ax.plot(x_coords[0], y_coords[0], 'gx')
-    goals = waypoints_to_array(m.all_waypoints)
-    ax.plot(goals[:, 0], goals[:, 1], 'rx')
+    packet_sender = threading.Thread(target=retrieve_data, args=(1,), daemon=True) # Thread to read and send robot properties
+    packet_sender.start()
+    m.execute_mission(database) # Run main mission
+    simulation_on = False
+    os.system("pkill -f gui.retrieve_inputs")  # once gui.gui.py is closed, also close gui.retrieve_inputs.py
 
-    xbounds, ybounds = get_plot_boundaries(m.grid.nodes, 5)
-    plt.xlim(xbounds)
-    plt.ylim(ybounds)
-
-    circle_patch = plt.Circle((5, 5), 1, fc="green")
-    wedge_patch = patch.Wedge(
-        (5, 1), 3, 100, 80, animated=True, fill=False, width=2, ec="g", hatch="xx"
-    )
-
-    # Plot base station:
-    circle_patch_base = plt.Circle((5, 5), 1, fc="red")
-    base_angle_degrees = math.degrees(m.base_station_angle)  # The heading of base station in degrees
-    wedge_patch_base = patch.Wedge(
-        m.base_station_loc, 3, base_angle_degrees-10, base_angle_degrees+10, fill=False, width=2, ec="r", hatch="xx"
-    )
-
-
-    def init():
-        circle_patch.center = (0, 0)
-        circle_patch_base.center = m.base_station_loc
-        ax.add_patch(circle_patch)
-        ax.add_patch(wedge_patch)
-        ax.add_patch(circle_patch_base)
-        ax.add_patch(wedge_patch_base)
-        return circle_patch, wedge_patch
-
-
-    def animate(i):
-        x_coord = m.robot.truthpose[i, 0]
-        y_coord = m.robot.truthpose[i, 1]
-        circle_patch.center = (x_coord, y_coord)
-        wedge_patch.update({"center": [x_coord, y_coord]})
-        wedge_patch.theta1 = np.degrees(m.robot.truthpose[i, 2]) - 10
-        wedge_patch.theta2 = np.degrees(m.robot.truthpose[i, 2]) + 10
-        return circle_patch, wedge_patch
-
-
-    anim = animation.FuncAnimation(
-        fig, animate, init_func=init, frames=np.shape(m.robot.truthpose)[0], interval=20, blit=True
-    )
-
-    plt.show()
+    #
+    # ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
+    #
+    # plt.style.use('seaborn-whitegrid')
+    # x_coords = m.robot.truthpose[:, 0]
+    # y_coords = m.robot.truthpose[:, 1]
+    # fig, ax = plt.subplots()
+    # ax.plot(x_coords, y_coords, '-b')
+    # ax.plot(x_coords[0], y_coords[0], 'gx')
+    # margin = 5
+    #
+    # if m.control_mode == ControlMode.ROOMBA:
+    #     range = m.roomba_radius + margin
+    #     init_x = m.base_station_loc[0]
+    #     init_y = m.base_station_loc[1]
+    #     plt.xlim([init_x-range, init_x+range])
+    #     plt.ylim([init_y-range, init_y+range])
+    #     circle = plt.Circle((init_x, init_y), m.roomba_radius)
+    #     ax.add_patch(circle)
+    #
+    # elif m.control_mode != ControlMode.MANUAL:
+    #     goals = waypoints_to_array(m.all_waypoints)
+    #     ax.plot(goals[:, 0], goals[:, 1], 'rx')
+    #
+    #     xbounds, ybounds = get_plot_boundaries(m.grid.nodes, margin)
+    #     plt.xlim(xbounds)
+    #     plt.ylim(ybounds)
+    #
+    # circle_patch = plt.Circle((5, 5), 1, fc="green")
+    # wedge_patch = patch.Wedge(
+    #     (5, 1), 3, 100, 80, animated=True, fill=False, width=2, ec="g", hatch="xx"
+    # )
+    #
+    # # Plot base station:
+    # circle_patch_base = plt.Circle((5, 5), 1, fc="red")
+    # base_angle_degrees = math.degrees(m.base_station_angle)  # The heading of base station in degrees
+    # wedge_patch_base = patch.Wedge(
+    #     m.base_station_loc, 3, base_angle_degrees-10, base_angle_degrees+10, fill=False, width=2, ec="r", hatch="xx"
+    # )
+    #
+    #
+    # def init():
+    #     circle_patch.center = (0, 0)
+    #     circle_patch_base.center = m.base_station_loc
+    #     ax.add_patch(circle_patch)
+    #     ax.add_patch(wedge_patch)
+    #     ax.add_patch(circle_patch_base)
+    #     ax.add_patch(wedge_patch_base)
+    #     return circle_patch, wedge_patch
+    #
+    #
+    # def animate(i):
+    #     x_coord = m.robot.truthpose[i, 0]
+    #     y_coord = m.robot.truthpose[i, 1]
+    #     circle_patch.center = (x_coord, y_coord)
+    #     wedge_patch.update({"center": [x_coord, y_coord]})
+    #     wedge_patch.theta1 = np.degrees(m.robot.truthpose[i, 2]) - 10
+    #     wedge_patch.theta2 = np.degrees(m.robot.truthpose[i, 2]) + 10
+    #     return circle_patch, wedge_patch
+    #
+    #
+    # anim = animation.FuncAnimation(
+    #     fig, animate, init_func=init, frames=np.shape(m.robot.truthpose)[0], interval=20, blit=True
+    # )
+    #
+    # plt.show()
