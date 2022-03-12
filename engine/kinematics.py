@@ -100,6 +100,15 @@ def limit_cmds(v, w, max_v, wheel_to_center):
 
 
 def integrate_odom(pose, d, phi):
+    """
+    Returns the robot pose in the inertial frame based on integrating odometry measurements. [3-by-1 Numpy array]
+
+    Parameters:
+    -----------
+    # pose: robot's initial pose [x y theta]  [3-by-1 Numpy array]
+    # d: distance robot moved in the last time step [float]
+    # phi: angle robot turned in the last time step [float]
+    """
     if phi == 0:
         new_x = pose[0] + d * math.cos(pose[2])
         new_y = pose[1] + d * math.sin(pose[2])
