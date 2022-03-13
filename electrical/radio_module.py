@@ -2,18 +2,6 @@ from sys import is_finalizing
 import serial 
 import time 
 
-""" This module receives the serially transmitted data from the radio frequency (rf) module """
-class Device: 
-    def __init__(self, serial, device_number):
-        """ 
-            Device Numbers: 
-            0: robot's radio
-            1: base station radio
-        """
-        self.ser = serial
-        self.connected = False
-        self.device_number = device_number
-
 
 class RadioSession:
     """
@@ -25,36 +13,46 @@ class RadioSession:
     'dr': data (robot) 
     'db': data (base station) 
     """
+    def __init__(self, serial):
+        self.connected = False 
+        self.ser = serial
 
-    def __init__(self, device):
-        self.device = device
-
+    #receive data reads the serially transmitted data the other radio device is sending
     def receive_data(self):
-        byte_data = self.ser.readline()
+        #serial is reading by line; important that data must be sent with a newline appended to it '/n' 
+        byte_data = self.ser.readline() 
         return byte_data
 
     def transmit_data(self,data, packet_type):
-        assert(isinstance(packet_type), str)
-        cast_data = bytes((packet_type + str(data) + '\n'), encoding= 'utf-8')
+        assert isinstance(packet_type, str)
+        data = packet_type + str(data) + ' \n' 
+        cast_data = bytes(data, encoding= 'utf-8')
         self.ser.write(cast_data)
 
     #implementation of 2-way handshake between the robot and basestation/gui for serial data transmission
     #setup function called on the robot
     def setup_robot(self): 
-        if (self.device.device_number != 0): #self.device should be 0
-            print("error, set device to 0")
-        while (not self.device.connected): #while rpi not connected to base station
-            self.transmit_data('sr')
+        while (not self.connected): #while rpi not connected to base station
+            self.transmit_data('setup', 'sr')
             receive = self.receive_data()
+            print("connected: ", self.connected, "received: ",  receive)
             if (receive == 'sb'):
-                self.device.connected = True
+                print("finished!")
+                self.connected = True
 
     #setup function called on the base station 
+    #TODO: call this in the GUI class
     def setup_basestation(self):
-        if (self.device.device_number != 1): 
-            print("error, set device to 1")
-        while (not self.device.connected): #while rpi not connected to base station
-            receive = self.receive_data()
-            if (receive == 'sr'):
-                self.transmit_data('sb') 
-                self.device.connected = True
+        while (not self.connected): #while rpi not connected to base station
+            ser = serial.Serial('/dev/tty.usbserial-017543DC', 57600)
+            data = ser.read()
+            print(data)
+            
+            # receive = self.receive_data()
+            # print(receive)
+            # if (receive == 'sr'):
+            #     self.transmit_data('setup','sb') 
+            #     self.device.connected = True
+
+
+    

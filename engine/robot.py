@@ -249,18 +249,13 @@ class Robot:
         print('heading: ' + str(self.state[2]))
 
 
-    def execute_setup(self, robot_device, radio_session, gps, imu, pid_motor):
-        if (robot_device == 0): 
-            gps_setup = gps.setup() 
-            imu_setup = imu.setup()
-            radio_session.setup_robot()
-            pid_motor.setup()
-        else: 
-            radio_session.setup_basestation()
-        
-        radio_connected = radio_session.device.connected 
+    def execute_setup(self, radio_session, gps, imu, motor_controller):
+        gps_setup = gps.setup() 
+        imu_setup = imu.setup()
+        radio_session.setup_robot()
+        motor_controller.setup()
 
-        if (radio_connected and gps_setup and imu_setup): 
+        if (radio_session.connected and gps_setup and imu_setup): 
             self.phase = Phase.TRAVERSE
 
 

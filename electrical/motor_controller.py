@@ -1,12 +1,12 @@
 import time
 from engine.robot import Robot
-if True: #change to True when running code on robot
+if False: #change to True when running code on robot
     import RPi.GPIO as GPIO
 
 
-class MotorController:
+class BasicMotorController:
     """ 
-    MotorController contains pinouts to configure motor controller, as well as 
+    BasicMotorController contains pinouts to configure motor controller, as well as 
     commands to physically move the robot. 
     """
     def __init__(self, robot):
@@ -79,10 +79,10 @@ class MotorController:
         time.sleep(1)
 
 
-class MotorPID:
+class MotorController:
     """ 
-    MotorPID contains pinouts to configure motor controller, PID tuning values for the 
-    motors, and can set motor torque according to input angular and linear velocities.
+    MotorController contains pinouts to configure motor controller and can set motor torque 
+    according to input angular and linear velocities.
 
     Attributes: 
         robot: robot object 
@@ -97,7 +97,8 @@ class MotorPID:
         self.in2 = 6
         self.enA = 13   #PWM
         self.enB = 12   #PWM
-        self.is_sim = robot.is_sim
+        # self.is_sim = robot.is_sim
+        self.is_sim = True
         #super().__init__(robot)
         self.wheel_r = wheel_r
         self.vm_load1 = vm_load1
@@ -127,7 +128,7 @@ class MotorPID:
         # Define and cap duty cycles if they are above max
         try: 
             dc1 = omega_r / self.vm_load1
-            dc2 = omega_r / self.vm_load2
+            dc2 = omega_l / self.vm_load2
         except: 
             raise ZeroDivisionError("vm_load1 or vm_load2 is zero")
 

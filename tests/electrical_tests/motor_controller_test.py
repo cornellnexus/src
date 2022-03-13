@@ -1,9 +1,9 @@
-from electrical.motor_controller import MotorController, MotorPID
+from electrical.motor_controller import BasicMotorController, MotorController  
 import time
 
-class MotorControllerTest:	
+class BasicMotorControllerTest:	
 	"""
-	MotorController Test checks that the motors are able to rotate in an expected direction.
+	BasicMotorController Test checks that the motors are able to rotate in an expected direction.
 	
 	For this test to run properly, the wired connections of the GPIO pins must be set-up properly.
 
@@ -11,7 +11,7 @@ class MotorControllerTest:
 	direction for the next three seconds.
 	"""
 	def __init__(self): 
-		self.mc = MotorController()
+		self.mc = BasicMotorController()
 		
 	def motor_controller_test_one(self): 
 		stop_time = time.time() + 3
@@ -34,10 +34,9 @@ class MotorControllerTest:
 		self.motor_controller_test_three()
 
 
-class MotorPIDTest: 
+class MotorControllerTest: 
 	"""
-	MotorPIDTest checks that the motors are tunable according to specific PID constants, as well as 
-	are able to rotate for a respective omega and velocity value set. 
+	MotorControllerTest checks that the motors are able to rotate for a respective omega and velocity value set. 
 
 	For this test to run properly, the wired connections of the GPIO pins must be set-up properly.
 
@@ -45,24 +44,24 @@ class MotorPIDTest:
 	to rotate at omega = 20 and velocity = 30. 
 	"""
 	def __init__(self): 
-		self.pid = MotorPID.PidGpio(5,15,15,5,5)
+		self.motor_controller = MotorController(None, 5,15,15,5,5)
 	
-	def motor_pid_test_one(self): 
+	def test_one(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
-			self.pid.motors(0,30)
+			self.motor_controller.motors(0,30)
 	
-	def motor_pid_test_two(self): 
+	def test_two(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
-			self.pid.motors(0,0)
+			self.motor_controller.motors(0,0)
 	
-	def motor_pid_test_three(self): 
+	def test_three(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
-			self.pid.motors(20,30)
+			self.motor_controller.motors(20,30)
 
 	def run(self): 
-		self.motor_pid_test_one()
-		self.motor_pid_test_two()
-		self.motor_pid_test_three()
+		self.test_one()
+		self.test_two()
+		self.test_three()

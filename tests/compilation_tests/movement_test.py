@@ -3,7 +3,7 @@ import RPi.GPIO as GPIO
 from engine.robot import Robot
 import time
 
-from electrical.motor_controller import MotorController
+from electrical.motor_controller import BasicMotorController, MotorController
 
 # comment out one of the tests to run
 ############################### Testing GPS ##################################
@@ -24,7 +24,7 @@ from electrical.motor_controller import MotorController
 
 ############################### Testing GPIO #################################
 robot = Robot(x_pos = 0, y_pos = 0, heading = 0, epsilon = 0, max_v = 0, radius = 1)
-motor_controller = MotorController(robot)
+motor_controller = BasicMotorController(robot)
 
 stopTime = time.time() + 10
 while time.time() < stopTime:
