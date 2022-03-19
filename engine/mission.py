@@ -59,15 +59,15 @@ class Mission:
         self.all_waypoints = self.grid.get_waypoints(self.control_mode)
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
-        self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
-        self.radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio device
-        self.robot_radio_device = Device(0, self.radio_serial) 
+        # self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
+        # self.radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio device
+        # self.robot_radio_device = Device(0, self.radio_serial)
         # self.basestation_radio_device = Device(1, '/dev/ttyS0') #base station radio device
-        self.imu_i2c = busio.I2C(board.SCL, board.SDA)
+        # self.imu_i2c = busio.I2C(board.SCL, board.SDA)
         self.motor_controller = MotorController(self.robot)
-        self.radio_session = RadioSession(self.radio_device) 
-        self.gps = GPS(self.gps_serial) 
-        self.imu = IMU(self.imu_i2c) 
+        # self.radio_session = RadioSession(self.radio_device)
+        # self.gps = GPS(self.gps_serial)
+        # self.imu = IMU(self.imu_i2c)
         self.allowed_heading_error = allowed_heading_error
         self.base_station_angle = base_station.heading
         self.allowed_docking_pos_error = allowed_docking_pos_error

@@ -36,6 +36,7 @@ def get_control_mode(window):
     """
     Returns the last control mode given in the control_mode.csv file
     """
+    #TODO: replace using telemetry data
     path = get_path('csv')
     file = open(path[len(path)-1]+"/control_mode_test.csv", "r")
     try:
