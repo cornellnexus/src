@@ -48,4 +48,4 @@ if __name__ == "__main__":
         except:
             print("check code and setup, something is wrong")
         finally:
-            GPIO.cleanuo()
+            GPIO.cleanup()
