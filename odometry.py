@@ -1,8 +1,9 @@
-
+# Odometry is for calculating linear and angular displacement of robot
 
 import RPi.GPIO as GPIO
 import math
 
+test = True
 counter_right = 0
 counter_left = 0
 ppr=500 #pulse per revolution of motor
@@ -27,7 +28,8 @@ def odometry(counter_right, counter_left, r, L):
         ds_left=dtheta_left*r                            #change in linear displacement of right wheel
         linear_dis=(ds_right+ds_left)/2                  #linear displacement of robot
         angular_dis=(ds_right-ds_left)/(2*L)             #angular displacement of robot
-        print("linear displacement is"+str(linear_dis)+"\n"+"angular displacement is"+str(angular_dis))
+        if (test):
+            print("linear displacement is"+str(linear_dis)+"\n"+"angular displacement is"+str(angular_dis))
         counter_right=0
         counter_left=0
         
@@ -40,5 +42,3 @@ if __name__ == "__main__":
         GPIO.setup(9,GPIO.IN)       #left wheel
         GPIO.add_event_detect(26, GPIO.RISING, callback=pulse_handler_right)  
         GPIO.add_event_detect(9, GPIO.RISING, callback=pulse_handler_left)  
-        while True:
-                print(freq)
