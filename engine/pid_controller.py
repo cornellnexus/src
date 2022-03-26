@@ -1,24 +1,23 @@
-from time import sleep
-import numpy as np
 
 
 class PID:
-    """Initializes fields for PID Controller that is used to continuously correct errors.
+    """
+    Instances represent a PID Controller that is used to continuously correct errors.
 
     INSTANCE ATTRIBUTES:
-        Kp: Constant for proportional controller
-        Ki: Constant for integral controller
-        Kd: Constant for derivative controller
-        target: Target value we want to reach
-        sample_time: Frequency the PID controller is correcting values
-        output_limits: Limits that the PID controller can correct within
-        prev_error: Value of the error calculated in the previous cycle
-        proportional: Proportional controller computation
-        integral: Integral controller computation
-        derivative: Derivative controller computation
+        # Kp: Constant for proportional controller
+        # Ki: Constant for integral controller
+        # Kd: Constant for derivative controller
+        # target: Target value we want to reach
+        # sample_time: Frequency the PID controller is correcting values (same frequency as control loop)
+        # output_limits: Limits that the PID controller can correct within
+        # prev_error: Value of the error calculated in the previous loop
+        # proportional: Proportional controller command
+        # integral: Integral controller command
+        # derivative: Derivative controller command
     """
 
-    def __init__(self, Kp=0.02, Ki=0.005, Kd=0.0, target=0, sample_time=0.01, output_limits=(None, None)):
+    def __init__(self, Kp=1, Ki=0, Kd=0, target=0, sample_time=0.01, output_limits=(None, None)):
         self.Kp, self.Ki, self.Kd = Kp, Ki, Kd
         self.target = target
         self.sample_time = sample_time
