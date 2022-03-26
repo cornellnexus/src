@@ -6,7 +6,8 @@ if False: #change to True when running code on robot
 """ MotorController contains pinouts to configure motor controller, as well as 
     commands to physically move the robot. """
 class MotorController:
-    def __init__(self, robot):
+
+    def __init__(self):
         #raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
@@ -14,7 +15,9 @@ class MotorController:
         self.in4 = 26
         self.enA = 13   #PWM
         self.enB = 12   #PWM
-        self.is_sim = robot.is_sim
+        self.is_sim = False
+
+        # self.is_sim = robot.is_sim
 
     # checks all of the robot movements are functioning properly
     def setup(self):
