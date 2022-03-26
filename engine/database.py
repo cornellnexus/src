@@ -28,14 +28,17 @@ class DataBase:
             "acceleration": robot.acceleration,  # not called in main algorithm yet
             "magnetic_field": robot.magnetic_field,  # not called in main algorithm yet
             "gyro_rotation": robot.gyro_rotation,  # not called in main algorithm yet
-            "position_pid": (robot.position_kp, robot.position_ki, robot.position_kd),
+            "position_pid": [robot.position_kp, robot.position_ki, robot.position_kd],
             "position_noise": robot.position_noise,
-            "heading_pid": (robot.heading_kp, robot.heading_ki, robot.heading_kd)
+            "heading_pid": [robot.heading_kp, robot.heading_ki, robot.heading_kd]
         }
 
     def __str__(self):
-        return "phase: " + str(self.core_data["phase"]) + ",\n" + \
-               "state [x, y, heading]: " + str(self.core_data["state"]) + ",\n" + \
+        print(str(self.core_data["heading_pid"]))
+        return "phase: " + str(self.core_data["phase"].value) + ",\n" + \
+               "state [x, y, heading]: [" + str(self.core_data["state"][0][0])+ \
+                ", "+str(self.core_data["state"][1][0]) + ", " +\
+                str(self.core_data["state"][2][0])+ "]" + ",\n" + \
                "is_sim: " + str(self.core_data["is_sim"]) + ",\n" + \
                "plastic_weight: " + str(self.core_data["plastic_weight"]) + ",\n" + \
                "battery: " + str(self.core_data["battery"]) + ",\n" + \
@@ -43,11 +46,11 @@ class DataBase:
                "acceleration [x, y, z]: " + str(self.core_data["acceleration"]) + ",\n" + \
                "magnetic_field [x, y, z]: " + str(self.core_data["magnetic_field"]) + ",\n" + \
                "gyro_rotation [x, y, z]: " + str(self.core_data["gyro_rotation"]) + ",\n" + \
-               "position_pid [proportional factor, integral factor, derivative factor]: " + str(
-            self.core_data["position_pid"]) + ",\n" + \
+               "position_pid [proportional factor, integral factor, derivative factor]: " + \
+                str(self.core_data["position_pid"]) + ",\n" + \
                "position_noise: " + str(self.core_data["position_noise"]) + ",\n" + \
-               "heading_pid [proportional factor, integral factor, derivative factor]: " + str(
-            self.core_data["heading_pid"])
+               "heading_pid [proportional factor, integral factor, derivative factor]: " + \
+               str(self.core_data["heading_pid"])
 
     # position pid, position noise, heading pid
 
@@ -84,22 +87,7 @@ class DataBase:
 
     def phase_as_value(self):
         phase = self.get_data("phase")
-        if phase == Phase.SETUP:
-            return "1"
-        elif phase == Phase.TRAVERSE:
-            return "2"
-        elif phase == Phase.AVOID_OBSTACLE:
-            return "3"
-        elif phase == Phase.RETURN:
-            return "4"
-        elif phase == Phase.DOCKING:
-            return "5"
-        elif phase == Phase.COMPLETE:
-            return "6"
-        elif phase == Phase.FAULT:
-            return "7"
-        else:
-            raise Exception()
+        return phase.value
 
     def make_packet(self):
         coords = (str(self.get_data("state")[0][0]), str(self.get_data("state")[1][0]))
