@@ -7,6 +7,8 @@ test = True
 counter_right = 0
 counter_left = 0
 ppr=500 #pulse per revolution of motor
+r=5     #dummy variable for radius of wheels
+L=15    #dummy variable for distance from one wheel to center of robot
 
 
 def pulse_handler_right(pin):
@@ -40,5 +42,10 @@ if __name__ == "__main__":
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(26, GPIO.IN)     #right wheel
         GPIO.setup(9,GPIO.IN)       #left wheel
-        GPIO.add_event_detect(26, GPIO.RISING, callback=pulse_handler_right)  
-        GPIO.add_event_detect(9, GPIO.RISING, callback=pulse_handler_left)  
+        try:
+            GPIO.add_event_detect(26, GPIO.RISING, callback=pulse_handler_right)  
+            GPIO.add_event_detect(9, GPIO.RISING, callback=pulse_handler_left)  
+        except:
+            print("check code and setup, something is wrong")
+        finally:
+            GPIO.cleanuo()
