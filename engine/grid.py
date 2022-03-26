@@ -1,4 +1,5 @@
 from platform import node
+from select import select
 from engine.node import Node
 import numpy as np
 from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get_vincenty_y
@@ -337,6 +338,26 @@ class Grid:
                 waypoints.append(node2)
         return waypoints
 
+    def get_straight_line_waypoints(self,y_start_pct):
+        """
+        Returns the robot's lawnmower border traversal path for the current grid using
+        only nodes in a straight line . Starting node is the left-most node starting at
+        the row in [Node List] that corresponds to how high the straight line should start at.
+
+        PARAMETERS:
+        ---------
+        y_start_pct: What percentage height that we want to start the straight line.(ex: 0.5: if there are 20 rows,
+                     start straight line at the 10th row up)
+        """
+        waypoints = []
+        node_list = self.nodes
+        rows = node_list.shape[0]
+        cols = node_list.shape[1]
+        selected_row = int(y_start_pct*rows)
+        for i in range(cols):
+            waypoints.append(node_list[selected_row][i])
+        return waypoints
+
     def get_waypoints(self, mode):
         """
         Returns the robot's traversal path for the current grid. [Node list].
@@ -358,6 +379,10 @@ class Grid:
                 -spiral traversal using every single node of the grid
                 -starting node varies based on the width/height of the grid
                 -ending node is the bottom left node of the grid
+            STRAIGHT:
+                - straight_line traversal across a row of nodes
+                - starting node is left most node at selected row
+                - ending node right most node at selected row
         """
         from engine.mission import ControlMode  # import placed here to avoid circular import
         if mode == ControlMode.LAWNMOWER_FULL:
@@ -366,6 +391,8 @@ class Grid:
             waypoints = self.get_border_lawnmower_waypoints()
         elif mode == ControlMode.SPIRAL:
             waypoints = self.get_spiral_waypoints()
+        elif mode == ControlMode.STRAIGHT:
+            waypoints = self.get_straight_line_waypoints(0.5)
         else:
             return []
         return waypoints

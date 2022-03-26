@@ -14,6 +14,7 @@ class ControlMode(Enum):
     SPIRAL = 3
     ROOMBA = 4
     MANUAL = 5
+    STRAIGHT = 6
 
 
 class Mission:
