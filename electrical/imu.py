@@ -1,16 +1,18 @@
 import time
-import board
-import busio
-import adafruit_lsm9ds1
+if False: 
+    import board
+    import busio
+    import adafruit_lsm9ds1
 
 """ Module that includes functions for IMU sensor"""
 class IMU:
-    def __init__(self, init_i2c):
-        i2c = init_i2c
-        self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
-        self.acc = 0
-        self.mag = 0
-        self.gyro = 0
+    def __init__(self, init_i2c, is_sim):
+        if self.is_sim: 
+            i2c = init_i2c
+            self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+            self.acc = 0
+            self.mag = 0
+            self.gyro = 0
 
 
     def set_num_dec(self, num, reading):
@@ -33,12 +35,12 @@ class IMU:
         """
         Returns acc, mag, gyro data formatted in a dictionary.
         """
-
-        self.acc = self.set_num_dec(3, tuple(self.imu.acceleration))
-        self.gyro = self.set_num_dec(3, tuple(self.imu.gyro))
-        self.mag = self.set_num_dec(3, tuple(self.imu.magnetic))
-        combined_data = self.imu_format(self.acc, self.mag, self.gyro)
-        return combined_data
+        if self.is_sim: 
+            self.acc = self.set_num_dec(3, tuple(self.imu.acceleration))
+            self.gyro = self.set_num_dec(3, tuple(self.imu.gyro))
+            self.mag = self.set_num_dec(3, tuple(self.imu.magnetic))
+            combined_data = self.imu_format(self.acc, self.mag, self.gyro)
+            return combined_data
 
 
     def imu_format(self, acc, mag, gyro):
@@ -82,11 +84,12 @@ class IMU:
         """
         imu_data = []
         count = 0
-        while (len(imu_data) < 25): 
-            count += 1 
-            data = self.get_imu()
-            if (data.get("acc") != 0 and data.get("mag") != 0 and data.get("gyro")!=0): 
-                imu_data.append(data)
-            if (count > 250): 
-                return False
-        return True 
+        if self.is_sim: 
+            while (len(imu_data) < 25): 
+                count += 1 
+                data = self.get_imu()
+                if (data.get("acc") != 0 and data.get("mag") != 0 and data.get("gyro")!=0): 
+                    imu_data.append(data)
+                if (count > 250): 
+                    return False
+            return True 

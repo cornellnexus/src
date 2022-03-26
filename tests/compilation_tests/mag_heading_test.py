@@ -3,7 +3,6 @@ import csv
 import math
 import numpy as np
 from ahrs.filters import EKF
-
 import csv
 
 with open('imu_360_sample1.csv') as csv_file:

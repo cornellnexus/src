@@ -1,5 +1,8 @@
 import threading
 import time
+import unittest
+
+#electrical imports:
 import board
 import busio
 from adafruit_lsm9ds1 import LSM9DS1_I2C
@@ -34,3 +37,9 @@ while time.time() < time.time() + 60:
     mag_x, mag_y, mag_z = magnetometer.magnetic
     print("Magnetometer: X: {0:8.5f}, Y:{1:8.5f}, Z:{2:8.5f} uT".format(
         mag_x, mag_y, mag_z))
+
+    
+
+
+
+
