@@ -1,5 +1,8 @@
 from collections import deque
+from electrical.motor_controller import MotorController
 from engine.robot import Phase
+from electrical.rf_module import Device, RadioSession
+
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum
 from engine.grid import Grid
@@ -9,13 +12,25 @@ class ControlMode(Enum):
     """
     An enumeration of different control modes
     """
-    LAWNMOWER_FULL = 1
-    LAWNMOWER_BORDERS = 2
+    LAWNMOWER = 1
+    LAWNMOWER_B = 2
     SPIRAL = 3
     ROOMBA = 4
     MANUAL = 5
     STRAIGHT = 6
 
+
+'''
+Electrical library imports
+(need these libraries to run mission out of the loop)
+Commented out for simulation testing purposes
+'''
+# from electrical.gps import GPS
+# from electrical.imu import IMU
+# import serial
+# import board
+# import busio
+# import adafruit_lsm9ds1
 
 class Mission:
     def __init__(self, robot, base_station, init_control_mode, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
@@ -35,6 +50,9 @@ class Mission:
                 before it can start docking.
             time_limit: the maximum time the robot can execute roomba traversal mode
             roomba_radius: the maximum radius from the base station that the robot in roomba traversal mode can move
+        
+        Important: All the ports of the electrical classes (ie. Serial) need to be updated to the respective 
+                    ports they are connected to on the computer running the code.
         """
         self.robot = robot
         self.grid = grid
@@ -42,6 +60,15 @@ class Mission:
         self.all_waypoints = self.grid.get_waypoints(self.control_mode)
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
+        # self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
+        # self.radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio device
+        # self.robot_radio_device = Device(0, self.radio_serial)
+        # self.basestation_radio_device = Device(1, '/dev/ttyS0') #base station radio device
+        # self.imu_i2c = busio.I2C(board.SCL, board.SDA)
+        self.motor_controller = MotorController(self.robot)
+        # self.radio_session = RadioSession(self.radio_device)
+        # self.gps = GPS(self.gps_serial)
+        # self.imu = IMU(self.imu_i2c)
         self.allowed_heading_error = allowed_heading_error
         self.base_station_angle = base_station.heading
         self.allowed_docking_pos_error = allowed_docking_pos_error
@@ -59,7 +86,7 @@ class Mission:
         """
         while self.robot.phase != Phase.COMPLETE:
             if self.robot.phase == Phase.SETUP:
-                self.robot.execute_setup()
+                self.robot.execute_setup(self.robot_radio_device, self.radio_session, self.gps, self.imu, self.motor_controller)
 
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,

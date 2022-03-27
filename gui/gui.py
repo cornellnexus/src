@@ -36,6 +36,7 @@ def get_control_mode(window):
     """
     Returns the last control mode given in the control_mode.csv file
     """
+    #TODO: replace using telemetry data
     path = get_path('csv')
     file = open(path[len(path)-1]+"/control_mode_test.csv", "r")
     try:
@@ -178,7 +179,7 @@ def setup_gui():
     """
 
 
-    image_data = get_images();
+    image_data = get_images()
     left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
     right_col = [
                 [sg.Image(key='-LOGO-', data=image_data[3])], 

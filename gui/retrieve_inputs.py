@@ -154,4 +154,4 @@ def get_coord(coords):
     return (str(x_median), str(y_median))
 
 
-update_gui()
+# update_gui()
