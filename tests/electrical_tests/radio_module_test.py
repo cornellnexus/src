@@ -1,4 +1,4 @@
-from electrical.radio_module import Device, RadioSession
+from electrical.radio_module import RadioSession
 import serial
 import time
 
@@ -23,14 +23,13 @@ class RadioModuleTest:
 
         if self.is_basestation: 
             basestation_serial = serial.Serial('/dev/tty.usbserial-017543DC', 57600) #base serial port number
-            basestation_device = Device(1, basestation_serial) 
-            basestation_radio = RadioSession(basestation_device)
+            basestation_radio = RadioSession(basestation_serial)
             while time.time() < stop_time:
-                # basestation_radio.setup_basestation()
-                # data = basestation_radio.receive_data()
+                basestation_radio.setup_basestation()
+                data = basestation_radio.receive_data()
                 
 
 
 basestation_radio = RadioModuleTest(False, True)
 basestation_radio.run()
-#basestation_radio = RadioModuleTest(False, True) 
+# basestation_radio = RadioModuleTest(False, True) 

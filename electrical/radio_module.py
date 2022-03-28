@@ -35,24 +35,20 @@ class RadioSession:
         while (not self.connected): #while rpi not connected to base station
             self.transmit_data('setup', 'sr')
             receive = self.receive_data()
-            print("connected: ", self.connected, "received: ",  receive)
+            # print("connected: ", self.connected, "received: ",  receive)
             if (receive == 'sb'):
-                print("finished!")
+                # print("finished!")
                 self.connected = True
 
     #setup function called on the base station 
     #TODO: call this in the GUI class
     def setup_basestation(self):
         while (not self.connected): #while rpi not connected to base station
-            ser = serial.Serial('/dev/tty.usbserial-017543DC', 57600)
-            data = ser.read()
-            print(data)
-            
-            # receive = self.receive_data()
-            # print(receive)
-            # if (receive == 'sr'):
-            #     self.transmit_data('setup','sb') 
-            #     self.device.connected = True
+            data = self.ser.read()
+            # print(data)
+            if (data == 'sr'):
+                self.transmit_data('setup','sb') 
+                self.connected = True
 
 
     

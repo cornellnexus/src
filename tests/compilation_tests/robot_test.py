@@ -1,5 +1,5 @@
 from engine.robot import Robot
-from electrical.radio_module import Device, RadioSession
+from electrical.radio_module import RadioSession
 from electrical.motor_controller import BasicMotorController, MotorController
 # from electrical.gps import GPS
 # from electrical.imu import IMU
@@ -72,12 +72,8 @@ class TestSetup(unittest.TestCase):
     #test_radio_session_setup for device and radio session initialization
     #note: actual radio connection testing must be performed with hardware
     def test_radio_session_setup(self):
-        robot_device = Device(None, 0) 
-        base_station_device = Device(None, 1)
-        robot_radio_session = RadioSession(robot_device)
-        self.assertEqual(robot_radio_session.device.connected, False)
-        self.assertEqual(robot_radio_session.device.device_number, 0)
-        self.assertEqual(base_station_device.device_number, 1)
+        robot_radio_session = RadioSession(None)
+        self.assertEqual(robot_radio_session.connected, False)
 
     #test motor_controller_setup calls the motor controller setup function, which will 
     #print a series of commands. Make sure they are in the order of: 
