@@ -12,8 +12,8 @@ class ControlMode(Enum):
     """
     An enumeration of different control modes
     """
-    LAWNMOWER_FULL = 1
-    LAWNMOWER_BORDERS = 2
+    LAWNMOWER = 1
+    LAWNMOWER_B = 2
     SPIRAL = 3
     ROOMBA = 4
     MANUAL = 5
