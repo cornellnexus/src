@@ -12,7 +12,7 @@ import tests.compilation_tests.robot_test.robot_test as robot_test #fixed
 import tests.compilation_tests.packet_test as packet_test #fixed
 import tests.compilation_tests.retrieve_inputs_test as retrieve_inputs_test #fixed
 import tests.compilation_tests.mag_heading_test as mag_heading_test #fixed
-import tests.compilation_tests.grid_test as grid_test
+import tests.compilation_tests.grid_test as grid_test #fixed
 
 
 
