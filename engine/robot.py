@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from enum import Enum
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 
@@ -100,9 +99,9 @@ class Robot:
         # radians turned
         self.plastic_weight = plastic_weight
         self.battery = 100 # TEMPORARY
-        self.acceleration = 0 # TEMPORARY
-        self.magnetic_field = 0 # TEMPORARY
-        self.gyro_rotation = 0  # TEMPORARY
+        self.acceleration = [0,0,0] # TEMPORARY
+        self.magnetic_field = [0,0,0] # TEMPORARY
+        self.gyro_rotation = [0,0,0]  # TEMPORARY
 
 
         self.loc_pid_x = PID(
