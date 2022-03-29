@@ -3,38 +3,58 @@ import board
 import busio
 import adafruit_lsm9ds1
 
-#---------------------------README-------------------------
-# This file needs to go on the raspberry pi
-#----------------------------------------------------------
-
+""" Module that includes functions for IMU sensor"""
 class IMU:
-    
-    i2c = busio.I2C(board.SCL, board.SDA)
-    imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+    def __init__(self, init_i2c):
+        i2c = init_i2c
+        self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
+        self.acc = 0
+        self.mag = 0
+        self.gyro = 0
 
-    def __init__(self):
-         self.acc = 0
-         self.mag = 0
-         self.gyro = 0
 
-    """get_imu returns acc, mag, gyro data formatted in a dictionary"""
-    
     def set_num_dec(self, num, reading):
+        """
+        Returns rounded values of the [reading] to [num] digits.
+        
+        Parameters: [reading] is the data value from the IMU
+                    [num] is the number of digits to round [reading] to.
+        
+        Preconditions: [reading] is an integer
+                       [num] is an integer
+    """
         x = round(reading[0], num)
         y = round(reading[1], num)
         z = round(reading[2], num)
         return x, y, z
 
+
     def get_imu(self):
+        """
+        Returns acc, mag, gyro data formatted in a dictionary.
+        """
+
         self.acc = self.set_num_dec(3, tuple(self.imu.acceleration))
         self.gyro = self.set_num_dec(3, tuple(self.imu.gyro))
         self.mag = self.set_num_dec(3, tuple(self.imu.magnetic))
         combined_data = self.imu_format(self.acc, self.mag, self.gyro)
         return combined_data
 
-    """imu_format is a helper function to combine IMU sensors together"""
 
     def imu_format(self, acc, mag, gyro):
+        """
+        Returns the IMU sensor readings of the accelerometer, magnetometer, and gyroscope
+        as a dictionary for formatting purposes.
+
+        Parameters: [acc] is the accelerometer X, Y, Z axis values as a 3-tuple of m/s^2 values
+                    [mag] is the magnetometer X, Y, Z axis values as a 3-tuple of gauss values
+                    [gyro] is the gyroscope X, Y, Z axis values as a 3-tuple of rad/s values
+        
+        Preconditions: 
+                    [acc] is a tuple of three ints
+                    [mag] is a tuple of three ints 
+                    [gyro] is a tuple of three ints
+        """
         imu_dict = {
          "acc": acc,
          "mag": mag,
@@ -42,45 +62,31 @@ class IMU:
         }
         return imu_dict
     
+
     def write_to_csv(data_arr, file):
+        """
+        Writes [data_arr] to a csv [file].
+        """
         with open(file, "w") as imu_file:
             for datum in data_arr: 
                 imu_file.write(str(datum) + '\n')
 
-
-# Simple starter test program that just prints IMU values in a neat fashion
-'''
-sensor = IMU()
-
-#helper function to print sensor data in x, y, z
-def pretty_print(data):
-    data = list(data)
-    coords = {
-      "x" : data[0],
-      "y" : data[1],
-      "z" : data[2]
-    }
-    return coords
-
-while True:
-
-    combined_data = sensor.get_imu()
     
-    format_data_acc = pretty_print(combined_data["acc"])
-    format_data_mag = pretty_print(combined_data["mag"])
-    format_data_gyr = pretty_print(combined_data["gyro"])
-    
-    print(format_data_acc["z"])
-#    print(format_data_acc["y"])
-#    print(format_data_acc["x"])
-
-#    print(format_data_mag["z"])
-#    print(format_data_mag["y"])
-#    print(format_data_mag["x"])
-
-#    print(format_data_gyr["z"])
-#    print(format_data_gyr["y"])
-#    print(format_data_gyr["x"])
-    print("\n")
-    time.sleep(0.05)
-'''
+    def setup(self):
+        """ 
+        Returns True when IMU is setup properly, False if not.
+        Checks the IMU is setup by ensuring that at least 25 IMU readings of 
+        (acc, mag, gyro) data is not equal to 0. If this condition is satisfied, the
+        function returns True. If the IMU continues reading 0s more than a count of 
+        250 times, then this function returns False. 
+        """
+        imu_data = []
+        count = 0
+        while (len(imu_data) < 25): 
+            count += 1 
+            data = self.get_imu()
+            if (data.get("acc") != 0 and data.get("mag") != 0 and data.get("gyro")!=0): 
+                imu_data.append(data)
+            if (count > 250): 
+                return False
+        return True 

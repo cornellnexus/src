@@ -13,6 +13,11 @@ from engine.robot import Robot
 from engine.sim_trajectory import *
 from engine.user_utils import *
 
+"""
+THIS FILE IS OUTDATED. OUR IMPLEMENTATION OF TRAVERSAL HAS CHANGED. 
+Running this file will yield errors. 
+"""
+
 target = [0, 0]
 add_to_x = False
 gps_noise_range = .3

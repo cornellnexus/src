@@ -62,7 +62,7 @@ def get_path(folder):
     return sys.path
 
 if __name__ == "__main__":
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=Phase.SETUP)
+    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=Phase.TRAVERSE)
     base_r2d2 = BaseStation((42.444250, -76.483682))
     database = DataBase(r2d2)
     m = Mission(robot=r2d2, base_station=base_r2d2, init_control_mode=ControlMode.LAWNMOWER_BORDERS)
@@ -92,9 +92,9 @@ if __name__ == "__main__":
     simulation_on = False
     os.system("pkill -f gui.retrieve_inputs")  # once gui.gui.py is closed, also close gui.retrieve_inputs.py
 
-    #
-    # ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
-    #
+
+    ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
+
     plt.style.use('seaborn-whitegrid')
     x_coords = m.robot.truthpose[:, 0]
     y_coords = m.robot.truthpose[:, 1]
@@ -102,7 +102,6 @@ if __name__ == "__main__":
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
     margin = 5
-    
     if m.control_mode == ControlMode.ROOMBA:
         range = m.roomba_radius + margin
         init_x = m.base_station_loc[0]
@@ -123,20 +122,18 @@ if __name__ == "__main__":
         plt.xlim(xbounds)
         plt.ylim(ybounds)
 
-
     circle_patch = plt.Circle((5, 5), 1, fc="green")
     wedge_patch = patch.Wedge(
         (5, 1), 3, 100, 80, animated=True, fill=False, width=2, ec="g", hatch="xx"
     )
-    
     # Plot base station:
     circle_patch_base = plt.Circle((5, 5), 1, fc="red")
     base_angle_degrees = math.degrees(m.base_station_angle)  # The heading of base station in degrees
     wedge_patch_base = patch.Wedge(
         m.base_station_loc, 3, base_angle_degrees-10, base_angle_degrees+10, fill=False, width=2, ec="r", hatch="xx"
     )
-    
-    
+
+
     def init():
         circle_patch.center = (0, 0)
         circle_patch_base.center = m.base_station_loc
@@ -145,8 +142,8 @@ if __name__ == "__main__":
         ax.add_patch(circle_patch_base)
         ax.add_patch(wedge_patch_base)
         return circle_patch, wedge_patch
-    
-    
+
+
     def animate(i):
         x_coord = m.robot.truthpose[i, 0]
         y_coord = m.robot.truthpose[i, 1]
@@ -155,10 +152,10 @@ if __name__ == "__main__":
         wedge_patch.theta1 = np.degrees(m.robot.truthpose[i, 2]) - 10
         wedge_patch.theta2 = np.degrees(m.robot.truthpose[i, 2]) + 10
         return circle_patch, wedge_patch
-    
-    
+
+
     anim = animation.FuncAnimation(
         fig, animate, init_func=init, frames=np.shape(m.robot.truthpose)[0], interval=20, blit=True
     )
-    
+
     plt.show()

@@ -78,8 +78,7 @@ class Packet:
         next_n: tuple of strings representing the coordinates of the next node to visit
         coord: tuple of strings representing the coordinates of the robot. Ex: ("6.0", "7.0")
         batt: string representing the remaining battery percentage
-        ctrl: string representing control mode value, must be a single digit such as “1"
-
+        ctrl: string representing control mode value, must be a single digit such as "1"
 
     Returns: string of the following format using correcting size of args
     "phase:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1"
