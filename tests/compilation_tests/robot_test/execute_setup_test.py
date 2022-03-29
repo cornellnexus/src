@@ -69,3 +69,6 @@ class TestSetup(unittest.TestCase):
         self.assertEqual(robot_radio_session.device.connected, False)
         self.assertEqual(robot_radio_session.device.device_number, 0)
         self.assertEqual(base_station_device.device_number, 1)
+
+if __name__ == '__main__':
+    unittest.main()
