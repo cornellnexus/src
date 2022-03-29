@@ -242,7 +242,6 @@ def update_robot_data(window):
     """
     try:
         packet = robot_data_file.readlines()[-1]
-        print("test")
         robot_data.update_data(packet)
         window['-DATA-'].update(str(robot_data))
     except:

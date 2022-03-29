@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from enum import Enum
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 
@@ -11,7 +10,6 @@ from engine.pid_controller import PID
 
 
 from enum import Enum
-from enum import IntEnum
 import os.path
 import time
 import sys

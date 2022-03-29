@@ -1,3 +1,5 @@
+import numpy as np
+
 from engine.database import DataBase
 import unittest
 
@@ -24,7 +26,7 @@ class TestDataBase(unittest.TestCase):
     robot_initial.heading_ki = 0.4
     robot_initial.heading_kd = 0.16
     robot_initial.phase = Phase.TRAVERSE
-    robot_initial.state = [10, 20, 50]
+    robot_initial.state = np.array([[10], [20], [50]])
     robot_initial.battery = 98
     robot_initial.magnetic_field = [0.1, 0.2, 0.3]
     robot_initial.gyro_rotation = [0.5, 0.2, 0.6]
@@ -41,7 +43,7 @@ class TestDataBase(unittest.TestCase):
     db_one_param = DataBase(robot_one_param)
 
     def test_str(self):
-        db_str = "phase: "+str(Phase.SETUP.value)+",\nstate [x, y, heading]: [0, 0, 0],\nis_sim: True,\nplastic_weight: 0,\n" \
+        db_str = "phase: 1,\nstate [x, y, heading]: [0, 0, 0],\nis_sim: True,\nplastic_weight: 0,\n" \
                  "battery: 100,\nmove_dist: 0.5,\nacceleration [x, y, z]: [0, 0, 0],\n" \
                  "magnetic_field [x, y, z]: [0, 0, 0],\ngyro_rotation [x, y, z]: [0, 0, 0],\n" \
                  "position_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0],\n" \
@@ -62,8 +64,7 @@ class TestDataBase(unittest.TestCase):
                            "position_noise: 0,\n" \
                            "heading_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0]"
 
-        # testcases = [(db_str, self.db_default), (db_initial_str, self.db_initial), (db_one_param_str, self.db_one_param)]
-        testcases = [(db_initial_str, self.db_initial)]
+        testcases = [(db_str, self.db_default), (db_initial_str, self.db_initial), (db_one_param_str, self.db_one_param)]
 
 
         for (expected_ans, database) in testcases:
