@@ -5,6 +5,7 @@ from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get
 from enum import Enum
 
 
+
 class Grid:
     """
     Instances represent the current grid of the robot's traversal.
@@ -111,6 +112,14 @@ class Grid:
         self.border_nodes = None
         self.leftmost_node = None
         self.leftmost_node_pos = None
+        self.active_nodes_list = []
+        self.inactive_nodes_list = []
+
+    def get_active_nodes_list(self):
+        return(self.active_nodes_list)
+    
+    def get_inactive_nodes_list(self):
+        return(self.inactive_nodes_list)
 
     def get_num_rows(self):
         return self.num_rows
@@ -206,7 +215,7 @@ class Grid:
         if not neighbor_node.is_active_node():
             return None
         else:
-            return neighbor_node
+           return neighbor_node
 
     def get_all_lawnmower_waypoints_adjustable(self):
         class WaypointPhase(Enum):
@@ -279,6 +288,10 @@ class Grid:
 
         for _ in range(rows * cols):  # for loop over all nodes
             node = node_list[row, col]
+            if node.is_active:
+                self.active_nodes_list.append(node)
+            else:
+                self.inactive_nodes_list.append(node)
             waypoints.append(node)
             next_col = col + step_col[turn_state]
             next_row = row + step_row[turn_state]
@@ -307,10 +320,18 @@ class Grid:
             for j in range(rows):
                 if i % 2 == 0:
                     node = node_list[j, i]
+                    if node.is_active:
+                        self.active_nodes_list.append(node)
+                    else:
+                        self.inactive_nodes_list.append(node)
                     waypoints.append(node)
                 elif i % 2 == 1:
                     row_index = rows - (j + 1)
                     node = node_list[row_index, i]
+                    if node.is_active:
+                        self.active_nodes_list.append(node)
+                    else:
+                        self.inactive_nodes_list.append(node)
                     waypoints.append(node)
         return waypoints
 
@@ -328,11 +349,27 @@ class Grid:
             if i % 2 == 0:
                 node1 = node_list[0, i]
                 node2 = node_list[rows - 1, i]
+                if node1.is_active:
+                    self.active_nodes_list.append(node1)
+                else:
+                    self.inactive_nodes_list.append(node1)
+                if node2.is_active:
+                    self.active_nodes_list.append(node2)
+                else:
+                    self.inactive_nodes_list.append(node2)
                 waypoints.append(node1)
                 waypoints.append(node2)
             elif i % 2 == 1:
                 node1 = node_list[rows - 1, i]
                 node2 = node_list[0, i]
+                if node1.is_active:
+                    self.active_nodes_list.append(node1)
+                else:
+                    self.inactive_nodes_list.append(node1)
+                if node2.is_active:
+                    self.active_nodes_list.append(node2)
+                else:
+                    self.inactive_nodes_list.append(node2)
                 waypoints.append(node1)
                 waypoints.append(node2)
         return waypoints
@@ -369,3 +406,4 @@ class Grid:
         else:
             return []
         return waypoints
+

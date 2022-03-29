@@ -39,6 +39,8 @@ class Mission:
         self.grid = grid
         self.control_mode = ControlMode(init_control_mode)
         self.all_waypoints = self.grid.get_waypoints(self.control_mode)
+        self.active_waypoints = self.grid.get_active_nodes_list()
+        self.inactive_waypoints = self.grid.get_inactive_nodes_list()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
         self.allowed_heading_error = allowed_heading_error
