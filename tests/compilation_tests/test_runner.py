@@ -10,10 +10,6 @@ import tests.compilation_tests.retrieve_inputs_test as retrieve_inputs_test #fix
 import tests.compilation_tests.mag_heading_test as mag_heading_test #fixed
 import tests.compilation_tests.grid_test as grid_test #fixed
 import tests.compilation_tests.node_test as node_test #fixed
-import compilation_tests.database_test as database_test #TODO
-
-
-
 
 '''
 Runs all compilation test files as individual modules

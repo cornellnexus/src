@@ -34,11 +34,10 @@ class DataBase:
         }
 
     def __str__(self):
-        print(str(self.core_data["heading_pid"]))
         return "phase: " + str(self.core_data["phase"].value) + ",\n" + \
-               "state [x, y, heading]: [" + str(self.core_data["state"][0][0])+ \
-                ", "+str(self.core_data["state"][1][0]) + ", " +\
-                str(self.core_data["state"][2][0])+ "]" + ",\n" + \
+               "state [x, y, heading]: [" + str(self.core_data["state"][0])+ \
+                ", "+str(self.core_data["state"][1]) + ", " +\
+                str(self.core_data["state"][2])+ "]" + ",\n" + \
                "is_sim: " + str(self.core_data["is_sim"]) + ",\n" + \
                "plastic_weight: " + str(self.core_data["plastic_weight"]) + ",\n" + \
                "battery: " + str(self.core_data["battery"]) + ",\n" + \
