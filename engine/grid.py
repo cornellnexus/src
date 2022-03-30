@@ -4,20 +4,20 @@ from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get
 from enum import Enum
 
 
+
 class Grid:
     """
     Instances represent the current grid of the robot's traversal.
 
     INSTANCE ATTRIBUTES:
-        # nodes: 2D Node List representing all the Node objects that make up the grid. [[Node List] List]
-        # waypoints: Ordered list of Node objects to travel to that have not yet been traversed by the robot.
+        # lat_min, lat_max, long_min, long_max: minimum/maximum latitude/longitude boundary coordinates of the grid [float]
 
-        # nodes_dict: Dictionary of all Node objects in the grid
-            - Keys are (y,x), aka (latitude, longitude), tuples.
-            - Values are Node objects
+        # num_rows: Number of rows of Nodes in the grid [int]
+        # num_cols: Number of columns of Nodes in the grid [int]
 
-        # lat_min, lat_max, long_min, long_max: // doesn't make sense to have this be the actual map should just be of our grid
-            minimum/maximum latitude/longitude boundary points of the actual map. [float]
+        # nodes: 2D Numpy array of Nodes representing all the nodes in the grid.
+            Has dimensions [self.num_rows x self.num_cols]
+
 
         #num_rows: Number of rows of Nodes in the grid [int]
         #num_cols: Number of columns of Nodes in the grid. [int]
@@ -25,6 +25,11 @@ class Grid:
         #leftmost_node: the leftmost active node in the Grid which is used as the starting node in lawnmower and spiral traversal.
         #leftmost_node_pos: the (row,col) position of the leftmost node
         #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
+
+     INSTANCE METHODS:
+        # get_waypoints: Returns the ordered list of Node objects that the robot should travel to. This is
+            determined by the desired type of traversal. [Node list]
+
     """
 
     def __init__(self, lat_min, lat_max, long_min, long_max):
@@ -55,7 +60,7 @@ class Grid:
 
         def generate_nodes(start_lat, start_long, rows, cols, step_size_m):
             """
-            Returns a list of Node objects that make up the entire grid. [Node list]
+            Returns a 2D Numpy array of Node objects that make up the entire grid. Has dimensions [rows x cols]
 
             Parameters:
             -----------
@@ -65,7 +70,7 @@ class Grid:
             # cols: # of cols in the grid [int]
             # step_size_m: step size in between nodes of the grid (in meters) [float]
             """
-            node_list = np.empty([rows, cols], dtype=np.object)
+            node_list = np.empty([rows, cols], dtype=object)
 
             gps_origin = (start_lat, start_long)
 
@@ -110,6 +115,14 @@ class Grid:
         self.border_nodes = None
         self.leftmost_node = None
         self.leftmost_node_pos = None
+        self.active_nodes_list = []
+        self.inactive_nodes_list = []
+
+    def get_active_nodes_list(self):
+        return(self.active_nodes_list)
+    
+    def get_inactive_nodes_list(self):
+        return(self.inactive_nodes_list)
 
     def get_num_rows(self):
         return self.num_rows
@@ -205,7 +218,7 @@ class Grid:
         if not neighbor_node.is_active_node():
             return None
         else:
-            return neighbor_node
+           return neighbor_node
 
     def get_all_lawnmower_waypoints_adjustable(self):
         class WaypointPhase(Enum):
@@ -278,6 +291,10 @@ class Grid:
 
         for _ in range(rows * cols):  # for loop over all nodes
             node = node_list[row, col]
+            if node.is_active:
+                self.active_nodes_list.append(node)
+            else:
+                self.inactive_nodes_list.append(node)
             waypoints.append(node)
             next_col = col + step_col[turn_state]
             next_row = row + step_row[turn_state]
@@ -296,7 +313,7 @@ class Grid:
     def get_all_lawnmower_waypoints(self):
         """
         Returns the robot's lawnmower traversal path for the current grid using every
-        single node of the grid. Starting node is the bottom left node of the list. Node list].
+        single node of the grid. Starting node is the bottom left node of the list. [Node list].
         """
         waypoints = []
         node_list = self.nodes
@@ -306,10 +323,18 @@ class Grid:
             for j in range(rows):
                 if i % 2 == 0:
                     node = node_list[j, i]
+                    if node.is_active:
+                        self.active_nodes_list.append(node)
+                    else:
+                        self.inactive_nodes_list.append(node)
                     waypoints.append(node)
                 elif i % 2 == 1:
                     row_index = rows - (j + 1)
                     node = node_list[row_index, i]
+                    if node.is_active:
+                        self.active_nodes_list.append(node)
+                    else:
+                        self.inactive_nodes_list.append(node)
                     waypoints.append(node)
         return waypoints
 
@@ -327,11 +352,27 @@ class Grid:
             if i % 2 == 0:
                 node1 = node_list[0, i]
                 node2 = node_list[rows - 1, i]
+                if node1.is_active:
+                    self.active_nodes_list.append(node1)
+                else:
+                    self.inactive_nodes_list.append(node1)
+                if node2.is_active:
+                    self.active_nodes_list.append(node2)
+                else:
+                    self.inactive_nodes_list.append(node2)
                 waypoints.append(node1)
                 waypoints.append(node2)
             elif i % 2 == 1:
                 node1 = node_list[rows - 1, i]
                 node2 = node_list[0, i]
+                if node1.is_active:
+                    self.active_nodes_list.append(node1)
+                else:
+                    self.inactive_nodes_list.append(node1)
+                if node2.is_active:
+                    self.active_nodes_list.append(node2)
+                else:
+                    self.inactive_nodes_list.append(node2)
                 waypoints.append(node1)
                 waypoints.append(node2)
         return waypoints
@@ -357,12 +398,17 @@ class Grid:
         else:
             selected_row = y_start_row
         for i in range(cols):
+            if node_list[selected_row][i].is_active:
+                    self.active_nodes_list.append(node_list[selected_row][i])
+            else:
+                    self.inactive_nodes_list.append(node_list[selected_row][i])
             waypoints.append(node_list[selected_row][i])
         return waypoints
 
     def get_waypoints(self, mode):
         """
         Returns the robot's traversal path for the current grid. [Node list].
+
         Returns empty list if [mode] is not one of [ControlMode.LAWNMOWER],
         [ControlMODE.LAWNMOWER_B], or [ControlMODE.SPIRAL].
 
@@ -387,9 +433,9 @@ class Grid:
                 - ending node right most node at selected row
         """
         from engine.mission import ControlMode  # import placed here to avoid circular import
-        if mode == ControlMode.LAWNMOWER_FULL:
+        if mode == ControlMode.LAWNMOWER:
             waypoints = self.get_all_lawnmower_waypoints()
-        elif mode == ControlMode.LAWNMOWER_BORDERS:
+        elif mode == ControlMode.LAWNMOWER_B:
             waypoints = self.get_border_lawnmower_waypoints()
         elif mode == ControlMode.SPIRAL:
             waypoints = self.get_spiral_waypoints()
@@ -398,3 +444,4 @@ class Grid:
         else:
             return []
         return waypoints
+

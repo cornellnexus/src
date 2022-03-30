@@ -1,11 +1,20 @@
 import numpy as np
 import math
+from enum import Enum
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
+
+# import electrical.gps as gps 
+# import electrical.imu as imu 
+# import electrical.rf_module as rf_module
+
+
+
 from enum import Enum
 import os.path
 import time
 import sys
+
 
 class Phase(Enum):
     """
@@ -43,7 +52,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=.1, move_dist=.5, turn_angle=3, plastic_weight = 0):
+                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight = 0):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -240,8 +249,19 @@ class Robot:
         print('heading: ' + str(self.state[2]))
 
 
-    def execute_setup(self):
-        self.set_phase(Phase.TRAVERSE)
+    def execute_setup(self, robot_device, radio_session, gps, imu, motor_controller):
+        if (robot_device == 0): 
+            gps_setup = gps.setup() 
+            imu_setup = imu.setup()
+            radio_session.setup_robot()
+            motor_controller.setup(self.is_sim)
+        else: 
+            radio_session.setup_basestation()
+        
+        radio_connected = radio_session.device.connected 
+
+        if (radio_connected and gps_setup and imu_setup): 
+            self.phase = Phase.TRAVERSE
 
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
