@@ -1,5 +1,3 @@
-from platform import node
-from select import select
 from engine.node import Node
 import numpy as np
 from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get_vincenty_y
@@ -338,7 +336,7 @@ class Grid:
                 waypoints.append(node2)
         return waypoints
 
-    def get_straight_line_waypoints(self,y_start_pct):
+    def get_straight_line_waypoints(self,y_start_row,y_start_pct=None):
         """
         Returns the robot's lawnmower border traversal path for the current grid using
         only nodes in a straight line . Starting node is the left-most node starting at
@@ -346,14 +344,18 @@ class Grid:
 
         PARAMETERS:
         ---------
+        y_start_row: What row height that we want to start the straight line.
         y_start_pct: What percentage height that we want to start the straight line.(ex: 0.5: if there are 20 rows,
-                     start straight line at the 10th row up)
+                     start straight line at the 10th row up) Default:None
         """
         waypoints = []
         node_list = self.nodes
         rows = node_list.shape[0]
         cols = node_list.shape[1]
-        selected_row = int(y_start_pct*rows)
+        if y_start_pct is not None:
+            selected_row = int(y_start_pct*rows)
+        else:
+            selected_row = y_start_row
         for i in range(cols):
             waypoints.append(node_list[selected_row][i])
         return waypoints
