@@ -169,10 +169,9 @@ class Robot:
             x_vel = self.loc_pid_x.update(x_error)
             y_vel = self.loc_pid_y.update(y_error)
 
-            # the x_vel and y_vel we pass into feedback_lin should be global. Are they?
             cmd_v, cmd_w = feedback_lin(predicted_state, x_vel, y_vel, self.epsilon)
 
-            # clamping of velocities?
+            # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, self.max_velocity, self.radius)
 
             self.travel(self.time_step * limited_cmd_v, self.time_step * limited_cmd_w)
