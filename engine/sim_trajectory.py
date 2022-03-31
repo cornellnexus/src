@@ -115,7 +115,6 @@ if __name__ == "__main__":
         goals = waypoints_to_array(m.all_waypoints)
         active_nodes = waypoints_to_array(m.active_waypoints)
         inactive_nodes = waypoints_to_array(m.inactive_waypoints)
-        #ax.plot(goals[:, 0], goals[:, 1], 'rx')
         ax.plot(active_nodes[:, 0], active_nodes[:, 1], 'bx')
         ax.plot(inactive_nodes[:, 0], inactive_nodes[:, 1], 'rx')
         xbounds, ybounds = get_plot_boundaries(m.grid.nodes, margin)
