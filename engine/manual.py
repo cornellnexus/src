@@ -1,6 +1,5 @@
 # TODO: documentation
 class Manual():
-<<<<<<< HEAD
     # TODO: move functions from gui and robot here for proper categorization
 
     def __init__(self, control_mode):
@@ -42,12 +41,6 @@ class Manual():
         robot_data_file.truncate()
 
     def get_path(self, folder): #only useful for testing. Remove when reading file serially.
-
         cwd = os.getcwd()
         sys.path.append(cwd + "/" + folder)
         return sys.path
-=======
-    def execute_manual():
-        # TODO
-        pass
->>>>>>> master
