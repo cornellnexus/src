@@ -102,7 +102,6 @@ if __name__ == "__main__":
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
     margin = 5
-
     if m.control_mode == ControlMode.ROOMBA:
         range = m.roomba_radius + margin
         init_x = m.base_station_loc[0]
@@ -111,11 +110,13 @@ if __name__ == "__main__":
         plt.ylim([init_y-range, init_y+range])
         circle = plt.Circle((init_x, init_y), m.roomba_radius)
         ax.add_patch(circle)
-
+    
     elif m.control_mode != ControlMode.MANUAL:
         goals = waypoints_to_array(m.all_waypoints)
-        ax.plot(goals[:, 0], goals[:, 1], 'rx')
-
+        active_nodes = waypoints_to_array(m.active_waypoints)
+        inactive_nodes = waypoints_to_array(m.inactive_waypoints)
+        ax.plot(active_nodes[:, 0], active_nodes[:, 1], 'bx')
+        ax.plot(inactive_nodes[:, 0], inactive_nodes[:, 1], 'rx')
         xbounds, ybounds = get_plot_boundaries(m.grid.nodes, margin)
         plt.xlim(xbounds)
         plt.ylim(ybounds)
@@ -124,7 +125,6 @@ if __name__ == "__main__":
     wedge_patch = patch.Wedge(
         (5, 1), 3, 100, 80, animated=True, fill=False, width=2, ec="g", hatch="xx"
     )
-
     # Plot base station:
     circle_patch_base = plt.Circle((5, 5), 1, fc="red")
     base_angle_degrees = math.degrees(m.base_station_angle)  # The heading of base station in degrees
