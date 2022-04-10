@@ -120,7 +120,7 @@ class Grid:
         self.inactive_waypoints_list = []
 
     def get_active_waypoints_list(self):
-        return(self.active_waypoints_list)
+        return self.active_waypoints_list
     
     def get_inactive_waypoints_list(self):
         return(self.inactive_waypoints_list)
@@ -369,7 +369,7 @@ class Grid:
                 waypoints.append(node2)
         return waypoints
 
-    def get_straight_line_waypoints(self,y_start_row,y_start_pct=None):
+    def get_straight_line_waypoints(self,y_start_row=0,y_start_pct=None):
         """
         Returns the robot's lawnmower border traversal path for the current grid using
         only nodes in a straight line . Starting node is the left-most node starting at
@@ -430,7 +430,7 @@ class Grid:
         elif mode == ControlMode.SPIRAL:
             waypoints = self.get_spiral_waypoints()
         elif mode == ControlMode.STRAIGHT:
-            waypoints = self.get_straight_line_waypoints(0.5)
+            waypoints = self.get_straight_line_waypoints(y_start_pct =0.5)
         else:
             return []
         return waypoints
