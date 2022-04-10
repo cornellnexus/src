@@ -3,14 +3,17 @@ import csv
 import math
 import numpy as np
 from ahrs.filters import EKF
-
 import csv
+import os 
 
-with open('imu_360_sample1.csv') as csv_file:
+cwd = os.getcwd()
+cd = cwd + "/csv"
+
+with open(cd + '/imu_360_sample1.csv') as csv_file:
     reader = csv.reader(csv_file)
     row_count = sum(1 for row in reader)
 
-with open('imu_360_sample1.csv') as csv_file:
+with open(cd + '/imu_360_sample1.csv') as csv_file:
     reader = csv.reader(csv_file)
     acc_data = np.zeros((row_count, 3))
     mag_data = np.zeros((row_count, 3))
@@ -30,7 +33,7 @@ with open('imu_360_sample1.csv') as csv_file:
         gyr_y = float(row[7][6:])
         gyr_z = float(row[8][5:-2])
         heading = np.degrees(math.atan2(mag_y, mag_x))
-        print(heading)
+        # print(heading)
         acc_data[row_num] = np.array([acc_x, acc_y, acc_z])
         mag_data[row_num] = np.array([mag_x, mag_y, mag_z])
         gyr_data[row_num] = np.array([gyr_x, gyr_y, gyr_z])
@@ -44,7 +47,7 @@ with open('imu_360_sample1.csv') as csv_file:
 ekf = EKF()
 ekf = EKF(gyr=gyr_data, acc=acc_data, mag=mag_data)
 # print(ekf.Q)
-print(np.shape(ekf.Q))
+# print(np.shape(ekf.Q))
 height = np.shape(ekf.Q)[0]
 for i in range(height):
     top = 2.0 * (ekf.Q[i, 2] * ekf.Q[i, 3] + ekf.Q[i, 0] * ekf.Q[i, 1])
@@ -53,7 +56,6 @@ for i in range(height):
 
     heading = np.degrees(math.atan2(top, bottom))
 
-    # print(heading)
 
     # ekf.Q[i,1] = 0;
     # ekf.Q[i,3] = 0;
@@ -61,4 +63,4 @@ for i in range(height):
     # ekf.Q[i,0] /= m
     # ekf.Q[i,2] /= m;
     # heading = np.degrees(2*math.acos(ekf.Q[i,0]));
-    print(heading)
+    # print(heading)

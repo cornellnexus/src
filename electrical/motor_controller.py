@@ -1,5 +1,5 @@
-from engine.robot import Robot
 import time
+from engine.robot import Robot
 if False: #change to True when running code on robot
     import RPi.GPIO as GPIO
 
@@ -12,8 +12,8 @@ class MotorController:
         self.in2 = 6
         self.in3 = 19
         self.in4 = 26
-        self.enA = 13
-        self.enB = 12
+        self.enA = 13   #PWM
+        self.enB = 12   #PWM
         self.is_sim = robot.is_sim
 
     # checks all of the robot movements are functioning properly
@@ -22,11 +22,11 @@ class MotorController:
             GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
             GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
-            e1 = GPIO.PWM(self.enA, 600)  # create object digital to analog conversion for PWM on port 25 at 1KHz
-            e2 = GPIO.PWM(self.enB, 600)
-            e1.start(100)
-            e2.start(100)
-        if self.is_sim: 
+            self.e1 = GPIO.PWM(self.enA, 600)  # create object digital to analog conversion for PWM on port 25 at 1KHz
+            self.e2 = GPIO.PWM(self.enB, 600)
+            self.e1.start(100)
+            self.e2.start(100)
+        else:
             self.go_forward()
             self.turn_left()
             self.turn_right()
@@ -38,14 +38,15 @@ class MotorController:
         if self.is_sim: 
             print('stop')
         else:
-            GPIO.output([self.in1, self.in2, self.in3, self.in4],GPIO.LOW)
+            self.e1.stop()
+            self.e2.stop()
         
     # moves the robot forward
     def go_forward(self):
         if self.is_sim: 
             print('go_forward')
         else: 
-            GPIO.output([self.in1, self.in4],GPIO.LOW)
+            GPIO.output([self.in1, self.in4], GPIO.HIGH)
             GPIO.output([self.in2, self.in3], GPIO.HIGH)
 
     # reverses the robot
@@ -54,14 +55,14 @@ class MotorController:
             print('reverse')
         else: 
             GPIO.output([self.in2, self.in3], GPIO.LOW)
-            GPIO.output([self.in1, self.in4],GPIO.HIGH)
+            GPIO.output([self.in1, self.in4], GPIO.LOW)
 
     # turns the robot left for 1 second
     def turn_left(self):
         if self.is_sim: 
             print('turn_left')
         else: 
-            GPIO.output([self.in2, self.in4],GPIO.LOW)
+            GPIO.output([self.in2, self.in4], GPIO.LOW)
             GPIO.output([self.in1, self.in3], GPIO.HIGH)
         time.sleep(1)
 
@@ -70,7 +71,7 @@ class MotorController:
         if self.is_sim:
             print('turn_right')
         else: 
-            GPIO.output([self.in1, self.in3],GPIO.LOW)
+            GPIO.output([self.in1, self.in3], GPIO.LOW)
             GPIO.output([self.in2, self.in4], GPIO.HIGH)
         time.sleep(1)
 
@@ -84,3 +85,52 @@ class MotorController:
 
 # # cleans up all the ports used for motor driver 
 # GPIO.cleanup()
+
+#CHANGED: added pid_gpio
+class PidGpio:
+    def __init__(self, wheel_r, vm_load1, vm_load2, L, R):
+        self.wheel_r = wheel_r
+        self.vm_load1 = vm_load1
+        self.vm_load2 = vm_load2
+        self.L = L
+        self.R = R
+        self.in1 = 5
+        self.in2 = 6
+        self.in3 = 19
+        self.in4 = 26
+        self.enA = 13
+        self.enB = 12
+    
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  
+        GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
+
+        self.p1 = GPIO.PWM(self.enA, 50)
+        self.p2 = GPIO.PWM(self.enB, 50)
+
+    #Start with 0% duty cycle
+        self.p1.start(0)
+        self.p2.start(0)
+
+    # Change duty cycle for motors based on angular and linear velocities
+    def motors(self, omega, vel):
+        if omega == 0:
+            vr = vel
+            vl = vel
+        else:
+            vr = omega * (self.R + self.L / 2)
+            vl = omega * (self.R - self.L / 2)
+
+        omega_r = vr * self.wheel_r
+        omega_l = vl * self.wheel_r
+
+        # Define and cap duty cycles if they are above max
+        dc1 = omega_r / self.vm_load1
+        dc2 = omega_l / self.vm_load2
+        if dc1 > 100:
+            dc1 = 100
+        if dc2 > 100:
+            dc2 = 100
+
+        self.p1.ChangeDutyCycle(dc1)
+        self.p2.ChangeDutyCycle(dc2)

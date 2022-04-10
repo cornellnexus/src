@@ -47,7 +47,7 @@ def get_images():
     """
     cwd = os.getcwd()
     # sys.path.append(cwd[0:cwd.index('gui')-1]+"/images")
-    sys.path.append(cwd + "/images")
+    sys.path.append(cwd + "/gui/gui_images")
     images = ['/Progress Bar.png', '/zoomview.png', '/Camera.png', '/final_logo 1.png']
     image_data = []
     for image in images:

@@ -1,11 +1,6 @@
 # TODO: documentation
-import os
-import sys
-from electrical.commands import *
-from engine.mission import ControlMode
-
-
 class Manual():
+<<<<<<< HEAD
     # TODO: move functions from gui and robot here for proper categorization
 
     def __init__(self, control_mode):
@@ -51,3 +46,8 @@ class Manual():
         cwd = os.getcwd()
         sys.path.append(cwd + "/" + folder)
         return sys.path
+=======
+    def execute_manual():
+        # TODO
+        pass
+>>>>>>> master

@@ -26,7 +26,7 @@ def robot_to_global(pose, x_robot, y_robot):
                     [0, 0, 1]])
     # DEBUG UPDATE: added [1] to array in order to make it 3x3 times 3x1 rather than 2x1
     # rounding x,y coordinates to make it testable (ex: 4.000000001 --> 4); noise?
-    pose_global = Tgr @ np.array([[x_robot], [y_robot], [1]])
+    pose_global = np.matmul(Tgr, np.array([[x_robot], [y_robot], [1]]))
     pose_global = pose_global.round(5)
     return pose_global[0:2]
 
@@ -100,6 +100,15 @@ def limit_cmds(v, w, max_v, wheel_to_center):
 
 
 def integrate_odom(pose, d, phi):
+    """
+    Returns the robot pose in the inertial frame based on integrating odometry measurements. [3-by-1 Numpy array]
+
+    Parameters:
+    -----------
+    # pose: robot's initial pose [x y theta]  [3-by-1 Numpy array]
+    # d: distance robot moved in the last time step [float]
+    # phi: angle robot turned in the last time step [float]
+    """
     if phi == 0:
         new_x = pose[0] + d * math.cos(pose[2])
         new_y = pose[1] + d * math.sin(pose[2])
@@ -140,8 +149,8 @@ def meters_to_long(m, latitude):
 
 def get_vincenty_x(coord1, coord2):
     """
-    Calculates the longitudinal vincenty distance btw gps coordinates [coord1] 
-    and [coord2] in meters. 
+    Calculates the longitudinal vincenty distance btw gps coordinates [coord1]
+    and [coord2] in meters.
     """
     coord1_x = (coord2[0], coord1[1])
     x = vincenty(coord1_x, coord2) * 1000
@@ -150,8 +159,8 @@ def get_vincenty_x(coord1, coord2):
 
 def get_vincenty_y(coord1, coord2):
     """
-    Calculates the latitude vincenty distance btw gps coordinates [coord1] and 
-    [coord2] in meters. 
+    Calculates the latitude vincenty distance btw gps coordinates [coord1] and
+    [coord2] in meters.
     """
     coord1_y = (coord1[0], coord2[1])
     y = vincenty(coord1_y, coord2) * 1000
@@ -160,8 +169,8 @@ def get_vincenty_y(coord1, coord2):
 
 def get_haversine_x(coord1, coord2):
     """
-    Calculates the longitudinal haversine distance btw gps coordinates [coord1] 
-    and [coord2] in meters. 
+    Calculates the longitudinal haversine distance btw gps coordinates [coord1]
+    and [coord2] in meters.
     """
     coord1_x = (coord2[0], coord1[1])
     x = haversine(coord1_x, coord2, unit=Unit.METERS)
@@ -170,8 +179,8 @@ def get_haversine_x(coord1, coord2):
 
 def get_haversine_y(coord1, coord2):
     """
-    Calculates the latitude vincenty distance btw gps coordinates [coord1] 
-    and [coord2] in meters. 
+    Calculates the latitude vincenty distance btw gps coordinates [coord1]
+    and [coord2] in meters.
     """
     coord1_y = (coord1[0], coord2[1])
     y = haversine(coord1_y, coord2, unit=Unit.METERS)
