@@ -11,17 +11,21 @@ class Node:
         status: current status of the node [int]
             [0 = not traversed, 1 = traversed, 2 = obstacle]
 
+        is_active: whether the node is currently in use
+
         is_border: type of node on the grid
             [0 = not on the border of the grid, 1 = on the border of the grid]
+
     """
 
-    def __init__(self, lat, long, x, y, is_border='0', status=0):
+    def __init__(self, lat, long, x, y, is_border=0, active=False, status=0):
         self.lat = lat
         self.long = long
         self.x = x
         self.y = y
         self.is_border = is_border
         self.status = status
+        self.is_active = active
 
     def get_m_coords(self):
         return (self.x, self.y)
@@ -31,6 +35,15 @@ class Node:
 
     def is_border_node(self):
         return self.is_border
+
+    def is_active_node(self):
+        return self.is_active
+
+    def activate_node(self):
+        self.is_active = True
+
+    def set_border_node(self):
+        self.is_border = 1
 
     def get_status(self):
         return self.status
