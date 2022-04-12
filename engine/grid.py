@@ -25,7 +25,8 @@ class Grid:
         #leftmost_node: the leftmost active node in the Grid which is used as the starting node in lawnmower and spiral traversal.
         #leftmost_node_pos: the (row,col) position of the leftmost node
         #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
-
+        #active_waypoints_list: a list of active waypoints for every traversal algorithm. It is used to implement a color visualizaition of active waypoints.
+        #inactive_waypoints_list: a list of inactive waypoints for every traversal algorithm. It is used to implement a color visualization of inactive waypoints. 
      INSTANCE METHODS:
         # get_waypoints: Returns the ordered list of Node objects that the robot should travel to. This is
             determined by the desired type of traversal. [Node list]
@@ -115,14 +116,14 @@ class Grid:
         self.border_nodes = None
         self.leftmost_node = None
         self.leftmost_node_pos = None
-        self.active_nodes_list = []
-        self.inactive_nodes_list = []
+        self.active_waypoints_list = []
+        self.inactive_waypoints_list = []
 
-    def get_active_nodes_list(self):
-        return(self.active_nodes_list)
+    def get_active_waypoints_list(self):
+        return self.active_waypoints_list
     
-    def get_inactive_nodes_list(self):
-        return(self.inactive_nodes_list)
+    def get_inactive_waypoints_list(self):
+        return(self.inactive_waypoints_list)
 
     def get_num_rows(self):
         return self.num_rows
@@ -145,6 +146,18 @@ class Grid:
         for y in range(row, row_limit):
             for x in range(col, col_limit):
                 self.activate_node(y, x)
+
+    def determine_active_waypoints(self, node):
+        """
+        Determines whether a waypoint on a traversal algorithm is active. If active, the node is 
+        appended to active_waypoints. Else, if inactive, the node is appended to inactive_waypoints. 
+        """
+        if node.is_active:
+            self.active_waypoints_list.append(node)
+        else:
+            self.inactive_waypoints_list.append(node)
+         
+
 
     # --------------------- METHODS TO FINISH INITIALIZATION OF ACTIVATED GRID -------------- #
 
@@ -291,10 +304,7 @@ class Grid:
 
         for _ in range(rows * cols):  # for loop over all nodes
             node = node_list[row, col]
-            if node.is_active:
-                self.active_nodes_list.append(node)
-            else:
-                self.inactive_nodes_list.append(node)
+            self.determine_active_waypoints(node)
             waypoints.append(node)
             next_col = col + step_col[turn_state]
             next_row = row + step_row[turn_state]
@@ -323,18 +333,12 @@ class Grid:
             for j in range(rows):
                 if i % 2 == 0:
                     node = node_list[j, i]
-                    if node.is_active:
-                        self.active_nodes_list.append(node)
-                    else:
-                        self.inactive_nodes_list.append(node)
+                    self.determine_active_waypoints(node)
                     waypoints.append(node)
                 elif i % 2 == 1:
                     row_index = rows - (j + 1)
                     node = node_list[row_index, i]
-                    if node.is_active:
-                        self.active_nodes_list.append(node)
-                    else:
-                        self.inactive_nodes_list.append(node)
+                    self.determine_active_waypoints(node)
                     waypoints.append(node)
         return waypoints
 
@@ -352,32 +356,20 @@ class Grid:
             if i % 2 == 0:
                 node1 = node_list[0, i]
                 node2 = node_list[rows - 1, i]
-                if node1.is_active:
-                    self.active_nodes_list.append(node1)
-                else:
-                    self.inactive_nodes_list.append(node1)
-                if node2.is_active:
-                    self.active_nodes_list.append(node2)
-                else:
-                    self.inactive_nodes_list.append(node2)
+                self.determine_active_waypoints(node1)
+                self.determine_active_waypoints(node2)
                 waypoints.append(node1)
                 waypoints.append(node2)
             elif i % 2 == 1:
                 node1 = node_list[rows - 1, i]
                 node2 = node_list[0, i]
-                if node1.is_active:
-                    self.active_nodes_list.append(node1)
-                else:
-                    self.inactive_nodes_list.append(node1)
-                if node2.is_active:
-                    self.active_nodes_list.append(node2)
-                else:
-                    self.inactive_nodes_list.append(node2)
+                self.determine_active_waypoints(node1)
+                self.determine_active_waypoints(node2)
                 waypoints.append(node1)
                 waypoints.append(node2)
         return waypoints
 
-    def get_straight_line_waypoints(self,y_start_row,y_start_pct=None):
+    def get_straight_line_waypoints(self,y_start_row=0,y_start_pct=None):
         """
         Returns the robot's lawnmower border traversal path for the current grid using
         only nodes in a straight line . Starting node is the left-most node starting at
@@ -398,11 +390,9 @@ class Grid:
         else:
             selected_row = y_start_row
         for i in range(cols):
-            if node_list[selected_row][i].is_active:
-                    self.active_nodes_list.append(node_list[selected_row][i])
-            else:
-                    self.inactive_nodes_list.append(node_list[selected_row][i])
-            waypoints.append(node_list[selected_row][i])
+            selected_row_node = node_list[selected_row][i]
+            self.determine_active_waypoints(selected_row_node)
+            waypoints.append(selected_row_node)
         return waypoints
 
     def get_waypoints(self, mode):
@@ -440,7 +430,7 @@ class Grid:
         elif mode == ControlMode.SPIRAL:
             waypoints = self.get_spiral_waypoints()
         elif mode == ControlMode.STRAIGHT:
-            waypoints = self.get_straight_line_waypoints(0.5)
+            waypoints = self.get_straight_line_waypoints(y_start_pct =0.5)
         else:
             return []
         return waypoints

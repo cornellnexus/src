@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from enum import Enum
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 
@@ -100,9 +99,9 @@ class Robot:
         # radians turned
         self.plastic_weight = plastic_weight
         self.battery = 100 # TEMPORARY
-        self.acceleration = 0 # TEMPORARY
-        self.magnetic_field = 0 # TEMPORARY
-        self.gyro_rotation = 0  # TEMPORARY
+        self.acceleration = [0,0,0] # TEMPORARY
+        self.magnetic_field = [0,0,0] # TEMPORARY
+        self.gyro_rotation = [0,0,0]  # TEMPORARY
 
 
         self.loc_pid_x = PID(
@@ -170,10 +169,9 @@ class Robot:
             x_vel = self.loc_pid_x.update(x_error)
             y_vel = self.loc_pid_y.update(y_error)
 
-            # the x_vel and y_vel we pass into feedback_lin should be global. Are they?
             cmd_v, cmd_w = feedback_lin(predicted_state, x_vel, y_vel, self.epsilon)
 
-            # clamping of velocities?
+            # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, self.max_velocity, self.radius)
 
             self.travel(self.time_step * limited_cmd_v, self.time_step * limited_cmd_w)
