@@ -80,6 +80,8 @@ class Robot:
             plastic_weight: the weight of the trash the robot has collected
             battery: the battery of the robot
             motor_controller: the motor controller for the Robot
+            linear_v: the current linear velocity of the Robot
+            angular_v: the current angular velocity of the Robot
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -106,6 +108,8 @@ class Robot:
         self.acceleration = [0, 0, 0]  # TEMPORARY
         self.magnetic_field = [0, 0, 0]  # TEMPORARY
         self.gyro_rotation = [0, 0, 0]  # TEMPORARY
+        self.linear_v = 0
+        self.angular_v = 0
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -181,16 +185,18 @@ class Robot:
             # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.max_velocity, self.radius)
+            self.linear_v = cmd_v
+            self.angular_v = cmd_w
 
             # sleep in real robot.
 
             # write robot location and mag heading in csv (for gui to display)
-            cwd = os.getcwd()
-            cd = cwd + "/csv"
-            with open(cd + '/datastore.csv', 'a') as fd:
-                fd.write(
-                    str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
-            time.sleep(0.001)
+            # cwd = os.getcwd()
+            # cd = cwd + "/csv"
+            # with open(cd + '/datastore.csv', 'a') as fd:
+            #     fd.write(
+            #         str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
+            # time.sleep(0.001)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter

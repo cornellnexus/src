@@ -1,5 +1,5 @@
 import time
-from engine.robot import Robot
+#from engine.robot import Robot
 if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
 
