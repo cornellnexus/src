@@ -185,18 +185,22 @@ class Robot:
             # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.max_velocity, self.radius)
-            self.linear_v = cmd_v
-            self.angular_v = cmd_w
+
+            self.travel(self.time_step * limited_cmd_v,
+                        self.time_step * limited_cmd_w)
+
+            self.linear_v = cmd_v[0]
+            self.angular_v = cmd_w[0]
 
             # sleep in real robot.
 
             # write robot location and mag heading in csv (for gui to display)
-            # cwd = os.getcwd()
-            # cd = cwd + "/csv"
-            # with open(cd + '/datastore.csv', 'a') as fd:
-            #     fd.write(
-            #         str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
-            # time.sleep(0.001)
+            cwd = os.getcwd()
+            cd = cwd + "/csv"
+            with open(cd + '/datastore.csv', 'a') as fd:
+                fd.write(
+                    str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
+            time.sleep(0.001)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter

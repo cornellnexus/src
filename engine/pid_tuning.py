@@ -16,14 +16,14 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
     r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5,
                  radius=0.2, init_phase=Phase.TRAVERSE)
     database = DataBase(r2d2)
-    waypoints = grid.get_straight_line_waypoints(y_start_row=0)
+    waypoints = grid.get_straight_line_waypoints(y_start_pct=0.5)
 
     style.use('fivethirtyeight')
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1)
 
     def animate(i):
-        graph_data = open('csv/velocities.xac', 'r').read()
+        graph_data = open('csv/velocities.csv', 'r').read()
         lines = graph_data.split('\n')
         xs = []
         ys = []
@@ -36,21 +36,24 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
         ax1.plot(xs, ys)
 
     iter = 0
+
+    # clear the contents of the csv file
+    with open('csv/velocities.csv', 'w'):
+        pass
+
     while len(waypoints) > 0:
-        print(iter)
         curr_waypoint = waypoints[0].get_m_coords()
-        print('here')
         r2d2.move_to_target_node(
             curr_waypoint, allowed_dist_error, database)
 
-        with open('csv/velocities.csv', 'w') as f:
+        with open('csv/velocities.csv', 'a') as f:
             writer = csv.writer(f)
             row = [iter, r2d2.linear_v]
+            print(row)
             writer.writerow(row)
         waypoints.pop(0)
         iter += 1
-
-    ani = animation.FuncAnimation(fig, animate, interval=1000)
+    ani = animation.FuncAnimation(fig, animate, interval=5)
     plt.show()
 
 
