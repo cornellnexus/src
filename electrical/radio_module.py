@@ -43,12 +43,13 @@ class RadioSession:
     #setup function called on the base station 
     #TODO: call this in the GUI class
     def setup_basestation(self):
-        while (not self.connected): #while rpi not connected to base station
-            data = self.ser.read()
-            # print(data)
-            if (data == 'sr'):
-                self.transmit_data('setup','sb') 
-                self.connected = True
+        # while (not self.connected): #while rpi not connected to base station
+        #     data = self.ser.read()
+        #     # print(data)
+        #     if (data == 'sr'):
+        #         self.transmit_data('setup','sb') 
+        #         self.connected = True
+        print("Hello!")
 
 
     

@@ -13,6 +13,7 @@ Thus, we will will break up the file into different sections:
 from gui.gui_popup import *
 from gui.images import get_images
 from gui.robot_data import RobotData
+from electrical.radio_module import RadioSession
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -188,7 +189,7 @@ def setup_gui():
                 [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8), disabled=True, font=('Courier New', 20))],
                 [sg.Text("Current Coordinates: ______")],
                 [sg.Text("Current Phase: ______", key = "-PHASE-")],
-                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation')],
+                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation'), sg.Button("Startup Base Station")],
                 [sg.Multiline(str(robot_data), key = "-DATA-", size=(40,8), disabled=True, font=('Courier New', 20))]
             ]
     
@@ -266,6 +267,7 @@ def run_gui():
 
     window = setup_gui()
     current_row = 0
+    rs = RadioSession(False)
     while True:  # Event Loop
         event, values = window.read(timeout=10)
 
@@ -293,6 +295,9 @@ def run_gui():
         if event == 'Simulation':
             simulation_thread = threading.Thread(target=run_simulation, args=(1,), daemon=True)
             simulation_thread.start()
+
+        if event == 'Startup Base Station':
+            rs.setup_basestation()
 
         get_control_mode(window)
         update_robot_data(window)
