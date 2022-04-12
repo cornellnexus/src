@@ -1,6 +1,5 @@
 import numpy as np
 import math
-from enum import Enum
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from electrical.motor_controller import PidGpio
@@ -44,7 +43,7 @@ class Robot:
     Parameters:
     state = Robot's state, np.array
         state contain's the robot's x position, y position, and heading
-    phase = 'collect' when traversing through grid, 'return' when returning to 
+    phase = 'collect' when traversing through grid, 'return' when returning to
         base station
     is_sim = False when running code with physical robot, True otherwise
     Preconditions:
@@ -104,10 +103,9 @@ class Robot:
         # radians turned
         self.plastic_weight = plastic_weight
         self.battery = 100  # TEMPORARY
-        self.acceleration = 0  # TEMPORARY
-        self.magnetic_field = 0  # TEMPORARY
-        self.gyro_rotation = 0  # TEMPORARY
-        self.motor_controller = PidGpio()
+        self.acceleration = [0, 0, 0]  # TEMPORARY
+        self.magnetic_field = [0, 0, 0]  # TEMPORARY
+        self.gyro_rotation = [0, 0, 0]  # TEMPORARY
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -177,19 +175,12 @@ class Robot:
             x_vel = self.loc_pid_x.update(x_error)
             y_vel = self.loc_pid_y.update(y_error)
 
-            # the x_vel and y_vel we pass into feedback_lin should be global. Are they?
             cmd_v, cmd_w = feedback_lin(
                 predicted_state, x_vel, y_vel, self.epsilon)
 
-            # clamping of velocities?
+            # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.max_velocity, self.radius)
-
-            if self.is_sim:
-                self.travel(self.time_step * limited_cmd_v,
-                            self.time_step * limited_cmd_w)
-            else:
-                PidGpio.motors(limi)
 
             # sleep in real robot.
 

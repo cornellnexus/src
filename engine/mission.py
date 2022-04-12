@@ -17,6 +17,7 @@ class ControlMode(Enum):
     SPIRAL = 3
     ROOMBA = 4
     MANUAL = 5
+    STRAIGHT = 6
 
 
 '''
@@ -57,6 +58,8 @@ class Mission:
         self.grid = grid
         self.control_mode = ControlMode(init_control_mode)
         self.all_waypoints = self.grid.get_waypoints(self.control_mode)
+        self.active_waypoints = self.grid.get_active_waypoints_list()
+        self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
         # self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
