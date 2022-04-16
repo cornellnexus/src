@@ -9,7 +9,7 @@ import numpy as np
 from enum import IntEnum
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
-# from engine.sensor_module import SensorModule
+from engine.sensor_module import SensorModule
 from constants.geo_fences import ENGINEERING_QUAD
 from engine.ekf import LocalizationEKF
 
@@ -113,7 +113,8 @@ if __name__ == "__main__":
         # Get the first GPS coordinate
         first_gps_coord = (gps_readings[0]["lat"], gps_readings[0]["lon"])
         x_init, y_init = get_vincenty_x(zone[0], first_gps_coord), get_vincenty_y(zone[0], first_gps_coord)
-        heading_init = math.degrees(math.atan2(imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["x"]))
+        # heading_init = math.degrees(math.atan2(imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["x"]))
+        heading_init = math.degrees(math.atan2(-1*imu_readings[0]["mag"]["x"], imu_readings[0]["mag"]["y"]))
 
         # mu is meters from start position (bottom left position facing up)
         mu = np.array([[x_init], [y_init], [heading_init]])
@@ -141,7 +142,9 @@ if __name__ == "__main__":
                 new_heading = math.degrees(
                     math.atan2(sensor_module.imu_dict["mag"][1], sensor_module.imu_dict["mag"][0]))
             else:
-                new_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                # new_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                new_heading = math.degrees(math.atan2(-1*imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
+
             wedge_patch.update({"center": (0, 0)})
             wedge_patch.theta1 = new_heading - 10
             wedge_patch.theta2 = new_heading + 10
@@ -172,8 +175,9 @@ if __name__ == "__main__":
 
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
                 x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord)
-                heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
-
+                # heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                heading = math.degrees(math.atan2(-1*imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
+                
                 measurements = np.array([[x], [y], [heading]])
 
                 ekf.update_step(mu_bar, sigma_bar, measurements)  # update_step is a procedure, attributes updated in this method.
@@ -182,7 +186,9 @@ if __name__ == "__main__":
 
             else:
                 
-                new_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                # new_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                new_heading = math.degrees(math.atan2(-1*imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
+
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
                 new_location = (get_vincenty_x(zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord))
 
