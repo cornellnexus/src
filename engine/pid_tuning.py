@@ -12,6 +12,11 @@ import csv
 
 
 def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.483682, long_max=-76.483276, allowed_dist_error=0.1):
+    """
+    Calls the robot to traverse in a straight line.
+
+    TODO: More documentation 
+    """
     grid = Grid(lat_min, lat_max, long_min, long_max)
     r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5,
                  radius=0.2, init_phase=Phase.TRAVERSE)
