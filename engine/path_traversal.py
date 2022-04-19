@@ -9,7 +9,7 @@ from engine.robot import Robot
 
 
 # TODO: documentation
-class PathTraversal():
+class PathTraversal:
     def engine():
         # Initialize robot
         r2d2 = Robot(0, 0, math.pi / 2)

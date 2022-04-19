@@ -36,7 +36,7 @@ class SensorModule:
                 self.imu_dict = ast.literal_eval(line.rstrip("\n"))
 
         if self.write_data:
-            imu_file = open("data/IMU_" + self.created + ".txt", 'w+')
+            imu_file = open("csv/IMU_" + self.created + ".txt", 'w+')
             imu_file.write(json.dumps(self.imu_dict) + "\n")
             imu_file.close()
 
@@ -50,7 +50,7 @@ class SensorModule:
             self.gps_dict = ast.literal_eval(line.rstrip("\n"))
 
         if self.write_data:
-            gps_file = open("data/GPS_" + self.created + ".txt", 'a')
+            gps_file = open("csv/GPS_" + self.created + ".txt", 'a')
             gps_file.write(json.dumps(self.gps_dict) + "\n")
             gps_file.close()
 
