@@ -138,7 +138,11 @@ class Robot:
     def update_ekf_step(self):
         zone = ENGINEERING_QUAD  # Used for GPS visualization
         self.gps_data = self.gps.get_gps()
+        print ("GPS")
+        print (self.gps_data)
         self.imu_data = self.imu.get_gps()
+        print ("IMU")
+        print (self.imu_data)
         x, y = get_vincenty_x(
             zone[0], self.gps_data), get_vincenty_y(zone[0], self.gps_data)
         heading = math.degrees(math.atan2(
@@ -157,7 +161,7 @@ class Robot:
     def travel(self, velocity, omega):
         # Moves the robot with both linear and angular velocity
         self.state = np.round(integrate_odom(
-            self.state, velocity, turn_angle), 3)
+            self.state, velocity, omega), 3)
         # if it is a simulation,
         if self.is_sim:
             self.truthpose = np.append(
