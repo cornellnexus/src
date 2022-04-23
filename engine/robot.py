@@ -2,11 +2,12 @@ import numpy as np
 import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
-from electrical.motor_controller import PidGpio
+from electrical.motor_controller import MotorController
 
-# import electrical.gps as gps
-# import electrical.imu as imu
-# import electrical.rf_module as rf_module
+
+# import electrical.gps as gps 
+# import electrical.imu as imu 
+# import electrical.radio_module as radio_module
 
 
 from enum import Enum
@@ -262,16 +263,15 @@ class Robot:
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
 
-    def execute_setup(self, robot_device, radio_session, gps, imu, motor_controller):
-        if (robot_device == 0):
-            gps_setup = gps.setup()
-            imu_setup = imu.setup()
-            radio_session.setup_robot()
-            motor_controller.setup(self.is_sim)
-        else:
-            radio_session.setup_basestation()
+    def execute_setup(self, radio_session, gps, imu, motor_controller):
+        gps_setup = gps.setup() 
+        imu_setup = imu.setup()
+        radio_session.setup_robot()
+        motor_controller.setup()
 
-        radio_connected = radio_session.device.connected
+        if (radio_session.connected and gps_setup and imu_setup): 
+            self.phase = Phase.TRAVERSE
+
 
         if (radio_connected and gps_setup and imu_setup):
             self.phase = Phase.TRAVERSE
