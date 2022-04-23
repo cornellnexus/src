@@ -25,7 +25,7 @@ loader = unittest.TestLoader()
 suite = unittest.TestSuite()
 
 # adding tests:
-compilation_tests = [pid_controller_test, kinematics_test, traversal_standard_test]
+compilation_tests = [pid_controller_test, kinematics_test, traverse_standard_test]
 for test_case in compilation_tests:
     suite.addTests(loader.loadTestsFromModule(test_case))
 
