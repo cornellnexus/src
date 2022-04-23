@@ -2,7 +2,7 @@ import numpy as np
 import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
-from electrical.motor_controller import PidGpio
+from electrical.motor_controller import MotorController
 
 
 # import electrical.gps as gps 
