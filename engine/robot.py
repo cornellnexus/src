@@ -202,8 +202,6 @@ class Robot:
                     self.state[0], self.position_noise)
                 self.state[1] = np.random.normal(
                     self.state[1], self.position_noise)
-            else:
-                self.state = self.update_ekf_step()
 
             x_error = target[0] - self.state[0]
             y_error = target[1] - self.state[1]
@@ -235,6 +233,13 @@ class Robot:
                 fd.write(
                     str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
             time.sleep(0.001)
+
+            if not self.is_sim:
+                print("state")
+                print(self.state)
+                self.state = self.update_ekf_step()
+                print("ekf_state")
+                print(self.state)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter

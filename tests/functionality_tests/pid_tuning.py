@@ -7,11 +7,12 @@ from engine.robot import Robot, Phase
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import style
+import time
 
 import csv
 
 
-def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.483682, long_max=-76.483276, allowed_dist_error=0.1):
+def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.483682, long_max=-76.483276, allowed_dist_error=0.05):
     """
     Calls the robot to traverse in a straight line.
 
@@ -36,6 +37,7 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
         lines = graph_data.split('\n')
         xs = []
         ys = []
+        print(len(waypoints))
         for line in lines:
             if len(line) > 1:
                 x, y = line.split(',')
@@ -51,6 +53,8 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
     ani = animation.FuncAnimation(fig, animate, interval=5)
 
     # traverses the waypoints, writes relevant data to csv
+
+    time.sleep(2)
     iter = 0
     while len(waypoints) > 0:
         curr_waypoint = waypoints[0].get_m_coords()
