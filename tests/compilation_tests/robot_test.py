@@ -3,7 +3,6 @@ from electrical.radio_module import RadioSession
 from electrical.motor_controller import BasicMotorController, MotorController
 import copy
 import math
-from electrical.rf_module import Device, RadioSession
 import unittest
 
 
