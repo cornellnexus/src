@@ -2,6 +2,7 @@ import numpy as np
 import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from engine.pid_controller import PID
+from electrical.motor_controller import PidGpio
 
 from engine.ekf import LocalizationEKF
 from engine.sensor_module import SensorModule
@@ -10,6 +11,7 @@ from constants.geo_fences import ENGINEERING_QUAD
 # import electrical.gps as gps
 # import electrical.imu as imu
 # import electrical.rf_module as rf_module
+
 
 from enum import Enum
 import os.path
@@ -45,7 +47,7 @@ class Robot:
     Parameters:
     state = Robot's state, np.array
         state contain's the robot's x position, y position, and heading
-    phase = 'collect' when traversing through grid, 'return' when returning to 
+    phase = 'collect' when traversing through grid, 'return' when returning to
         base station
     is_sim = False when running code with physical robot, True otherwise
     Preconditions:
@@ -82,6 +84,9 @@ class Robot:
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
             plastic_weight: the weight of the trash the robot has collected
             battery: the battery of the robot
+            motor_controller: the motor controller for the Robot
+            linear_v: the current linear velocity of the Robot
+            angular_v: the current angular velocity of the Robot
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -102,7 +107,6 @@ class Robot:
         self.move_dist = move_dist
         # dividing by time_step ignores the effect of time_step on absolute
         self.turn_angle = turn_angle/time_step
-        # radians turned
         self.plastic_weight = plastic_weight
         self.battery = 100  # TEMPORARY
         self.acceleration = [0, 0, 0]  # TEMPORARY
@@ -113,6 +117,8 @@ class Robot:
         self.ekf_var = None
         self.gps = None
         self.imu = None
+        self.linear_v = 0
+        self.angular_v = 0
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -220,6 +226,10 @@ class Robot:
 
             self.travel(self.time_step * limited_cmd_v,
                         self.time_step * limited_cmd_w)
+
+            self.linear_v = limited_cmd_v[0]
+            self.angular_v = limited_cmd_w[0]
+
             # sleep in real robot.
 
             # write robot location and mag heading in csv (for gui to display)
@@ -292,7 +302,7 @@ class Robot:
         print('heading: ' + str(self.state[2]))
 
     def execute_setup(self, robot_device, radio_session, gps, imu, motor_controller):
-        if (robot_device == 0):  # what is this if loop? figure out
+        if (robot_device == 0):
             gps_setup = gps.setup()
             imu_setup = imu.setup()
             radio_session.setup_robot()

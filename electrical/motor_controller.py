@@ -1,5 +1,5 @@
 import time
-from engine.robot import Robot
+#from engine.robot import Robot
 if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
 
@@ -100,7 +100,7 @@ class MotorController:
 
 
 class PidGpio:
-    def __init__(self, wheel_r, vm_load1, vm_load2, L, R):
+    def __init__(self, wheel_r=5, vm_load1=15, vm_load2=15, L=5, R=5):
         self.wheel_r = wheel_r
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2

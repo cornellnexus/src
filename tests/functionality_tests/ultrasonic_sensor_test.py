@@ -1,7 +1,14 @@
-#Libraries
 import RPi.GPIO as GPIO
 import time
  
+"""
+Tests one ultrasonic sensor. 
+Run this test script, place an object (ie. hand) slightly away from the ultrasonic sensor. 
+Observe the printed distance values from the test script to see if they are the expected distance
+the object is away from the ultrasonic sensor.
+"""
+
+
 #GPIO Mode (BOARD / BCM)
 GPIO.setmode(GPIO.BCM)
  
