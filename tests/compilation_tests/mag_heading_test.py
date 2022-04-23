@@ -7,7 +7,7 @@ import csv
 import os 
 
 cwd = os.getcwd()
-cd = cwd + "/data"
+cd = cwd + "/csv"
 
 with open(cd + '/imu_360_sample1.csv') as csv_file:
     reader = csv.reader(csv_file)
