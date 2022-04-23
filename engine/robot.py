@@ -102,7 +102,6 @@ class Robot:
         self.move_dist = move_dist
         # dividing by time_step ignores the effect of time_step on absolute
         self.turn_angle = turn_angle/time_step
-        # radians turned
         self.plastic_weight = plastic_weight
         self.battery = 100  # TEMPORARY
         self.acceleration = [0, 0, 0]  # TEMPORARY
@@ -189,8 +188,8 @@ class Robot:
             self.travel(self.time_step * limited_cmd_v,
                         self.time_step * limited_cmd_w)
 
-            self.linear_v = cmd_v[0]
-            self.angular_v = cmd_w[0]
+            self.linear_v = limited_cmd_v[0]
+            self.angular_v = limited_cmd_w[0]
 
             # sleep in real robot.
 
