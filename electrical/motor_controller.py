@@ -99,7 +99,6 @@ class MotorController:
         self.enB = 12   #PWM
         # self.is_sim = robot.is_sim
         self.is_sim = True
-        #super().__init__(robot)
         self.wheel_r = wheel_r
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2

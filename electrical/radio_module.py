@@ -8,10 +8,6 @@ class RadioSession:
     RadioSession establishes the function calls needed between two devices.
 
     Communication package headings used when sending messages or parsing received messages:
-    'sr': start (robot)
-    'sb': start (base station)
-    'dr': data (robot) 
-    'db': data (base station) 
     """
     def __init__(self, serial):
         self.connected = False 
