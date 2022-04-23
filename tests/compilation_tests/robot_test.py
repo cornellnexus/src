@@ -1,14 +1,9 @@
-<<<<<<< HEAD:tests/compilation_tests/robot_test.py
 from engine.robot import Robot
 from electrical.radio_module import RadioSession
 from electrical.motor_controller import BasicMotorController, MotorController
-# from electrical.gps import GPS
-# from electrical.imu import IMU
 import copy
 import math
-=======
 from electrical.rf_module import Device, RadioSession
->>>>>>> master:tests/compilation_tests/robot_test/execute_setup_test.py
 import unittest
 
 
