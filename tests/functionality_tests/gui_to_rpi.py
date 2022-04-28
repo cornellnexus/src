@@ -20,7 +20,8 @@ ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
 rpi_to_gui = open((get_path('csv')[-1] + '/gui_to_rpi.csv'), "r")  # open csv file of rpi to gui data
 
 while True:
-  packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
+  packet = rpi_to_gui.readlines()[0]  # basic packet
+  # packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
   print("Sending the following packet: " + str(packet))
   ser.writelines(packet)
 #   TODO: need to figure out when we want data to be transmitted in the code
@@ -30,3 +31,8 @@ while True:
 
 # 4. Check if the GUI has updated as expected. 
 
+
+
+
+# Run gui_to_rpi.py on raspberry pi, sending just a basic packet
+# Run retrieve_inputs on personal laptop, monitor prints as well as robot_data.csv
