@@ -256,8 +256,8 @@ def run_gui():
     """
     def run_simulation(name):
         logging.info("Thread %s: starting", name)
-        os.system("python -m gui.retrieve_inputs &")
-        os.system("python -m engine.sim_trajectory")
+        os.system("python -m gui.retrieve_inputs")
+        # os.system("python -m engine.sim_trajectory")
         logging.info("Thread %s: finishing", name)
 
     format = "%(asctime)s: %(message)s"

@@ -4,8 +4,8 @@ import serial
 import statistics
 from engine.packet import *
 from gui.robot_data import get_tuple_value, get_integer_value, get_float_value
-# ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
 
+ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
 
 def update_gui():
     '''
@@ -24,10 +24,10 @@ def update_gui():
     # robot_data_file.write("start\n")
     while True:
         while len(packets) < 5:
-            # packet = ser.readline()
+            packet = ser.readline()
             # packet = input("Enter data: ") # use this for testing purposes
             try:
-                packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
+                # packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
                 print("packet is " + packet)
                 if 80 < len(packet) < 150:  # check if packet length is appropriate
                     packets.append(packet)

@@ -19,6 +19,7 @@ import time
 
 import sys
 import os
+import serial # RPI_GUI_TEST
 
 
 def waypoints_to_array(waypoints):
@@ -66,6 +67,8 @@ def get_path(folder):
 
 
 if __name__ == "__main__":
+    # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600) # RPI_GUI_TEST
+
     r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5,
                  radius=0.2, init_phase=Phase.TRAVERSE)
     base_r2d2 = BaseStation((42.444250, -76.483682))
@@ -78,7 +81,8 @@ if __name__ == "__main__":
         while simulation_on:
             packet = database.make_packet()
             # send packet to gui
-            rpi_to_gui.write(str(packet) + '\n')
+            ser.writelines(packet) # RPI_GUI_TEST
+            # rpi_to_gui.write(str(packet) + '\n')
             logging.info("Sent packet: " + packet)
             time.sleep(0.1)
         logging.info("Thread %s: finishing", name)
