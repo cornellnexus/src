@@ -28,7 +28,7 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
 
     if int_difference < 0:
         # shrink:
-        print("value too large?? possibly round?")
+        print("value of "+ s +" too large?? possibly round?")
     else:
         # extend: add 0's to the beginning to extend integer value
         int_buffer = "0" * int_difference
@@ -81,7 +81,7 @@ class Packet:
         ctrl: string representing control mode value, must be a single digit such as "1"
 
     Returns: string of the following format using correcting size of args
-    "phase:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1"
+    "phase:0;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1"
     """
     def __init__(self, phase, p_weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl):
         self.phase = phase
@@ -102,7 +102,8 @@ class Packet:
         "phase:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1"
         '''
         args = [("phase:", self.phase), (";p_weight:", fix_data_size(self.p_weight, 2, 1)),
-                (";acc:", fix_data_size(self.acc, 1, 2)), (";n_dist:", fix_data_size(self.n_dist, 2, 1)),
+                (";acc:", (fix_data_size(self.acc[0], 1, 2)+","+fix_data_size(self.acc[1], 1, 2))+","+fix_data_size(self.acc[1], 1, 2)), 
+                (";n_dist:", fix_data_size(self.n_dist, 2, 1)),
                 (";rot:", fix_data_size(self.rot, 2, 2)), (";last_n:", fix_tuple_size(self.last_n, 3, 2)),
                 (";vel:", fix_data_size(self.vel, 1, 2)), (";next_n:", fix_tuple_size(self.next_n, 3, 2)),
                 (";coord:", fix_tuple_size(self.coord, 3, 2)),
@@ -111,6 +112,6 @@ class Packet:
 
         packet = ""
         for (heading, value) in args:
-            packet += heading + value
+            packet += heading + str(value)
 
         return packet
