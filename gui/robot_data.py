@@ -9,7 +9,7 @@ def get_values(packet):
     '''
     separator_index = packet.find(":")
     if separator_index == -1:
-        print("data corruption")
+        print("data corruption get values")
         raise Exception()
     return packet[separator_index + 1:]
 
@@ -95,6 +95,10 @@ class RobotData(object):
         packet_data = packet.split(";")
         self.phase = get_integer_value(packet_data[0])
         self.weight = get_float_value(packet_data[1])
+
+        acc = get_float_value(packet_data[2])
+
+
         self.acc = get_float_value(packet_data[2])
         self.n_dist = get_float_value(packet_data[3])
         self.rot = get_float_value(packet_data[4])
