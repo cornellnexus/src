@@ -54,7 +54,7 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
+    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=False, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
                  init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0, use_ekf=False,
                  init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None, gps=None, imu=None, motor_controller=None):
@@ -143,10 +143,11 @@ class Robot:
 
     def update_ekf_step(self):
         zone = ENGINEERING_QUAD  # Used for GPS visualization
+        # self.ekf_var.update_step(self.ekf_var.mu, self.ekf_var.sigma, sensor_module.get_measurement(self.init_gps))
         self.gps_data = (self.gps.get_gps()["long"], self.gps.get_gps()["lat"])
         self.imu_data = self.imu.get_gps()
         x, y = get_vincenty_x(
-            self.init_gps, self.gps_data), get_vincenty_y(zone[0], self.gps_data)
+            self.init_gps, self.gps_data), get_vincenty_y(self.init_gps, self.gps_data)
         heading = math.degrees(math.atan2(
             self.imu_data["mag"]["y"], self.imu_data["mag"]["x"]))
 
@@ -181,7 +182,7 @@ class Robot:
             self.truthpose = np.append(
                 self.truthpose, np.transpose(self.state), 0)
 
-    def move_to_target_node(self, target, allowed_dist_error, database):
+    def move_to_target_node(self, target, allowed_dist_error, database, motor_controller, gps, init_gps, imu):
         """
         Moves robot to target + or - allowed_dist_error
 
@@ -190,6 +191,11 @@ class Robot:
             allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
                 have "visited" that node
         """
+        self.gps = gps
+        self.init_gps = init_gps
+        self.imu = imu
+        # sensor_module.update_gps_data()
+        # self.init_gps = (sensor_module.get_measurement((0,0))[0], sensor_module.get_measurement((0,0))[1])
         predicted_state = self.state
 
         # location error (in meters)
@@ -219,12 +225,15 @@ class Robot:
                 self.travel(self.time_step * limited_cmd_v,
                             self.time_step * limited_cmd_w)
             else:
-                self.motor_controller.motors(limited_cmd_w, limited_cmd_v)
+                motor_controller.motors(0, y_vel)
+                self.travel(self.time_step*y_vel*.2, 0)
+                # self.motor_controller.motors(limited_cmd_w, limited_cmd_v)
 
             self.linear_v = limited_cmd_v[0]
             self.angular_v = limited_cmd_w[0]
 
             # sleep in real robot.
+            time.sleep(.1)
 
             # write robot location and mag heading in csv (for gui to display)
             cwd = os.getcwd()
@@ -237,7 +246,7 @@ class Robot:
             if not self.is_sim:
                 print("state")
                 print(self.state)
-                self.state = self.update_ekf_step()
+                # self.state = self.update_ekf_step()
                 print("ekf_state")
                 print(self.state)
 

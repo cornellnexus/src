@@ -1,5 +1,5 @@
 import time
-if False: 
+if True:
     import board
     import busio
     import adafruit_lsm9ds1
