@@ -143,10 +143,11 @@ class Robot:
 
     def update_ekf_step(self):
         zone = ENGINEERING_QUAD  # Used for GPS visualization
+        # self.ekf_var.update_step(self.ekf_var.mu, self.ekf_var.sigma, sensor_module.get_measurement(self.init_gps))
         self.gps_data = (self.gps.get_gps()["long"], self.gps.get_gps()["lat"])
         self.imu_data = self.imu.get_gps()
         x, y = get_vincenty_x(
-            self.init_gps, self.gps_data), get_vincenty_y(zone[0], self.gps_data)
+            self.init_gps, self.gps_data), get_vincenty_y(self.init_gps, self.gps_data)
         heading = math.degrees(math.atan2(
             self.imu_data["mag"]["y"], self.imu_data["mag"]["x"]))
 
@@ -181,77 +182,93 @@ class Robot:
             self.truthpose = np.append(
                 self.truthpose, np.transpose(self.state), 0)
 
-    def move_to_target_node(self, target, allowed_dist_error, database, mc):
-        """
-        Moves robot to target + or - allowed_dist_error
-
-        Arguments:
-            target: target coordinates in the form (latitude, longitude)
-            allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
-                have "visited" that node
-        """
-        predicted_state = self.state
-
-        # location error (in meters)
-        distance_away = math.hypot(float(predicted_state[0]) - target[0],
-                                   float(predicted_state[1]) - target[1])
-
-        while distance_away > allowed_dist_error:
-            if self.is_sim:
-                self.state[0] = np.random.normal(
-                    self.state[0], self.position_noise)
-                self.state[1] = np.random.normal(
-                    self.state[1], self.position_noise)
-
-            x_error = target[0] - self.state[0]
-            y_error = target[1] - self.state[1]
-
-            x_vel = self.loc_pid_x.update(x_error)
-            y_vel = self.loc_pid_y.update(y_error)
-
-            cmd_v, cmd_w = feedback_lin(
-                predicted_state, x_vel, y_vel, self.epsilon)
-
-            # clamping of velocities:
-            (limited_cmd_v, limited_cmd_w) = limit_cmds(
-                cmd_v, cmd_w, self.max_velocity, self.radius)
-
-            if self.is_sim:
-                self.travel(self.time_step * limited_cmd_v,
-                            self.time_step * limited_cmd_w)
-            else:
-#                 self.motor_controller.motors(limited_cmd_w, limited_cmd_v)    COMMENTING THIS OUT due to merge conflict 
-                mc.motors(limited_cmd_w, limited_cmd_v)
-
-            self.linear_v = limited_cmd_v[0]
-            self.angular_v = limited_cmd_w[0]
-
-            # sleep in real robot.
-
-            # write robot location and mag heading in csv (for gui to display)
-            cwd = os.getcwd()
-            cd = cwd + "/csv"
-            with open(cd + '/datastore.csv', 'a') as fd:
-                fd.write(
-                    str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
-            time.sleep(0.001)
-
-            if not self.is_sim:
-                print("state")
-                print(self.state)
-                self.state = self.update_ekf_step()
-                print("ekf_state")
-                print(self.state)
-
-            # Get state after movement:
-            predicted_state = self.state  # this will come from Kalman Filter
-            # TODO: Do we want to update self.state with this new predicted state????
-            database.update_data(
-                "state", self.state[0], self.state[1], self.state[2])
-
-            # location error (in meters)
-            distance_away = math.hypot(float(predicted_state[0]) - target[0],
-                                       float(predicted_state[1]) - target[1])
+# <<<<<<< HEAD
+#     def move_to_target_node(self, target, allowed_dist_error, database, mc):
+# =======
+#     def move_to_target_node(self, target, allowed_dist_error, database, motor_controller, gps, init_gps, imu):
+# >>>>>>> 24f2fb4084cdde357f9b41f27a8564c9b4fd0472
+#         """
+#         Moves robot to target + or - allowed_dist_error
+# 
+#         Arguments:
+#             target: target coordinates in the form (latitude, longitude)
+#             allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
+#                 have "visited" that node
+#         """
+#         self.gps = gps
+#         self.init_gps = init_gps
+#         self.imu = imu
+#         # sensor_module.update_gps_data()
+#         # self.init_gps = (sensor_module.get_measurement((0,0))[0], sensor_module.get_measurement((0,0))[1])
+#         predicted_state = self.state
+# 
+#         # location error (in meters)
+#         distance_away = math.hypot(float(predicted_state[0]) - target[0],
+#                                    float(predicted_state[1]) - target[1])
+# 
+#         while distance_away > allowed_dist_error:
+#             if self.is_sim:
+#                 self.state[0] = np.random.normal(
+#                     self.state[0], self.position_noise)
+#                 self.state[1] = np.random.normal(
+#                     self.state[1], self.position_noise)
+# 
+#             x_error = target[0] - self.state[0]
+#             y_error = target[1] - self.state[1]
+# 
+#             x_vel = self.loc_pid_x.update(x_error)
+#             y_vel = self.loc_pid_y.update(y_error)
+# 
+#             cmd_v, cmd_w = feedback_lin(
+#                 predicted_state, x_vel, y_vel, self.epsilon)
+# 
+#             # clamping of velocities:
+#             (limited_cmd_v, limited_cmd_w) = limit_cmds(
+#                 cmd_v, cmd_w, self.max_velocity, self.radius)
+# 
+#             if self.is_sim:
+#                 self.travel(self.time_step * limited_cmd_v,
+#                             self.time_step * limited_cmd_w)
+#             else:
+# <<<<<<< HEAD
+# #                 self.motor_controller.motors(limited_cmd_w, limited_cmd_v)    COMMENTING THIS OUT due to merge conflict 
+#                 mc.motors(limited_cmd_w, limited_cmd_v)
+# =======
+#                 motor_controller.motors(0, y_vel)
+#                 self.travel(self.time_step*y_vel*.2, 0)
+#                 # self.motor_controller.motors(limited_cmd_w, limited_cmd_v)
+# >>>>>>> 24f2fb4084cdde357f9b41f27a8564c9b4fd0472
+# 
+#             self.linear_v = limited_cmd_v[0]
+#             self.angular_v = limited_cmd_w[0]
+# 
+#             # sleep in real robot.
+#             time.sleep(.1)
+# 
+#             # write robot location and mag heading in csv (for gui to display)
+#             cwd = os.getcwd()
+#             cd = cwd + "/csv"
+#             with open(cd + '/datastore.csv', 'a') as fd:
+#                 fd.write(
+#                     str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
+#             time.sleep(0.001)
+# 
+#             if not self.is_sim:
+#                 print("state")
+#                 print(self.state)
+#                 # self.state = self.update_ekf_step()
+#                 print("ekf_state")
+#                 print(self.state)
+# 
+#             # Get state after movement:
+#             predicted_state = self.state  # this will come from Kalman Filter
+#             # TODO: Do we want to update self.state with this new predicted state????
+#             database.update_data(
+#                 "state", self.state[0], self.state[1], self.state[2])
+# 
+#             # location error (in meters)
+#             distance_away = math.hypot(float(predicted_state[0]) - target[0],
+#                                        float(predicted_state[1]) - target[1])
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
