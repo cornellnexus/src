@@ -1,21 +1,21 @@
 import time
-from engine.robot import Robot
-if True: #change to True when running code on robot
+#from engine.robot import Robot
+if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
+    
 
-
-class MotorController:
+class BasicMotorController:
     """ 
-    MotorController contains pinouts to configure motor controller, as well as 
+    BasicMotorController contains pinouts to configure motor controller, as well as 
     commands to physically move the robot. 
     """
     def __init__(self, robot):
-        #raspberry pi motor driver pinouts
+        # raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
         self.in3 = 19
         self.in4 = 26
-        self.enA = 13   #front left PWM 
+        self.enA = 13   #front left PWM
         self.enB = 12   #back right PWM 
         self.enC = 19   #back left PWM
         self.enD = 18   #front right PWM
@@ -23,56 +23,53 @@ class MotorController:
 
     # checks all of the robot movements are functioning properly
     def setup(self):
-        if self.is_sim: 
-            self.go_forward()
-            self.turn_left()
-            self.turn_right()
-            self.reverse()
-            self.stop()
-        else: 
-            GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
-            GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
-            GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
-            self.e1 = GPIO.PWM(self.enA, 600)  # create object digital to analog conversion for PWM on port 25 at 1KHz
+        if not self.is_sim:
+            GPIO.setmode(GPIO.BCM)  # raspberry pi pinout reading mode
+            GPIO.setup([self.in1, self.in2, self.in3, self.in4],
+                       GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
+
+            GPIO.setup([self.enA, self.enB, self.enC, self.enD], GPIO.OUT)  # EnA, EnB
+            # create object digital to analog conversion for PWM on port 25 at 1KHz
+            self.e1 = GPIO.PWM(self.enA, 600)
             self.e2 = GPIO.PWM(self.enB, 600)
             self.e3 = GPIO.PWM(self.enC, 600)
             self.e4 = GPIO.PWM(self.enD, 600)
             self.e1.start(100)
-            self.e2.start(100)            
+            self.e2.start(100)  
             self.e3.start(100) 
-            self.e4.start(100) 
+            self.e4.start(100)           
 
-    # stops the robot 
+    # stops the robot
     def stop(self):
-        if self.is_sim: 
+        if self.is_sim:
             print('stop')
         else:
             self.e1.stop()
             self.e2.stop()
             self.e3.stop()
             self.e4.stop()
-        
+
     # moves the robot forward
     def go_forward(self):
-        if self.is_sim: 
+        if self.is_sim:
             print('go_forward')
-        else: 
+        else:
             GPIO.output([self.in1, self.in4], GPIO.HIGH)
             GPIO.output([self.in2, self.in3], GPIO.HIGH)
 
     # reverses the robot
     def reverse(self):
-        if self.is_sim: 
+        if self.is_sim:
             print('reverse')
-        else: 
+        else:
             GPIO.output([self.in2, self.in3], GPIO.LOW)
             GPIO.output([self.in1, self.in4], GPIO.LOW)
 
     # turns the robot left for 1 second
     def turn_left(self):
-        if self.is_sim: 
+        if self.is_sim:
             print('turn_left')
-        else: 
+        else:
             GPIO.output([self.in2, self.in4], GPIO.LOW)
             GPIO.output([self.in1, self.in3], GPIO.HIGH)
         time.sleep(1)
@@ -81,17 +78,16 @@ class MotorController:
     def turn_right(self):
         if self.is_sim:
             print('turn_right')
-        else: 
+        else:
             GPIO.output([self.in1, self.in3], GPIO.LOW)
             GPIO.output([self.in2, self.in4], GPIO.HIGH)
         time.sleep(1)
 
 
-class MotorPID:
+class MotorController:
     """ 
-    MotorPID contains pinouts to configure motor controller, PID tuning values for the 
-    motors, and can set motor torque according to input angular and linear velocities.
-
+    MotorController contains pinouts to configure motor controller and can set motor torque 
+    according to input angular and linear velocities.
     Attributes: 
         robot: robot object 
         wheel_r: the wheel radius 
@@ -115,6 +111,22 @@ class MotorPID:
         self.enB = 12   #back right PWM 
         self.enC = 19   #back left PWM
         self.enD = 18   #front right PWM
+
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup([self.in1, self.in2, self.in3, self.in4],
+                   GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup([self.enA, self.enB, self.enC, self.enD], GPIO.OUT)  # EnA, EnB
+
+        self.p1 = GPIO.PWM(self.enA, 50)
+        self.p2 = GPIO.PWM(self.enB, 50)
+        self.p3 = GPIO.PWM(self.enC, 50)
+        self.p4 = GPIO.PWM(self.enD, 50)
+
+    # Start with 0% duty cycle
+        self.p1.start(0)
+        self.p2.start(0)
+        self.p3.start(0)
+        self.p4.start(0)
 
     # Change duty cycle for motors based on angular and linear velocities
     def motors(self, omega, vel):
