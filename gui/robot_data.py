@@ -1,6 +1,6 @@
 from engine.robot import Phase
 
-def get_values(packet):
+def get_value(packet):
     '''
     Args:
         packet: a string of format "id:value"
@@ -22,7 +22,7 @@ def get_integer_value(packet):
     Returns: integer of "value"
 
     '''
-    return int(get_values(packet))
+    return int(get_value(packet))
 
 
 def get_float_value(packet):
@@ -34,26 +34,30 @@ def get_float_value(packet):
     Returns: float of "value"
 
     '''
-    return float(get_values(packet))
+    return float(get_value(packet))
 
 
-def get_tuple_value(data):
+def get_values(data, num_inputs):
     '''
 
     Args:
         data: a string of format "id:value"
 
-    Returns: tuple of floats of "value"
+    Returns: list of floats of "value"
 
     '''
-    s = get_values(data)
-    separator_index = s.find(",")
-    if separator_index == -1:
-        print("tuple data corruption")
-        raise Exception()
-    fst = s[:separator_index]
-    snd = s[separator_index + 1:]
-    return (float(fst), float(snd))
+    s = get_value(data)
+    values = []
+    for i in range(0,num_inputs):
+        separator_index = s.find(",")
+        if separator_index == -1 and i < num_inputs:
+            print("get list data corruption")
+            raise Exception()
+        val = s[:separator_index]
+        s = s[separator_index + 1:]
+        values.append(float(val))
+    
+    return values
 
 class RobotData(object):
     """
@@ -80,10 +84,10 @@ class RobotData(object):
         self.acc = get_float_value(packet_data[2])
         self.n_dist = get_float_value(packet_data[3])
         self.rot = get_float_value(packet_data[4])
-        self.last_n = get_tuple_value(packet_data[5])
+        self.last_n = get_values(packet_data[5])
         self.vel = get_float_value(packet_data[6])
-        self.next_n = get_tuple_value(packet_data[7])
-        self.coord = get_tuple_value(packet_data[8])
+        self.next_n = get_values(packet_data[7])
+        self.coord = get_values(packet_data[8])
         self.bat = get_integer_value(packet_data[9])
         self.ctrl = get_integer_value(packet_data[10])
 
@@ -102,10 +106,10 @@ class RobotData(object):
         self.acc = get_float_value(packet_data[2])
         self.n_dist = get_float_value(packet_data[3])
         self.rot = get_float_value(packet_data[4])
-        self.last_n = get_tuple_value(packet_data[5])
+        self.last_n = get_values(packet_data[5])
         self.vel = get_float_value(packet_data[6])
-        self.next_n = get_tuple_value(packet_data[7])
-        self.coord = get_tuple_value(packet_data[8])
+        self.next_n = get_values(packet_data[7])
+        self.coord = get_values(packet_data[8])
         self.bat = get_integer_value(packet_data[9])
         self.ctrl = get_integer_value(packet_data[10])
 

@@ -3,9 +3,9 @@ import sys
 import serial
 import statistics
 from engine.packet import *
-from gui.robot_data import get_tuple_value, get_integer_value, get_float_value
+from gui.robot_data import get_values, get_integer_value, get_float_value
 
-ser = serial.Serial("/dev/tty.usbserial-017543DC", 57600)
+# ser = serial.Serial("/dev/tty.usbserial-017543DC", 57600)
 
 
 def update_gui():
@@ -25,12 +25,12 @@ def update_gui():
     # robot_data_file.write("start\n")
     while True:
         while len(packets) < 5:
-            print("retrieve packet")
-            packet = ser.readline().decode('utf-8')
-            print("read line packet")
             # packet = input("Enter data: ") # use this for testing purposes
             try:
-                # packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
+                # print("retrieve packet")
+                # packet = ser.readline().decode('utf-8')
+                # print("read line packet")
+                packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
                 print("packet is " + packet)
                 if 80 < len(packet) < 150:  # check if packet length is appropriate
                     packets.append(packet)
@@ -87,23 +87,13 @@ def validate_packet(packets):
             packet_data = packet.split(";")
             phases.append(get_integer_value(packet_data[0]))
             weights.append(get_float_value(packet_data[1]))
-            # "0.00,0.00,0.00"
-            acc_xyz = packet_data[2]
-            index_1 = acc_xyz.find(",")
-            acc_x = acc_xyz[0:index_1]
-            index_2 = acc_xyz[index_1+1:].find(",") + index_1+1
-            acc_y = acc_xyz[index_1+1:index_2]
-            acc_z = acc_xyz[index_2+1:]
-            # change to get float value
-            acc = str(acc_x) + "," + str(acc_y) + "," + str(acc_z)
-            print(acc)
-            accs.append(acc)
+            accs.append(get_values(packet_data[2],3))
             n_dists.append(get_float_value(packet_data[3]))
             rots.append(get_float_value(packet_data[4]))
-            last_ns.append(get_tuple_value(packet_data[5]))
+            last_ns.append(get_values(packet_data[5],2))
             vels.append(get_float_value(packet_data[6]))
-            next_ns.append(get_tuple_value(packet_data[7]))
-            coords.append(get_tuple_value(packet_data[8]))
+            next_ns.append(get_values(packet_data[7],2))
+            coords.append(get_values(packet_data[8],2))
             batts.append(get_integer_value(packet_data[9]))
             ctrls.append(get_integer_value(packet_data[10]))
         except:
@@ -171,4 +161,4 @@ def get_coord(coords):
     return (str(x_median), str(y_median))
 
 
-update_gui()
+# update_gui()
