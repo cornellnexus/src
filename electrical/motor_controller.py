@@ -101,12 +101,7 @@ class MotorPID:
         R: radius of right motor #TODO: double check this
     """
     def __init__(self, robot, wheel_r, vm_load1, vm_load2, L, R):
-        self.in1 = 5
-        self.in2 = 6
-        self.enA = 13   #PWM
-        self.enB = 12   #PWM
         self.is_sim = robot.is_sim
-        #super().__init__(robot)
         self.wheel_r = wheel_r
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2
