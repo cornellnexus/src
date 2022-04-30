@@ -15,8 +15,10 @@ class MotorController:
         self.in2 = 6
         self.in3 = 19
         self.in4 = 26
-        self.enA = 13   #PWM pin
-        self.enB = 12   #PWM pin
+        self.enA = 13   #front left PWM 
+        self.enB = 12   #back right PWM 
+        self.enC = 19   #back left PWM
+        self.enD = 18   #front right PWM
         self.is_sim = robot.is_sim
 
     # checks all of the robot movements are functioning properly
@@ -33,8 +35,12 @@ class MotorController:
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
             self.e1 = GPIO.PWM(self.enA, 600)  # create object digital to analog conversion for PWM on port 25 at 1KHz
             self.e2 = GPIO.PWM(self.enB, 600)
+            self.e3 = GPIO.PWM(self.enC, 600)
+            self.e4 = GPIO.PWM(self.enD, 600)
             self.e1.start(100)
             self.e2.start(100)            
+            self.e3.start(100) 
+            self.e4.start(100) 
 
     # stops the robot 
     def stop(self):
@@ -43,6 +49,8 @@ class MotorController:
         else:
             self.e1.stop()
             self.e2.stop()
+            self.e3.stop()
+            self.e4.stop()
         
     # moves the robot forward
     def go_forward(self):
@@ -108,9 +116,10 @@ class MotorPID:
         self.in2 = 6
         self.in3 = 19
         self.in4 = 26
-        self.enA = 13
-        self.enB = 12
-
+        self.enA = 13   #front left PWM
+        self.enB = 12   #back right PWM 
+        self.enC = 19   #back left PWM
+        self.enD = 18   #front right PWM
 
     # Change duty cycle for motors based on angular and linear velocities
     def motors(self, omega, vel):
@@ -127,7 +136,7 @@ class MotorPID:
         # Define and cap duty cycles if they are above max
         try: 
             dc1 = omega_r / self.vm_load1
-            dc2 = omega_r / self.vm_load2
+            dc2 = omega_l / self.vm_load2
         except: 
             raise ZeroDivisionError("vm_load1 or vm_load2 is zero")
 
@@ -148,13 +157,17 @@ class MotorPID:
         else:
             GPIO.setmode(GPIO.BCM)
             GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  
-            GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
+            GPIO.setup([self.enA, self.enB, self.enC, self.enD], GPIO.OUT)  # EnA, EnB
 
             self.p1 = GPIO.PWM(self.enA, 50)
             self.p2 = GPIO.PWM(self.enB, 50)
+            self.p3 = GPIO.PWM(self.enC, 50)
+            self.p4 = GPIO.PWM(self.enD, 50)
 
             # Initialize PWM duty cycles as 0
             self.p1.start(0)
             self.p2.start(0)
+            self.p3.start(0)
+            self.p4.start(0)
 
             self.motors(0, 0)
