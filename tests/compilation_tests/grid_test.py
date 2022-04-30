@@ -85,7 +85,6 @@ class TestGrid(unittest.TestCase):
             if nd.is_border_node():
                 count += 1
         self.assertNotEqual(count, g.get_num_rows() * g.get_num_cols(), 'is_border_node flag is set correctly')
-        print(count)
         self.assertEqual(count, g.get_num_cols() * 2, 'is_border_node flag is set correctly')
         border_waypoints = g.get_waypoints(ControlMode.LAWNMOWER_B)
         border_node_count = (g.get_num_cols()*2)
