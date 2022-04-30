@@ -10,20 +10,20 @@ class TestNodes(unittest.TestCase):
     # Set up nodes to test on
     reg_node = Node(20, 30, 0, 0)
 
-    border_node = Node(20, 30, 0, 0, '1')
-    non_border_node = Node(20, 30, 0, 0,'0')
+    border_node = Node(20, 30, 0, 0, 1)
+    non_border_node = Node(20, 30, 0, 0,0)
 
-    non_traversed_node = Node(20, 30, 0, 0, '0', status=0)
-    traversed_node = Node(20, 30, 0, 0, '0', status=1)
-    obstacle_node = Node(20, 30, 0, 0, '0', status=2)
+    non_traversed_node = Node(20, 30, 0, 0, 0, status=0)
+    traversed_node = Node(20, 30, 0, 0, 0, status=1)
+    obstacle_node = Node(20, 30, 0, 0, 0, status=2)
 
-    non_trav_border_node = Node(20, 30, 0, 0, '1', status=0)
-    trav_border_node = Node(20, 30, 0, 0, '1', status=1)
-    obstacle_border_node = Node(20, 30, 0, 0, '1', status=2)
+    non_trav_border_node = Node(20, 30, 0, 0, 1, status=0)
+    trav_border_node = Node(20, 30, 0, 0, 1, status=1)
+    obstacle_border_node = Node(20, 30, 0, 0, 1, status=2)
 
-    non_trav_non_border_node = Node(20, 30, 0, 0, '0', status=0)
-    trav_non_border_node = Node(20, 30, 0, 0, '0', status=1)
-    obstacle_non_border_node = Node(20, 30, 0, 0, '0', status=2)
+    non_trav_non_border_node = Node(20, 30, 0, 0, 0, status=0)
+    trav_non_border_node = Node(20, 30, 0, 0, 0, status=1)
+    obstacle_non_border_node = Node(20, 30, 0, 0, 0, status=2)
 
     max_lat_node = Node(90, 30, 0, 0)
     min_lat_node = Node(-90, 30, 0, 0)
@@ -58,8 +58,8 @@ class TestNodes(unittest.TestCase):
 
     def test_is_border_node(self):
         # '0' == False, '1' == True? is_border_node should return boolean?
-        self.assertEqual('0', self.reg_node.is_border_node())
-        self.assertEqual('1', self.border_node.is_border_node())
+        self.assertEqual(0, self.reg_node.is_border_node())
+        self.assertEqual(1, self.border_node.is_border_node())
 
     def test_get_status(self):
         ans_set = [0, 0, 0, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 0, 0, 0]
