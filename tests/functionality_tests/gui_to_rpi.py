@@ -20,7 +20,7 @@ ser = serial.Serial("/dev/ttyS0", 57600)
 rpi_to_gui = open((get_path('tests')[-1] + '/functionality_tests/csv/gui_to_rpi.csv'), "r")  # open csv file of rpi to gui data
 
 while True:
-  packet = "phase:0;p_weight:0.0;acc:0.01,0.01,0.01;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1" + "\n"
+  packet = "phase:1;p_weight:1.0;acc:0.01,0.01,0.01;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1" + "\n"
   # basic packet
 #   packet = str(rpi_to_gui.readlines()[-1]) + "\n" # get last line of csv file
 
