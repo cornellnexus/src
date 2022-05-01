@@ -3,9 +3,10 @@ import sys
 import serial
 import statistics
 from engine.packet import *
-from gui.robot_data import get_tuple_value, get_integer_value, get_float_value
+from gui.robot_data import get_values, get_integer_value, get_float_value
 
-ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
+ser = serial.Serial("/dev/tty.usbserial-017543DC", 57600)
+
 
 def update_gui():
     '''
@@ -19,14 +20,16 @@ def update_gui():
     '''
     packets = []
 
-    rpi_to_gui = open((get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "r")  # open csv file of rpi to gui data
+    # rpi_to_gui = open((get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "r")  # open csv file of rpi to gui data
     print("starting retrieve inputs")
     # robot_data_file.write("start\n")
     while True:
         while len(packets) < 5:
-            packet = ser.readline()
             # packet = input("Enter data: ") # use this for testing purposes
             try:
+                print("retrieve packet")
+                packet = ser.readline().decode('utf-8')
+                print("read line packet")
                 # packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
                 print("packet is " + packet)
                 if 80 < len(packet) < 150:  # check if packet length is appropriate
@@ -43,7 +46,7 @@ def update_gui():
         print("write " + valid_packet + " to csv")
         packets = []
 
-    rpi_to_gui.close()
+    # rpi_to_gui.close()
 
 
 
@@ -80,18 +83,27 @@ def validate_packet(packets):
     ctrls = []
 
     for packet in packets:
-        packet_data = packet.split(";")
-        phases.append(get_integer_value(packet_data[0]))
-        weights.append(get_float_value(packet_data[1]))
-        accs.append(get_float_value(packet_data[2]))
-        n_dists.append(get_float_value(packet_data[3]))
-        rots.append(get_float_value(packet_data[4]))
-        last_ns.append(get_tuple_value(packet_data[5]))
-        vels.append(get_float_value(packet_data[6]))
-        next_ns.append(get_tuple_value(packet_data[7]))
-        coords.append(get_tuple_value(packet_data[8]))
-        batts.append(get_integer_value(packet_data[9]))
-        ctrls.append(get_integer_value(packet_data[10]))
+        try:
+            packet_data = packet.split(";")
+            phases.append(get_integer_value(packet_data[0]))
+            weights.append(get_float_value(packet_data[1]))
+            
+            # accs.append(get_values(packet_data[2],3))
+            accs.append(0.01)
+            n_dists.append(get_float_value(packet_data[3]))
+            rots.append(get_float_value(packet_data[4]))
+            print("last_ns " + packet_data[5])
+            # last_ns.append(get_values(packet_data[5],2))
+            last_ns.append([0.02,0.02])
+            vels.append(get_float_value(packet_data[6]))
+            # next_ns.append(get_values(packet_data[7],2))
+            # coords.append(get_values(packet_data[8],2))
+            next_ns.append([0.03,0.03])
+            coords.append([0.04,0.04])
+            batts.append(get_integer_value(packet_data[9]))
+            ctrls.append(get_integer_value(packet_data[10]))
+        except:
+            pass
 
     phase = get_mode(phases)
     weight = get_median(weights)
@@ -104,7 +116,7 @@ def validate_packet(packets):
     coord = get_coord(coords)
     batt = get_median(batts)
     ctrl = get_mode(ctrls)
-
+ 
     # return packet with combined data --> need to extend or shrink value to match data string
     return str(Packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl))
 
@@ -132,6 +144,7 @@ def get_median(data_list):
     Returns: a single string of the median of [data_list]
 
     '''
+    print(data_list)
     return str(statistics.median(data_list))
 
 

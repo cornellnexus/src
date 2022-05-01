@@ -2,6 +2,9 @@
 Packet functionality
 '''
 
+from tkinter import E
+
+
 def fix_data_size(s, desired_int_length, desired_decimal_length):
     '''
 
@@ -47,22 +50,29 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
     return s
 
 
-def fix_tuple_size(t, desired_int_length, desired_decimal_length):
+def fix_values_size(str_vals, desired_int_length, desired_decimal_length):
     '''
 
     Args:
-        t: input string representing a tuple of numeric values
+        str_vals: list of strings representing numerical values
         desired_int_length: integer representing the number of digits that should appear before the decimal point
         desired_decimal_length: integer representing the number of digits that should appear after the decimal point
 
     Returns: string representing a tuple of same numeric values as [t] with the correct size/length for each entry.
-    For example, fix_tuple_size(("10","9"), 3, 1) should output "010.0,009.0", which contains of the same numeric
+    For example, fix_values_size(["10","9"], 3, 1) should output "010.0,009.0", which contains of the same numeric
     values as [t]. Note that there are 3 digits before the decimal point (desire_int_length) and 1 digit after the
-    decimal point (desired_decimal_length) for both the first and second tuple parameters.
+    decimal point (desired_decimal_length) for the str_val values.
 
     '''
-    return fix_data_size(t[0], desired_int_length, desired_decimal_length) + "," + \
-           fix_data_size(t[1], desired_int_length, desired_decimal_length)
+    formatted_str = ""
+    for i in range(0, len(str_vals)):
+        s = str_vals[i]
+        if i == len(str_vals) -1:
+            formatted_str += fix_data_size(s, desired_int_length, desired_decimal_length)
+        else:
+            formatted_str += fix_data_size(s, desired_int_length, desired_decimal_length) + ","
+
+    return formatted_str
 
 
 class Packet:
@@ -104,9 +114,9 @@ class Packet:
         args = [("phase:", self.phase), (";p_weight:", fix_data_size(self.p_weight, 2, 1)),
                 (";acc:", (fix_data_size(self.acc[0], 1, 2)+","+fix_data_size(self.acc[1], 1, 2))+","+fix_data_size(self.acc[1], 1, 2)), 
                 (";n_dist:", fix_data_size(self.n_dist, 2, 1)),
-                (";rot:", fix_data_size(self.rot, 2, 2)), (";last_n:", fix_tuple_size(self.last_n, 3, 2)),
-                (";vel:", fix_data_size(self.vel, 1, 2)), (";next_n:", fix_tuple_size(self.next_n, 3, 2)),
-                (";coord:", fix_tuple_size(self.coord, 3, 2)),
+                (";rot:", fix_data_size(self.rot, 2, 2)), (";last_n:", fix_values_size(self.last_n, 3, 2)),
+                (";vel:", fix_data_size(self.vel, 1, 2)), (";next_n:", fix_values_size(self.next_n, 3, 2)),
+                (";coord:", fix_values_size(self.coord, 3, 2)),
                 (";batt:", fix_data_size(self.batt + ".0", 3, -1)), (";ctrl:", self.ctrl)
                 ]
 
