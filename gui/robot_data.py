@@ -50,8 +50,8 @@ def get_values(data, num_inputs):
     values = []
     for i in range(0,num_inputs):
         separator_index = s.find(",")
-        if separator_index == -1 and i < num_inputs:
-            print("get list data corruption")
+        if separator_index == -1 and i < num_inputs-1:
+            print("get list data corruption for " + s)
             raise Exception()
         val = s[:separator_index]
         s = s[separator_index + 1:]
@@ -81,16 +81,15 @@ class RobotData(object):
         packet_data = packet.split(";")
         self.phase = get_integer_value(packet_data[0])
         self.weight = get_float_value(packet_data[1])
-        self.acc = get_float_value(packet_data[2])
+        self.acc = get_values(packet_data[2],3)
         self.n_dist = get_float_value(packet_data[3])
         self.rot = get_float_value(packet_data[4])
-        self.last_n = get_values(packet_data[5])
+        self.last_n = get_values(packet_data[5],2)
         self.vel = get_float_value(packet_data[6])
-        self.next_n = get_values(packet_data[7])
-        self.coord = get_values(packet_data[8])
+        self.next_n = get_values(packet_data[7],2)
+        self.coord = get_values(packet_data[8],2)
         self.bat = get_integer_value(packet_data[9])
         self.ctrl = get_integer_value(packet_data[10])
-
         # calculate total area traversed
 
     def __init__(self, packet):
@@ -99,23 +98,19 @@ class RobotData(object):
         packet_data = packet.split(";")
         self.phase = get_integer_value(packet_data[0])
         self.weight = get_float_value(packet_data[1])
-
-        acc = get_float_value(packet_data[2])
-
-
-        self.acc = get_float_value(packet_data[2])
+        self.acc = get_values(packet_data[2],3)
         self.n_dist = get_float_value(packet_data[3])
         self.rot = get_float_value(packet_data[4])
-        self.last_n = get_values(packet_data[5])
+        self.last_n = get_values(packet_data[5],2)
         self.vel = get_float_value(packet_data[6])
-        self.next_n = get_values(packet_data[7])
-        self.coord = get_values(packet_data[8])
+        self.next_n = get_values(packet_data[7],2)
+        self.coord = get_values(packet_data[8],2)
         self.bat = get_integer_value(packet_data[9])
         self.ctrl = get_integer_value(packet_data[10])
 
     def __str__(self):
-        p = str(Phase(self.phase))
-        return "Robot Phase: " + p[p.find(".")+1:] + \
+        p = str(Phase(self.phase).name)
+        new_string = "Robot Phase: " + p[p.find(".")+1:] + \
                "\nPounds of Collected Plastic: " + str(self.weight) + "g"+ \
                "\nAcceleration: " + str(self.acc) + f" m/s\N{SUPERSCRIPT TWO}" + \
                "\nCurrent Distance to Next Node: " + str(self.n_dist) + \
@@ -126,5 +121,5 @@ class RobotData(object):
                "\nCurrent Coordinates: " + str(self.coord) + \
                "\nBattery Level: " + str(self.bat) + \
                "\nControl Mode: " + str(self.ctrl) 
-
+        return new_string
         # "\nTotal Area Traversed: " + self.area

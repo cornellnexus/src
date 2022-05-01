@@ -124,16 +124,18 @@ def animate(i):
     """
 
     try:
-            last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
-            x, y, alpha = last_line.strip().split(',')
-            x = float(x)
-            y = float(y)
-            alpha = float(alpha)
-            degrees = math.degrees(alpha)
-            circle_patch.center = (x, y)
-            wedge_patch.update({'center': [x, y]})
-            wedge_patch.theta1 = degrees - 10
-            wedge_patch.theta2 = degrees + 10 #10 is a temporary constant we will use
+        # last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
+        # x, y, alpha = last_line.strip().split(',')
+        # x = float(x)
+        # y = float(y)
+        # alpha = float(alpha)
+        x, y = robot_data.coord[0], robot_data.coord[1]
+        alpha = 1 #hardcoded until added to packet
+        degrees = math.degrees(alpha)
+        circle_patch.center = (x, y)
+        wedge_patch.update({'center': [x, y]})
+        wedge_patch.theta1 = degrees - 10
+        wedge_patch.theta2 = degrees + 10 #10 is a temporary constant we will use
     except:
             # no new location data/waiting for new data
             pass
@@ -241,9 +243,14 @@ def update_robot_data(window):
 
     """
     try:
+        robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
         packet = robot_data_file.readlines()[-1]
+        robot_data_file.close()
         robot_data.update_data(packet)
-        window['-DATA-'].update(str(robot_data))
+        new_text = str(robot_data)
+        window['-DATA-'].update(new_text)
+        print("updated")
+
     except:
         pass
 
@@ -325,10 +332,9 @@ if not close_gui:
         # Begins the constant animation/updates of robot location and heading
         robot_loc_file = open((get_path('csv')[-1] + '/datastore.csv'), "r")  # open csv file of robot location
         robot_phase_file = open((get_path('csv')[-1] + '/phases.csv'), "r")
-        robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
 
         current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
-        robot_data = RobotData("phse:1;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
+        robot_data = RobotData("phse:1;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
 
         anim = animation.FuncAnimation(fig, animate,
                                        init_func=init,
@@ -339,7 +345,6 @@ if not close_gui:
         print("closed csv")
         robot_loc_file.close()
         robot_phase_file.close()
-        robot_data_file.close()
 
 os.system("pkill -f engine.sim_trajectory") #once gui.gui.py is closed, also close engine.sim_trajectory.py
 os.system("pkill -f gui.retrieve_inputs") #once gui.gui.py is closed, also close gui.retrieve_inputs.py
