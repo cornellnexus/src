@@ -13,6 +13,7 @@ Thus, we will will break up the file into different sections:
 from gui.gui_popup import *
 from gui.images import get_images
 from gui.robot_data import RobotData
+import gui.retrieve_inputs as retrieve_inputs
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -28,9 +29,11 @@ import sys
 import logging
 import threading
 import time
+import serial
 
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
+ser = serial.Serial("/dev/tty.usbserial-017543DC", 57600)
 
 def get_control_mode(window):
     """
@@ -123,22 +126,23 @@ def animate(i):
     Precondition: [i] is an integer.
     """
 
-    try:
-        # last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
-        # x, y, alpha = last_line.strip().split(',')
-        # x = float(x)
-        # y = float(y)
-        # alpha = float(alpha)
-        x, y = robot_data.coord[0], robot_data.coord[1]
-        alpha = 1 #hardcoded until added to packet
-        degrees = math.degrees(alpha)
-        circle_patch.center = (x, y)
-        wedge_patch.update({'center': [x, y]})
-        wedge_patch.theta1 = degrees - 10
-        wedge_patch.theta2 = degrees + 10 #10 is a temporary constant we will use
-    except:
+    # try:
+    # last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
+    # x, y, alpha = last_line.strip().split(',')
+    # x = float(x)
+    # y = float(y)
+    # alpha = float(alpha)
+    x, y = robot_data.coord[0], robot_data.coord[1]
+    # print("CIRCLE PATCH ", x, y)
+    alpha = 1 #hardcoded until added to packet
+    degrees = math.degrees(alpha)
+    circle_patch.center = (x, y)
+    wedge_patch.update({'center': [x, y]})
+    wedge_patch.theta1 = degrees - 10
+    wedge_patch.theta2 = degrees + 10 #10 is a temporary constant we will use
+    # except:
             # no new location data/waiting for new data
-            pass
+            # pass
 
     # try:
     #         last_state_line = robot_state_file.readlines()[-1]
@@ -233,7 +237,7 @@ def update_input(str, window):
     window['-OUTPUT-'].update(new_output) 
     return new_output
 
-def update_robot_data(window):
+def update_robot_data(window, packet):
     """
 
     Args:
@@ -243,14 +247,14 @@ def update_robot_data(window):
 
     """
     try:
-        robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
-        packet = robot_data_file.readlines()[-1]
-        robot_data_file.close()
+    # robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
+    # packet = robot_data_file.readlines()[-1]
+    # robot_data_file.close()
+        print("READIN THIS PACKET", packet)
         robot_data.update_data(packet)
         new_text = str(robot_data)
         window['-DATA-'].update(new_text)
         print("updated")
-
     except:
         pass
 
@@ -261,18 +265,11 @@ def run_gui():
 
     Contains main control loop, which constantly checks for user interaction with the window and adjusts accordingly.
     """
-    def run_simulation(name):
-        logging.info("Thread %s: starting", name)
-        os.system("python -m gui.retrieve_inputs")
-        # os.system("python -m engine.sim_trajectory")
-        logging.info("Thread %s: finishing", name)
-
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(format=format, level=logging.INFO,
-                        datefmt="%H:%M:%S")
 
     window = setup_gui()
     current_row = 0
+    reading_inputs = False
+    packets = []
     while True:  # Event Loop
         event, values = window.read(timeout=10)
 
@@ -298,11 +295,32 @@ def run_gui():
             # Empty Command Line for next input
             window['-COMMANDLINE-'].update("")
         if event == 'Simulation':
-            simulation_thread = threading.Thread(target=run_simulation, args=(1,), daemon=True)
-            simulation_thread.start()
+            #Replacement for csv
+            reading_inputs = True
+
+        if (reading_inputs):
+            if len(packets) < 5:
+                try:
+                    print("retrieve packet")
+                    packet = ser.readline().decode('utf-8')
+                    print("read line packet")
+                    print("packet is " + packet)
+                    if 80 < len(packet) < 150:  # check if packet length is appropriate
+                        packets.append(packet)
+                        print("appending packet")
+                except:
+                    pass
+            if len(packets) == 5:
+
+                valid_packet = retrieve_inputs.validate_packet(packets)
+                print("VALID PACKET COPPED", valid_packet)
+                update_robot_data(window, valid_packet)
+
+                print("PASSIN INSTEAD OF VALIDATING PACKET")
+                packets = []
 
         get_control_mode(window)
-        update_robot_data(window)
+        
     window.close()
 
 
@@ -332,6 +350,7 @@ if not close_gui:
         # Begins the constant animation/updates of robot location and heading
         robot_loc_file = open((get_path('csv')[-1] + '/datastore.csv'), "r")  # open csv file of robot location
         robot_phase_file = open((get_path('csv')[-1] + '/phases.csv'), "r")
+        # packets = []
 
         current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
         robot_data = RobotData("phse:1;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")
@@ -346,7 +365,40 @@ if not close_gui:
         robot_loc_file.close()
         robot_phase_file.close()
 
-os.system("pkill -f engine.sim_trajectory") #once gui.gui.py is closed, also close engine.sim_trajectory.py
-os.system("pkill -f gui.retrieve_inputs") #once gui.gui.py is closed, also close gui.retrieve_inputs.py
 
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################
+
+
+# def update_gui():
+#     '''
+
+#     Reads telemetry data packets from raspberry pi, which ideally of the following format
+#     "phase:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coors:000.00,000.00;batt:000;ctrl:1"
+
+#     From every 5 data packets, a single data packet is created to estimate the packets. This single data packet
+#     is written to robot_data.csv, so we can accurately display current information regarding the robot on the GUI.
+
+#     '''
+#     packets = []
+
+#     print("starting retrieve inputs")
+#     while True:
+#         while len(packets) < 5:
+#             try:
+#                 print("retrieve packet")
+#                 packet = ser.readline().decode('utf-8')
+#                 print("read line packet")
+#                 print("packet is " + packet)
+#                 if 80 < len(packet) < 150:  # check if packet length is appropriate
+#                     packets.append(packet)
+#                     print("appending packet")
+#             except:
+#                 pass
+#         print("validating packet")
+#         valid_packet = retrieve_inputs.validate_packet(packets)
+#         return valid_packet
+#         robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "a")  # open csv file of robot data
+#         robot_data_file.write(valid_packet + '\n')
+#         robot_data_file.close()
+#         print("write " + valid_packet + " to csv")
+#         packets = []
