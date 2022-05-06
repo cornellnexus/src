@@ -126,30 +126,13 @@ def animate(i):
     Precondition: [i] is an integer.
     """
 
-    # try:
-    # last_line = robot_loc_file.readlines()[-1]  # get last line of csv file
-    # x, y, alpha = last_line.strip().split(',')
-    # x = float(x)
-    # y = float(y)
-    # alpha = float(alpha)
     x, y = robot_data.coord[0], robot_data.coord[1]
-    # print("CIRCLE PATCH ", x, y)
     alpha = 1 #hardcoded until added to packet
     degrees = math.degrees(alpha)
     circle_patch.center = (x, y)
     wedge_patch.update({'center': [x, y]})
     wedge_patch.theta1 = degrees - 10
     wedge_patch.theta2 = degrees + 10 #10 is a temporary constant we will use
-    # except:
-            # no new location data/waiting for new data
-            # pass
-
-    # try:
-    #         last_state_line = robot_state_file.readlines()[-1]
-    #         print("Last state: " + last_state_line.strip())
-    #         state = last_state_line.strip()
-    # except:
-    #         print("no new state data")
 
     return circle_patch, wedge_patch
 
@@ -247,14 +230,9 @@ def update_robot_data(window, packet):
 
     """
     try:
-    # robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
-    # packet = robot_data_file.readlines()[-1]
-    # robot_data_file.close()
-        print("READIN THIS PACKET", packet)
         robot_data.update_data(packet)
         new_text = str(robot_data)
         window['-DATA-'].update(new_text)
-        print("updated")
     except:
         pass
 
@@ -301,21 +279,15 @@ def run_gui():
         if (reading_inputs):
             if len(packets) < 5:
                 try:
-                    print("retrieve packet")
                     packet = ser.readline().decode('utf-8')
-                    print("read line packet")
-                    print("packet is " + packet)
                     if 80 < len(packet) < 150:  # check if packet length is appropriate
                         packets.append(packet)
-                        print("appending packet")
                 except:
                     pass
             if len(packets) == 5:
                 try: 
                     valid_packet = retrieve_inputs.validate_packet(packets)
-                    print("VALID PACKET COPPED", valid_packet)
                     update_robot_data(window, valid_packet)
-                    print("PASSIN INSTEAD OF VALIDATING PACKET")
                 except: 
                     pass 
                 packets = []
@@ -362,44 +334,8 @@ if not close_gui:
                                        interval=20,
                                        blit=True)
         run_gui() #Start up the main GUI window
-        print("closed csv")
         robot_loc_file.close()
         robot_phase_file.close()
 
 
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################
-
-
-# def update_gui():
-#     '''
-
-#     Reads telemetry data packets from raspberry pi, which ideally of the following format
-#     "phase:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coors:000.00,000.00;batt:000;ctrl:1"
-
-#     From every 5 data packets, a single data packet is created to estimate the packets. This single data packet
-#     is written to robot_data.csv, so we can accurately display current information regarding the robot on the GUI.
-
-#     '''
-#     packets = []
-
-#     print("starting retrieve inputs")
-#     while True:
-#         while len(packets) < 5:
-#             try:
-#                 print("retrieve packet")
-#                 packet = ser.readline().decode('utf-8')
-#                 print("read line packet")
-#                 print("packet is " + packet)
-#                 if 80 < len(packet) < 150:  # check if packet length is appropriate
-#                     packets.append(packet)
-#                     print("appending packet")
-#             except:
-#                 pass
-#         print("validating packet")
-#         valid_packet = retrieve_inputs.validate_packet(packets)
-#         return valid_packet
-#         robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "a")  # open csv file of robot data
-#         robot_data_file.write(valid_packet + '\n')
-#         robot_data_file.close()
-#         print("write " + valid_packet + " to csv")
-#         packets = []
