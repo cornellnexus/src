@@ -78,9 +78,6 @@ def setup(bounds):
     ax.set_ylim(BoundaryBox[2], BoundaryBox[3])
     ax.imshow(ruh_m, zorder=0, extent=BoundaryBox, aspect='equal')
     fig.set_dpi(100)
-    # fig.patch.set_facecolor('blue')
-    # fig.patch.set_alpha(0.5)
-    # fig.set_size_inches(7, 6.5) original size
     fig.set_size_inches(6, 5)
     return fig, ax
 

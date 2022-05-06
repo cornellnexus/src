@@ -60,9 +60,7 @@ def validate_packet(packets):
         except:
             pass
 
-    # if (ctrls !0):
-    #TODO: GET_MEDIANS DATA[0] INDEX OUT OF BOUNDS FIX!
-    # idea: include a counter check for dis? 
+
     if(count != 0):
         phase = get_mode(phases)
         weight = get_median(weights)
