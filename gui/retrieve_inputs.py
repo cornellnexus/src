@@ -1,53 +1,8 @@
 import os
 import sys
-import serial
 import statistics
 from engine.packet import *
 from gui.robot_data import get_values, get_integer_value, get_float_value
-
-ser = serial.Serial("/dev/tty.usbserial-017543DC", 57600)
-
-
-# def update_gui():
-#     '''
-
-#     Reads telemetry data packets from raspberry pi, which ideally of the following format
-#     "phase:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coors:000.00,000.00;batt:000;ctrl:1"
-
-#     From every 5 data packets, a single data packet is created to estimate the packets. This single data packet
-#     is written to robot_data.csv, so we can accurately display current information regarding the robot on the GUI.
-
-#     '''
-#     packets = []
-
-#     # rpi_to_gui = open((get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "r")  # open csv file of rpi to gui data
-#     print("starting retrieve inputs")
-#     # robot_data_file.write("start\n")
-#     while True:
-#         while len(packets) < 5:
-#             # packet = input("Enter data: ") # use this for testing purposes
-#             try:
-#                 print("retrieve packet")
-#                 packet = ser.readline().decode('utf-8')
-#                 print("read line packet")
-#                 # packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
-#                 print("packet is " + packet)
-#                 if 80 < len(packet) < 150:  # check if packet length is appropriate
-#                     packets.append(packet)
-#                     print("appending packet")
-#                     # robot_data_file.write("test\n")
-#             except:
-#                 pass
-#         print("validating packet")
-#         valid_packet = validate_packet(packets)
-#         robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "a")  # open csv file of robot data
-#         robot_data_file.write(valid_packet + '\n')
-#         robot_data_file.close()
-#         print("write " + valid_packet + " to csv")
-#         packets = []
-
-    # rpi_to_gui.close()
-
 
 
 def get_path(folder):
@@ -111,9 +66,7 @@ def validate_packet(packets):
     if(count != 0):
         phase = get_mode(phases)
         weight = get_median(weights)
-        print("ACCS BEFORE MEDIAN", accs)
         acc = get_medians(accs)
-        print("ACCS AFFTTTTERRRRR MEDIAN", accs)
         n_dist = get_median(n_dists)
         rot = get_median(rots)
         last_n = get_medians(last_ns)
@@ -123,7 +76,6 @@ def validate_packet(packets):
         batt = get_median(batts)
         ctrl = get_mode(ctrls)
     
-        print("STRING OF THE PACKET: ", str(Packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl)))
         # return packet with combined data --> need to extend or shrink value to match data string
         return str(Packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl))
     else:
@@ -169,7 +121,6 @@ def get_medians(data):
     '''
     parameters = [] # [[],[],[]]
     parameter_medians = []
-    print("GET MEDIANS ", data)
     num_inputs = len(data[0])
     for i in range(num_inputs):
         parameters.append([])

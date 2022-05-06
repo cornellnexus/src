@@ -9,8 +9,7 @@ def get_value(packet):
     '''
     separator_index = packet.find(":")
     if separator_index == -1:
-        print("data corruption get values")
-        raise Exception()
+        raise Exception("data corruption get values")
     return packet[separator_index + 1:]
 
 def get_integer_value(packet):
@@ -51,12 +50,10 @@ def get_values(data, num_inputs):
     for i in range(0,num_inputs):
         separator_index = s.find(",")
         if separator_index == -1 and i < num_inputs-1:
-            print("get list data corruption for " + s)
-            raise Exception()
+            raise Exception("get list data corruption for " + str(s))
         val = s[:separator_index]
         s = s[separator_index + 1:]
         values.append(float(val))
-    print("GETTIN THEM VALUES ", values)
     return values
 
 class RobotData(object):
@@ -82,22 +79,16 @@ class RobotData(object):
         packet_data = packet.split(";")
         self.phase = get_integer_value(packet_data[0])
         self.weight = get_float_value(packet_data[1])
-        print("BEFORE ACC")
-
         self.acc = get_values(packet_data[2],3)
-        
-        print("AFTER ACC")
         self.n_dist = get_float_value(packet_data[3])
         self.rot = get_float_value(packet_data[4])
         self.last_n = get_values(packet_data[5],2)
         self.vel = get_float_value(packet_data[6])
         self.next_n = get_values(packet_data[7],2)
         self.coord = get_values(packet_data[8],2)
-        print("COORDS COORDS COORDS!")
         self.bat = get_integer_value(packet_data[9])
         self.ctrl = get_integer_value(packet_data[10])
         # calculate total area traversed
-        print("COORDS DO BE UPDATIN", self.coord)
 
     def __init__(self, packet):
         assert type(packet) == str
