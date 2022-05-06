@@ -56,7 +56,7 @@ def get_values(data, num_inputs):
         val = s[:separator_index]
         s = s[separator_index + 1:]
         values.append(float(val))
-    
+    print("GETTIN THEM VALUES ", values)
     return values
 
 class RobotData(object):
@@ -78,19 +78,26 @@ class RobotData(object):
     """
 
     def update_data(self, packet):
+        
         packet_data = packet.split(";")
         self.phase = get_integer_value(packet_data[0])
         self.weight = get_float_value(packet_data[1])
+        print("BEFORE ACC")
+
         self.acc = get_values(packet_data[2],3)
+        
+        print("AFTER ACC")
         self.n_dist = get_float_value(packet_data[3])
         self.rot = get_float_value(packet_data[4])
         self.last_n = get_values(packet_data[5],2)
         self.vel = get_float_value(packet_data[6])
         self.next_n = get_values(packet_data[7],2)
         self.coord = get_values(packet_data[8],2)
+        print("COORDS COORDS COORDS!")
         self.bat = get_integer_value(packet_data[9])
         self.ctrl = get_integer_value(packet_data[10])
         # calculate total area traversed
+        print("COORDS DO BE UPDATIN", self.coord)
 
     def __init__(self, packet):
         assert type(packet) == str
