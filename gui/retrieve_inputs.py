@@ -81,7 +81,7 @@ def validate_packet(packets):
     coords = []
     batts = []
     ctrls = []
-
+    count = 0
     for packet in packets:
         try:
             packet_data = packet.split(";")
@@ -101,30 +101,33 @@ def validate_packet(packets):
             # coords.append([0.04,0.04])
             batts.append(get_integer_value(packet_data[9]))
             ctrls.append(get_integer_value(packet_data[10]))
+            count = count + 1
         except:
             pass
 
     # if (ctrls !0):
     #TODO: GET_MEDIANS DATA[0] INDEX OUT OF BOUNDS FIX!
     # idea: include a counter check for dis? 
-
-    phase = get_mode(phases)
-    weight = get_median(weights)
-    print("ACCS BEFORE MEDIAN", accs)
-    acc = get_medians(accs)
-    print("ACCS AFFTTTTERRRRR MEDIAN", accs)
-    n_dist = get_median(n_dists)
-    rot = get_median(rots)
-    last_n = get_medians(last_ns)
-    vel = get_median(vels)
-    next_n = get_medians(next_ns)
-    coord = get_medians(coords)
-    batt = get_median(batts)
-    ctrl = get_mode(ctrls)
- 
-    print("STRING OF THE PACKET: ", str(Packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl)))
-    # return packet with combined data --> need to extend or shrink value to match data string
-    return str(Packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl))
+    if(count != 0):
+        phase = get_mode(phases)
+        weight = get_median(weights)
+        print("ACCS BEFORE MEDIAN", accs)
+        acc = get_medians(accs)
+        print("ACCS AFFTTTTERRRRR MEDIAN", accs)
+        n_dist = get_median(n_dists)
+        rot = get_median(rots)
+        last_n = get_medians(last_ns)
+        vel = get_median(vels)
+        next_n = get_medians(next_ns)
+        coord = get_medians(coords)
+        batt = get_median(batts)
+        ctrl = get_mode(ctrls)
+    
+        print("STRING OF THE PACKET: ", str(Packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl)))
+        # return packet with combined data --> need to extend or shrink value to match data string
+        return str(Packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl))
+    else:
+        raise Exception("Not enough data to validate.")
 
 
 def get_mode(data):
@@ -166,6 +169,7 @@ def get_medians(data):
     '''
     parameters = [] # [[],[],[]]
     parameter_medians = []
+    print("GET MEDIANS ", data)
     num_inputs = len(data[0])
     for i in range(num_inputs):
         parameters.append([])

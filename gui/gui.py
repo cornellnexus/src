@@ -311,12 +311,13 @@ def run_gui():
                 except:
                     pass
             if len(packets) == 5:
-
-                valid_packet = retrieve_inputs.validate_packet(packets)
-                print("VALID PACKET COPPED", valid_packet)
-                update_robot_data(window, valid_packet)
-
-                print("PASSIN INSTEAD OF VALIDATING PACKET")
+                try: 
+                    valid_packet = retrieve_inputs.validate_packet(packets)
+                    print("VALID PACKET COPPED", valid_packet)
+                    update_robot_data(window, valid_packet)
+                    print("PASSIN INSTEAD OF VALIDATING PACKET")
+                except: 
+                    pass 
                 packets = []
 
         get_control_mode(window)
