@@ -19,7 +19,11 @@ import time
 
 import sys
 import os
-import serial # RPI_GUI_TEST
+import serial
+
+
+ser = serial.Serial("/dev/ttyS0", 57600)
+
 
 
 def waypoints_to_array(waypoints):
@@ -80,8 +84,11 @@ if __name__ == "__main__":
         logging.info("Thread %s: starting", name)
         while simulation_on:
             packet = database.make_packet()
+            cast_data = bytes(packet, encoding = 'utf-8') 
+            print("Sending the following packet: " + str(packet))
+            ser.write(cast_data)
             # send packet to gui
-            ser.writelines(packet) # RPI_GUI_TEST
+            # ser.writelines(packet) # RPI_GUI_TEST
             # rpi_to_gui.write(str(packet) + '\n')
             logging.info("Sent packet: " + packet)
             time.sleep(0.1)

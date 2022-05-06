@@ -9,8 +9,7 @@ def get_value(packet):
     '''
     separator_index = packet.find(":")
     if separator_index == -1:
-        print("data corruption get values")
-        raise Exception()
+        raise Exception("data corruption get values")
     return packet[separator_index + 1:]
 
 def get_integer_value(packet):
@@ -51,12 +50,10 @@ def get_values(data, num_inputs):
     for i in range(0,num_inputs):
         separator_index = s.find(",")
         if separator_index == -1 and i < num_inputs-1:
-            print("get list data corruption for " + s)
-            raise Exception()
+            raise Exception("get list data corruption for " + str(s))
         val = s[:separator_index]
         s = s[separator_index + 1:]
         values.append(float(val))
-    
     return values
 
 class RobotData(object):
@@ -78,6 +75,7 @@ class RobotData(object):
     """
 
     def update_data(self, packet):
+        
         packet_data = packet.split(";")
         self.phase = get_integer_value(packet_data[0])
         self.weight = get_float_value(packet_data[1])
