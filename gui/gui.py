@@ -14,6 +14,7 @@ from gui.gui_popup import *
 from gui.images import get_images
 from gui.robot_data import RobotData
 import gui.retrieve_inputs as retrieve_inputs
+from engine.mission import ControlMode
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -34,22 +35,30 @@ import serial
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
 ser = serial.Serial("/dev/tty.usbserial-017543DC", 57600)
+is_sim = False
 
 def get_control_mode(window):
     """
     Returns the last control mode given in the control_mode.csv file
     """
     #TODO: replace using telemetry data
-    path = get_path('csv')
-    file = open(path[len(path)-1]+"/control_mode_test.csv", "r")
-    try:
-        last_line = file.readlines()[-1]
-        control_mode = last_line[last_line.index(".")+1:len(last_line)]
-        window['-CONTROL_MODE_BUTTON-'].update(control_mode)
-    except:
-        pass
+    if is_sim: 
+        path = get_path('csv')
+        file = open(path[len(path)-1]+"/control_mode_test.csv", "r")
+        try:
+            last_line = file.readlines()[-1]
+            control_mode = last_line[last_line.index(".")+1:len(last_line)]
+        except:
+            pass
+        file.close()
+    else: 
+        print("testing telemetry control mode")
+        control_mode = ControlMode(robot_data.ctrl).name 
+        print("control mode is: ", control_mode)
 
-    file.close()
+    window['-CONTROL_MODE_BUTTON-'].update(control_mode)
+
+    
 
 def get_path(folder):
 
