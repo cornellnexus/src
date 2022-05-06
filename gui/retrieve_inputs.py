@@ -42,18 +42,13 @@ def validate_packet(packets):
             packet_data = packet.split(";")
             phases.append(get_integer_value(packet_data[0]))
             weights.append(get_float_value(packet_data[1]))
-            
             accs.append(get_values(packet_data[2],3))
-            # accs.append(0.01)
             n_dists.append(get_float_value(packet_data[3]))
             rots.append(get_float_value(packet_data[4]))
             last_ns.append(get_values(packet_data[5],2))
-            # last_ns.append([0.02,0.02])
             vels.append(get_float_value(packet_data[6]))
             next_ns.append(get_values(packet_data[7],2))
             coords.append(get_values(packet_data[8],2))
-            # next_ns.append([0.03,0.03])
-            # coords.append([0.04,0.04])
             batts.append(get_integer_value(packet_data[9]))
             ctrls.append(get_integer_value(packet_data[10]))
             count = count + 1
@@ -130,7 +125,6 @@ def get_medians(data):
     for i in range(num_inputs):
         parameter_medians.append(get_median(parameters[i]))
 
-    print(parameter_medians)
     return parameter_medians
 
 
