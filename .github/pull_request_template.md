@@ -12,7 +12,7 @@ To differentiate between active and inactive nodes, active nodes will be colored
 This will allow the user to visually see where the robot plans to go. -->
 
 ### Description
-<!-- Add a more detailed description here to give your reviewer context. Relevant screenshots. What is in this in PR? Why did you decide to implement it this way? etc. -->
+<!-- Add a more detailed description here to give your reviewer context. Relevant screenshots. What changes were made? Why did you decide to implement it this way? etc. -->
 Description here
 
 ## Test Plan
@@ -21,3 +21,6 @@ Test plan here
 
 ## Other
 <!-- Add any additional details here (e.g. co-authors). Delete this section if this is not relevant. -->
+
+<!-- Please make sure PRs are small. If not, consider breaking up your PR into multiple PRs.
+Feel free to delete comments after you are done. -->
