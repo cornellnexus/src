@@ -58,8 +58,6 @@ def get_control_mode(window):
 
     window['-CONTROL_MODE_BUTTON-'].update(control_mode)
 
-    
-
 def get_path(folder):
 
     cwd = os.getcwd()
@@ -329,7 +327,6 @@ if not close_gui:
         # Begins the constant animation/updates of robot location and heading
         robot_loc_file = open((get_path('csv')[-1] + '/datastore.csv'), "r")  # open csv file of robot location
         robot_phase_file = open((get_path('csv')[-1] + '/phases.csv'), "r")
-        # packets = []
 
         current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
         robot_data = RobotData("phse:1;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")

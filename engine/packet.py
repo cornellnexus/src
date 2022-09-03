@@ -2,12 +2,8 @@
 Packet functionality
 '''
 
-from tkinter import E
-
-
 def fix_data_size(s, desired_int_length, desired_decimal_length):
     '''
-
     Args:
         s: input string representing a numeric value
         desired_int_length: integer representing the number of digits that should appear before the decimal point
