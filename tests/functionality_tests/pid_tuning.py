@@ -19,11 +19,11 @@ import board
 
 import csv
 
-
 import csv
 
 
-def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.483682, long_max=-76.483276, allowed_dist_error=0.05):
+def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.483682, long_max=-76.483276,
+                           allowed_dist_error=0.05):
     """
     Calls the robot to traverse in a straight line.
     Note that the default values for lat_min, lat_max, long_min, and long_max correspond
@@ -81,6 +81,23 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
         iter += 1
         plt.pause(0.05)
     plt.show()
+
+
+def one_node_straight_line():
+    mc = PidGpio()
+    gps = None
+    init_gps = None
+    imu = None
+    r2d2 = Robot(0, 0, math.pi / 2, epsilon=.2, max_v=.2, radius=5, init_phase=Phase.TRAVERSE)
+    database = DataBase(r2d2)
+    r2d2.move_to_target_node([0, 1], .03, database, mc, gps, init_gps, imu)
+
+
+def no_pid_straight():
+    mc = PidGpio()
+    mc.motors(0, .2)
+    time.sleep(5)
+    mc.motors(0, 0)
 
 
 traverse_straight_line()

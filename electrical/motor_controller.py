@@ -1,6 +1,6 @@
 import time
 #from engine.robot import Robot
-if True:  # change to True when running code on robot
+if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
 
 """ MotorController contains pinouts to configure motor controller, as well as 
@@ -100,7 +100,7 @@ class MotorController:
 
 
 class PidGpio:
-    def __init__(self, wheel_r=5, vm_load1=15, vm_load2=15, L=5, R=5):
+    def __init__(self, wheel_r=5, vm_load1=.016275, vm_load2=.016275, L=5, R=5):
         self.wheel_r = wheel_r
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2
@@ -144,6 +144,7 @@ class PidGpio:
             dc1 = 100
         if dc2 > 100:
             dc2 = 100
-
+        print("dc")
+        print(dc1)
         self.p1.ChangeDutyCycle(dc1)
         self.p2.ChangeDutyCycle(dc2)
