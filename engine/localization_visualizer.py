@@ -118,8 +118,10 @@ if __name__ == "__main__":
         first_gps_coord = (gps_readings[0]["lat"], gps_readings[0]["lon"])
         x_init, y_init = get_vincenty_x(
             zone[0], first_gps_coord), get_vincenty_y(zone[0], first_gps_coord)
+        # heading_init = math.degrees(math.atan2(
+        #     imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["x"]))
         heading_init = math.degrees(math.atan2(
-            imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["x"]))
+            -1 * imu_readings[0]["mag"]["x"], imu_readings[0]["mag"]["y"]))
 
         # mu is meters from start position (bottom left position facing up)
         mu = np.array([[x_init], [y_init], [heading_init]])
@@ -143,11 +145,15 @@ if __name__ == "__main__":
         if data_type == DataType.IMU_ONLY:
             if is_live:
                 sensor_module.update_imu_data()
+                # new_heading = math.degrees(
+                #     math.atan2(sensor_module.imu_dict["mag"][1], sensor_module.imu_dict["mag"][0]))
                 new_heading = math.degrees(
-                    math.atan2(sensor_module.imu_dict["mag"][1], sensor_module.imu_dict["mag"][0]))
+                    math.atan2(-1 * sensor_module.imu_dict["mag"][0], sensor_module.imu_dict["mag"][1]))
             else:
+                # new_heading = math.degrees(math.atan2(
+                #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
                 new_heading = math.degrees(math.atan2(
-                    imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                    -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
             wedge_patch.update({"center": (0, 0)})
             wedge_patch.theta1 = new_heading - 10
             wedge_patch.theta2 = new_heading + 10
@@ -180,8 +186,10 @@ if __name__ == "__main__":
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
                 x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(
                     zone[0], gps_coord)
+                # heading = math.degrees(math.atan2(
+                #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
                 heading = math.degrees(math.atan2(
-                    imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                    -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
 
                 measurements = np.array([[x], [y], [heading]])
 
@@ -192,8 +200,10 @@ if __name__ == "__main__":
 
             else:
 
+                # new_heading = math.degrees(math.atan2(
+                #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
                 new_heading = math.degrees(math.atan2(
-                    imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                    -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
                 new_location = (get_vincenty_x(
                     zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord))

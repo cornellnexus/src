@@ -1,7 +1,7 @@
 from collections import deque
-from electrical.motor_controller import MotorController
+from electrical.motor_controller import BasicMotorController, MotorController
 from engine.robot import Phase
-from electrical.rf_module import Device, RadioSession
+from electrical.radio_module import RadioSession
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum
@@ -32,7 +32,6 @@ Commented out for simulation testing purposes
 # import busio
 # import adafruit_lsm9ds1
 
-
 class Mission:
     def __init__(self, robot, base_station, init_control_mode, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
                  allowed_dist_error=0.5, allowed_heading_error=0.1, allowed_docking_pos_error=0.1,
@@ -51,7 +50,7 @@ class Mission:
                 before it can start docking.
             time_limit: the maximum time the robot can execute roomba traversal mode
             roomba_radius: the maximum radius from the base station that the robot in roomba traversal mode can move
-
+        
         Important: All the ports of the electrical classes (ie. Serial) need to be updated to the respective 
                     ports they are connected to on the computer running the code.
         """
@@ -63,28 +62,22 @@ class Mission:
         self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
-        # self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
-        # self.radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio device
-        # self.robot_radio_device = Device(0, self.radio_serial)
-        # self.basestation_radio_device = Device(1, '/dev/ttyS0') #base station radio device
-        # self.imu_i2c = busio.I2C(board.SCL, board.SDA)
-
-        # Need to change to PidGpio but we don't have initializations
-        self.motor_controller = MotorController(self.robot)
-
-        # self.radio_session = RadioSession(self.radio_device)
-        # self.gps = GPS(self.gps_serial)
-        # self.imu = IMU(self.imu_i2c)
+        self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
+        self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio
+        self.imu_i2c = busio.I2C(board.SCL, board.SDA)
+        self.motor_controller = MotorController(robot, wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
+        self.robot_radio_session = RadioSession(self.robot_radio_serial)
+        self.gps = GPS(self.gps_serial)
+        self.imu = IMU(self.imu_i2c)
         self.allowed_heading_error = allowed_heading_error
         self.base_station_angle = base_station.heading
         self.allowed_docking_pos_error = allowed_docking_pos_error
-        x = get_vincenty_x((grid.lat_min, grid.long_min),
-                           base_station.position)
-        y = get_vincenty_y((grid.lat_min, grid.long_min),
-                           base_station.position)
+        x = get_vincenty_x((grid.lat_min, grid.long_min), base_station.position)
+        y = get_vincenty_y((grid.lat_min, grid.long_min), base_station.position)
         self.base_station_loc = (x, y)
         self.time_limit = time_limit
         self.roomba_radius = roomba_radius
+
 
     def execute_mission(self, database):
         """
@@ -93,8 +86,7 @@ class Mission:
         """
         while self.robot.phase != Phase.COMPLETE:
             if self.robot.phase == Phase.SETUP:
-                self.robot.execute_setup(
-                    self.robot_radio_device, self.radio_session, self.gps, self.imu, self.motor_controller)
+                self.robot.execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
 
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
@@ -111,6 +103,8 @@ class Mission:
 
             elif self.robot.phase == Phase.DOCKING:
                 self.robot.execute_docking()
-
-            # update the database with the most recent state
+            
+            #update the database with the most recent state
             database.update_data("phase", self.robot.phase)
+
+

@@ -2,8 +2,12 @@ import numpy as np
 import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from engine.pid_controller import PID
-from electrical.motor_controller import PidGpio
+from electrical.motor_controller import MotorController
 
+
+# import electrical.gps as gps
+# import electrical.imu as imu
+# import electrical.radio_module as radio_module
 from engine.ekf import LocalizationEKF
 from engine.sensor_module import SensorModule
 from constants.geo_fences import ENGINEERING_QUAD
@@ -54,7 +58,7 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=False, position_kp=1, position_ki=0,
+    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
                  init_phase=1, time_step=.1, move_dist=.5, turn_angle=3, plastic_weight=0, use_ekf=False,
                  init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None, gps=None, imu=None, motor_controller=None):
@@ -105,7 +109,7 @@ class Robot:
         self.heading_noise = heading_noise
         self.move_dist = move_dist
         # dividing by time_step ignores the effect of time_step on absolute
-        self.turn_angle = turn_angle / time_step
+        self.turn_angle = turn_angle/time_step
         self.plastic_weight = plastic_weight
         self.battery = 100  # TEMPORARY
         self.acceleration = [0, 0, 0]  # TEMPORARY
@@ -190,7 +194,7 @@ class Robot:
             allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
                 have "visited" that node
         """
-        predicted_state = self.state
+        predicted_state = self.state  # this will come from Kalman Filter
 
         # location error (in meters)
         distance_away = math.hypot(float(predicted_state[0]) - target[0],
@@ -265,7 +269,7 @@ class Robot:
 
         predicted_state = self.state  # this will come from Kalman Filter
 
-        abs_heading_error = abs(target_heading - float(predicted_state[2]))
+        abs_heading_error = abs(target_heading-float(predicted_state[2]))
 
         while abs_heading_error > allowed_heading_error:
             if self.is_sim:
@@ -295,7 +299,7 @@ class Robot:
         """
         # Turns robot, where turn_angle is given in radians
         clamp_angle = (self.state[2] + (turn_angle *
-                                        self.time_step)) % (2 * math.pi)
+                       self.time_step)) % (2 * math.pi)
         self.state[2] = np.round(clamp_angle, 3)
         if self.is_sim:
             self.truthpose = np.append(
@@ -309,37 +313,33 @@ class Robot:
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
 
-    def execute_setup(self, robot_device, radio_session, gps, imu, motor_controller):
-        if robot_device == 0:
-            gps_setup = gps.setup()
-            imu_setup = imu.setup()
-            radio_session.setup_robot()
-            motor_controller.setup(self.is_sim)
+    def execute_setup(self, radio_session, gps, imu, motor_controller):
+        gps_setup = gps.setup()
+        imu_setup = imu.setup()
+        radio_session.setup_robot()
+        motor_controller.setup(self.is_sim)
 
-            zone = ENGINEERING_QUAD  # Used for GPS visualization
-            self.init_gps = (gps.get_gps()["long"], gps.get_gps()["lat"])
-            self.imu_data = imu.get_gps()
-            x_init, y_init = (0, 0)
-            heading_init = math.degrees(math.atan2(
-                self.imu_data["mag"]["y"], self.imu_data["mag"]["x"]))
+        zone = ENGINEERING_QUAD  # Used for GPS visualization
+        self.init_gps = (gps.get_gps()["long"], gps.get_gps()["lat"])
+        self.imu_data = imu.get_gps()
+        x_init, y_init = (0, 0)
+        heading_init = math.degrees(math.atan2(
+            self.imu_data["mag"]["y"], self.imu_data["mag"]["x"]))
 
-            # mu is meters from start position (bottom left position facing up)
-            mu = np.array([[x_init], [y_init], [heading_init]])
+        # mu is meters from start position (bottom left position facing up)
+        mu = np.array([[x_init], [y_init], [heading_init]])
 
-            # confidence of mu, set it to high initially b/c not confident, algo brings it down
-            sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
-            self.ekf_var = LocalizationEKF(mu, sigma)
-            self.gps = gps
-            self.imu = imu
-            self.motor_controller = motor_controller
+        # confidence of mu, set it to high initially b/c not confident, algo brings it down
+        sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
+        self.ekf_var = LocalizationEKF(mu, sigma)
+        self.gps = gps
+        self.imu = imu
+        self.motor_controller = motor_controller
 
-        else:
-            radio_session.setup_basestation()
 
-        radio_connected = radio_session.device.connected
-
-        if (radio_connected and gps_setup and imu_setup):
+        if (radio_session.connected and gps_setup and imu_setup):
             self.phase = Phase.TRAVERSE
+
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius, database):
@@ -384,22 +384,22 @@ class Robot:
             curr_x = self.state[0]
             curr_y = self.state[1]
             new_x = curr_x + self.move_dist * \
-                    math.cos(self.state[2]) * self.time_step
+                math.cos(self.state[2]) * self.time_step
             new_y = curr_y + self.move_dist * \
-                    math.sin(self.state[2]) * self.time_step
+                math.sin(self.state[2]) * self.time_step
             next_radius = math.sqrt(
-                abs(new_x - base_station_loc[0]) ** 2 + abs(new_y - base_station_loc[1]) ** 2)
+                abs(new_x-base_station_loc[0])**2 + abs(new_y-base_station_loc[1])**2)
             if next_radius > roomba_radius:
                 if self.is_sim:
                     self.move_forward(-self.move_dist)
                     self.turn(self.turn_angle)
                 else:
-                    self.motor_controller.motors(0, 0)  # change this to pid or time based. NEED TO MAKE SURE ROBOT DOESN'T BREAK WHEN GOING FROM POS VEL TO NEG VEL IN A SHORT PERIOD OF TIME -> ramp down prob
+                    self.motor_controller.motors(0, 0)  # TODO: change this to pid or time based. NEED TO MAKE SURE ROBOT DOESN'T BREAK WHEN GOING FROM POS VEL TO NEG VEL IN A SHORT PERIOD OF TIME -> ramp down prob
             else:
                 if self.is_sim:
                     self.move_forward(self.move_dist)
                 else:
-                    self.motor_controller.motors(0, 0)  # determine what vel to run this at
+                    self.motor_controller.motors(0, 0)  # TODO: determine what vel to run this at
             dt += 1
             exit_boolean = (dt > time_limit)
         self.phase = Phase.COMPLETE

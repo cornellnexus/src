@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib import style
 import time
-from electrical.motor_controller import PidGpio
+
 from electrical.gps import GPS
 from electrical.imu import IMU
 
@@ -84,7 +84,7 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
 
 
 def one_node_straight_line():
-    mc = PidGpio()
+    mc = MotorController()
     gps = None
     init_gps = None
     imu = None
@@ -94,7 +94,7 @@ def one_node_straight_line():
 
 
 def no_pid_straight():
-    mc = PidGpio()
+    mc = MotorController()
     mc.motors(0, .2)
     time.sleep(5)
     mc.motors(0, 0)
