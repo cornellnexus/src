@@ -21,7 +21,7 @@ import sys
 import os
 import serial
 
-ser = serial.Serial("/dev/ttyS0", 57600)
+# ser = serial.Serial("/dev/ttyS0", 57600) # Uncomment for RPI to GUI test
 
 def waypoints_to_array(waypoints):
     """
@@ -76,36 +76,40 @@ if __name__ == "__main__":
     m = Mission(robot=r2d2, base_station=base_r2d2,
                 init_control_mode=ControlMode.STRAIGHT)
 
-    def retrieve_data(name):
+    def send_packet_to_gui(name):
         logging.info("Thread %s: starting", name)
-        while simulation_on:
+        while rpi_comms:
             packet = database.make_packet()
-            cast_data = bytes(packet, encoding = 'utf-8') 
-            print("Sending the following packet: " + str(packet))
-            ser.write(cast_data)
-            # send packet to gui
-            # ser.writelines(packet) # RPI_GUI_TEST
-            # rpi_to_gui.write(str(packet) + '\n')
+            if is_sim:
+                # Simulate sending data packet to gui from rpi
+                rpi_to_gui.write(str(packet) + '\n')
+            else:
+                 # Sending data packet to gui from rpi
+                cast_data = bytes(packet, encoding = 'utf-8') 
+                ser.write(cast_data)
             logging.info("Sent packet: " + packet)
-            time.sleep(0.1)
+            time.sleep(0.01)
         logging.info("Thread %s: finishing", name)
-        rpi_to_gui.close()
+        if is_sim:
+            rpi_to_gui.close()
     '''------------------- MISSION EXECUTION -------------------'''
-    global simulation_on
-    simulation_on = True
+    global rpi_comms, is_sim
+    rpi_comms = True # Set to true when the rpi/robot is communicating w/ the GUI
+    is_sim = True # Set to true when simulating the rpi, set to false when running on rpi
     format = "%(asctime)s: %(message)s"
     logging.basicConfig(format=format, level=logging.INFO,
                         datefmt="%H:%M:%S")
 
-    # open csv file of rpi to gui data
-    rpi_to_gui = open(
-        (get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "a")
+    if is_sim:
+        # open csv file of rpi to gui data
+        rpi_to_gui = open(
+            (get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "a")
 
-    packet_sender = threading.Thread(target=retrieve_data, args=(
+    packet_sender = threading.Thread(target=send_packet_to_gui, args=(
         1,), daemon=True)  # Thread to read and send robot properties
     packet_sender.start()
     m.execute_mission(database)  # Run main mission
-    simulation_on = False
+    rpi_comms = False
     # once gui.gui.py is closed, also close gui.retrieve_inputs.py
     os.system("pkill -f gui.retrieve_inputs")
 

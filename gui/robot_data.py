@@ -63,13 +63,13 @@ class RobotData(object):
     Attributes:
         phase: Current phase value [int from 0 - 6]
         weight: Weight of collected plastic [float > 0]
-        acc: Acceleration [float > 0]
+        acc: Acceleration [list of float > 0]
         n_dist: Distance to next node [float > 0]
         rot: Rotation [float > 0]
         last_n: Coordinates of last node visited [tuple of float > 0]
         vel: Velocity [float > 0]
         next_n: Coordinates of the next node to visit [tuple of float > 0]
-        coord: Coordinates of the robot [tuple of float > 0]
+        coord: Coordinates and heading of the robot [list of float > 0]
         bat: Remaining battery percentage [int > 0]
         ctrl: Robot control mode [int from 1-5]
     """
@@ -85,7 +85,7 @@ class RobotData(object):
         self.last_n = get_values(packet_data[5],2)
         self.vel = get_float_value(packet_data[6])
         self.next_n = get_values(packet_data[7],2)
-        self.coord = get_values(packet_data[8],2)
+        self.coord = get_values(packet_data[8],3)
         self.bat = get_integer_value(packet_data[9])
         self.ctrl = get_integer_value(packet_data[10])
         # calculate total area traversed
@@ -102,7 +102,7 @@ class RobotData(object):
         self.last_n = get_values(packet_data[5],2)
         self.vel = get_float_value(packet_data[6])
         self.next_n = get_values(packet_data[7],2)
-        self.coord = get_values(packet_data[8],2)
+        self.coord = get_values(packet_data[8],3)
         self.bat = get_integer_value(packet_data[9])
         self.ctrl = get_integer_value(packet_data[10])
 

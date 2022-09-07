@@ -61,9 +61,9 @@ def fix_values_size(str_vals, desired_int_length, desired_decimal_length):
 
     '''
     formatted_str = ""
-    for i in range(0, len(str_vals)):
+    for i in range(len(str_vals)):
         s = str_vals[i]
-        if i == len(str_vals) -1:
+        if i == len(str_vals) - 1:
             formatted_str += fix_data_size(s, desired_int_length, desired_decimal_length)
         else:
             formatted_str += fix_data_size(s, desired_int_length, desired_decimal_length) + ","
@@ -82,12 +82,12 @@ class Packet:
         last_n: tuple of strings representing the coordinates of the last node visited
         vel: string representing velocity value
         next_n: tuple of strings representing the coordinates of the next node to visit
-        coord: tuple of strings representing the coordinates of the robot. Ex: ("6.0", "7.0")
+        coord: tuple of strings representing the coordinates and heading of the robot. Ex: ("6.0", "7.0", "1.0")
         batt: string representing the remaining battery percentage
         ctrl: string representing control mode value, must be a single digit such as "1"
 
     Returns: string of the following format using correcting size of args
-    "phase:0;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1"
+    "phase:0;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00,000.00;batt:000;ctrl:1"
     """
     def __init__(self, phase, p_weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl):
         self.phase = phase
@@ -105,10 +105,10 @@ class Packet:
     def __str__(self):
         '''
         Returns: string of the following format using correcting size of args
-        "phase:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1"
+        "phase:0;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1"
         '''
         args = [("phase:", self.phase), (";p_weight:", fix_data_size(self.p_weight, 2, 1)),
-                (";acc:", (fix_data_size(self.acc[0], 1, 2)+","+fix_data_size(self.acc[1], 1, 2))+","+fix_data_size(self.acc[1], 1, 2)), 
+                (";acc:", fix_values_size(self.acc, 1, 2)), 
                 (";n_dist:", fix_data_size(self.n_dist, 2, 1)),
                 (";rot:", fix_data_size(self.rot, 2, 2)), (";last_n:", fix_values_size(self.last_n, 3, 2)),
                 (";vel:", fix_data_size(self.vel, 1, 2)), (";next_n:", fix_values_size(self.next_n, 3, 2)),
