@@ -4,16 +4,16 @@ import math
 import numpy as np
 from ahrs.filters import EKF
 import csv
-import os 
+import os
 
-cwd = os.getcwd()
-cd = cwd + "/csv"
+from constants.definitions import CSV_PATH
 
-with open(cd + '/imu_360_sample1.csv') as csv_file:
+
+with open(CSV_PATH + '/imu_360_sample1.csv') as csv_file:
     reader = csv.reader(csv_file)
     row_count = sum(1 for row in reader)
 
-with open(cd + '/imu_360_sample1.csv') as csv_file:
+with open(CSV_PATH + '/imu_360_sample1.csv') as csv_file:
     reader = csv.reader(csv_file)
     acc_data = np.zeros((row_count, 3))
     mag_data = np.zeros((row_count, 3))

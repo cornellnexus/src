@@ -2,6 +2,7 @@ import os
 import sys
 import serial
 import statistics
+from constants.definitions import CSV_PATH
 from engine.packet import *
 from gui.robot_data import get_tuple_value, get_integer_value, get_float_value
 # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
@@ -19,7 +20,7 @@ def update_gui():
     '''
     packets = []
 
-    rpi_to_gui = open((get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "r")  # open csv file of rpi to gui data
+    rpi_to_gui = open((CSV_PATH + '/rpi_to_gui_simulation.csv'), "r")  # open csv file of rpi to gui data
     print("starting retrieve inputs")
     # robot_data_file.write("start\n")
     while True:
@@ -37,28 +38,13 @@ def update_gui():
                 pass
         print("validating packet")
         valid_packet = validate_packet(packets)
-        robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "a")  # open csv file of robot data
+        robot_data_file = open((CSV_PATH + '/robot_data.csv'), "a")  # open csv file of robot data
         robot_data_file.write(valid_packet + '\n')
         robot_data_file.close()
         print("write " + valid_packet + " to csv")
         packets = []
 
     rpi_to_gui.close()
-
-
-
-def get_path(folder):
-    '''
-    Args:
-        folder: a string of folder directory
-
-    Returns: sys path to desired folder
-    '''
-    cwd = os.getcwd()
-    sys.path.append(cwd + "/" + folder)
-    return sys.path
-
-
 
 def validate_packet(packets):
     '''

@@ -28,6 +28,7 @@ import sys
 import logging
 import threading
 import time
+from constants.definitions import ROOT_DIR, CSV_PATH
 
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
@@ -37,8 +38,8 @@ def get_control_mode(window):
     Returns the last control mode given in the control_mode.csv file
     """
     #TODO: replace using telemetry data
-    path = get_path('csv')
-    file = open(path[len(path)-1]+"/control_mode_test.csv", "r")
+    
+    file = open(CSV_PATH+"/control_mode_test.csv", "r")
     try:
         last_line = file.readlines()[-1]
         control_mode = last_line[last_line.index(".")+1:len(last_line)]
@@ -47,12 +48,6 @@ def get_control_mode(window):
         pass
 
     file.close()
-
-def get_path(folder):
-
-    cwd = os.getcwd()
-    sys.path.append(cwd + "/" + folder)
-    return sys.path
 
 def setup(bounds):
     """
@@ -68,7 +63,7 @@ def setup(bounds):
 
     longMin, longMax, latMin, latMax = bounds
     BoundaryBox = [longMin, longMax, latMin, latMax]
-    ruh_m = plt.imread(get_path('gui')[-1] + '/map.png')
+    ruh_m = plt.imread(ROOT_DIR + '/gui/map.png')
     fig, ax = plt.subplots(figsize=(8, 7))
     ax.set_title('Cayuga Lake Shore')
     ax.set_xlim(BoundaryBox[0], BoundaryBox[1])
@@ -323,9 +318,9 @@ if not close_gui:
         fig, ax = setup(bounds)  # Set up matplotlib map figure
         circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
         # Begins the constant animation/updates of robot location and heading
-        robot_loc_file = open((get_path('csv')[-1] + '/datastore.csv'), "r")  # open csv file of robot location
-        robot_phase_file = open((get_path('csv')[-1] + '/phases.csv'), "r")
-        robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r")
+        robot_loc_file = open(CSV_PATH + '/datastore.csv', "r")  # open csv file of robot location
+        robot_phase_file = open(CSV_PATH + '/phases.csv', "r")
+        robot_data_file = open(CSV_PATH + '/robot_data.csv', "r")
 
         current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
         robot_data = RobotData("phse:1;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000;ctrl:1")

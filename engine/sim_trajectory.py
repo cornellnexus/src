@@ -4,10 +4,10 @@ import matplotlib.pyplot as plt
 
 from matplotlib import animation as animation
 from matplotlib import patches as patch
+from constants.definitions import CSV_PATH
 
 from engine.robot import Robot
 from engine.robot import Phase
-from engine.robot import get_path
 from engine.base_station import BaseStation
 from engine.mission import Mission
 from engine.mission import ControlMode
@@ -57,14 +57,6 @@ def get_plot_boundaries(nodes, delta):
     ylim = [min_coords[1] - delta, max_coords[1] + delta]
     return xlim, ylim
 
-
-def get_path(folder):
-
-    cwd = os.getcwd()
-    sys.path.append(cwd + "/" + folder)
-    return sys.path
-
-
 if __name__ == "__main__":
     r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5,
                  radius=0.2, init_phase=Phase.TRAVERSE)
@@ -92,7 +84,7 @@ if __name__ == "__main__":
 
     # open csv file of rpi to gui data
     rpi_to_gui = open(
-        (get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "a")
+        (CSV_PATH + '/rpi_to_gui_simulation.csv'), "a")
 
     packet_sender = threading.Thread(target=retrieve_data, args=(
         1,), daemon=True)  # Thread to read and send robot properties
