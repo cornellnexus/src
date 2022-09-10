@@ -3,7 +3,6 @@ import time
 if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
 
-
 class BasicMotorController:
     """
     BasicMotorController contains pinouts to configure motor controller, as well as
