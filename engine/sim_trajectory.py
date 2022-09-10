@@ -92,6 +92,7 @@ if __name__ == "__main__":
         logging.info("Thread %s: finishing", name)
         if is_sim:
             rpi_to_gui.close()
+
     '''------------------- MISSION EXECUTION -------------------'''
     global rpi_comms, is_sim
     rpi_comms = True # Set to true when the rpi/robot is communicating w/ the GUI
