@@ -13,7 +13,7 @@ Thus, we will will break up the file into different sections:
 from gui.gui_popup import *
 from gui.images import get_images
 from gui.robot_data import RobotData
-from electrical.radio_module import RadioSession
+from electrical.radio_module import RadioModule
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -267,7 +267,7 @@ def run_gui():
 
     window = setup_gui()
     current_row = 0
-    rs = RadioSession(False)
+    rs = RadioModule(False)
     while True:  # Event Loop
         event, values = window.read(timeout=10)
 

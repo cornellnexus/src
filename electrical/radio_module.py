@@ -3,9 +3,9 @@ import serial
 import time 
 
 
-class RadioSession:
+class RadioModule:
     """
-    RadioSession establishes the function calls needed between two devices.
+    RadioModule establishes the function calls needed between two devices.
 
     Communication package headings used when sending messages or parsing received messages:
     'sr': start (robot)
@@ -30,26 +30,23 @@ class RadioSession:
         self.ser.write(cast_data)
 
     #implementation of 2-way handshake between the robot and basestation/gui for serial data transmission
-    #setup function called on the robot
     def setup_robot(self): 
         while (not self.connected): #while rpi not connected to base station
             self.transmit_data('setup', 'sr')
             receive = self.receive_data()
-            # print("connected: ", self.connected, "received: ",  receive)
             if (receive == 'sb'):
-                # print("finished!")
                 self.connected = True
 
-    #setup function called on the base station 
-    #TODO: call this in the GUI class
     def setup_basestation(self):
-        # while (not self.connected): #while rpi not connected to base station
-        #     data = self.ser.read()
-        #     # print(data)
-        #     if (data == 'sr'):
-        #         self.transmit_data('setup','sb') 
-        #         self.connected = True
-        print("Hello!")
+        if self.is_sim:
+            print("Hello!")
+        else:
+            while (not self.connected): #while rpi not connected to base station
+                data = self.ser.read()
+                if (data == 'sr'):
+                    self.transmit_data('setup','sb') 
+                    self.connected = True
+        
 
 
     
