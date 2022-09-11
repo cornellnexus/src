@@ -146,7 +146,7 @@ class Robot:
             fd.write(str(self.phase) + '\n')
 
     def update_ekf_step(self):
-        zone = ENGINEERING_QUAD  # Used for GPS visualization
+        zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
         # self.ekf_var.update_step(self.ekf_var.mu, self.ekf_var.sigma, sensor_module.get_measurement(self.init_gps))
         self.gps_data = (self.gps.get_gps()["long"], self.gps.get_gps()["lat"])
         self.imu_data = self.imu.get_gps()
@@ -315,7 +315,7 @@ class Robot:
         radio_session.setup_robot()
         motor_controller.setup(self.is_sim)
 
-        zone = ENGINEERING_QUAD  # Used for GPS visualization
+        zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
         self.init_gps = (gps.get_gps()["long"], gps.get_gps()["lat"])
         self.imu_data = imu.get_gps()
         x_init, y_init = (0, 0)
