@@ -319,7 +319,7 @@ class Robot:
         radio_session.setup_robot()
         motor_controller.setup(self.is_sim)
 
-        zone = ENGINEERING_QUAD  # Used for GPS visualization
+        zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
         self.init_gps = (gps.get_gps()["long"], gps.get_gps()["lat"])
         self.imu_data = imu.get_gps()
         x_init, y_init = (0, 0)
