@@ -241,11 +241,7 @@ class Robot:
             time.sleep(0.001)
 
             if not self.is_sim:
-                print("state")
-                print(self.state)
                 self.state = self.update_ekf_step()
-                print("ekf_state")
-                print(self.state)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter

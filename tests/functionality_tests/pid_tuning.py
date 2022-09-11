@@ -10,15 +10,6 @@ import matplotlib.animation as animation
 from matplotlib import style
 import time
 
-from electrical.gps import GPS
-from electrical.imu import IMU
-
-import serial
-import busio
-import board
-
-import csv
-
 import csv
 
 
@@ -83,17 +74,25 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
     plt.show()
 
 
-def one_node_straight_line():
+def one_node_straight_line(long, lat, err):
+    """
+    Calls the robot to move to [long, lat] with error of err.
+    Requires: desired longitude (long) to be target longitude.
+    TODO: initialize GPS and IMU for PID to work
+    """
     mc = MotorController()
     gps = None
     init_gps = None
     imu = None
     r2d2 = Robot(0, 0, math.pi / 2, epsilon=.2, max_v=.2, radius=5, init_phase=Phase.TRAVERSE)
     database = DataBase(r2d2)
-    r2d2.move_to_target_node([0, 1], .03, database, mc, gps, init_gps, imu)
+    r2d2.move_to_target_node([long, lat], err, database, mc, gps, init_gps, imu)
 
 
 def no_pid_straight():
+    """
+    Calls the motors to spin with linear velocity of .2 for 5 seconds
+    """
     mc = MotorController()
     mc.motors(0, .2)
     time.sleep(5)
