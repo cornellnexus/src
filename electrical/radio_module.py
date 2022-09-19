@@ -3,9 +3,9 @@ import serial
 import time 
 
 
-class RadioSession:
+class RadioModule:
     """
-    RadioSession establishes the function calls needed between two devices.
+    RadioModule establishes the function calls needed between two devices.
 
     Communication package headings used when sending messages or parsing received messages:
     """
