@@ -40,10 +40,6 @@ class BaseStationSetupPhaseTest:
         self.basestation_radio_session = RadioModule(None)
 
     def run(self): 
-        pass 
-
-
-    def run(self): 
         pass
         #TODO: change this into a base station execute_setup function
         # self.robot.execute_setup(self.base_session, self.gps, self.imu, self.pid_motor)
