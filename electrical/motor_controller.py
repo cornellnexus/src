@@ -1,8 +1,8 @@
 import time
-from engine.robot import Robot
-if False: #change to True when running code on robot
+#from engine.robot import Robot
+if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
-
+    
 
 class BasicMotorController:
     """ 
@@ -10,7 +10,7 @@ class BasicMotorController:
     commands to physically move the robot. 
     """
     def __init__(self, robot):
-        #raspberry pi motor driver pinouts
+        # raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
         self.in3 = 19
@@ -21,50 +21,47 @@ class BasicMotorController:
 
     # checks all of the robot movements are functioning properly
     def setup(self):
-        if self.is_sim: 
-            self.go_forward()
-            self.turn_left()
-            self.turn_right()
-            self.reverse()
-            self.stop()
-        else: 
-            GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
-            GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
+        if not self.is_sim:
+            GPIO.setmode(GPIO.BCM)  # raspberry pi pinout reading mode
+            GPIO.setup([self.in1, self.in2, self.in3, self.in4],
+                       GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
+
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
-            self.e1 = GPIO.PWM(self.enA, 600)  # create object digital to analog conversion for PWM on port 25 at 1KHz
+            # create object digital to analog conversion for PWM on port 25 at 1KHz
+            self.e1 = GPIO.PWM(self.enA, 600)
             self.e2 = GPIO.PWM(self.enB, 600)
             self.e1.start(100)
             self.e2.start(100)            
 
-    # stops the robot 
+    # stops the robot
     def stop(self):
-        if self.is_sim: 
+        if self.is_sim:
             print('stop')
         else:
             self.e1.stop()
             self.e2.stop()
-        
+
     # moves the robot forward
     def go_forward(self):
-        if self.is_sim: 
+        if self.is_sim:
             print('go_forward')
-        else: 
+        else:
             GPIO.output([self.in1, self.in4], GPIO.HIGH)
             GPIO.output([self.in2, self.in3], GPIO.HIGH)
 
     # reverses the robot
     def reverse(self):
-        if self.is_sim: 
+        if self.is_sim:
             print('reverse')
-        else: 
+        else:
             GPIO.output([self.in2, self.in3], GPIO.LOW)
             GPIO.output([self.in1, self.in4], GPIO.LOW)
 
     # turns the robot left for 1 second
     def turn_left(self):
-        if self.is_sim: 
+        if self.is_sim:
             print('turn_left')
-        else: 
+        else:
             GPIO.output([self.in2, self.in4], GPIO.LOW)
             GPIO.output([self.in1, self.in3], GPIO.HIGH)
         time.sleep(1)
@@ -73,7 +70,7 @@ class BasicMotorController:
     def turn_right(self):
         if self.is_sim:
             print('turn_right')
-        else: 
+        else:
             GPIO.output([self.in1, self.in3], GPIO.LOW)
             GPIO.output([self.in2, self.in4], GPIO.HIGH)
         time.sleep(1)
@@ -93,13 +90,7 @@ class MotorController:
         R: radius of right motor #TODO: double check this
     """
     def __init__(self, robot, wheel_r, vm_load1, vm_load2, L, R):
-        self.in1 = 5
-        self.in2 = 6
-        self.enA = 13   #PWM
-        self.enB = 12   #PWM
-        # self.is_sim = robot.is_sim
-        self.is_sim = True
-        #super().__init__(robot)
+        self.is_sim = robot.is_sim
         self.wheel_r = wheel_r
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2
@@ -111,6 +102,18 @@ class MotorController:
         self.in4 = 26
         self.enA = 13
         self.enB = 12
+
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup([self.in1, self.in2, self.in3, self.in4],
+                   GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
+
+        self.p1 = GPIO.PWM(self.enA, 50)
+        self.p2 = GPIO.PWM(self.enB, 50)
+
+    # Start with 0% duty cycle
+        self.p1.start(0)
+        self.p2.start(0)
 
 
     # Change duty cycle for motors based on angular and linear velocities

@@ -32,4 +32,3 @@ class RadioModuleTest:
 
 basestation_radio = RadioModuleTest(False, True)
 basestation_radio.run()
-# basestation_radio = RadioModuleTest(False, True) 

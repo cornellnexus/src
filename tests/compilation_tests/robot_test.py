@@ -1,14 +1,8 @@
-<<<<<<< HEAD:tests/compilation_tests/robot_test.py
 from engine.robot import Robot
 from electrical.radio_module import RadioSession
 from electrical.motor_controller import BasicMotorController, MotorController
-# from electrical.gps import GPS
-# from electrical.imu import IMU
 import copy
 import math
-=======
-from electrical.rf_module import Device, RadioSession
->>>>>>> master:tests/compilation_tests/robot_test/execute_setup_test.py
 import unittest
 
 
@@ -76,7 +70,6 @@ class TestSetup(unittest.TestCase):
         robot_radio_session = RadioSession(None)
         self.assertEqual(robot_radio_session.connected, False)
 
-<<<<<<< HEAD:tests/compilation_tests/robot_test.py
     #test motor_controller_setup calls the motor controller setup function, which will 
     #print a series of commands. Make sure they are in the order of: 
     #'go_forward', 'turn_left', 'turn_right', 'reverse', 'stop'
@@ -147,7 +140,5 @@ class TestNodes(unittest.TestCase):
         self.assertEqual([4.712], self.robot_six.state[2])
 
 
-=======
->>>>>>> master:tests/compilation_tests/robot_test/execute_setup_test.py
 if __name__ == '__main__':
     unittest.main()
