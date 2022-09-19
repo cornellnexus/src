@@ -107,7 +107,6 @@ def init():
     ax.add_patch(circle_patch)
     # ax.add_patch(arc_patch)
     ax.add_patch(wedge_patch)
-    # print('init')
     return circle_patch, wedge_patch
 
 def animate(i):
