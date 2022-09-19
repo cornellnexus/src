@@ -28,7 +28,6 @@ class TestNodes(unittest.TestCase):
     robot_three = copy.deepcopy(robot_one)
     robot_four = copy.deepcopy(robot_one)
     robot_five = copy.deepcopy(robot_one)
-    robot_six = copy.deepcopy(robot_one)
 
     distance = 10
     turn_angle = math.pi / 2
@@ -57,10 +56,6 @@ class TestNodes(unittest.TestCase):
         original_angle = self.robot_five.state[2]
         self.robot_five.turn(math.pi * 2)
         self.assertEqual(original_angle, self.robot_five.state[2])
-
-    def test_turn_with_time(self):
-        self.robot_six.turn(math.pi / 2)
-        self.assertEqual([4.712], self.robot_six.state[2])
 
 
 if __name__ == '__main__':
