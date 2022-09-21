@@ -48,45 +48,6 @@ def get_control_mode(window):
 
     file.close()
 
-def manual_mode_actions(window, event, curr_control_mode):
-    # TODO: continuously send info to database and have database sort.
-    add_key_binds(window)
-    if curr_control_mode == "AUTONOMOUS":
-        window['-CONTROL_MODE_BUTTON-'].update('Manual')  # shows what the button will do, not what it does
-        window['-LEFT_KEY-'].update(visible=False)
-        window['-UP_KEY-'].update(visible=False)
-        window['-RIGHT_KEY-'].update(visible=False)
-        window['-DOWN_KEY-'].update(visible=False)
-    else:
-        window['-LEFT_KEY-'].update(visible=True)
-        window['-UP_KEY-'].update(visible=True)
-        window['-RIGHT_KEY-'].update(visible=True)
-        window['-DOWN_KEY-'].update(visible=True)
-        # TODO: send info about key presses serially or to another file where robot.py can send. Problem is that robot.py will be on the robot already, so it'll have to call to computer to grab commands, which is then transmitted serially again. Alternative is to just send command serially with identifier and have robot interrupt auto and run serial commands
-        if event == 'a' or event == 'Left':
-            window['-LEFT_KEY-'].update(button_color=('black', 'white'))
-            print('left')
-        elif event == 'w' or event == 'Up':
-            window['-UP_KEY-'].update(button_color=('black', 'white'))
-            print('forward')
-        elif event == 'd' or event == 'Right':
-            window['-RIGHT_KEY-'].update(button_color=('black', 'white'))
-            print('right')
-        elif event == 's' or event == 'Down':
-            window['-DOWN_KEY-'].update(button_color=('black', 'white'))
-            print('backward')
-        else:
-            # TODO: If option 2 (send command serially with identifier), then have to send unique command to tell the robot to do nothing (doesn't continue moving after key not pressed) - PID stop or just let no power?
-            window['-LEFT_KEY-'].update(button_color=(sg.theme_button_color()))
-            window['-UP_KEY-'].update(button_color=(sg.theme_button_color()))
-            window['-RIGHT_KEY-'].update(button_color=(sg.theme_button_color()))
-            window['-DOWN_KEY-'].update(button_color=(sg.theme_button_color()))
-        window['-CONTROL_MODE_BUTTON-'].update('Autonomous')
-
-def place(elem, size=(None, None)):
-    # https://stackoverflow.com/questions/62238574/update-not-changing-visibility-in-pysimplegui
-    return sg.Column([[elem]], size=size, pad=(0, 0), element_justification='center')
-
 def get_path(folder):
 
     cwd = os.getcwd()
@@ -209,16 +170,6 @@ def draw_figure(canvas, figure):
     figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
     return figure_canvas_agg
 
-def add_key_binds(window):
-    window.bind('<Up>', 'Up')
-    window.bind('<Left>', 'Left')
-    window.bind('<Down>', 'Down')
-    window.bind('<Right>', 'Right')
-    window.bind('a', 'Left')
-    window.bind('w', 'Up')
-    window.bind('s', 'Down')
-    window.bind('d', 'Right')
-
 def setup_gui():
     """
     Return [(window, data)], a 2-tuple of a PySimpleGUI window object, containing the GUI window information,
@@ -231,16 +182,12 @@ def setup_gui():
     image_data = get_images()
     left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
     right_col = [
-                [sg.Image(key='-LOGO-', data=image_data[3])], 
+                [sg.Image(key='-LOGO-', data=image_data[3])],
                 [sg.InputText(size=(30,1), key="-COMMANDLINE-", font=('Courier New', 20))],
                 [sg.Button('Submit', visible=False, bind_return_key=True)],
                 [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8), disabled=True, font=('Courier New', 20))],
                 [sg.Text("Current Coordinates: ______")],
                 [sg.Text("Current Phase: ______", key = "-PHASE-")],
-                [place(sg.Button('Left', visible=False, key="-LEFT_KEY-")),
-                 place(sg.Button('Up', visible=False, key="-UP_KEY-")),
-                 place(sg.Button('Right', visible=False, key="-RIGHT_KEY-")),
-                 place(sg.Button('Down', visible=False, key="-DOWN_KEY-"))],
                 [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation')],
                 [sg.Multiline(str(robot_data), key = "-DATA-", size=(40,8), disabled=True, font=('Courier New', 20))]
             ]
@@ -319,7 +266,6 @@ def run_gui():
 
     window = setup_gui()
     current_row = 0
-    curr_control_mode = "AUTONOMOUS"
     while True:  # Event Loop
         event, values = window.read(timeout=10)
 
@@ -347,12 +293,6 @@ def run_gui():
         if event == 'Simulation':
             simulation_thread = threading.Thread(target=run_simulation, args=(1,), daemon=True)
             simulation_thread.start()
-        if event == '-CONTROL_MODE_BUTTON-':
-            if curr_control_mode == "AUTONOMOUS":
-                curr_control_mode = "MANUAL"
-            else:
-                curr_control_mode = "AUTONOMOUS"
-        manual_mode_actions(window, event, curr_control_mode)
         get_control_mode(window)
         update_robot_data(window)
     window.close()
