@@ -4,9 +4,9 @@ if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
 
 class BasicMotorController:
-    """
-    BasicMotorController contains pinouts to configure motor controller, as well as
-    commands to physically move the robot.
+    """ 
+    BasicMotorController contains pinouts to configure motor controller, as well as 
+    commands to physically move the robot. 
     """
     def __init__(self, robot):
         # raspberry pi motor driver pinouts
@@ -30,7 +30,7 @@ class BasicMotorController:
             self.e1 = GPIO.PWM(self.enA, 600)
             self.e2 = GPIO.PWM(self.enB, 600)
             self.e1.start(100)
-            self.e2.start(100)
+            self.e2.start(100)            
 
     # stops the robot
     def stop(self):
@@ -76,16 +76,16 @@ class BasicMotorController:
 
 
 class MotorController:
-    """
-    MotorController contains pinouts to configure motor controller and can set motor torque
+    """ 
+    MotorController contains pinouts to configure motor controller and can set motor torque 
     according to input angular and linear velocities.
 
-    Attributes:
-        robot: robot object
-        wheel_r: the wheel radius
+    Attributes: 
+        robot: robot object 
+        wheel_r: the wheel radius 
         vm_load1: maximum velocity can drive load1 #TODO: make this more descriptive
         vm_load2: maximum velocity can drive load2 #TODO: make this more descriptive
-        L: radius of left motor #TODO: double check this
+        L: radius of left motor #TODO: double check this 
         R: radius of right motor #TODO: double check this
     """
     def __init__(self, robot, wheel_r, vm_load1=.016275, vm_load2=.016275, L=5, R=5):
@@ -128,30 +128,30 @@ class MotorController:
         omega_l = vl * self.wheel_r
 
         # Define and cap duty cycles if they are above max
-        try:
+        try: 
             dc1 = omega_r / self.vm_load1
             dc2 = omega_l / self.vm_load2
-        except:
+        except: 
             raise ZeroDivisionError("vm_load1 or vm_load2 is zero")
 
         if dc1 > 100:
             dc1 = 100
         if dc2 > 100:
             dc2 = 100
-
+        
         if self.is_sim:
             # why is dc set when not a simulation?
             self.p1.ChangeDutyCycle(dc1)
             self.p2.ChangeDutyCycle(dc2)
-        else:
+        else: 
             print("dc1: ", dc1, "and dc2: ", dc2)
 
     def setup(self):
-        if self.is_sim:
+        if self.is_sim: 
             self.motors(0, 0)
         else:
             GPIO.setmode(GPIO.BCM)
-            GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)
+            GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
             self.p1 = GPIO.PWM(self.enA, 50)

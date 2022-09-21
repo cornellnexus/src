@@ -13,6 +13,7 @@ Thus, we will will break up the file into different sections:
 from gui.gui_popup import *
 from gui.images import get_images
 from gui.robot_data import RobotData
+from electrical.radio_module import RadioModule
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -106,7 +107,6 @@ def init():
     ax.add_patch(circle_patch)
     # ax.add_patch(arc_patch)
     ax.add_patch(wedge_patch)
-    print('init')
     return circle_patch, wedge_patch
 
 def animate(i):
@@ -182,13 +182,13 @@ def setup_gui():
     image_data = get_images()
     left_col = [[sg.Canvas(key="-CANVAS-")], [sg.Image(key='-PROGRESS-', data=image_data[0])], [sg.Image(key='-MINIMAP-', data=image_data[1]), sg.Image(key='-CAMERA-', data=image_data[2])]]
     right_col = [
-                [sg.Image(key='-LOGO-', data=image_data[3])],
+                [sg.Image(key='-LOGO-', data=image_data[3])], 
                 [sg.InputText(size=(30,1), key="-COMMANDLINE-", font=('Courier New', 20))],
                 [sg.Button('Submit', visible=False, bind_return_key=True)],
                 [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8), disabled=True, font=('Courier New', 20))],
                 [sg.Text("Current Coordinates: ______")],
                 [sg.Text("Current Phase: ______", key = "-PHASE-")],
-                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation')],
+                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation'), sg.Button("Startup Base Station")],
                 [sg.Multiline(str(robot_data), key = "-DATA-", size=(40,8), disabled=True, font=('Courier New', 20))]
             ]
     
@@ -266,6 +266,7 @@ def run_gui():
 
     window = setup_gui()
     current_row = 0
+    rs = RadioModule(False)
     while True:  # Event Loop
         event, values = window.read(timeout=10)
 
@@ -293,6 +294,10 @@ def run_gui():
         if event == 'Simulation':
             simulation_thread = threading.Thread(target=run_simulation, args=(1,), daemon=True)
             simulation_thread.start()
+
+        if event == 'Startup Base Station':
+            rs.setup_basestation()
+
         get_control_mode(window)
         update_robot_data(window)
     window.close()
