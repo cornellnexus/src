@@ -339,8 +339,35 @@ class Robot:
         with open(cd + '/phases.csv', 'a') as fd:
             fd.write(str(self.phase) + '\n')
 
-    def execute_avoid_obstacle(self):
-        pass
+    def traversal(self):
+        init_location
+        while true: #prob make this async within obstacle avoiding scope to keep checking if there's an obstacle
+            ultrasonic_sensors = [u1, u2, u3, u4, u5]
+            avoid_obstacle = false
+            for sensor in ultrasonic_sensors:
+                if sensor.value not = sensor.max_val # the ultrasonic sensor detected something
+                    avoid_obstacle = true
+            if avoid_obstacle:
+                if (init_location = final_location):
+                    give_up #robot went in a loop and cannot avoid obstacle; therefore, target unreachable
+                else:
+                    execute_avoid_obstacle(ultrasonic_sensors)
+
+    def execute_avoid_obstacle(self, ultrasonic_sensors):
+        #u1 placed at 0 degree, u2 at 72 degree, u3 144, u4 216, u5 288
+        min_dist = ultrasonic_sensors.max_val
+        dist_decreased = false
+        target_location
+        curr_location
+        for i in range len(ultrasonic_sensors):
+            ultrasonic_values(i) = dist(ultrasonic_sensors(i))
+            obstacle_location = trig(ultrasonic_values, i)
+            total_dist = dist(curr_location, obstacle_location) + dist(obstacle_location, target_location)
+            if total_dist < min_dist:
+                dist_decreased = true
+                min_dist = total_dist
+        if not dist_decreased:
+            execute_boundary_following(min_dist)
 
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """
