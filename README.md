@@ -12,7 +12,7 @@ Installing virtual environment (venv) & nexus software dependencies:
    *macOS: <venv/bin/activate>
    *linux: <venv/bin/activate>
    *windows: <venv\Scripts\activate>
-5. Run: <pip install -r requirements.txt> to install nexus software dependencies.
+5. Run: <pip3 install -r requirements.txt> to install nexus software dependencies.
 
 For IMU lsm9ds1, must be operating on Raspberry Pi to run these commands.
 
