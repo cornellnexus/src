@@ -3,6 +3,7 @@ import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from electrical.motor_controller import MotorController
+import matplotlib.pyplot as plt
 
 
 # import electrical.gps as gps 
@@ -134,7 +135,8 @@ class Robot:
 
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
-        self.state = np.round(integrate_odom(self.state, dist, turn_angle), 3)
+        self.state = np.round(integrate_odom(self.state, dist, turn_angle), 7)
+
         # if it is a simulation,
         if self.is_sim:
             self.truthpose = np.append(
@@ -145,8 +147,8 @@ class Robot:
         # dist is in meters
         new_x = self.state[0] + dist * math.cos(self.state[2]) * self.time_step
         new_y = self.state[1] + dist * math.sin(self.state[2]) * self.time_step
-        self.state[0] = np.round(new_x, 3)
-        self.state[1] = np.round(new_y, 3)
+        self.state[0] = np.round(new_x, 7)
+        self.state[1] = np.round(new_y, 7)
 
         if self.is_sim:
             self.truthpose = np.append(
@@ -161,12 +163,16 @@ class Robot:
             allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
                 have "visited" that node
         """
+        debugging_x_array = [] 
+        debugging_y_array = []
+        debugging_truthpose = np.zeros((401, 3))
+
         predicted_state = self.state  # this will come from Kalman Filter
 
         # location error (in meters)
         distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                    float(predicted_state[1]) - target[1])
-
+        i = 0
         while distance_away > allowed_dist_error:
             self.state[0] = np.random.normal(
                 self.state[0], self.position_noise)
@@ -185,12 +191,21 @@ class Robot:
             # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.max_velocity, self.radius)
+            
+            # print('limited_cmd_w', limited_cmd_w)
 
-            self.travel(self.time_step * limited_cmd_v,
-                        self.time_step * limited_cmd_w)
 
-            self.linear_v = limited_cmd_v[0]
-            self.angular_v = limited_cmd_w[0]
+            #TODO: investigate infinite loop: potential rounding occuring making progression impossible
+            #ie. robot's position:  (42.44425, -76.483682)
+            #    robot's position after travel:  (42.444, -76.484)
+            limited_cmd_w[0] = 0
+
+            self.travel(self.time_step * limited_cmd_v[0],
+                        self.time_step * limited_cmd_w[0])
+            
+            # self.linear_v = limited_cmd_v[0]
+            # self.angular_v = limited_cmd_w[0]
+            
 
             # sleep in real robot.
 
@@ -211,6 +226,13 @@ class Robot:
             # location error (in meters)
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
+
+            if i == 400: 
+                plt.scatter(self.truthpose[:,0],self.truthpose[:,1])
+                plt.show()
+                break
+
+            i+=1
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
@@ -250,7 +272,7 @@ class Robot:
         # Turns robot, where turn_angle is given in radians
         clamp_angle = (self.state[2] + (turn_angle *
                        self.time_step)) % (2 * math.pi)
-        self.state[2] = np.round(clamp_angle, 3)
+        self.state[2] = np.round(clamp_angle, 7)
         if self.is_sim:
             self.truthpose = np.append(
                 self.truthpose, np.transpose(self.state), 0)

@@ -17,7 +17,7 @@ class PID:
         # derivative: Derivative controller command
     """
 
-    def __init__(self, Kp=1, Ki=0, Kd=0, target=0, sample_time=0.01, output_limits=(None, None)):
+    def __init__(self, Kp=1, Ki=0, Kd=0, target=0, sample_time=0.1, output_limits=(None, None)):
         self.Kp, self.Ki, self.Kd = Kp, Ki, Kd
         self.target = target
         self.sample_time = sample_time
@@ -38,12 +38,14 @@ class PID:
         """
         self.proportional = self.Kp * error
         self.integral += self.Ki * error * self.sample_time
+        # self.integral += self.Ki * error * self.sample_time
 
         # Avoid integral windup:
-        if self.output_limits[0] is not None and self.output_limits[1] is not None:
-            self.integral = max(min(self.integral, self.output_limits[1]), self.output_limits[0])
+        # if self.output_limits[0] is not None and self.output_limits[1] is not None:
+        #     self.integral = max(min(self.integral, self.output_limits[1]), self.output_limits[0])
 
-        self.derivative = self.Kd * ((error - self.prev_error) / self.sample_time)
+        self.derivative = self.Kd * ((error - self.prev_error) )
+        # self.derivative = self.Kd * ((error - self.prev_error) / self.sample_time)
         value = self.proportional + self.integral + self.derivative
         self.prev_error = error
         return value
