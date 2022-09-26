@@ -13,25 +13,25 @@ class BasicMotorControllerTest:
 	def __init__(self): 
 		self.mc = BasicMotorController()
 		
-	def motor_controller_test_one(self): 
+	def motor_controller_turn_right(self): 
 		stop_time = time.time() + 3
 		while time.time() <	stop_time:
 			self.mc.turn_right()
 	
-	def motor_controller_test_two(self): 
+	def motor_controller_test_stop(self): 
 		stop_time = time.time() + 2
 		while time.time() <	stop_time:
 			self.mc.stop()
 	
-	def motor_controller_test_three(self): 
+	def motor_controller_turn_left(self): 
 		stop_time = time.time() + 3
 		while time.time() <	stop_time:
 			self.mc.turn_left()
 
 	def run(self): 
-		self.motor_controller_test_one()
-		self.motor_controller_test_two()
-		self.motor_controller_test_three()
+		self.motor_controller_turn_right()
+		self.motor_controller_test_stop()
+		self.motor_controller_turn_left()
 
 
 class MotorControllerTest: 
@@ -46,22 +46,22 @@ class MotorControllerTest:
 	def __init__(self): 
 		self.motor_controller = MotorController(None, 5,15,15,5,5)
 	
-	def test_one(self): 
+	def test_straight(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
 			self.motor_controller.motors(0,30)
 	
-	def test_two(self): 
+	def test_stop(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
 			self.motor_controller.motors(0,0)
 	
-	def test_three(self): 
+	def test_turning_and_moving(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
 			self.motor_controller.motors(20,30)
 
 	def run(self): 
-		self.test_one()
-		self.test_two()
-		self.test_three()
+		self.test_straight()
+		self.test_stop()
+		self.test_turning_and_moving()
