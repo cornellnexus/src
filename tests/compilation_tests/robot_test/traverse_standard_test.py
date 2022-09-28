@@ -17,19 +17,22 @@ class TestMoveToNodeFunction(unittest.TestCase):
         """
         This is a test to see if the robot's final position after calling move_to_target_node 
         is within the allowed distance error.
+
+        This robot is initialized to the correct heading and only needs to move in a straight line. 
+        In this specific test, our target node is .0005 latitude away, with position_kp and heading_kp 
+        constants for our P controller being 0.1. Because the robot is not turning, the heading PID does
+        not seem to have a great effect in this test case.
+        
         """
-        r2d2 = Robot(42.444250, -76.483682, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, position_kp = 10, heading_kp = 0.1, position_kd=0, heading_kd=0)
+        r2d2 = Robot(42.444250, -76.483682, 0, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, position_kp = .1, heading_kp = 0.1, position_kd=0.00, heading_kd=0.0)
         database = DataBase(r2d2)
 
         #Latitude is changing, longitude should stay consistent
         # 42.444400 - 42.444250 = 0.000150
-        target = (52.445400, -76.483682)
-        allowed_dist_error = 0.000140
+        # target = (52.445400, -76.483682)
+        target = (42.444750, -76.483682)
+        allowed_dist_error = 0.0001
         print("here")
-        # print("target: ", target)
-        # print("robot's position: ", r2d2.state)
-        # print("x distance: ", abs(target[0] - r2d2.state[0]))
-        # print("y distance: ", abs(target[1] - r2d2.state[1]))
         r2d2.move_to_target_node(target, allowed_dist_error, database)
 
     def test_failed_to_travel(self):

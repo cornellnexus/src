@@ -110,8 +110,8 @@ def integrate_odom(pose, d, phi):
     # phi: angle robot turned in the last time step [float]
     """
     if phi == 0:
-        print("integrate_odom: old x", pose[0])
-        print("integrate_odom: adding this to x",(d * math.cos(pose[2])))
+        # print("integrate_odom: old x", pose[0])
+        # print("integrate_odom: adding this to x",(d * math.cos(pose[2])))
         new_x = pose[0] + d * math.cos(pose[2])
 
         new_y = pose[1] + d * math.sin(pose[2])

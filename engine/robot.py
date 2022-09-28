@@ -135,8 +135,8 @@ class Robot:
 
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
-        print("in travel: distance: ", dist)
-        print("in travel: turn_angle: ", turn_angle)
+        # print("in travel: distance: ", dist)
+        # print("in travel: turn_angle: ", turn_angle)
         self.state = np.round(integrate_odom(self.state, dist, turn_angle), 7)
 
         # if it is a simulation,
@@ -190,18 +190,21 @@ class Robot:
             x_vel = self.loc_pid_x.update(x_error)
             y_vel = self.loc_pid_y.update(y_error)
 
-            print("x velocity due to PID: ", x_vel)
-            print("y velocity due to PID: ", y_vel)
+            # print("x velocity due to PID: ", x_vel)
+            # print("y velocity due to PID: ", y_vel)
 
             cmd_v, cmd_w = feedback_lin(
                 predicted_state, x_vel, y_vel, self.epsilon)
             
-            print("cmd_v from feedback_lin", cmd_v)
-            print("cmd_w from feedback_lin", cmd_w)
+            # print("cmd_v from feedback_lin", cmd_v)
+            # print("cmd_w from feedback_lin", cmd_w)
 
             # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.max_velocity, self.radius)
+
+            # print("limited_cmd_v", limited_cmd_v)
+            # print("limited_cmd_w", limited_cmd_w)
             
             # print('limited_cmd_w', limited_cmd_w)
 
@@ -210,7 +213,7 @@ class Robot:
             #ie. robot's position:  (42.44425, -76.483682)
             #    robot's position after travel:  (42.444, -76.484)
 
-            print("calling self.travel, sending in limited_cmd_w and v")
+            # print("calling self.travel, sending in limited_cmd_w and v")
             self.travel(self.time_step * limited_cmd_v[0],
                         self.time_step * limited_cmd_w[0])
             
@@ -238,12 +241,14 @@ class Robot:
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
 
-            if i == 400: 
-                plt.scatter(self.truthpose[:,0],self.truthpose[:,1])
-                plt.show()
-                break
+            # if i == 100: 
+            #     plt.scatter(self.truthpose[:,0],self.truthpose[:,1])
+            #     plt.show()
+            #     break
 
-            i+=1
+            # i+=1
+        plt.scatter(self.truthpose[:,0],self.truthpose[:,1])
+        plt.show()
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
