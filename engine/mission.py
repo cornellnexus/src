@@ -1,7 +1,7 @@
 from collections import deque
 from electrical.motor_controller import BasicMotorController, MotorController
 from engine.robot import Phase
-from electrical.radio_module import RadioSession
+from electrical.radio_module import RadioModule
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum

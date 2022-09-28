@@ -16,6 +16,7 @@ from gui.images import get_images
 from gui.robot_data import RobotData
 import gui.retrieve_inputs as retrieve_inputs
 from engine.mission import ControlMode
+from electrical.radio_module import RadioModule
 
 import matplotlib
 from matplotlib import pyplot as plt
@@ -114,7 +115,6 @@ def init():
     ax.add_patch(circle_patch)
     # ax.add_patch(arc_patch)
     ax.add_patch(wedge_patch)
-    print('init')
     return circle_patch, wedge_patch
 
 def animate(i):
@@ -189,7 +189,7 @@ def setup_gui():
                 [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8), disabled=True, font=('Courier New', 20))],
                 [sg.Text("Current Coordinates: ______")],
                 [sg.Text("Current Phase: ______", key = "-PHASE-")],
-                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation'), sg.Button('Read RPI Comms')],
+                [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation'), sg.Button("Startup Base Station"), sg.Button('Read RPI Comms')],
                 [sg.Multiline(str(robot_data), key = "-DATA-", size=(40,8), disabled=True, font=('Courier New', 20))]
             ]
     
@@ -269,6 +269,8 @@ def run_gui():
     current_row = 0
     reading_inputs = False
     packets = []
+    rs = RadioModule(False)
+
     while True:  # Event Loop
         event, values = window.read(timeout=10)
 
@@ -316,6 +318,9 @@ def run_gui():
                 except: 
                     pass 
                 packets = []
+
+        if event == 'Startup Base Station':
+            rs.setup_basestation()
 
         get_control_mode(window)
         

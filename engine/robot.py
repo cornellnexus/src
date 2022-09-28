@@ -273,9 +273,6 @@ class Robot:
             self.phase = Phase.TRAVERSE
 
 
-        if (radio_connected and gps_setup and imu_setup):
-            self.phase = Phase.TRAVERSE
-
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius, database):
         if control_mode == 4:  # Roomba mode
