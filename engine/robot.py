@@ -135,6 +135,8 @@ class Robot:
 
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
+        print("in travel: distance: ", dist)
+        print("in travel: turn_angle: ", turn_angle)
         self.state = np.round(integrate_odom(self.state, dist, turn_angle), 7)
 
         # if it is a simulation,
@@ -182,11 +184,20 @@ class Robot:
             x_error = target[0] - self.state[0]
             y_error = target[1] - self.state[1]
 
+            print("First step of algorithm: (x_error)", x_error)
+            print("First step of algorithm: (y_error)", y_error)
+            
             x_vel = self.loc_pid_x.update(x_error)
             y_vel = self.loc_pid_y.update(y_error)
 
+            print("x velocity due to PID: ", x_vel)
+            print("y velocity due to PID: ", y_vel)
+
             cmd_v, cmd_w = feedback_lin(
                 predicted_state, x_vel, y_vel, self.epsilon)
+            
+            print("cmd_v from feedback_lin", cmd_v)
+            print("cmd_w from feedback_lin", cmd_w)
 
             # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
@@ -198,8 +209,8 @@ class Robot:
             #TODO: investigate infinite loop: potential rounding occuring making progression impossible
             #ie. robot's position:  (42.44425, -76.483682)
             #    robot's position after travel:  (42.444, -76.484)
-            limited_cmd_w[0] = 0
 
+            print("calling self.travel, sending in limited_cmd_w and v")
             self.travel(self.time_step * limited_cmd_v[0],
                         self.time_step * limited_cmd_w[0])
             
