@@ -74,7 +74,7 @@ if __name__ == "__main__":
     base_r2d2 = BaseStation((42.444250, -76.483682))
     database = DataBase(r2d2)
     m = Mission(robot=r2d2, base_station=base_r2d2,
-                init_control_mode=ControlMode.STRAIGHT)
+                init_control_mode=ControlMode.LAWNMOWER)
 
     def send_packet_to_gui(name):
         logging.info("Thread %s: starting", name)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
                  # Sending data packet to gui from rpi
                 cast_data = bytes(packet, encoding = 'utf-8') 
                 ser.write(cast_data)
-            logging.info("Sent packet: " + packet)
+            # logging.info("Sent packet: " + packet)
             time.sleep(0.01)
         logging.info("Thread %s: finishing", name)
         if is_sim:
