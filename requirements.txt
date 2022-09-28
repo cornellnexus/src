@@ -6,6 +6,7 @@ haversine==2.3.0
 vincenty==0.1.4
 numpy==1.22.0
 statistics==1.0.3.5
+coverage
 PySimpleGui #comment this out when running on rpi
 CMake
 wmm2020
