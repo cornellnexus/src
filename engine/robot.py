@@ -293,6 +293,7 @@ class Robot:
         while unvisited_waypoints:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
             # TODO: add obstacle avoidance support
+            # TODO: add turn_to_target_heading
             self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
@@ -341,7 +342,9 @@ class Robot:
 
     def traversal(self):
         init_location
-        while true: #prob make this async within obstacle avoiding scope to keep checking if there's an obstacle
+        interrupted = false
+        # prob make this async so main algorithm keeps running
+        while true:
             ultrasonic_sensors = [u1, u2, u3, u4, u5]
             avoid_obstacle = false
             for sensor in ultrasonic_sensors:
@@ -349,25 +352,51 @@ class Robot:
                     avoid_obstacle = true
             if avoid_obstacle:
                 if (init_location = final_location):
+                    interrupt_main_control
+                    interrupted = true
                     give_up #robot went in a loop and cannot avoid obstacle; therefore, target unreachable
                 else:
+                    interrupt_main_control
+                    interrupted = true
                     execute_avoid_obstacle(ultrasonic_sensors)
+            else:
+                if interrupted:
+                    resume_prev_traversal
 
     def execute_avoid_obstacle(self, ultrasonic_sensors):
-        #u1 placed at 0 degree, u2 at 72 degree, u3 144, u4 216, u5 288
-        min_dist = ultrasonic_sensors.max_val
+        # if we want to try something else, bug algorithm to follow line to target seems promising
+        # u1 placed at 0 degree, u2 at 72 degree, u3 144, u4 216, u5 288
+            # actually, not necessary to place in places after 180 degrees to front
+        # why would we need to check boundaries behind us? wouldnt those boundaries always be getting farther away,
+        # thus never triggering condition to follow boundary?
+            # according to a video, check boundaries behind us in case something behind us is going to collide into us
+        prev_dist = ultrasonic_sensors.max_val
+        total_dist = []
         dist_decreased = false
         target_location
         curr_location
         for i in range len(ultrasonic_sensors):
             ultrasonic_values(i) = dist(ultrasonic_sensors(i))
+            # might run into trouble here with ultrasonic being inaccurate
+            # (supposedly it only detects distance to nearest obj within measuring angle)
+            # hard to tell where obs endpoints are (relative to domain of ultrasonic measuring angle)
+            # therefore, might be hard to determine from multiple sensors whether the obstacle is the same
+            # for example, when moving forward, obstacle detected no longer in measuring angle for first ultrasonic but in second
+            # in this case, how do we tell that the obstacle in the 2nd ultrasonic is the same as the first?
+            # esp when measuring angle to obstacle not known and measuring angle so vague (75 degree is quite large)
             obstacle_location = trig(ultrasonic_values, i)
-            total_dist = dist(curr_location, obstacle_location) + dist(obstacle_location, target_location)
-            if total_dist < min_dist:
-                dist_decreased = true
-                min_dist = total_dist
-        if not dist_decreased:
-            execute_boundary_following(min_dist)
+            # lol, trig is just angle of ultrasonic -> hardcode val when added to robot
+            total_dist[i] = dist(curr_location, obstacle_location) + dist(obstacle_location, target_location)
+        total_dist.sort()
+        if total_dist[0] > prev_dist: # getting min total_dist
+            # needs to be changed, have to find prev_dist for that obstacle, not just in general
+            execute_boundary_following()
+        prev_dist = total_dist[0]
+
+    def execute_boundary_following(self, min_dist):
+        if is_parallel:
+
+
 
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """
