@@ -115,12 +115,13 @@ class Robot:
         self.acceleration = [0, 0, 0]  # TEMPORARY
         self.magnetic_field = [0, 0, 0]  # TEMPORARY
         self.gyro_rotation = [0, 0, 0]  # TEMPORARY
-        self.init_gps = (0, 0)
-        self.gps_data = (0, 0)
-        self.imu_data = None  # will be filled by execute_setup
-        self.ekf_var = None
-        self.gps = None
-        self.imu = None
+        self.init_gps = init_gps
+        self.gps_data = gps_data
+        self.imu_data = imu_data  # will be filled by execute_setup
+        self.ekf_var = ekf_var
+        self.gps = gps
+        self.imu = imu
+        self.mc = motor_controller
         self.linear_v = 0
         self.angular_v = 0
 
@@ -186,7 +187,7 @@ class Robot:
             self.truthpose = np.append(
                 self.truthpose, np.transpose(self.state), 0)
 
-    def move_to_target_node(self, target, allowed_dist_error, database, mc):
+    def move_to_target_node(self, target, allowed_dist_error, database):
         """
         Moves robot to target + or - allowed_dist_error
         Arguments:
@@ -225,7 +226,7 @@ class Robot:
                             self.time_step * limited_cmd_w)
             else:
                 # self.motor_controller.motors(limited_cmd_w, limited_cmd_v)
-                mc.motors(limited_cmd_w[0], limited_cmd_v[0])
+                self.mc.motors(limited_cmd_w[0], limited_cmd_v[0])
 
             self.linear_v = limited_cmd_v[0]
             self.angular_v = limited_cmd_w[0]

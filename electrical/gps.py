@@ -4,7 +4,7 @@ import serial
 import time
 import pynmea2
 import csv
-if True: # import UbloxGPS if this is not a simulation
+if False: # import UbloxGPS if this is not a simulation
     from ublox_gps import UbloxGps
 
 
