@@ -1,4 +1,4 @@
-from electrical.radio_module import RadioSession
+from electrical.radio_module import RadioModule
 import serial
 import time
 
@@ -17,13 +17,13 @@ class RadioModuleTest:
         stop_time = time.time() + 50
         if self.is_robot: 
             robot_serial = serial.Serial('/dev/ttyS0', 57600) #robot serial port number
-            robot_radio = RadioSession(robot_serial)
+            robot_radio = RadioModule(robot_serial)
             while time.time() < stop_time: 
                 robot_radio.setup_robot()
 
         if self.is_basestation: 
             basestation_serial = serial.Serial('/dev/tty.usbserial-017543DC', 57600) #base serial port number
-            basestation_radio = RadioSession(basestation_serial)
+            basestation_radio = RadioModule(basestation_serial)
             while time.time() < stop_time:
                 basestation_radio.setup_basestation()
                 data = basestation_radio.receive_data()

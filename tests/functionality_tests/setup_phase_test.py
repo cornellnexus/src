@@ -1,5 +1,5 @@
 from engine.robot import Robot, Phase
-from electrical.radio_module import Device, RadioSession
+from electrical.radio_module import RadioModule
 from electrical.motor_controller import MotorController
 from electrical.imu import IMU
 from electrical.gps import GPS
@@ -26,7 +26,7 @@ class RobotSetupPhaseTest:
         self.gps = GPS(self.gps_serial) 
         self.imu = IMU(self.imu_i2c) 
         self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio device
-        self.robot_radio_session = RadioSession(self.robot_radio_serial) 
+        self.robot_radio_session = RadioModule(self.robot_radio_serial) 
         self.motor_controller = MotorController(robot = self.robot, wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
     
     def run(self): 
@@ -37,11 +37,7 @@ class BaseStationSetupPhaseTest:
     Test Script for Setup Phase that the radio module is setup properly on the base station
     """
     def __init__(self): 
-        self.basestation_radio_session = RadioSession(None)
-
-    def run(self): 
-        pass 
-
+        self.basestation_radio_session = RadioModule(None)
 
     def run(self): 
         pass

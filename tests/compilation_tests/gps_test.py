@@ -14,7 +14,7 @@ Test file - moving in a straight line to test GPS accuracy
 """
 
 
-def engine():
+def test_gps():
     print("TESTING: BEGINING TO TESTGPS.PY")
     longMin, longMax, latMin, latMax = -76.483682, -76.483682, 42.444250, 42.444416
 
@@ -59,7 +59,7 @@ def engine():
 
 
 if __name__ == "__main__":
-    engine()
+    test_gps()
 
 # engine = Engine()
 # engine.run()
