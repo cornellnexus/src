@@ -1,12 +1,14 @@
 geopy==2.1.0
 pyserial==3.5 
 pynmea2==1.15.0
-matplotlib
+matplotlib == 3.4.3
 haversine==2.3.0
 vincenty==0.1.4
 numpy==1.22.0
 statistics==1.0.3.5
-PySimpleGui #comment this out when running on rpi
+PySimpleGui == 4.59.0 #comment this out when running on rpi
+coverage
+
 CMake
 wmm2020
 ahrs
