@@ -5,6 +5,8 @@ import serial
 import statistics
 import time
 
+from constants.definitions import CSV_PATH
+
 # data = {"phse": "Traversal",
 #         "p_weight": "10",
 #         "acc":"25",
@@ -18,7 +20,7 @@ ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
 
 def update_gui():
     packets = []
-    robot_data_file = open((get_path('csv')[-1] + '/robot_data.csv'), "r+")  # open csv file of robot data
+    robot_data_file = open((CSV_PATH + '/robot_data.csv'), "r+")  # open csv file of robot data
     while True:
         while len(packets) < 5:
             packet = ser.readline()
@@ -27,12 +29,6 @@ def update_gui():
         valid_packet = validate_packet(packets)
 
         robot_data_file.write(valid_packet + '\n')
-
-def get_path(folder):
-
-    cwd = os.getcwd()
-    sys.path.append(cwd + "/" + folder)
-    return sys.path
 
 def get_values(data):
     '''

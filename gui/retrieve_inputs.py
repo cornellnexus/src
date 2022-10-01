@@ -1,22 +1,9 @@
 import os
 import sys
 import statistics
+from constants.definitions import CSV_PATH
 from engine.packet import *
 from gui.robot_data import get_values, get_integer_value, get_float_value
-
-
-def get_path(folder):
-    '''
-    Args:
-        folder: a string of folder directory
-
-    Returns: sys path to desired folder
-    '''
-    cwd = os.getcwd()
-    sys.path.append(cwd + "/" + folder)
-    return sys.path
-
-
 
 def validate_packet(packets):
     '''
