@@ -14,10 +14,11 @@ class ControlMode(Enum):
     """
     LAWNMOWER = 1
     LAWNMOWER_B = 2
-    SPIRAL = 3
-    ROOMBA = 4
-    MANUAL = 5
-    STRAIGHT = 6
+    LAWNMOWER_A = 3
+    SPIRAL = 4
+    ROOMBA = 5
+    MANUAL = 6
+    STRAIGHT = 7
 
 
 '''

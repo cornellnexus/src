@@ -3,6 +3,7 @@ import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from engine.pid_controller import PID
 from electrical.motor_controller import MotorController
+from constants.definitions import CSV_PATH
 
 
 # import electrical.gps as gps
@@ -18,7 +19,6 @@ from constants.geo_fences import ENGINEERING_QUAD
 
 
 from enum import Enum
-import os.path
 import time
 import sys
 
@@ -34,13 +34,6 @@ class Phase(Enum):
     DOCKING = 5
     COMPLETE = 6
     FAULT = 7
-
-
-def get_path(folder):
-    cwd = os.getcwd()
-    sys.path.append(cwd + "/" + folder)
-    return sys.path
-
 
 class Robot:
     """
@@ -140,10 +133,9 @@ class Robot:
             output_limits=(None, None)
         )
 
-        cwd = os.getcwd()
-        cd = cwd + "/csv"
+        # TODO: wrap in try/except (error when calling execute_setup_test.py)
         # write in csv
-        with open(cd + '/phases.csv', 'a') as fd:
+        with open(CSV_PATH + '/phases.csv', 'a') as fd:
             fd.write(str(self.phase) + '\n')
 
     def update_ekf_step(self):
@@ -234,9 +226,7 @@ class Robot:
             # sleep in real robot.
 
             # write robot location and mag heading in csv (for gui to display)
-            cwd = os.getcwd()
-            cd = cwd + "/csv"
-            with open(cd + '/datastore.csv', 'a') as fd:
+            with open(CSV_PATH + '/datastore.csv', 'a') as fd:
                 fd.write(
                     str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
             time.sleep(0.001)
@@ -358,6 +348,7 @@ class Robot:
         while unvisited_waypoints:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
             # TODO: add obstacle avoidance support
+            # TODO: add return when tank is full, etc
             self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
@@ -375,7 +366,7 @@ class Robot:
                 None
         """
         dt = 0
-        exit_boolean = False  # battery_limit, time_limit, battery_capacity is full
+        exit_boolean = False  # TODO: battery_limit, time_limit, tank_capacity is full, obstacle avoiding
         while not exit_boolean:
 
             curr_x = self.state[0]
@@ -399,18 +390,17 @@ class Robot:
                     self.motor_controller.motors(0, 0)  # TODO: determine what vel to run this at
             dt += 1
             exit_boolean = (dt > time_limit)
-        self.phase = Phase.COMPLETE
+        self.phase = Phase.COMPLETE # TODO: CHANGE the next phase to return
         return None
 
     def set_phase(self, new_phase):
         self.phase = new_phase
 
-        cwd = os.getcwd()
-        cd = cwd + "/csv"
-        with open(cd + '/phases.csv', 'a') as fd:
+        with open(CSV_PATH + '/phases.csv', 'a') as fd:
             fd.write(str(self.phase) + '\n')
 
     def execute_avoid_obstacle(self):
+        # TODO: SET BACK TO ORIGINAL MISSION (TRAVERSE OR RETURN)
         pass
 
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
@@ -443,4 +433,5 @@ class Robot:
         self.set_phase(Phase.DOCKING)
 
     def execute_docking(self):
+        # TODO: add traverse to doc at base station in case mission didnt finish
         self.set_phase(Phase.COMPLETE)  # temporary for simulation purposes
