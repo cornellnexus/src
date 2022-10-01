@@ -202,12 +202,6 @@ def main():
         border_nodes,_,leftmost_node_pos, nodes = find_border_nodes(nodes)
         way_points = get_all_lawnmower_waypoints_adjustable(nodes,leftmost_node_pos,border_nodes)
 
-
-    
-
-  
-
-
     
     for i in range(rows):
         for j in range(cols):
