@@ -10,9 +10,7 @@ ppr=500 #pulse per revolution of motor
 r=5     #dummy variable for radius of wheels
 L=15    #dummy variable for distance from one wheel to center of robot
 
-
 def pulse_handler_right(pin):
-
         if (counter_right==10):
                 odometry(counter_right, counter_left, r, L)     #Do odometry when right wheel gets 10 pulses
         else:
@@ -20,7 +18,6 @@ def pulse_handler_right(pin):
        
 
 def pulse_handler_left(pin):
-
         counter_left+=1     
 
 def odometry(counter_right, counter_left, r, L):
@@ -36,16 +33,18 @@ def odometry(counter_right, counter_left, r, L):
         counter_left=0
         
 
-
 if __name__ == "__main__":
 #       global freq
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(26, GPIO.IN)     #right wheel
-        GPIO.setup(9,GPIO.IN)       #left wheel
+        GPIO.setmode(GPIO.BCM) 
+        GPIO.setup(26, GPIO.IN) #encoder pi pinout for back right motor
+        GPIO.setup(9,GPIO.IN) #encoder pi pinout for back left motor
         try:
+                #freq: countable events per rev = 3415,92
+                #freq: cycles per rev = countable events per rev / 4 = 853.92, where 4 indicates the edges for square wave
             GPIO.add_event_detect(26, GPIO.RISING, callback=pulse_handler_right)  
             GPIO.add_event_detect(9, GPIO.RISING, callback=pulse_handler_left)  
         except:
             print("check code and setup, something is wrong")
         finally:
-            GPIO.cleanup()
+                GPIO.cleanup()
+
