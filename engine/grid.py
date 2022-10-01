@@ -34,7 +34,7 @@ class Grid:
     """
 
     def __init__(self, lat_min, lat_max, long_min, long_max):
-        STEP_SIZE_METERS = 2
+        STEP_SIZE_METERS = 1
 
         # ----------- HELPER FUNCTIONS FOR GRID INITIALIZATION ------------#
         def calc_step(lat_min, lat_max, long_min, long_max, step_size_m):
@@ -227,28 +227,29 @@ class Grid:
                 if ((x-circle_center_row)**2 + (y-circle_center_col)**2 - circle_radius**2) < 0:
                     self.nodes[x,y].is_active = True
 
-    def area(x1, y1, x2, y2, x3, y3):
-    
-        return abs((x1 * (y2 - y3) + x2 * (y3 - y1)
-                    + x3 * (y1 - y2)) / 2.0)
+
  
  
     # A function to check whether point P(x, y)
     # lies inside the triangle formed by
     # A(x1, y1), B(x2, y2) and C(x3, y3)
     def isInsideTriangle(self, x1, y1, x2, y2, x3, y3, x, y):
+        def area(x1, y1, x2, y2, x3, y3):
     
+            return abs((x1 * (y2 - y3) + x2 * (y3 - y1)
+                        + x3 * (y1 - y2)) / 2.0)
+        
         # Calculate area of triangle ABC
-        A = self.area(x1, y1, x2, y2, x3, y3)
+        A = area(x1, y1, x2, y2, x3, y3)
     
         # Calculate area of triangle PBC
-        A1 = self.area(x, y, x2, y2, x3, y3)
+        A1 = area(x, y, x2, y2, x3, y3)
         
         # Calculate area of triangle PAC
-        A2 = self.area(x1, y1, x, y, x3, y3)
+        A2 = area(x1, y1, x, y, x3, y3)
         
         # Calculate area of triangle PAB
-        A3 = self.area(x1, y1, x2, y2, x, y)
+        A3 = area(x1, y1, x2, y2, x, y)
         
         # Check if sum of A1, A2 and A3
         # is same as A
@@ -317,7 +318,7 @@ class Grid:
 
     
     ##Return bottom most node that is activated in the right column
-    def return_right_position(self, pos):
+    def bottom_rightmost_node(self, pos):
         candidate_nodes = [node for node in self.border_nodes if node.y == pos[1]+1]
         if (candidate_nodes == []):
             return None
@@ -341,7 +342,7 @@ class Grid:
                 new_pos = (curr_pos[0]+1,curr_pos[1])
                 if curr_pos[0]+1 == rows and self.nodes[new_pos].is_active:
                     waypoints.append(new_pos)
-                    right_pos = self.return_right_position(new_pos)
+                    right_pos = self.bottom_rightmost_node(new_pos)
                     if right_pos is not None:
                         waypoints.append(right_pos)
                         curr_pos = right_pos
@@ -352,7 +353,7 @@ class Grid:
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    right_pos = self.return_right_position(new_pos)
+                    right_pos = self.bottom_rightmost_node(new_pos)
                     if right_pos is not None:
                         waypoints.append(right_pos)
                         curr_pos = right_pos
