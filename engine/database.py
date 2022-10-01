@@ -89,8 +89,19 @@ class DataBase:
         return phase.value
 
     def make_packet(self):
-        coords = (str(self.get_data("state")[0][0]), str(self.get_data("state")[1][0]))
-        packet = Packet(self.phase_as_value(), str(self.get_data("plastic_weight")), str(self.get_data("acceleration")),\
-               "00.0", "00.00", "000.00,000.00", "0.00", "000.00,000.00", coords, str(self.get_data("battery")), "1")
+        coords = [str(self.get_data("state")[0][0]), str(self.get_data("state")[1][0]), str(self.get_data("state")[2][0])]
+        
+        acc = []
+        for i in self.get_data("acceleration"):
+            acc += str(i)
+
+        temp_n_dist = "00.0"
+        temp_rot = "00.00"
+        temp_last_n = ["000.00","000.00"]
+        temp_vel = "0.00"
+        next_n = ["000.00","000.00"]
+        temp_ctrl = "1"
+        packet = Packet(self.phase_as_value(), str(self.get_data("plastic_weight")), acc,\
+               temp_n_dist, temp_rot, temp_last_n, temp_vel, next_n, coords, str(self.get_data("battery")), temp_ctrl)
 
         return str(packet)

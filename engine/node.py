@@ -18,7 +18,7 @@ class Node:
 
     """
 
-    def __init__(self, lat, long, x, y, is_border=0, active=False, status=0):
+    def __init__(self, lat, long, x, y, is_border=False, active=False, status=0):
         self.lat = lat
         self.long = long
         self.x = x
