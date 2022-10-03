@@ -1,6 +1,6 @@
 from engine.robot import Robot, Phase
-from electrical.radio_module import Device, RadioSession
-from electrical.motor_controller import MotorPID
+from electrical.radio_module import RadioModule
+from electrical.motor_controller import MotorController
 from electrical.imu import IMU
 from electrical.gps import GPS
 
@@ -26,30 +26,24 @@ class RobotSetupPhaseTest:
         self.gps = GPS(self.gps_serial) 
         self.imu = IMU(self.imu_i2c) 
         self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio device
-        self.robot_radio_device = Device(0, self.robot_radio_serial) 
-        self.robot_radio_session = RadioSession(self.robot_radio_device) 
-        self.pid_motor = MotorPID(robot = self.robot, wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
+        self.robot_radio_session = RadioModule(self.robot_radio_serial) 
+        self.motor_controller = MotorController(robot = self.robot, wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
     
     def run(self): 
-        self.robot.execute_setup(self.robot_radio_device.device_number, self.robot_radio_session, self.gps, self.imu, self.pid_motor)
-
-
+        self.robot.execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
 
 class BaseStationSetupPhaseTest: 
     """
     Test Script for Setup Phase that the radio module is setup properly on the base station
     """
     def __init__(self): 
-        self.basestation_radio_device = Device(1, '/dev/ttyS0') #base station radio device
-        self.basestation_radio_session = RadioSession(self.basestation_radio_device)
+        self.basestation_radio_session = RadioModule(None)
 
     def run(self): 
-        pass 
-
-
-    def run(self): 
+        pass
         #TODO: change this into a base station execute_setup function
-        self.robot.execute_setup(self.robot_radio_device.device_number, self.robot_radio_session, self.gps, self.imu, self.pid_motor)
+        # self.robot.execute_setup(self.base_session, self.gps, self.imu, self.pid_motor)
+
 #TODO:  	
 #check phase at the end
 #check imu data that comes out 

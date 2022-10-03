@@ -1,17 +1,13 @@
 from engine.robot import Robot
-from electrical.radio_module import Device, RadioSession
-from electrical.motor_controller import MotorController
-# from electrical.gps import GPS
-# from electrical.imu import IMU
+from electrical.radio_module import RadioModule
+from electrical.motor_controller import BasicMotorController, MotorController
 import copy
 import math
 import unittest
 
+
 '''
-Unit tests for robot.py
-NOTE: MANY OF THESE FUNCTIONS ARE BASED SOLELY ON KINEMATIC EQUATIONS
-        for more comprehensive testing, we should make sure these kinematic
-        equations are correct!
+Unit tests for robot.py execute_setup function
 '''
 
 class TestSetup(unittest.TestCase):
@@ -67,24 +63,19 @@ class TestSetup(unittest.TestCase):
             return True 
 
         self.assertEqual(True, imu_setup())
-        
 
     #test_radio_session_setup for device and radio session initialization
     #note: actual radio connection testing must be performed with hardware
     def test_radio_session_setup(self):
-        robot_device = Device(None, 0) 
-        base_station_device = Device(None, 1)
-        robot_radio_session = RadioSession(robot_device)
-        self.assertEqual(robot_radio_session.device.connected, False)
-        self.assertEqual(robot_radio_session.device.device_number, 0)
-        self.assertEqual(base_station_device.device_number, 1)
+        robot_radio_session = RadioModule(None)
+        self.assertEqual(robot_radio_session.connected, False)
 
     #test motor_controller_setup calls the motor controller setup function, which will 
     #print a series of commands. Make sure they are in the order of: 
     #'go_forward', 'turn_left', 'turn_right', 'reverse', 'stop'
     def test_motor_controller_setup(self): 
         robot = Robot(x_pos = 0, y_pos = 0, heading = 0, epsilon = 0, max_v = 0, radius = 1, is_sim = True)
-        motor_controller = MotorController(robot)
+        motor_controller = BasicMotorController(robot)
         self.assertEqual(motor_controller.is_sim, True)
         motor_controller.setup()
 

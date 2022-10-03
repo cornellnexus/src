@@ -8,3 +8,5 @@ __pycache__/
 venv/
 .idea/
 .csv/
+.coverage
+**/apriltag/build/

@@ -28,14 +28,16 @@ class DataBase:
             "acceleration": robot.acceleration,  # not called in main algorithm yet
             "magnetic_field": robot.magnetic_field,  # not called in main algorithm yet
             "gyro_rotation": robot.gyro_rotation,  # not called in main algorithm yet
-            "position_pid": (robot.position_kp, robot.position_ki, robot.position_kd),
+            "position_pid": [robot.position_kp, robot.position_ki, robot.position_kd],
             "position_noise": robot.position_noise,
-            "heading_pid": (robot.heading_kp, robot.heading_ki, robot.heading_kd)
+            "heading_pid": [robot.heading_kp, robot.heading_ki, robot.heading_kd]
         }
 
     def __str__(self):
-        return "phase: " + str(self.core_data["phase"]) + ",\n" + \
-               "state [x, y, heading]: " + str(self.core_data["state"]) + ",\n" + \
+        return "phase: " + str(self.core_data["phase"].value) + ",\n" + \
+               "state [x, y, heading]: [" + str(self.core_data["state"][0,0])+ \
+                ", "+str(self.core_data["state"][1,0]) + ", " +\
+                str(self.core_data["state"][2,0])+ "]" + ",\n" + \
                "is_sim: " + str(self.core_data["is_sim"]) + ",\n" + \
                "plastic_weight: " + str(self.core_data["plastic_weight"]) + ",\n" + \
                "battery: " + str(self.core_data["battery"]) + ",\n" + \
@@ -43,11 +45,11 @@ class DataBase:
                "acceleration [x, y, z]: " + str(self.core_data["acceleration"]) + ",\n" + \
                "magnetic_field [x, y, z]: " + str(self.core_data["magnetic_field"]) + ",\n" + \
                "gyro_rotation [x, y, z]: " + str(self.core_data["gyro_rotation"]) + ",\n" + \
-               "position_pid [proportional factor, integral factor, derivative factor]: " + str(
-            self.core_data["position_pid"]) + ",\n" + \
+               "position_pid [proportional factor, integral factor, derivative factor]: " + \
+                str(self.core_data["position_pid"]) + ",\n" + \
                "position_noise: " + str(self.core_data["position_noise"]) + ",\n" + \
-               "heading_pid [proportional factor, integral factor, derivative factor]: " + str(
-            self.core_data["heading_pid"])
+               "heading_pid [proportional factor, integral factor, derivative factor]: " + \
+               str(self.core_data["heading_pid"])
 
     # position pid, position noise, heading pid
 
@@ -84,26 +86,22 @@ class DataBase:
 
     def phase_as_value(self):
         phase = self.get_data("phase")
-        if phase == Phase.SETUP:
-            return "1"
-        elif phase == Phase.TRAVERSE:
-            return "2"
-        elif phase == Phase.AVOID_OBSTACLE:
-            return "3"
-        elif phase == Phase.RETURN:
-            return "4"
-        elif phase == Phase.DOCKING:
-            return "5"
-        elif phase == Phase.COMPLETE:
-            return "6"
-        elif phase == Phase.FAULT:
-            return "7"
-        else:
-            raise Exception()
+        return phase.value
 
     def make_packet(self):
-        coords = (str(self.get_data("state")[0][0]), str(self.get_data("state")[1][0]))
-        packet = Packet(self.phase_as_value(), str(self.get_data("plastic_weight")), str(self.get_data("acceleration")),\
-               "00.0", "00.00", "000.00,000.00", "0.00", "000.00,000.00", coords, str(self.get_data("battery")), "1")
+        coords = [str(self.get_data("state")[0][0]), str(self.get_data("state")[1][0]), str(self.get_data("state")[2][0])]
+        
+        acc = []
+        for i in self.get_data("acceleration"):
+            acc += str(i)
+
+        temp_n_dist = "00.0"
+        temp_rot = "00.00"
+        temp_last_n = ["000.00","000.00"]
+        temp_vel = "0.00"
+        next_n = ["000.00","000.00"]
+        temp_ctrl = "1"
+        packet = Packet(self.phase_as_value(), str(self.get_data("plastic_weight")), acc,\
+               temp_n_dist, temp_rot, temp_last_n, temp_vel, next_n, coords, str(self.get_data("battery")), temp_ctrl)
 
         return str(packet)

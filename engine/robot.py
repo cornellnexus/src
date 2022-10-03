@@ -1,17 +1,17 @@
 import numpy as np
 import math
-from enum import Enum
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
+from electrical.motor_controller import MotorController
+from constants.definitions import CSV_PATH
+
 
 # import electrical.gps as gps 
 # import electrical.imu as imu 
 # import electrical.radio_module as radio_module
 
 
-
 from enum import Enum
-import os.path
 import time
 import sys
 
@@ -28,12 +28,6 @@ class Phase(Enum):
     COMPLETE = 6
     FAULT = 7
 
-def get_path(folder):
-
-    cwd = os.getcwd()
-    sys.path.append(cwd + "/" + folder)
-    return sys.path
-
 class Robot:
     """
     A class whose objects contain robot-specific information, and methods to execute individual phases.
@@ -42,7 +36,7 @@ class Robot:
     Parameters:
     state = Robot's state, np.array
         state contain's the robot's x position, y position, and heading
-    phase = 'collect' when traversing through grid, 'return' when returning to 
+    phase = 'collect' when traversing through grid, 'return' when returning to
         base station
     is_sim = False when running code with physical robot, True otherwise
     Preconditions:
@@ -52,7 +46,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=.1, move_dist=.5, turn_angle=3, plastic_weight = 0):
+                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -78,6 +72,9 @@ class Robot:
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
             plastic_weight: the weight of the trash the robot has collected
             battery: the battery of the robot
+            motor_controller: the motor controller for the Robot
+            linear_v: the current linear velocity of the Robot
+            angular_v: the current angular velocity of the Robot
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -96,14 +93,15 @@ class Robot:
         self.heading_kd = heading_kd
         self.heading_noise = heading_noise
         self.move_dist = move_dist
-        self.turn_angle = turn_angle/time_step  # dividing by time_step ignores the effect of time_step on absolute
-        # radians turned
+        # dividing by time_step ignores the effect of time_step on absolute
+        self.turn_angle = turn_angle/time_step
         self.plastic_weight = plastic_weight
-        self.battery = 100 # TEMPORARY
-        self.acceleration = 0 # TEMPORARY
-        self.magnetic_field = 0 # TEMPORARY
-        self.gyro_rotation = 0  # TEMPORARY
-
+        self.battery = 100  # TEMPORARY
+        self.acceleration = [0, 0, 0]  # TEMPORARY
+        self.magnetic_field = [0, 0, 0]  # TEMPORARY
+        self.gyro_rotation = [0, 0, 0]  # TEMPORARY
+        self.linear_v = 0
+        self.angular_v = 0
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -120,10 +118,9 @@ class Robot:
             output_limits=(None, None)
         )
 
-        cwd = os.getcwd()
-        cd = cwd + "/csv"
+        # TODO: wrap in try/except (error when calling execute_setup_test.py)
         # write in csv
-        with open(cd + '/phases.csv', 'a') as fd:
+        with open(CSV_PATH + '/phases.csv', 'a') as fd:
             fd.write(str(self.phase) + '\n')
 
     def travel(self, dist, turn_angle):
@@ -131,7 +128,8 @@ class Robot:
         self.state = np.round(integrate_odom(self.state, dist, turn_angle), 3)
         # if it is a simulation,
         if self.is_sim:
-            self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
+            self.truthpose = np.append(
+                self.truthpose, np.transpose(self.state), 0)
 
     def move_forward(self, dist):
         # Moves robot forward by distance dist
@@ -142,8 +140,8 @@ class Robot:
         self.state[1] = np.round(new_y, 3)
 
         if self.is_sim:
-            self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
-
+            self.truthpose = np.append(
+                self.truthpose, np.transpose(self.state), 0)
 
     def move_to_target_node(self, target, allowed_dist_error, database):
         """
@@ -161,8 +159,10 @@ class Robot:
                                    float(predicted_state[1]) - target[1])
 
         while distance_away > allowed_dist_error:
-            self.state[0] = np.random.normal(self.state[0], self.position_noise)
-            self.state[1] = np.random.normal(self.state[1], self.position_noise)
+            self.state[0] = np.random.normal(
+                self.state[0], self.position_noise)
+            self.state[1] = np.random.normal(
+                self.state[1], self.position_noise)
 
             x_error = target[0] - self.state[0]
             y_error = target[1] - self.state[1]
@@ -170,19 +170,23 @@ class Robot:
             x_vel = self.loc_pid_x.update(x_error)
             y_vel = self.loc_pid_y.update(y_error)
 
-            # the x_vel and y_vel we pass into feedback_lin should be global. Are they?
-            cmd_v, cmd_w = feedback_lin(predicted_state, x_vel, y_vel, self.epsilon)
+            cmd_v, cmd_w = feedback_lin(
+                predicted_state, x_vel, y_vel, self.epsilon)
 
-            # clamping of velocities?
-            (limited_cmd_v, limited_cmd_w) = limit_cmds(cmd_v, cmd_w, self.max_velocity, self.radius)
+            # clamping of velocities:
+            (limited_cmd_v, limited_cmd_w) = limit_cmds(
+                cmd_v, cmd_w, self.max_velocity, self.radius)
 
-            self.travel(self.time_step * limited_cmd_v, self.time_step * limited_cmd_w)
+            self.travel(self.time_step * limited_cmd_v,
+                        self.time_step * limited_cmd_w)
+
+            self.linear_v = limited_cmd_v[0]
+            self.angular_v = limited_cmd_w[0]
+
             # sleep in real robot.
 
             # write robot location and mag heading in csv (for gui to display)
-            cwd = os.getcwd()
-            cd = cwd + "/csv"
-            with open(cd + '/datastore.csv', 'a') as fd:
+            with open(CSV_PATH + '/datastore.csv', 'a') as fd:
                 fd.write(
                     str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
             time.sleep(0.001)
@@ -190,7 +194,8 @@ class Robot:
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
             # TODO: Do we want to update self.state with this new predicted state????
-            database.update_data("state", self.state[0], self.state[1], self.state[2])
+            database.update_data(
+                "state", self.state[0], self.state[1], self.state[2])
 
             # location error (in meters)
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
@@ -222,45 +227,38 @@ class Robot:
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
             # TODO: Do we want to update self.state with this new predicted state????
-            database.update_data("state", self.state[0], self.state[1], self.state[2])
-
+            database.update_data(
+                "state", self.state[0], self.state[1], self.state[2])
 
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
-
 
     def turn(self, turn_angle):
         """
         Hardcoded in-place rotation for testing purposes. Does not use heading PID. Avoid using in physical robot.
         """
         # Turns robot, where turn_angle is given in radians
-        clamp_angle = (self.state[2] + (turn_angle * self.time_step)) % (2 * math.pi)
+        clamp_angle = (self.state[2] + (turn_angle *
+                       self.time_step)) % (2 * math.pi)
         self.state[2] = np.round(clamp_angle, 3)
         if self.is_sim:
-            self.truthpose = np.append(self.truthpose, np.transpose(self.state), 0)
-
+            self.truthpose = np.append(
+                self.truthpose, np.transpose(self.state), 0)
 
     def get_state(self):
         return self.state
-
 
     def print_current_state(self):
         # Prints current robot state
         print('pos: ' + str(self.state[0:2]))
         print('heading: ' + str(self.state[2]))
 
+    def execute_setup(self, radio_session, gps, imu, motor_controller):
+        gps_setup = gps.setup() 
+        imu_setup = imu.setup()
+        radio_session.setup_robot()
+        motor_controller.setup()
 
-    def execute_setup(self, robot_device, radio_session, gps, imu, pid_motor):
-        if (robot_device == 0): 
-            gps_setup = gps.setup() 
-            imu_setup = imu.setup()
-            radio_session.setup_robot()
-            pid_motor.setup()
-        else: 
-            radio_session.setup_basestation()
-        
-        radio_connected = radio_session.device.connected 
-
-        if (radio_connected and gps_setup and imu_setup): 
+        if (radio_session.connected and gps_setup and imu_setup): 
             self.phase = Phase.TRAVERSE
 
 
@@ -269,8 +267,8 @@ class Robot:
         if control_mode == 4:  # Roomba mode
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
         else:
-            self.traverse_standard(unvisited_waypoints, allowed_dist_error, database)
-
+            self.traverse_standard(unvisited_waypoints,
+                                   allowed_dist_error, database)
 
     def traverse_standard(self, unvisited_waypoints, allowed_dist_error, database):
         """ Move the robot by following the traversal path given by [unvisited_waypoints].
@@ -283,12 +281,14 @@ class Robot:
         """
         while unvisited_waypoints:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
-            self.move_to_target_node(curr_waypoint, allowed_dist_error, database)  # TODO: add obstacle avoidance support
+            # TODO: add obstacle avoidance support
+            # TODO: add return when tank is full, etc
+            self.move_to_target_node(
+                curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
 
         self.set_phase(Phase.RETURN)
         return unvisited_waypoints
-
 
     def traverse_roomba(self, base_station_loc, time_limit, roomba_radius):
         """ Move the robot in a roomba-like manner.
@@ -300,14 +300,17 @@ class Robot:
                 None
         """
         dt = 0
-        exit_boolean = False # battery_limit, time_limit, battery_capacity is full
+        exit_boolean = False  # TODO: battery_limit, time_limit, tank_capacity is full, obstacle avoiding
         while not exit_boolean:
 
             curr_x = self.state[0]
             curr_y = self.state[1]
-            new_x = curr_x + self.move_dist * math.cos(self.state[2]) * self.time_step
-            new_y = curr_y + self.move_dist * math.sin(self.state[2]) * self.time_step
-            next_radius = math.sqrt(abs(new_x-base_station_loc[0])**2 + abs(new_y-base_station_loc[1])**2)
+            new_x = curr_x + self.move_dist * \
+                math.cos(self.state[2]) * self.time_step
+            new_y = curr_y + self.move_dist * \
+                math.sin(self.state[2]) * self.time_step
+            next_radius = math.sqrt(
+                abs(new_x-base_station_loc[0])**2 + abs(new_y-base_station_loc[1])**2)
             if next_radius > roomba_radius:
                 self.move_forward(-self.move_dist)
                 self.turn(self.turn_angle)
@@ -315,22 +318,18 @@ class Robot:
                 self.move_forward(self.move_dist)
             dt += 1
             exit_boolean = (dt > time_limit)
-        self.phase = Phase.COMPLETE
+        self.phase = Phase.COMPLETE # TODO: CHANGE the next phase to return
         return None
-
 
     def set_phase(self, new_phase):
         self.phase = new_phase
 
-        cwd = os.getcwd()
-        cd = cwd + "/csv"
-        with open(cd + '/phases.csv', 'a') as fd:
-            fd.write(str(self.phase)+ '\n')
-
+        with open(CSV_PATH + '/phases.csv', 'a') as fd:
+            fd.write(str(self.phase) + '\n')
 
     def execute_avoid_obstacle(self):
+        # TODO: SET BACK TO ORIGINAL MISSION (TRAVERSE OR RETURN)
         pass
-
 
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """
@@ -349,15 +348,18 @@ class Robot:
         dy = docking_dist_to_base * math.sin(base_angle)
         target_loc = (base_loc[0] + dx, base_loc[1] + dy)
 
-        self.move_to_target_node(target_loc, allowed_docking_pos_error, database)  # TODO: add obstacle avoidance support
+        # TODO: add obstacle avoidance support
+        self.move_to_target_node(
+            target_loc, allowed_docking_pos_error, database)
 
         # Face robot towards base station
         target_heading = base_angle + math.pi
-        self.turn_to_target_heading(target_heading, allowed_heading_error, database)
+        self.turn_to_target_heading(
+            target_heading, allowed_heading_error, database)
 
         # RETURN phase complete:
         self.set_phase(Phase.DOCKING)
 
-
     def execute_docking(self):
-        self.set_phase(Phase.COMPLETE) # temporary for simulation purposes
+        # TODO: add traverse to doc at base station in case mission didnt finish
+        self.set_phase(Phase.COMPLETE)  # temporary for simulation purposes
