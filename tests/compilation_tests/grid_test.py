@@ -62,17 +62,18 @@ class VisualizeGrid(unittest.TestCase):
 
     def test_engineering_quad(self):
         g = Grid(42.444250, 42.444599, -76.483682, -76.483276)
-        pass #passing only for github tests to not have graph pop-ups 
+        pass  # passing only for github tests to not have graph pop-ups
         # graph_traversal_path(g, 'Engineering Quad', 'Vincenty', ControlMode.LAWNMOWER)
     #
+
     def test_paul_mansion(self):
         g = Grid(42.444250, 42.444599, -76.483682, -76.483276)
-        pass #passing only for github tests to not have graph pop-ups
+        pass  # passing only for github tests to not have graph pop-ups
         # graph_traversal_path(g, 'Paul Mansion', 'Vincenty', ControlMode.SPIRAL)
 
     def test_paul_backyard(self):
         g = Grid(42.444250, 42.444599, -76.483682, -76.483276)
-        pass #passing only for github tests to not have graph pop-ups
+        pass  # passing only for github tests to not have graph pop-ups
         # graph_traversal_path(g, 'Paul Backyard', 'Vincenty', ControlMode.LAWNMOWER_B)
 
 
@@ -84,8 +85,10 @@ class TestGrid(unittest.TestCase):
         for nd in full_waypoints:
             if nd.is_border_node():
                 count += 1
-        self.assertNotEqual(count, g.get_num_rows() * g.get_num_cols(), 'is_border_node flag is set correctly')
-        self.assertEqual(count, g.get_num_cols() * 2, 'is_border_node flag is set correctly')
+        self.assertNotEqual(count, g.get_num_rows(
+        ) * g.get_num_cols(), 'is_border_node flag is set correctly')
+        self.assertEqual(count, g.get_num_cols() * 2,
+                         'is_border_node flag is set correctly')
         border_waypoints = g.get_waypoints(ControlMode.LAWNMOWER_B)
         border_node_count = (g.get_num_cols()*2)
         self.assertEqual(len(border_waypoints), border_node_count)
@@ -98,8 +101,21 @@ class TestGrid(unittest.TestCase):
         y_range = get_vincenty_y((lat_min, long_min), (lat_max, long_max))
         x_range = get_vincenty_x((lat_min, long_min), (lat_max, long_max))
         top_right_node = g.nodes[g.get_num_rows()-1][g.get_num_cols()-1]
-        self.assertLessEqual(top_right_node.get_m_coords()[0], x_range, "The meters grid shouldn't be larger than the lat bounds")
-        self.assertLessEqual(top_right_node.get_m_coords()[1], y_range, "The meters grid shouldn't be larger than the long bounds")
+        self.assertLessEqual(top_right_node.get_m_coords()[
+                             0], x_range, "The meters grid shouldn't be larger than the lat bounds")
+        self.assertLessEqual(top_right_node.get_m_coords()[
+                             1], y_range, "The meters grid shouldn't be larger than the long bounds")
+
+
+class TestInside(unittest.TestCase):
+    def test_inside(self):
+        g = Grid()
+        self.assertEqual(1, g.area(2, 2, 3, 3, 1, 3),
+                         "The area of this triangle should be 1")
+        self.assertTrue(g.IsInsideTriangle(2, 2, 3, 3, 1, 3, 2,
+                        2.5), "this point is inside the triangle")
+        self.assertFalse(g.IsInsideTriangle(2, 2, 3, 3, 1, 3,
+                         10, 10), "this point is outside the triangle")
 
 
 if __name__ == '__main__':
