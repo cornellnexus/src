@@ -109,7 +109,8 @@ class TestGrid(unittest.TestCase):
 
 class TestInside(unittest.TestCase):
     def test_inside(self):
-        g = Grid()
+        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        g = Grid(lat_min, lat_max, long_min, long_max)
         self.assertEqual(1, g.area(2, 2, 3, 3, 1, 3),
                          "The area of this triangle should be 1")
         self.assertTrue(g.IsInsideTriangle(2, 2, 3, 3, 1, 3, 2,
