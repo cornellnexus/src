@@ -118,7 +118,7 @@ class TestGrid(unittest.TestCase):
         for row in range(rows):
             for col in range(cols):
                 node = g.nodes[row][col]
-                if node.is_active_node() and is_on_border(row, col, rows-1, cols-1):
+                if node.is_active_node() and g.is_on_border(row, col, rows-1, cols-1):
                     count2 += 1
 
         self.assertEqual(count, count2)
