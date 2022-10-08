@@ -180,19 +180,13 @@ class Robot:
             self.linear_v = limited_cmd_v[0]
             self.angular_v = limited_cmd_w[0]
 
-            if self.is_sim: 
-                self.travel(self.time_step * limited_cmd_v,
-                            self.time_step * limited_cmd_w)
-            else: 
-                #convert robot's overall linear and angular velocity to voltages 
-                #and apply them to the motors
-                #TODO: pass in motor controller or initialize it somewhere within the codebase
-                #      to call the spin_motors function
-                # self.motor_controller.spin_motors(self.angular_v, self.linear_v) 
-
+            self.travel(self.time_step * limited_cmd_v,
+                        self.time_step * limited_cmd_w)
             
-
-            # sleep in real robot.
+            # for real robot: 
+            #TODO: pass in motor controller or initialize it somewhere within the codebase
+            #      to call the spin_motors function
+            # self.motor_controller.spin_motors(self.angular_v, self.linear_v) 
 
             # write robot location and mag heading in csv (for gui to display)
             with open(CSV_PATH + '/datastore.csv', 'a') as fd:
