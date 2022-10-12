@@ -1,4 +1,3 @@
-from matplotlib.mlab import phase_spectrum
 import numpy as np
 
 from engine.database import DataBase
