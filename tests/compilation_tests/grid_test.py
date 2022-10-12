@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from engine.grid import Grid
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from engine.mission import ControlMode
-from tests.functionality_tests.test_activation_shapes import is_on_border
 
 '''
 Visualization and unit tests for grid.py
