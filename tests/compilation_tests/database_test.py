@@ -1,3 +1,4 @@
+from matplotlib.mlab import phase_spectrum
 import numpy as np
 
 from engine.database import DataBase
@@ -157,6 +158,19 @@ class TestDataBase(unittest.TestCase):
                     self.assertEqual(ans[2], data[2], name)
                 else:
                     self.assertEqual(ans, database.get_data(name), name)
+
+    def test_phase_as_value(self):
+        robot_phase = Robot(x_pos= 0, y_pos =0, heading =0, epsilon =0, max_v =0, 
+    radius =0, is_sim=True)
+        db_robot_phase = DataBase(robot_phase)
+        phases = list(Phase)
+        num_phases = len(phases)
+        for i in range(1, num_phases):
+            self.assertEqual(i, db_robot_phase.phase_as_value())
+            db_robot_phase.update_data("phase", phases[i])
+
+    def test_make_packet(self):
+        pass
 
 
 if __name__ == '__main__':
