@@ -170,7 +170,16 @@ class TestDataBase(unittest.TestCase):
             db_robot_phase.update_data("phase", phases[i])
 
     def test_make_packet(self):
-        pass
+        expected_outputs = [
+            "phase:1;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00,000.00;batt:100;ctrl:1",
+            "phase:2;p_weight:02.0;acc:4.25,3.20,0.10;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:010.00,020.00,050.00;batt:098;ctrl:1",
+            "phase:1;p_weight:03.0;acc:0.50,0.20,0.30;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00,000.00;batt:046;ctrl:1",
+            ]
+
+        testcases = [(expected_outputs[0], self.db_default), (expected_outputs[1], self.db_initial), (expected_outputs[2], self.db_one_param)]
+
+        for expected_ans, database in testcases:
+            self.assertEqual(expected_ans, database.make_packet())
 
 
 if __name__ == '__main__':
