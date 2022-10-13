@@ -206,14 +206,14 @@ class Grid:
            return neighbor_node
 
     ##Activates rectangle based on row start/end, col start/end
-    def activate_rectangle(nodes, row, col, row_limit, col_limit):
+    def activate_rectangle(self, row, col, row_limit, col_limit):
         """
         Activates all the nodes in a rectangle.
         """
         for x in range(row, row_limit):
             for y in range(col, col_limit):
-                nodes[x,y].is_active = True
-        return nodes
+                self.nodes[x,y].is_active = True
+        return self.nodes
 
     ##Activates circle based on center and radius
     def activate_circle(self,circle_center_row, circle_center_col, circle_radius):
