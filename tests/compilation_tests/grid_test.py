@@ -106,15 +106,15 @@ class TestGrid(unittest.TestCase):
         self.assertLessEqual(top_right_node.get_m_coords()[
                              1], y_range, "The meters grid shouldn't be larger than the long bounds")
 
-
-class TestInside(unittest.TestCase):
     def test_inside(self):
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
         g = Grid(lat_min, lat_max, long_min, long_max)
-        self.assertTrue(g.isInsideTriangle(2, 2, 3, 3, 1, 3, 2,
+        self.assertTrue(g.is_inside_triangle(2, 2, 3, 3, 1, 3, 2,
                         2.5), "this point is inside the triangle")
-        self.assertFalse(g.isInsideTriangle(2, 2, 3, 3, 1, 3,
+        self.assertFalse(g.is_inside_triangle(2, 2, 3, 3, 1, 3,
                          10, 10), "this point is outside the triangle")
+        self.assertTrue(g.is_inside_triangle(2, 2, 3, 3, 1, 3, 2,
+                        2), "this point is inside the triangle")
 
 
 if __name__ == '__main__':
