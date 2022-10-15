@@ -10,8 +10,6 @@ def main():
     
     rows = grid.get_num_rows()
     cols = grid.get_num_cols()
-    print(rows)
-    print(cols)
     activation_type = input("Activation type: ")
     plt.figure()
     plt.title("Activated Nodes")
@@ -58,7 +56,7 @@ def main():
                 plt.plot(i,j, marker = 'o',color="green")
             else:
                 plt.plot(i,j, marker = 'o',color="blue")
-    # way_points = grid.get_waypoints(ControlMode.LAWNMOWER_A)
+
     way_points_x = [pt[0] for pt in way_points]
     way_points_y = [pt[1] for pt in way_points]
     plt.plot(way_points_x,way_points_y,color="purple")

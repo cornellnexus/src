@@ -319,16 +319,11 @@ class Grid:
     
     ##Return bottom most node that is activated in the right column
     def bottom_rightmost_node(self, pos):
-        candidate_nodes = []
-        for node_info in self.border_nodes:
-            if node_info[2] == pos[1]+1:
-                candidate_nodes.append(node_info)
-
-        # [node for node in self.border_nodes if node.y == pos[1]+1]
+        # node_info: (node, row, col)
+        candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]+1]
         if (candidate_nodes == []):
             return None
         else:
-            #node_info (node, row, col)
             node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
             return (node_info[1],node_info[2])
 
