@@ -104,7 +104,7 @@ class Robot:
         self.gyro_rotation = [0, 0, 0]  # TEMPORARY
         self.linear_v = 0
         self.angular_v = 0
-        self.motor_controller = MotorController(self.is_sim, wheel_r=0,
+        self.motor_controller = MotorController(self.is_sim, wheel_radius=0,
                                                 vm_load1=1, vm_load2=1, L=0, R=0)
 
         self.loc_pid_x = PID(
