@@ -1,7 +1,5 @@
 from collections import deque
-from electrical.motor_controller import BasicMotorController, MotorController
 from engine.robot import Phase
-from electrical.radio_module import RadioModule
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum
@@ -63,14 +61,6 @@ class Mission:
         self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
-        if not robot.is_sim:
-            self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
-            self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio 
-            self.imu_i2c = busio.I2C(board.SCL, board.SDA)
-            self.motor_controller = MotorController(robot, wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
-            self.robot_radio_session = RadioSession(self.robot_radio_serial) 
-            self.gps = GPS(self.gps_serial) 
-            self.imu = IMU(self.imu_i2c) 
         self.allowed_heading_error = allowed_heading_error
         self.base_station_angle = base_station.heading
         self.allowed_docking_pos_error = allowed_docking_pos_error
@@ -88,7 +78,7 @@ class Mission:
         """
         while self.robot.phase != Phase.COMPLETE:
             if self.robot.phase == Phase.SETUP:
-                self.robot.execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
+                self.robot.execute_setup(self.robot.robot_radio_session, self.robot.gps, self.robot.imu, self.robot.motor_controller)
 
             elif self.robot.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
