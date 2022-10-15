@@ -105,17 +105,18 @@ class MotorController:
         self.enA = 13
         self.enB = 12
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup([self.in1, self.in2, self.in3, self.in4],
-                   GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
+        if not self.is_sim:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup([self.in1, self.in2, self.in3, self.in4],
+                       GPIO.OUT, initial=GPIO.LOW)
+            GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
-        self.p1 = GPIO.PWM(self.enA, 50)
-        self.p2 = GPIO.PWM(self.enB, 50)
+            self.p1 = GPIO.PWM(self.enA, 50)
+            self.p2 = GPIO.PWM(self.enB, 50)
 
-    # Start with 0% duty cycle
-        self.p1.start(0)
-        self.p2.start(0)
+            # Start with 0% duty cycle
+            self.p1.start(0)
+            self.p2.start(0)
 
     # Initialize the robot's motors to 0 voltage. Used when powering the robot on.
     def setup(self):
