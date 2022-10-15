@@ -242,12 +242,14 @@ class Robot:
             w = self.head_pid.update(theta_error)  # angular velocity
             _, limited_cmd_w = limit_cmds(0, w, self.max_velocity, self.radius)
 
-            self.travel(0, self.time_step * limited_cmd_w)
-            # sleep in real robot
+            if self.is_sim:
+                self.travel(0, self.time_step * limited_cmd_w[0])
+            else:
+                self.motor_controller.spin_motors(limited_cmd_w[0], 0)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
-            # TODO: Do we want to update self.state with this new predicted state????
+
             database.update_data(
                 "state", self.state[0], self.state[1], self.state[2])
 
