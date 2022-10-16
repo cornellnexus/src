@@ -161,31 +161,6 @@ class Grid:
 
     # --------------------- METHODS TO FINISH INITIALIZATION OF ACTIVATED GRID -------------- #
 
-    def is_on_border(self, row, col, row_limit, col_limit):
-        """
-        Returns whether a particular activated node is on the border.
-
-        An activated node is on the border if any of the following conditions hold:
-        1. Any of its neighboring nodes are inactive.
-        2. It exists on the very edge of the grid.
-        """
-        min_col = max(0, col-1)
-        min_row = max(0, row-1)
-        max_col = min(col_limit, col+1)
-        max_row = min(row_limit, row+1)
-
-        # If this node is on the very edge of the grid, it is automatically a border node
-        if min_col == 0 or min_row == 0 or max_col == col_limit or max_row == row_limit:
-            return True
-
-        # If the node has a neighboring node that is inactive, it is a border node
-        for col in range(min_col, max_col):
-            for row in range(min_row, max_row):
-                if not self.nodes[row][col].is_active_node():
-                    return True
-        return False
-
-
     # --------------------- ADJUSTABLE TRAVERSAL ALGORITHMS -------------- #
 
     def get_neighbor_node(self, row, col, row_max, col_max):
