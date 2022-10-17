@@ -158,6 +158,7 @@ class Grid:
 
     # --------------------- METHODS TO FINISH INITIALIZATION OF ACTIVATED GRID -------------- #
 
+
     def is_on_border(self, row, col, row_limit, col_limit):
         """
         Returns whether a particular activated node is on the border.

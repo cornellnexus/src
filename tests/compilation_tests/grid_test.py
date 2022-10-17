@@ -116,6 +116,24 @@ class TestGrid(unittest.TestCase):
         self.assertTrue(g.is_inside_triangle(2, 2, 3, 3, 1, 3, 2,
                         2), "this point is inside the triangle")
 
+    def test_is_on_border(self):
+        count = 0
+        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        g = Grid(lat_min, lat_max, long_min, long_max)
+        
+        g.activate_traingle(1,1,5,5,9,1)
+        g.find_border_nodes()
+
+        count = 0
+        rows = g.nodes.shape[0]
+        cols = g.nodes.shape[1]
+        for row in range(rows):
+            for col in range(cols):
+                node = g.nodes[row][col]
+                if node.is_active_node() and g.is_on_border(row, col, rows-1, cols-1):
+                    count += 1
+
+        self.assertEqual(len(g.border_nodes), count)
 
 if __name__ == '__main__':
     unittest.main()
