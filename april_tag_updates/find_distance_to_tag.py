@@ -1,5 +1,5 @@
 expected_dist = 35+2
-known_width = 16.5 ##centimeters
+known_width = 4.18 ##inches
 focal_length = 1.37478492e+03
 import imutils
 import numpy as np
@@ -29,13 +29,16 @@ ARUCO_DICT = {
 }
 arucoDict = cv2.aruco.Dictionary_get(ARUCO_DICT["DICT_APRILTAG_36h11"])
 arucoParams = cv2.aruco.DetectorParameters_create()
-image = cv2.imread("april_test.jpg")
-(corners, ids, rejected) = cv2.aruco.detectMarkers(
-    image, arucoDict, parameters=arucoParams)
-print(corners)
-(topLeft, topRight, bottomRight, bottomLeft) = corners[0][0]
-pixel_width = np.sqrt((bottomRight[0] - bottomLeft[0])**2 + (bottomRight[1] - bottomLeft[1])**2)
+cap = cv2.VideoCapture(0)
+# image = cv2.imread("april_test.jpg")
 def distance_to_camera(knownWidth, focalLength, perWidth):
 	# compute and return the distance from the maker to the camera
 	return (knownWidth * focalLength) / perWidth
-print(distance_to_camera(known_width,focal_length,pixel_width))
+while True:
+		ret, image = cap.read()
+		(corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
+		if corners != ():
+			(topLeft, topRight, bottomRight, bottomLeft) = corners[0][0]
+			pixel_width = np.sqrt((bottomRight[0] - bottomLeft[0])**2 + (bottomRight[1] - bottomLeft[1])**2)
+			print(distance_to_camera(known_width,focal_length,pixel_width))
+cap.close()
