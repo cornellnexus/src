@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from enum import Enum
-from engine.grid import Grid
+
 class Node:
     def __init__(self,activated,x,y):
         self.activated = activated
@@ -161,7 +161,6 @@ def get_all_lawnmower_waypoints_adjustable(nodes,lefmost_node_pos,border_nodes):
 
 
 def main():
-    grid=Grid(42.444250, 42.444599, -76.483682, -76.483276)
     rows = int(input("Num rows: "))##Good value 30
     cols = int(input("Num cols: "))## Good value 30
     activation_type = input("Activation type: ")
