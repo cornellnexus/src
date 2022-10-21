@@ -5,7 +5,7 @@ import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from electrical.motor_controller import MotorController
-from constants.definitions import CSV_PATH
+from constants.definitions import *
 
 # import electrical.gps as gps
 # import electrical.imu as imu 
@@ -49,7 +49,7 @@ class Robot:
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, width, front_ultrasonic, lf_ultrasonic,
                  lb_ultrasonic, rf_ultrasonic, rb_ultrasonic, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0):
+                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0, goal_location=(0, 0)):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -59,7 +59,7 @@ class Robot:
             epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
             max_v: the maximum velocity of the robot
             radius: the radius of the robot
-            width: width of the robot
+            width: width of the robot in cm
             front_ultrasonic: the ultrasonic at the front of the robot, used for detecting obstacles
             lf_ultrasonic: the ultrasonic at the front of the left side of the robot, used for boundary following
             lb_ultrasonic: the ultrasonic at the back of the left side of the robot, used for boundary following
@@ -80,6 +80,7 @@ class Robot:
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
             plastic_weight: the weight of the trash the robot has collected
+            goal_location: location of the target location; added for testing obstacle tracking
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -109,6 +110,7 @@ class Robot:
         self.angular_v = 0
         self.width = width
         self.avoid_obstacle = False
+        self.fault = False
         self.front_ultrasonic = front_ultrasonic
         self.lf_ultrasonic = lf_ultrasonic
         self.lb_ultrasonic = lb_ultrasonic
@@ -118,11 +120,12 @@ class Robot:
         self.prev_phase = self.phase
         self.goal_location = (0, 0)
         self.max_sensor_range = 600
-        self.front_sensor_offset = 10  # replace this with how far offset the sensor is to the front of the robot
+        self.front_sensor_offset = 0  # replace this with how far offset the sensor is to the front of the robot
         self.measuring_angle = 75
         self.measuring_angle_in_rad = self.measuring_angle * math.pi / 180
-        self.obst_in_way = (self.width / 2) / (self.measuring_angle_in_rad / 2) + self.front_sensor_offset
-        self.detect_obstacle_range = math.max(self.obst_in_way, self.max_sensor_range)  # set maximum ultrasonic detection range
+        self.obst_in_way = (self.width / 2) / (
+                    self.measuring_angle_in_rad / 2) + self.front_sensor_offset  # currently ~width/1.3
+        self.detect_obstacle_range = min(self.obst_in_way, self.max_sensor_range)  # set ultrasonic detection range
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -365,14 +368,39 @@ class Robot:
     def track_obstacle(self):
         # make this async so main algorithm keeps running
         # assuming front sensor is mounted in the center x position (width/2)
-        while (self.phase == Phase.TRAVERSE) or (self.phase == Phase.RETURN) or (self.phase == Phase.DOCKING):
-            if self.front_ultrasonic.distance() < self.detect_obstacle_range:
-                self.dist_to_goal = math.sqrt(
-                    (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
-                self.avoid_obstacle = True
+        condition = True
+        curr_ultrasonic_value = 0
+        counter = 0  # added for testing
+        while condition:
+            if self.is_sim:
+                ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
+                                             "r")  # added for testing
+                content = ultrasonic_value_file.readlines()
+                line = content[counter]
+                counter += 1
+                curr_ultrasonic_value = float((''.join(line.rstrip('\n')).strip('()').split(', '))[0])
+                condition = (counter <= (len(content) - 1))
+                ultrasonic_value_file.close()
             else:
-                self.avoid_obstacle = False
-            time.sleep(10)  # don't hog the cpu
+                curr_ultrasonic_value = self.front_ultrasonic.distance()
+            if (self.phase == Phase.TRAVERSE) or (self.phase == Phase.RETURN) or (self.phase == Phase.DOCKING) or (
+                    self.phase == Phase.AVOID_OBSTACLE):
+                if curr_ultrasonic_value < self.detect_obstacle_range:
+                    self.dist_to_goal = math.sqrt(
+                        (self.state[0] - self.goal_location[0]) ** 2 + (self.state[1] - self.goal_location[1]) ** 2)
+                    self.avoid_obstacle = True
+                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                        fd.write("Avoid" + '\n')
+                else:
+                    self.avoid_obstacle = False
+                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                        fd.write("Not Avoid" + '\n')
+            if curr_ultrasonic_value < 0:
+                self.set_phase(Phase.FAULT)  # value should not go below 0; sensor is broken
+                with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                    fd.write("Fault" + '\n')
+
+        # time.sleep(10)  # don't hog the cpu
 
     def execute_avoid_obstacle(self, dist_to_goal, prev_phase):
         """ Execute obstacle avoidance
@@ -392,24 +420,29 @@ class Robot:
         dist_to_goal_decreases = False
         boundary_traversed = False
         while True:
-            dist_from_init = math.sqrt((self.x_pos - init_x) ** 2 + (self.y_pos - init_y) ** 2)
-            if dist_from_init > threshold:
-                gate = True
-            if boundary_traversed and gate:
-                self.set_phase(Phase.FAULT)  # cannot reach goal
-                return None
-            elif dist_to_goal_decreases:
-                # don't include condition on whether there is a new obstacle bc it will be caught and
-                # current algorithm will continue traversing current boundary (instead of traversing new obstacle)
-                self.set_phase(prev_phase)  # goes back to prev traversal
-                return None
+            if not self.fault:  # fault has priority over obstacle avoidance
+                dist_from_init = math.sqrt((self.x_pos - init_x) ** 2 + (self.y_pos - init_y) ** 2)
+                if dist_from_init > threshold:
+                    gate = True
+                if boundary_traversed and gate:
+                    self.set_phase(Phase.FAULT)  # cannot reach goal
+                    return None
+                elif dist_to_goal_decreases:
+                    # don't include condition on whether there is a new obstacle bc it will be caught and
+                    # current algorithm will continue traversing current boundary (instead of traversing new obstacle)
+                    self.set_phase(prev_phase)  # goes back to prev traversal
+                    return None
+                    # check position of goal and if obstacle in way of goal (using side sensors) then keep doing boundary
+                    # following except with new init_x, init_y, gate,
+                else:
+                    self.execute_boundary_following(0)  # add code directly here
+                    # update conditions
+                    curr_dist_to_goal = math.sqrt(
+                        (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
+                    dist_to_goal_decreases = (curr_dist_to_goal < dist_to_goal)
+                    boundary_traversed = dist_from_init < threshold
             else:
-                self.execute_boundary_following(0)  # add code directly here
-                # update conditions
-                curr_dist_to_goal = math.sqrt(
-                    (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
-                dist_to_goal_decreases = (curr_dist_to_goal < dist_to_goal)
-                boundary_traversed = dist_from_init < threshold
+                return Phase.FAULT
             time.sleep(10)  # don't hog the cpu
 
     def execute_boundary_following(self, min_dist):
