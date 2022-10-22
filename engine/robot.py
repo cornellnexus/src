@@ -366,38 +366,41 @@ class Robot:
             fd.write(str(self.phase) + '\n')
 
     def track_obstacle(self):
-        # # make this async so main algorithm keeps running
-        # # assuming front sensor is mounted in the center x position (width/2)
-        # max_sensor_range = 600
-        # front_sensor_offset = 10  # replace this with how far offset the sensor is to the front of the robot
-        # measuring_angle = 75
-        # measuring_angle_in_rad = measuring_angle * math.pi / 180
-        # obst_in_way = (self.width / 2) / (measuring_angle_in_rad / 2) + front_sensor_offset
-        # detect_obstacle_range = math.max(obst_in_way, max_sensor_range)  # set maximum ultrasonic detection range
-        # while True:
-        #     if self.front_ultrasonic.distance() < detect_obstacle_range:
-        #         self.dist_to_goal = math.sqrt(
-        #             (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
-        #         self.avoid_obstacle = True
-        #     else:
-        #         self.avoid_obstacle = False
-        #     time.sleep(10)  # don't hog the cpu
-
-        sensor_data = self.front_ultrasonic.distance()
-        sensor_measuring_angle = 75
-        front_sensor_offset = 10  # replace this with how far offset the sensor is to the front of the robot
-        width_margin = 1  # replace this with actual margin
-        threshold_distance = ((self.width + width_margin) / 2) / math.cos(
-            math.radians((180 - sensor_measuring_angle) / 2)) + front_sensor_offset
-
-        while True:
-            if sensor_data <= threshold_distance:
-                self.dist_to_goal = math.sqrt(
-                    (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
-                self.avoid_obstacle = True
+        # make this async so main algorithm keeps running
+        # assuming front sensor is mounted in the center x position (width/2)
+        condition = True
+        curr_ultrasonic_value = 0
+        counter = 0  # added for testing
+        while condition:
+            if self.is_sim:
+                ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
+                                             "r")  # added for testing
+                content = ultrasonic_value_file.readlines()
+                line = content[counter]
+                counter += 1
+                curr_ultrasonic_value = float((''.join(line.rstrip('\n')).strip('()').split(', '))[0])
+                condition = (counter <= (len(content) - 1))
+                ultrasonic_value_file.close()
             else:
-                self.avoid_obstacle = False
-            # time.sleep(10)
+                curr_ultrasonic_value = self.front_ultrasonic.distance()
+            if (self.phase == Phase.TRAVERSE) or (self.phase == Phase.RETURN) or (self.phase == Phase.DOCKING) or (
+                    self.phase == Phase.AVOID_OBSTACLE):
+                if curr_ultrasonic_value < self.detect_obstacle_range:
+                    self.dist_to_goal = math.sqrt(
+                        (self.state[0] - self.goal_location[0]) ** 2 + (self.state[1] - self.goal_location[1]) ** 2)
+                    self.avoid_obstacle = True
+                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                        fd.write("Avoid" + '\n')
+                else:
+                    self.avoid_obstacle = False
+                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                        fd.write("Not Avoid" + '\n')
+            if curr_ultrasonic_value < 0:
+                self.set_phase(Phase.FAULT)  # value should not go below 0; sensor is broken
+                with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                    fd.write("Fault" + '\n')
+
+        # time.sleep(10)  # don't hog the cpu
 
     def execute_avoid_obstacle(self, dist_to_goal, prev_phase):
         """ Execute obstacle avoidance
