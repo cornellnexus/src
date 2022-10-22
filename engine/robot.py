@@ -201,13 +201,16 @@ class Robot:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.max_velocity, self.radius)
 
-            self.travel(self.time_step * limited_cmd_v,
-                        self.time_step * limited_cmd_w)
-
             self.linear_v = limited_cmd_v[0]
             self.angular_v = limited_cmd_w[0]
 
-            # sleep in real robot.
+            self.travel(self.time_step * limited_cmd_v,
+                        self.time_step * limited_cmd_w)
+            
+            # for real robot: 
+            #TODO: pass in motor controller or initialize it somewhere within the codebase
+            #      to call the spin_motors function
+            # self.motor_controller.spin_motors(self.angular_v, self.linear_v) 
 
             # write robot location and mag heading in csv (for gui to display)
             with open(CSV_PATH + '/datastore.csv', 'a') as fd:
@@ -467,7 +470,7 @@ class Robot:
 
         # TODO: add obstacle avoidance support
         self.move_to_target_node(
-            target_loc, allowed_docking_pos_error, database)
+            target_loc, allowed_docking_pos_error, database, motor_controller)
 
         # Face robot towards base station
         target_heading = base_angle + math.pi
