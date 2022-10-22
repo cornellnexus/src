@@ -177,7 +177,8 @@ class TestObstacleTracking(unittest.TestCase):
         self.assertEqual \
             (r2d2.detect_obstacle_range,
              min(r2d2.max_sensor_range,
-                 (random_width / 2) / (r2d2.measuring_angle_in_rad / 2) + r2d2.front_sensor_offset))
+                 ((r2d2.width + r2d2.width_margin) / 2) /
+                 math.cos(math.radians((180 - r2d2.sensor_measuring_angle) / 2)) + r2d2.front_sensor_offset))
 
     def test_detection_range(self):
         wide_robot = Robot(0, 0, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, goal_location=(0, 600),
@@ -187,7 +188,7 @@ class TestObstacleTracking(unittest.TestCase):
                      width=200, front_ultrasonic=None, lb_ultrasonic=None, lf_ultrasonic=None,
                      rb_ultrasonic=None, rf_ultrasonic=None)
         self.assertEqual(self.approximate(1, wide_robot.max_sensor_range, wide_robot.detect_obstacle_range), True)
-        self.assertEqual(self.approximate(1, 152.79, skinny_robot.detect_obstacle_range), True)
+        self.assertEqual(self.approximate(1, 165.1, skinny_robot.detect_obstacle_range), True)
 
 
 if __name__ == '__main__':
