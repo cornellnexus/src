@@ -175,6 +175,7 @@ class Robot:
         distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                    float(predicted_state[1]) - target[1])
         i = 0
+        plt.plot(target[0], target[1], marker="o", markersize=10, markeredgecolor="red", markerfacecolor="green")
         while distance_away > allowed_dist_error:
             self.state[0] = np.random.normal(
                 self.state[0], self.position_noise)
@@ -241,13 +242,15 @@ class Robot:
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
 
-            # if i == 100: 
-            #     plt.scatter(self.truthpose[:,0],self.truthpose[:,1])
-            #     plt.show()
-            #     break
+            if i == 20: 
+                break
 
-            # i+=1
+            i+=1
+        x = self.truthpose[:,0]
+        y = self.truthpose[:,1]
         plt.scatter(self.truthpose[:,0],self.truthpose[:,1])
+        for index in range(i):
+            plt.text(x[index],y[index],index)
         plt.show()
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
