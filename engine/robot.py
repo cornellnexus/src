@@ -121,11 +121,11 @@ class Robot:
         self.goal_location = (0, 0)
         self.max_sensor_range = 600
         self.front_sensor_offset = 0  # replace this with how far offset the sensor is to the front of the robot
-        self.measuring_angle = 75
-        self.measuring_angle_in_rad = self.measuring_angle * math.pi / 180
-        self.obst_in_way = (self.width / 2) / (
-                    self.measuring_angle_in_rad / 2) + self.front_sensor_offset  # currently ~width/1.3
-        self.detect_obstacle_range = min(self.obst_in_way, self.max_sensor_range)  # set ultrasonic detection range
+        self.sensor_measuring_angle = 75
+        self.width_margin = 1  # replace this with actual margin
+        self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
+            math.radians((180 - self.sensor_measuring_angle) / 2)) + self.front_sensor_offset
+        self.detect_obstacle_range = min(self.threshold_distance, self.max_sensor_range)  # set ultrasonic detection range
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -366,41 +366,38 @@ class Robot:
             fd.write(str(self.phase) + '\n')
 
     def track_obstacle(self):
-        # make this async so main algorithm keeps running
-        # assuming front sensor is mounted in the center x position (width/2)
-        condition = True
-        curr_ultrasonic_value = 0
-        counter = 0  # added for testing
-        while condition:
-            if self.is_sim:
-                ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
-                                             "r")  # added for testing
-                content = ultrasonic_value_file.readlines()
-                line = content[counter]
-                counter += 1
-                curr_ultrasonic_value = float((''.join(line.rstrip('\n')).strip('()').split(', '))[0])
-                condition = (counter <= (len(content) - 1))
-                ultrasonic_value_file.close()
-            else:
-                curr_ultrasonic_value = self.front_ultrasonic.distance()
-            if (self.phase == Phase.TRAVERSE) or (self.phase == Phase.RETURN) or (self.phase == Phase.DOCKING) or (
-                    self.phase == Phase.AVOID_OBSTACLE):
-                if curr_ultrasonic_value < self.detect_obstacle_range:
-                    self.dist_to_goal = math.sqrt(
-                        (self.state[0] - self.goal_location[0]) ** 2 + (self.state[1] - self.goal_location[1]) ** 2)
-                    self.avoid_obstacle = True
-                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                        fd.write("Avoid" + '\n')
-                else:
-                    self.avoid_obstacle = False
-                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                        fd.write("Not Avoid" + '\n')
-            if curr_ultrasonic_value < 0:
-                self.set_phase(Phase.FAULT)  # value should not go below 0; sensor is broken
-                with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                    fd.write("Fault" + '\n')
+        # # make this async so main algorithm keeps running
+        # # assuming front sensor is mounted in the center x position (width/2)
+        # max_sensor_range = 600
+        # front_sensor_offset = 10  # replace this with how far offset the sensor is to the front of the robot
+        # measuring_angle = 75
+        # measuring_angle_in_rad = measuring_angle * math.pi / 180
+        # obst_in_way = (self.width / 2) / (measuring_angle_in_rad / 2) + front_sensor_offset
+        # detect_obstacle_range = math.max(obst_in_way, max_sensor_range)  # set maximum ultrasonic detection range
+        # while True:
+        #     if self.front_ultrasonic.distance() < detect_obstacle_range:
+        #         self.dist_to_goal = math.sqrt(
+        #             (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
+        #         self.avoid_obstacle = True
+        #     else:
+        #         self.avoid_obstacle = False
+        #     time.sleep(10)  # don't hog the cpu
 
-        # time.sleep(10)  # don't hog the cpu
+        sensor_data = self.front_ultrasonic.distance()
+        sensor_measuring_angle = 75
+        front_sensor_offset = 10  # replace this with how far offset the sensor is to the front of the robot
+        width_margin = 1  # replace this with actual margin
+        threshold_distance = ((self.width + width_margin) / 2) / math.cos(
+            math.radians((180 - sensor_measuring_angle) / 2)) + front_sensor_offset
+
+        while True:
+            if sensor_data <= threshold_distance:
+                self.dist_to_goal = math.sqrt(
+                    (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
+                self.avoid_obstacle = True
+            else:
+                self.avoid_obstacle = False
+            # time.sleep(10)
 
     def execute_avoid_obstacle(self, dist_to_goal, prev_phase):
         """ Execute obstacle avoidance
@@ -446,7 +443,32 @@ class Robot:
             time.sleep(10)  # don't hog the cpu
 
     def execute_boundary_following(self, min_dist):
-        pass
+        front_dist = self.rf_ultrasonic.distance()
+        back_dist = self.rb_ultrasonic.distance()
+        margin = 1  # Will change
+        forward_dist = 0.01  # Will change
+        turn_angle = math.pi / 90  # Will change
+
+        if math.abs(front_dist - back_dist) < margin:
+            self.move_forward(forward_dist)
+        elif front_dist > back_dist:
+            self.turn(turn_angle)
+        else:
+            self.turn(-1 * turn_angle)
+
+        '''
+        Robot will always begin boundary following by going clockwise (turning left when encountering an obstacle)
+        1. Determine if robot is parallel using the ultrasonic sensor data
+            * Three cases:
+                1. Front right sensor is farther away from the obstacle than the back right sensor
+                    * Turn right until sensor inputs are equalized (front of the robot will turn closer toward the obstacle)
+                2. Front right sensor is closer to the obstacle than the back right sensor
+                    *  Turn left until sensor inputs are equalized (front of the robot will turn away from the obstacle)
+                3. Both right-side sensors displaying the same value
+                    * With a margin of error accounting for not uniform obstacles
+        2. Once both sensors are displaying the same values, move forward (boundary following)
+        3. Exits boundary following when conditions met in execute_avoid_obstacle() method
+        '''
 
     # to do:
         # determine ccw or cw
