@@ -353,7 +353,7 @@ class Robot:
 
         # TODO: add obstacle avoidance support
         self.move_to_target_node(
-            target_loc, allowed_docking_pos_error, database, motor_controller)
+            target_loc, allowed_docking_pos_error, database)
 
         # Face robot towards base station
         target_heading = base_angle + math.pi
