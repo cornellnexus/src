@@ -3,11 +3,10 @@ import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from electrical.motor_controller import MotorController
-from constants.definitions import CSV_PATH
+from constants.definitions import *
 
-
-# import electrical.gps as gps 
-# import electrical.imu as imu 
+# import electrical.gps as gps
+# import electrical.imu as imu
 # import electrical.radio_module as radio_module
 
 
@@ -28,6 +27,7 @@ class Phase(Enum):
     COMPLETE = 6
     FAULT = 7
 
+
 class Robot:
     """
     A class whose objects contain robot-specific information, and methods to execute individual phases.
@@ -44,9 +44,10 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
+    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, width, front_ultrasonic, lf_ultrasonic,
+                 lb_ultrasonic, rf_ultrasonic, rb_ultrasonic, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0):
+                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0, goal_location=(0, 0)):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -56,25 +57,28 @@ class Robot:
             epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
             max_v: the maximum velocity of the robot
             radius: the radius of the robot
+            width: width of the robot in cm
+            front_ultrasonic: the ultrasonic at the front of the robot, used for detecting obstacles
+            lf_ultrasonic: the ultrasonic at the front of the left side of the robot, used for boundary following
+            lb_ultrasonic: the ultrasonic at the back of the left side of the robot, used for boundary following
+            rf_ultrasonic: the ultrasonic at the front of the right side of the robot, used for boundary following
+            rb_ultrasonic: the ultrasonic at the back of the right side of the robot, used for boundary following
             is_sim: False if the physical robot is being used, True otherwise
             position_kp: the proportional factor of the position PID
             position_ki: the integral factor of the position PID
             position_kd: the derivative factor of the position PID
             position_noise: the flat amount of noise added to the robot's phase on each localization step
-            init_phase: the phase which the robot begins at
             heading_kp: the proportional factor of the heading PID
             heading_ki: the integral factor of the heading PID
             heading_kd: the derivative factor of the heading PID
             heading_noise: ?
+            init_phase: the phase which the robot begins at
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
             plastic_weight: the weight of the trash the robot has collected
-            battery: the battery of the robot
-            motor_controller: the motor controller for the Robot
-            linear_v: the current linear velocity of the Robot
-            angular_v: the current angular velocity of the Robot
+            goal_location: location of the target location; added for testing obstacle tracking
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -94,7 +98,7 @@ class Robot:
         self.heading_noise = heading_noise
         self.move_dist = move_dist
         # dividing by time_step ignores the effect of time_step on absolute
-        self.turn_angle = turn_angle/time_step
+        self.turn_angle = turn_angle / time_step
         self.plastic_weight = plastic_weight
         self.battery = 100  # TEMPORARY
         self.acceleration = [0, 0, 0]  # TEMPORARY
@@ -102,6 +106,24 @@ class Robot:
         self.gyro_rotation = [0, 0, 0]  # TEMPORARY
         self.linear_v = 0
         self.angular_v = 0
+        self.width = width
+        self.avoid_obstacle = False
+        self.fault = False
+        self.front_ultrasonic = front_ultrasonic
+        self.lf_ultrasonic = lf_ultrasonic
+        self.lb_ultrasonic = lb_ultrasonic
+        self.rf_ultrasonic = rf_ultrasonic
+        self.rb_ultrasonic = rb_ultrasonic
+        self.dist_to_goal = 0
+        self.prev_phase = self.phase
+        self.goal_location = (0, 0)
+        self.max_sensor_range = 600
+        self.front_sensor_offset = 0  # replace this with how far offset the sensor is to the front of the robot
+        self.sensor_measuring_angle = 75
+        self.width_margin = 1  # replace this with actual margin
+        self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
+            math.radians((180 - self.sensor_measuring_angle) / 2)) + self.front_sensor_offset
+        self.detect_obstacle_range = min(self.threshold_distance, self.max_sensor_range)  # set ultrasonic detection range
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -177,16 +199,13 @@ class Robot:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.max_velocity, self.radius)
 
+            self.travel(self.time_step * limited_cmd_v,
+                        self.time_step * limited_cmd_w)
+
             self.linear_v = limited_cmd_v[0]
             self.angular_v = limited_cmd_w[0]
 
-            self.travel(self.time_step * limited_cmd_v,
-                        self.time_step * limited_cmd_w)
-            
-            # for real robot: 
-            #TODO: pass in motor controller or initialize it somewhere within the codebase
-            #      to call the spin_motors function
-            # self.motor_controller.spin_motors(self.angular_v, self.linear_v) 
+            # sleep in real robot.
 
             # write robot location and mag heading in csv (for gui to display)
             with open(CSV_PATH + '/datastore.csv', 'a') as fd:
@@ -216,7 +235,7 @@ class Robot:
 
         predicted_state = self.state  # this will come from Kalman Filter
 
-        abs_heading_error = abs(target_heading-float(predicted_state[2]))
+        abs_heading_error = abs(target_heading - float(predicted_state[2]))
 
         while abs_heading_error > allowed_heading_error:
             self.state[2] = np.random.normal(self.state[2], self.heading_noise)
@@ -241,7 +260,7 @@ class Robot:
         """
         # Turns robot, where turn_angle is given in radians
         clamp_angle = (self.state[2] + (turn_angle *
-                       self.time_step)) % (2 * math.pi)
+                                        self.time_step)) % (2 * math.pi)
         self.state[2] = np.round(clamp_angle, 3)
         if self.is_sim:
             self.truthpose = np.append(
@@ -256,14 +275,14 @@ class Robot:
         print('heading: ' + str(self.state[2]))
 
     def execute_setup(self, radio_session, gps, imu, motor_controller):
-        gps_setup = gps.setup() 
+        gps_setup = gps.setup()
         imu_setup = imu.setup()
         radio_session.setup_robot()
         motor_controller.setup()
-
-        if (radio_session.connected and gps_setup and imu_setup): 
-            self.phase = Phase.TRAVERSE
-
+        if (radio_session.connected and gps_setup and imu_setup):
+            obstacle_avoidance = threading.Thread(target=self.track_obstacle, daemon=True)
+            obstacle_avoidance.start()  # spawn thread to monitor obstacles
+            self.set_phase(Phase.TRAVERSE)
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius, database):
@@ -286,9 +305,15 @@ class Robot:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
             # TODO: add obstacle avoidance support
             # TODO: add return when tank is full, etc
+            # TODO: add turn_to_target_heading
             self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
+            if self.avoid_obstacle:
+                self.set_phase(Phase.AVOID_OBSTACLE)
+                self.goal_location = curr_waypoint
+                self.prev_phase = Phase.TRAVERSE
+                return unvisited_waypoints
 
         self.set_phase(Phase.RETURN)
         return unvisited_waypoints
@@ -302,26 +327,34 @@ class Robot:
             Returns:
                 None
         """
+        # to add obstacle avoidance, can either change roomba to go to point on the circle in the direction of the
+        # robot direction or use raw sensor value
+        # can we guarantee that when giving a velocity that the robot will move at that velocity?
         dt = 0
-        exit_boolean = False  # TODO: battery_limit, time_limit, tank_capacity is full, obstacle avoiding
+        exit_boolean = False  # TODO: battery_limit, time_limit, tank_capacity is full
         while not exit_boolean:
 
             curr_x = self.state[0]
             curr_y = self.state[1]
-            new_x = curr_x + self.move_dist * \
-                math.cos(self.state[2]) * self.time_step
-            new_y = curr_y + self.move_dist * \
-                math.sin(self.state[2]) * self.time_step
+            new_x = curr_x + self.move_dist * math.cos(self.state[2]) * self.time_step
+            new_y = curr_y + self.move_dist * math.sin(self.state[2]) * self.time_step
             next_radius = math.sqrt(
-                abs(new_x-base_station_loc[0])**2 + abs(new_y-base_station_loc[1])**2)
-            if next_radius > roomba_radius:
+                abs(new_x - base_station_loc[0]) ** 2 + abs(new_y - base_station_loc[1]) ** 2)
+            obstacle_detected = self.front_ultrasonic.distance() > self.detect_obstacle_range
+            # if moving will cause the robot to move through the obstacle
+            next_after_obstacle = next_radius < self.detect_obstacle_range
+            if (next_radius > roomba_radius) or (obstacle_detected and next_after_obstacle):
                 self.move_forward(-self.move_dist)
                 self.turn(self.turn_angle)
             else:
                 self.move_forward(self.move_dist)
             dt += 1
             exit_boolean = (dt > time_limit)
-        self.phase = Phase.COMPLETE # TODO: CHANGE the next phase to return
+            # if self.avoid_obstacle:
+            #     self.set_phase(Phase.AVOID_OBSTACLE)
+            #     self.prev_phase = Phase.TRAVERSE
+            #     return None
+        self.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
         return None
 
     def set_phase(self, new_phase):
@@ -330,9 +363,52 @@ class Robot:
         with open(CSV_PATH + '/phases.csv', 'a') as fd:
             fd.write(str(self.phase) + '\n')
 
-    def execute_avoid_obstacle(self):
-        # TODO: SET BACK TO ORIGINAL MISSION (TRAVERSE OR RETURN)
+    def track_obstacle(self):
         pass
+
+    def execute_avoid_obstacle(self, dist_to_goal, prev_phase):
+        pass
+
+    def execute_boundary_following(self, min_dist):
+        front_dist = self.rf_ultrasonic.distance()
+        back_dist = self.rb_ultrasonic.distance()
+        margin = 1  # Will change
+        forward_dist = 0.01  # Will change
+        turn_angle = math.pi / 90  # Will change
+
+        if math.abs(front_dist - back_dist) < margin:
+            self.move_forward(forward_dist)
+        elif front_dist > back_dist:
+            self.turn(turn_angle)
+        else:
+            self.turn(-1 * turn_angle)
+
+        '''
+        Robot will always begin boundary following by going clockwise (turning left when encountering an obstacle)
+        1. Determine if robot is parallel using the ultrasonic sensor data
+            * Three cases:
+                1. Front right sensor is farther away from the obstacle than the back right sensor
+                    * Turn right until sensor inputs are equalized (front of the robot will turn closer toward the obstacle)
+                2. Front right sensor is closer to the obstacle than the back right sensor
+                    *  Turn left until sensor inputs are equalized (front of the robot will turn away from the obstacle)
+                3. Both right-side sensors displaying the same value
+                    * With a margin of error accounting for not uniform obstacles
+        2. Once both sensors are displaying the same values, move forward (boundary following)
+        3. Exits boundary following when conditions met in execute_avoid_obstacle() method
+        '''
+
+    # to do:
+        # determine ccw or cw
+        # implement main algorithm to make sure robot is parallel
+        # test main algorithm
+        # add cases for smooth turning
+            # make sure to take into account width and length of robot and ultrasonic sensor value on both sides
+            # make sure to take into account situation when the gap you are turning into is smaller than the robot width
+        # add cases for obstacles when boundary following
+            # gap in wall but robot cannot fit
+        # add cases for sharp turns
+    # future to do:
+        # add dp to quit when following boundary
 
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """
@@ -353,7 +429,7 @@ class Robot:
 
         # TODO: add obstacle avoidance support
         self.move_to_target_node(
-            target_loc, allowed_docking_pos_error, database, motor_controller)
+            target_loc, allowed_docking_pos_error, database)
 
         # Face robot towards base station
         target_heading = base_angle + math.pi
