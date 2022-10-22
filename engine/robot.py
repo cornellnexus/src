@@ -446,45 +446,7 @@ class Robot:
             time.sleep(10)  # don't hog the cpu
 
     def execute_boundary_following(self, min_dist):
-        front_dist = self.rf_ultrasonic.distance()
-        back_dist = self.rb_ultrasonic.distance()
-        margin = 1  # Will change
-        forward_dist = 0.01  # Will change
-        turn_angle = math.pi / 90  # Will change
-
-        if math.abs(front_dist - back_dist) < margin:
-            self.move_forward(forward_dist)
-        elif front_dist > back_dist:
-            self.turn(turn_angle)
-        else:
-            self.turn(-1 * turn_angle)
-
-        '''
-        Robot will always begin boundary following by going clockwise (turning left when encountering an obstacle)
-        1. Determine if robot is parallel using the ultrasonic sensor data
-            * Three cases:
-                1. Front right sensor is farther away from the obstacle than the back right sensor
-                    * Turn right until sensor inputs are equalized (front of the robot will turn closer toward the obstacle)
-                2. Front right sensor is closer to the obstacle than the back right sensor
-                    *  Turn left until sensor inputs are equalized (front of the robot will turn away from the obstacle)
-                3. Both right-side sensors displaying the same value
-                    * With a margin of error accounting for not uniform obstacles
-        2. Once both sensors are displaying the same values, move forward (boundary following)
-        3. Exits boundary following when conditions met in execute_avoid_obstacle() method
-        '''
-
-    # to do:
-        # determine ccw or cw
-        # implement main algorithm to make sure robot is parallel
-        # test main algorithm
-        # add cases for smooth turning
-            # make sure to take into account width and length of robot and ultrasonic sensor value on both sides
-            # make sure to take into account situation when the gap you are turning into is smaller than the robot width
-        # add cases for obstacles when boundary following
-            # gap in wall but robot cannot fit
-        # add cases for sharp turns
-    # future to do:
-        # add dp to quit when following boundary
+        pass
 
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """
