@@ -64,7 +64,7 @@ class Mission:
         self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
-        if self.robot.is_sim:
+        if not self.robot.is_sim:
             self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5)
             self.robot_radio_serial = serial.Serial(
                 '/dev/ttyS0', 57600)  # robot radio

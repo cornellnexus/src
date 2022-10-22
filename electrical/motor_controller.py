@@ -91,8 +91,7 @@ class MotorController:
         R: radius of right motor #TODO: double check this
     """
 
-    def __init__(self, is_sim, wheel_radius, vm_load1, vm_load2, L, R):
-        self.is_sim = is_sim
+    def __init__(self, wheel_radius, vm_load1, vm_load2, L, R):
         self.wheel_radius = wheel_radius
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2
@@ -105,37 +104,33 @@ class MotorController:
         self.enA = 13
         self.enB = 12
 
-        if not self.is_sim:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup([self.in1, self.in2, self.in3, self.in4],
-                       GPIO.OUT, initial=GPIO.LOW)
-            GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup([self.in1, self.in2, self.in3, self.in4],
+                    GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
-            self.p1 = GPIO.PWM(self.enA, 50)
-            self.p2 = GPIO.PWM(self.enB, 50)
+        self.p1 = GPIO.PWM(self.enA, 50)
+        self.p2 = GPIO.PWM(self.enB, 50)
 
-            # Start with 0% duty cycle
-            self.p1.start(0)
-            self.p2.start(0)
+        # Start with 0% duty cycle
+        self.p1.start(0)
+        self.p2.start(0)
 
     # Initialize the robot's motors to 0 voltage. Used when powering the robot on.
     def setup(self):
-        if self.is_sim:
-            self.spin_motors(0, 0)
-        else:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup([self.in1, self.in2, self.in3, self.in4],
-                       GPIO.OUT, initial=GPIO.LOW)
-            GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup([self.in1, self.in2, self.in3, self.in4],
+                    GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
-            self.p1 = GPIO.PWM(self.enA, 50)
-            self.p2 = GPIO.PWM(self.enB, 50)
+        self.p1 = GPIO.PWM(self.enA, 50)
+        self.p2 = GPIO.PWM(self.enB, 50)
 
-            # Initialize PWM duty cycles as 0
-            self.p1.start(0)
-            self.p2.start(0)
+        # Initialize PWM duty cycles as 0
+        self.p1.start(0)
+        self.p2.start(0)
 
-            self.spin_motors(0, 0)
+        self.spin_motors(0, 0)
 
     # converts the robot's overall calculated angular velocity and linear velocity
     # into the angular velocities for left and right sides of the robot
