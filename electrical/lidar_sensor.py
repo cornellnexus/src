@@ -47,27 +47,29 @@ class Lidar:
         init_time = time.time()
         counter = 0
         while time.time() < init_time + sample_rate*10:
-            new_obj_dist = get_lidar_data()
+            new_obj_dist = self.get_lidar_data()
             if new_obj_dist < alert_dist:
                 counter+=1
             else:
                 break
             if counter > 10*sample_rate:
                 return True #object detected 
-
-    #configuring the sensor: sample rate and default baud rate 11000smth
+    
+## testing code: 
+if __name__ == "__main__":
+    lidar= Lidar()
+    data = lidar.get_lidar_data()
+        #configuring the sensor: sample rate and default baud rate 11000smth
+    
     sample_rate = 100
-    set_samp_rate(sample_rate)
+    lidar.set_samp_rate(sample_rate)
     alert_dist = 100 #in cm
-    #t0 = time.time() # for timing
-    dist_array = [] # for storing values
-
     while True:
         try:
-            distance,strength = get_lidar_data() # read values
+            distance,strength = lidar.get_lidar_data() # read values
             print('Distance: {0:2.2f} m, Strength: {1:2.0f} / 65535 (16-bit)'.format(distance,strength))
             if distance < alert_dist:
-                check_if_full(sample_rate, alert_dist)
+                lidar.check_if_full(sample_rate, alert_dist)
         except:
             continue
 
@@ -85,6 +87,3 @@ class Lidar:
             if counter > 10: 
                 object is detected 
     '''
-## testing code: 
-# lidar_sensor = Lidar()
-# data = lidar_sensor.get_lidar_data()
