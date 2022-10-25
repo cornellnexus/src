@@ -25,7 +25,7 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
     # max_v, heading, epsilon will likely be changed as we physically test
     r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5,
                  radius=0.2, init_phase=Phase.TRAVERSE)
-    motor_controller = MotorController(r2d2)
+    motor_controller = MotorController(r2d2, 10 .016275, .016275, 5, 5)
     motor_controller.setup()
     database = DataBase(r2d2)
     waypoints = grid.get_straight_line_waypoints(y_start_pct=0.5)
