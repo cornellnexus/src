@@ -5,7 +5,7 @@ import pygame
 from boundary_following_gui import Graphics, Robot, Ultrasonic
 MAP_DIMENSIONS = (600, 1200)
 # Environment graphics
-gfx = Graphics(MAP_DIMENSIONS, "gui_images/boundary_following_robot.png",
+gfx = Graphics(MAP_DIMENSIONS, "gui_images/test.png",
                "gui_images/boundary_map.png")
 # the robot
 start = (200, 200)
