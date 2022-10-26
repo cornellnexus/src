@@ -367,12 +367,22 @@ class Robot:
     def execute_avoid_obstacle(self, dist_to_goal, prev_phase):
         pass
 
+    # Currently, algorithm only supports using the right side sensors of the robot for boundary following.
+    # When encountering an obstacle, robot will begin boundary following by going clockwise around the object.
+    # This was arbitrarily decided since currently there is no better way to determine which direction the robot should
+    # navigate around the obstacle.
     def execute_boundary_following(self, min_dist):
         front_dist = self.rf_ultrasonic.distance()
         back_dist = self.rb_ultrasonic.distance()
-        margin = 1  # Will change
-        forward_dist = 0.01  # Will change
-        turn_angle = math.pi / 90  # Will change
+        margin = 1 
+        # Plus or minus distance value used to calculate if robot is parallel to an non-uniform object 
+        # (i.e. not a flat surface). forwardRightSensorReading - backRightSensorReading < margin means
+        # robot is parallel to object.
+        forward_dist = 0.01  # Distance moved forward by robot in one iteration of this method
+        turn_angle = math.pi / 90
+        # Turn angle of robot in one iteration of this method. Robot turns turn_angle if
+        # forwardRightSensorReading > backRightSensorReading and -turn_angle if
+        # forwardRightSensorReading < backRightSensorReading
 
         if math.abs(front_dist - back_dist) < margin:
             self.move_forward(forward_dist)
