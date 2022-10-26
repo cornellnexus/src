@@ -44,8 +44,8 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, width, front_ultrasonic, lf_ultrasonic,
-                 lb_ultrasonic, rf_ultrasonic, rb_ultrasonic, is_sim=True, position_kp=1, position_ki=0,
+    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, width, front_ultrasonic=None, lf_ultrasonic=None,
+                 lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
                  init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0, goal_location=(0, 0)):
         """
@@ -118,12 +118,15 @@ class Robot:
         self.prev_phase = self.phase
         self.goal_location = (0, 0)
         self.max_sensor_range = 600
-        self.front_sensor_offset = 0  # replace this with how far offset the sensor is to the front of the robot
+        # replace this with how far offset the sensor is to the front of the robot
+        self.front_sensor_offset = 0
         self.sensor_measuring_angle = 75
         self.width_margin = 1  # replace this with actual margin
         self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
             math.radians((180 - self.sensor_measuring_angle) / 2)) + self.front_sensor_offset
-        self.detect_obstacle_range = min(self.threshold_distance, self.max_sensor_range)  # set ultrasonic detection range
+        # set ultrasonic detection range
+        self.detect_obstacle_range = min(
+            self.threshold_distance, self.max_sensor_range)
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -334,8 +337,10 @@ class Robot:
 
             curr_x = self.state[0]
             curr_y = self.state[1]
-            new_x = curr_x + self.move_dist * math.cos(self.state[2]) * self.time_step
-            new_y = curr_y + self.move_dist * math.sin(self.state[2]) * self.time_step
+            new_x = curr_x + self.move_dist * \
+                math.cos(self.state[2]) * self.time_step
+            new_y = curr_y + self.move_dist * \
+                math.sin(self.state[2]) * self.time_step
             next_radius = math.sqrt(
                 abs(new_x - base_station_loc[0]) ** 2 + abs(new_y - base_station_loc[1]) ** 2)
             obstacle_detected = self.front_ultrasonic.distance() > self.detect_obstacle_range
@@ -400,10 +405,10 @@ class Robot:
         # implement main algorithm to make sure robot is parallel
         # test main algorithm
         # add cases for smooth turning
-            # make sure to take into account width and length of robot and ultrasonic sensor value on both sides
-            # make sure to take into account situation when the gap you are turning into is smaller than the robot width
+        # make sure to take into account width and length of robot and ultrasonic sensor value on both sides
+        # make sure to take into account situation when the gap you are turning into is smaller than the robot width
         # add cases for obstacles when boundary following
-            # gap in wall but robot cannot fit
+        # gap in wall but robot cannot fit
         # add cases for sharp turns
     # future to do:
         # add dp to quit when following boundary
