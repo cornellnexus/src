@@ -2,18 +2,22 @@ import time
 #from engine.robot import Robot
 if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
-    
+
+
 class BasicMotorController:
     """ 
     BasicMotorController contains pinouts to configure motor controller, as well as 
     commands to physically move the robot. 
     """
+
     def __init__(self, robot):
         # raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
-        self.enA = 13   #PWM
-        self.enB = 12   #PWM 
+        self.in3 = 19
+        self.in4 = 26
+        self.enA = 13  # PWM pin
+        self.enB = 12  # PWM pin
         self.is_sim = robot.is_sim
 
     # checks all of the robot movements are functioning properly
@@ -86,8 +90,8 @@ class MotorController:
         L: radius of left motor #TODO: double check this 
         R: radius of right motor #TODO: double check this
     """
-    def __init__(self, robot, wheel_radius, vm_load1, vm_load2, L, R):
-        self.is_sim = robot.is_sim
+
+    def __init__(self, wheel_radius, vm_load1, vm_load2, L, R):
         self.wheel_radius = wheel_radius
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2
@@ -107,32 +111,22 @@ class MotorController:
         self.p1 = GPIO.PWM(self.enA, 50)
         self.p2 = GPIO.PWM(self.enB, 50)
 
-    # Start with 0% duty cycle
+        # Start with 0% duty cycle
         self.p1.start(0)
         self.p2.start(0)
-    
-    # Initialize the robot's motors to 0 voltage. Used when powering the robot on. 
+
+    # Initialize the robot's motors to 0 voltage. Used when powering the robot on.
     def setup(self):
-        if self.is_sim: 
-            self.spin_motors(0, 0)
-        else:
-            GPIO.setmode(GPIO.BCM)
-            GPIO.setup([self.in1, self.in2, self.in3, self.in4], GPIO.OUT, initial=GPIO.LOW)  
-            GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup([self.in1, self.in2, self.in3, self.in4],
+                    GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
-    # Change duty cycle for motors based on angular and linear velocities
-    def motors(self, omega, vel):
-            self.p1 = GPIO.PWM(self.enA, 50)
-            self.p2 = GPIO.PWM(self.enB, 50)
+        self.p1 = GPIO.PWM(self.enA, 50)
+        self.p2 = GPIO.PWM(self.enB, 50)
 
-            # Initialize PWM duty cycles as 0
-            self.p1.start(0)
-            self.p2.start(0)
-
-            self.spin_motors(0, 0)
-   
-    #converts the robot's overall calculated angular velocity and linear velocity 
-    #into the angular velocities for left and right sides of the robot
+    # converts the robot's overall calculated angular velocity and linear velocity
+    # into the angular velocities for left and right sides of the robot
     def left_right_angular_vel(self, omega, vel):
         if omega == 0:
             vr = vel
@@ -145,26 +139,26 @@ class MotorController:
         omega_l = vl * self.wheel_radius
         return omega_r, omega_l
 
-
-    # Change duty cycle (voltage applied) for motors based on 
+    # Change duty cycle (voltage applied) for motors based on
     # overall robot's angular and linear velocities
+
     def spin_motors(self, omega, vel):
         omega_right, omega_left = self.left_right_angular_vel(omega, vel)
-        
+
         # Define and cap duty cycles if they are above max
-        try: 
+        try:
             dc1 = omega_right / self.vm_load1
             dc2 = omega_left / self.vm_load2
-        except: 
+        except:
             raise ZeroDivisionError("vm_load1 or vm_load2 is zero")
 
         if dc1 > 100:
             dc1 = 100
         if dc2 > 100:
             dc2 = 100
-        
-        if self.is_sim:
+
+        if not self.is_sim:
             self.p1.ChangeDutyCycle(dc1)
             self.p2.ChangeDutyCycle(dc2)
-        else: 
+        else:
             print("dc1: ", dc1, "and dc2: ", dc2)

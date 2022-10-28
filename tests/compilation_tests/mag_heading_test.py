@@ -1,4 +1,4 @@
-import wmm2020
+#import wmm2020
 import csv
 import math
 import numpy as np
@@ -55,7 +55,6 @@ for i in range(height):
         i, 3]
 
     heading = np.degrees(math.atan2(top, bottom))
-
 
     # ekf.Q[i,1] = 0;
     # ekf.Q[i,3] = 0;
