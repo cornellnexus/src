@@ -46,11 +46,11 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, width = 700, front_ultrasonic = None,
-                 lf_ultrasonic = None, lb_ultrasonic = None, rf_ultrasonic = None, rb_ultrasonic = None, is_sim=True,
+    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, width=700, front_ultrasonic=None,
+                 lf_ultrasonic=None, lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None, is_sim=True,
                  position_kp=1, position_ki=0, position_kd=0, position_noise=0, heading_kp=1, heading_ki=0,
                  heading_kd=0, heading_noise=0, init_phase=1, time_step=1, move_dist=.5, turn_angle=3,
-                 plastic_weight=0):
+                 plastic_weight=0, init_threshold=1, goal_threshold=1):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -81,7 +81,9 @@ class Robot:
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
             plastic_weight: the weight of the trash the robot has collected
-            goal_location: location of the target location; added for testing obstacle tracking
+            init_threshold (Double): Radius from initial position that robot has to leave before it can detect if
+                goal is unreachable in obstacle avoidance
+            goal_threshold (Double): Threshold from goal that will be detected as reaching goal in obstacle avoidance
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -126,7 +128,10 @@ class Robot:
         self.width_margin = 1  # replace this with actual margin
         self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
             math.radians((180 - self.sensor_measuring_angle) / 2)) + self.front_sensor_offset
-        self.detect_obstacle_range = min(self.threshold_distance, self.max_sensor_range)  # set ultrasonic detection range
+        self.detect_obstacle_range = min(self.threshold_distance,
+                                         self.max_sensor_range)  # set ultrasonic detection range
+        self.init_threshold = init_threshold
+        self.goal_threshold = goal_threshold
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -207,9 +212,9 @@ class Robot:
 
             self.travel(self.time_step * limited_cmd_v,
                         self.time_step * limited_cmd_w)
-            
+
             # for real robot: 
-            #TODO: pass in motor controller or initialize it somewhere within the codebase
+            # TODO: pass in motor controller or initialize it somewhere within the codebase
             #      to call the spin_motors function
             # self.motor_controller.spin_motors(self.angular_v, self.linear_v) 
 
@@ -390,6 +395,9 @@ class Robot:
             if (self.phase == Phase.TRAVERSE) or (self.phase == Phase.RETURN) or (self.phase == Phase.DOCKING) or (
                     self.phase == Phase.AVOID_OBSTACLE):
                 if curr_ultrasonic_value < self.detect_obstacle_range:
+                    # didn't check whether we can reach goal before contacting obstacle because obstacle detection does
+                    # not detect angle, so obstacle could be calculated to be falsely farther away than the goal. Not
+                    # optimal because in cases, robot will execute boundary following when it can reach goal
                     self.dist_to_goal = math.sqrt(
                         (self.state[0] - self.goal_location[0]) ** 2 + (self.state[1] - self.goal_location[1]) ** 2)
                     self.avoid_obstacle = True
@@ -406,11 +414,14 @@ class Robot:
 
         # time.sleep(10)  # don't hog the cpu
 
-    def execute_avoid_obstacle(self, dist_to_goal, prev_phase):
+    def execute_avoid_obstacle(self, dist_to_goal, prev_phase, init_threshold, goal_threshold):
         """ Execute obstacle avoidance
             Args:
                 dist_to_goal (Double): The distance from the robot to the goal at the start of the phase
                 prev_phase (Phase): The previous phase to return to after executing obstacle avoidance
+                init_threshold (Double): Radius from initial position that robot has to leave before it can detect if
+                    goal is unreachable
+                goal_threshold (Double): Threshold from goal that will be detected as reaching goal
             Returns:
                 prev_phase (Phase)
         """
@@ -419,34 +430,38 @@ class Robot:
         # threshold is arbitrary, set later. sometimes location reading will be inaccurate or not frequent enough to
         # read that we've arrived back to the init x y pos. make it small enough that robot actually leaves threshold
         # at some time during boundary following or add timeout to branch making gate = True
-        threshold = 1
         gate = False
         dist_to_goal_decreases = False
         boundary_traversed = False
         while True:
             if not self.fault:  # fault has priority over obstacle avoidance
                 dist_from_init = math.sqrt((self.x_pos - init_x) ** 2 + (self.y_pos - init_y) ** 2)
-                if dist_from_init > threshold:
+                if dist_from_init > init_threshold:
                     gate = True
-                if boundary_traversed and gate:
+                if curr_dist_to_goal < goal_threshold and gate:  # exits obstacle avoidance if robot close to goal
+                    self.set_phase(prev_phase)
+                    return None
+                elif boundary_traversed and gate:
                     self.set_phase(Phase.FAULT)  # cannot reach goal
                     return None
                 elif dist_to_goal_decreases:
                     # don't include condition on whether there is a new obstacle bc it will be caught and
                     # current algorithm will continue traversing current boundary (instead of traversing new obstacle)
+                    # not optimal because frequently will have to go back to obstacle avoidance
                     self.set_phase(prev_phase)  # goes back to prev traversal
                     return None
-                    # check position of goal and if obstacle in way of goal (using side sensors) then keep doing boundary
-                    # following except with new init_x, init_y, gate,
+                    # check position of goal and if obstacle in way of goal (using side sensors) then keep doing
+                    # boundary following except with new init_x, init_y, gate,
                 else:
                     self.execute_boundary_following(0)  # add code directly here
                     # update conditions
                     curr_dist_to_goal = math.sqrt(
                         (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
                     dist_to_goal_decreases = (curr_dist_to_goal < dist_to_goal)
-                    boundary_traversed = dist_from_init < threshold
+                    boundary_traversed = dist_from_init < init_threshold
             else:
-                return Phase.FAULT
+                self.set_phase(Phase.FAULT)
+                return None
             time.sleep(10)  # don't hog the cpu
 
     def execute_boundary_following(self, min_dist):
