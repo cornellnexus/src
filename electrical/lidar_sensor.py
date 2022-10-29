@@ -31,7 +31,7 @@ class Lidar:
         else:
             return True
 
-    
+     
     def set_samp_rate(self, samp_rate = 100): # should it just be samp_rate in the parenthesis here?
         '''
         Change the sample rate (number of readings per second, Hz).
