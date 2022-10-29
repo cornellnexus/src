@@ -1,11 +1,10 @@
-import numpy as np
 import math
-import os
 import pygame
-from boundary_following_gui import Graphics, Robot, Ultrasonic
+from gui.boundary_following_gui import Graphics, Robot, Ultrasonic
+from constants.definitions import GUI_DIR
 
-GUI_DIR = os.getcwd() + "/gui"
 MAP_DIMENSIONS = (600, 1200)
+
 # Environment graphics
 gfx = Graphics(MAP_DIMENSIONS, GUI_DIR+"/gui_images/Aditya Robot.png",
                GUI_DIR+"/gui_images/boundary_map.png")
