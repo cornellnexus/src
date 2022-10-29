@@ -1,9 +1,10 @@
 import numpy as np
 import math
-import this
+import os
 import pygame
-from gui.boundary_following_gui import Graphics, Robot, Ultrasonic
-from constants.definitions import GUI_DIR, CSV_PATH
+from boundary_following_gui import Graphics, Robot, Ultrasonic
+
+GUI_DIR = os.getcwd() + "/gui"
 MAP_DIMENSIONS = (600, 1200)
 # Environment graphics
 gfx = Graphics(MAP_DIMENSIONS, GUI_DIR+"/gui_images/test.png",
