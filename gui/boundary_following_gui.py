@@ -11,12 +11,14 @@ def distance(point1, point2):
 
 
 class Robot:
-    def __init__(self, startpos, width):
+    def __init__(self, startpos, endpos, width):
         self.metersToPixels = 3779.52  # meters to pixels conversion
         # robot dimensions
         self.width = width
         self.x = startpos[0]
         self.y = startpos[1]
+        self.endX = endpos[0]
+        self.endY = endpos[1]
         self.heading = 0
         self.velocityLeft = 0.01 * self.metersToPixels
         self.velocityRight = 0.01 * self.metersToPixels
