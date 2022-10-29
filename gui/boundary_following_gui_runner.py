@@ -2,11 +2,12 @@ import numpy as np
 import math
 import this
 import pygame
-from boundary_following_gui import Graphics, Robot, Ultrasonic
+from gui.boundary_following_gui import Graphics, Robot, Ultrasonic
+from constants.definitions import GUI_DIR, CSV_PATH
 MAP_DIMENSIONS = (600, 1200)
 # Environment graphics
-gfx = Graphics(MAP_DIMENSIONS, "gui_images/test.png",
-               "gui_images/boundary_map.png")
+gfx = Graphics(MAP_DIMENSIONS, GUI_DIR+"/gui_images/test.png",
+               GUI_DIR+"/gui_images/boundary_map.png")
 # the robot
 start = (200, 200)
 robot = Robot(start, 0.01 * 3779.52)
