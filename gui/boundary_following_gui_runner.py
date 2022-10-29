@@ -7,7 +7,7 @@ from boundary_following_gui import Graphics, Robot, Ultrasonic
 GUI_DIR = os.getcwd() + "/gui"
 MAP_DIMENSIONS = (600, 1200)
 # Environment graphics
-gfx = Graphics(MAP_DIMENSIONS, GUI_DIR+"/gui_images/test.png",
+gfx = Graphics(MAP_DIMENSIONS, GUI_DIR+"/gui_images/Aditya Robot.png",
                GUI_DIR+"/gui_images/boundary_map.png")
 # the robot
 start = (200, 200)
