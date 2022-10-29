@@ -9,4 +9,4 @@ def is_raspberrypi():
     return False
 
 
-print(os.uname())
+print(is_raspberrypi())
