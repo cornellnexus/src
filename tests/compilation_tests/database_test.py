@@ -176,6 +176,28 @@ class TestDataBase(unittest.TestCase):
                 else:
                     self.assertEqual(ans, database.get_data(name), name)
 
+    def test_phase_as_value(self):
+        robot_phase = Robot(x_pos= 0, y_pos =0, heading =0, epsilon =0, max_v =0, 
+    radius =0, is_sim=True)
+        db_robot_phase = DataBase(robot_phase)
+        phases = list(Phase)
+        num_phases = len(phases)
+        for i in range(1, num_phases):
+            self.assertEqual(i, db_robot_phase.phase_as_value())
+            db_robot_phase.update_data("phase", phases[i])
+
+    def test_make_packet(self):
+        expected_outputs = [
+            "phase:1;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00,000.00;batt:100;ctrl:1",
+            "phase:2;p_weight:02.0;acc:4.25,3.20,0.10;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:010.00,020.00,050.00;batt:098;ctrl:1",
+            "phase:1;p_weight:03.0;acc:0.50,0.20,0.30;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00,000.00;batt:046;ctrl:1",
+            ]
+
+        testcases = [(expected_outputs[0], self.db_default), (expected_outputs[1], self.db_initial), (expected_outputs[2], self.db_one_param)]
+
+        for expected_ans, database in testcases:
+            self.assertEqual(expected_ans, database.make_packet())
+
 
 if __name__ == '__main__':
     unittest.main()
