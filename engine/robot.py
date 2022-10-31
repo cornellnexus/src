@@ -1,6 +1,7 @@
 import numpy as np
 import math
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
+from electrical import motor_controller
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from electrical.motor_controller import MotorController
 from constants.definitions import CSV_PATH
@@ -34,6 +35,7 @@ class Phase(Enum):
     DOCKING = 5
     COMPLETE = 6
     FAULT = 7
+
 
 class Robot:
     """
@@ -117,6 +119,9 @@ class Robot:
         self.mc = motor_controller
         self.linear_v = 0
         self.angular_v = 0
+        if not self.is_sim:
+            self.motor_controller = MotorController(self.is_sim, wheel_radius=0,
+                                                    vm_load1=1, vm_load2=1, L=0, R=0)
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -184,8 +189,9 @@ class Robot:
         Moves robot to target + or - allowed_dist_error
         Arguments:
             target: target coordinates in the form (latitude, longitude)
-            allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
-                have "visited" that node
+            allowed_dist_error: the maximum distance in meters that the robot 
+            can be from a node for the robot to have "visited" that node
+            database: 
         """
         predicted_state = self.state  # this will come from Kalman Filter
 
@@ -195,16 +201,18 @@ class Robot:
 
         while distance_away > allowed_dist_error:
             if self.is_sim:
+                # Adding simulated noise to the robot's state based on gaussian distribution
                 self.state[0] = np.random.normal(
                     self.state[0], self.position_noise)
                 self.state[1] = np.random.normal(
                     self.state[1], self.position_noise)
 
-            x_error = target[0] - self.state[0]
-            y_error = target[1] - self.state[1]
+            # Error in terms of latitude and longitude, NOT meters
+            x_coords_error = target[0] - self.state[0]
+            y_coords_error = target[1] - self.state[1]
 
-            x_vel = self.loc_pid_x.update(x_error)
-            y_vel = self.loc_pid_y.update(y_error)
+            x_vel = self.loc_pid_x.update(x_coords_error)
+            y_vel = self.loc_pid_y.update(y_coords_error)
 
             cmd_v, cmd_w = feedback_lin(
                 predicted_state, x_vel, y_vel, self.epsilon)
@@ -212,37 +220,46 @@ class Robot:
             # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.max_velocity, self.radius)
+            # self.linear_v = limited_cmd_v[0]
+            # self.angular_v = limited_cmd_w[0]
 
             if self.is_sim:
-                self.travel(self.time_step * limited_cmd_v,
-                            self.time_step * limited_cmd_w)
+                # this is just simulating movement:
+                self.travel(self.time_step * limited_cmd_v[0],
+                            self.time_step * limited_cmd_w[0])
             else:
-                # self.motor_controller.motors(limited_cmd_w, limited_cmd_v)
-                self.mc.motors(limited_cmd_w[0], limited_cmd_v[0])
-
-            self.linear_v = limited_cmd_v[0]
-            self.angular_v = limited_cmd_w[0]
-
-            # sleep in real robot.
-
-            # write robot location and mag heading in csv (for gui to display)
-            with open(CSV_PATH + '/datastore.csv', 'a') as fd:
-                fd.write(
-                    str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
-            time.sleep(0.001)
+                self.motor_controller.spin_motors(
+                    limited_cmd_w[0], limited_cmd_v[0])
+                # TODO: sleep??
 
             if not self.is_sim:
                 self.state = self.update_ekf_step()
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
+
             # TODO: Do we want to update self.state with this new predicted state????
+
+            if self.is_sim:
+                # FOR GUI: writing robot location and mag heading in CSV
+                self.write_to_csv(predicted_state)
+
+            # FOR DATABASE: updating our database with new predicted state
+            # TODO: can the code above be simplified / use the database instead?
             database.update_data(
-                "state", self.state[0], self.state[1], self.state[2])
+                "state", predicted_state[0], predicted_state[1], predicted_state[2])
 
             # location error (in meters)
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
+
+    def write_to_csv(predicted_state):
+        cwd = os.getcwd()
+        cd = cwd + "/csv"
+        with open(cd + '/datastore.csv', 'a') as fd:
+            fd.write(
+                str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[1:-1] + '\n')
+        time.sleep(0.001)
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
@@ -266,15 +283,15 @@ class Robot:
             theta_error = target_heading - self.state[2]
             w = self.head_pid.update(theta_error)  # angular velocity
             _, limited_cmd_w = limit_cmds(0, w, self.max_velocity, self.radius)
+
             if self.is_sim:
                 self.travel(0, self.time_step * limited_cmd_w)
             else:
-                self.motor_controller.motors(limited_cmd_w, 0)
-            # sleep in real robot
+                self.motor_controller.spin_motors(limited_cmd_w, 0)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
-            # TODO: Do we want to update self.state with this new predicted state????
+
             database.update_data(
                 "state", self.state[0], self.state[1], self.state[2])
 
@@ -327,7 +344,6 @@ class Robot:
         if (radio_session.connected and gps_setup and imu_setup):
             self.phase = Phase.TRAVERSE
 
-
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius, database):
         if control_mode == 4:  # Roomba mode
@@ -366,7 +382,8 @@ class Robot:
                 None
         """
         dt = 0
-        exit_boolean = False  # TODO: battery_limit, time_limit, tank_capacity is full, obstacle avoiding
+        # TODO: battery_limit, time_limit, tank_capacity is full, obstacle avoiding
+        exit_boolean = False
         while not exit_boolean:
 
             curr_x = self.state[0]
@@ -390,7 +407,7 @@ class Robot:
                     self.motor_controller.motors(0, 0)  # TODO: determine what vel to run this at
             dt += 1
             exit_boolean = (dt > time_limit)
-        self.phase = Phase.COMPLETE # TODO: CHANGE the next phase to return
+        self.phase = Phase.COMPLETE  # TODO: CHANGE the next phase to return
         return None
 
     def set_phase(self, new_phase):
