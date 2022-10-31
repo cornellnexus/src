@@ -14,6 +14,7 @@ class TestObstacleTracking(unittest.TestCase):
         mock_data_path = ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv'
         mock_data_file = open(mock_data_path, "w")
         mock_data_file.truncate()
+        # csv data: front_sensor_value, lf_sensor_value, lb_sensor_value, rf_sensor_value, rb_sensor_value, comment
         mock_data_file.write(
             "(600, 600, 600, 600, 600, 'assuming a straight line between robot and goal with rectangular box centered in the middle')\n")
         mock_data_file.write("(600, 600, 600, 600, 600, 'going forward')\n")
@@ -97,7 +98,7 @@ class TestObstacleTracking(unittest.TestCase):
             mock_data_file.write(data + "\n")
         mock_data_file.close()
 
-    def approximate(self, threshold, val1, val2):
+    def difference_in_threshold(self, threshold, val1, val2):
         return threshold > abs(val1 - val2)
 
     def test_init(self):
@@ -187,8 +188,11 @@ class TestObstacleTracking(unittest.TestCase):
         skinny_robot = Robot(0, 0, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, width=200,
                              front_ultrasonic=None, lb_ultrasonic=None, lf_ultrasonic=None, rb_ultrasonic=None,
                              rf_ultrasonic=None)
-        self.assertEqual(self.approximate(1, wide_robot.max_sensor_range, wide_robot.detect_obstacle_range), True)
-        self.assertEqual(self.approximate(1, 165.1, skinny_robot.detect_obstacle_range), True)
+        self.assertEqual(self.difference_in_threshold(1, wide_robot.max_sensor_range, wide_robot.detect_obstacle_range), True)
+        self.assertEqual(self.difference_in_threshold(1, 165.1, skinny_robot.detect_obstacle_range), True)
+        self.assertEqual(self.difference_in_threshold(0, 165.1, skinny_robot.detect_obstacle_range), False)
+        self.assertEqual(self.difference_in_threshold(1, 200, skinny_robot.detect_obstacle_range), False)
+
 
 
 if __name__ == '__main__':

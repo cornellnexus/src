@@ -112,8 +112,7 @@ class Robot:
         self.linear_v = 0
         self.angular_v = 0
         self.width = width
-        self.avoid_obstacle = False
-        self.fault = False
+        self.avoid_obstacle = False  # boolean that determines if we should avoid obstacles
         self.front_ultrasonic = front_ultrasonic
         self.lf_ultrasonic = lf_ultrasonic
         self.lb_ultrasonic = lb_ultrasonic
@@ -123,11 +122,11 @@ class Robot:
         self.prev_phase = self.phase
         self.goal_location = (0, 0)
         self.max_sensor_range = 600
-        self.front_sensor_offset = 0  # replace this with how far offset the sensor is to the front of the robot
+        self.front_sensor_offset = 0  # TODO: replace this with how far offset the sensor is to the front of the robot
         self.sensor_measuring_angle = 75
-        self.width_margin = 1  # replace this with actual margin
+        self.width_margin = 1  # TODO: replace this with actual margin
         self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
-            math.radians((180 - self.sensor_measuring_angle) / 2)) + self.front_sensor_offset
+            math.radians((180 - self.sensor_measuring_angle) / 2))
         self.detect_obstacle_range = min(self.threshold_distance,
                                          self.max_sensor_range)  # set ultrasonic detection range
         self.init_threshold = init_threshold
@@ -316,7 +315,6 @@ class Robot:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
             # TODO: add obstacle avoidance support
             # TODO: add return when tank is full, etc
-            # TODO: add turn_to_target_heading
             self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
@@ -354,6 +352,10 @@ class Robot:
             obstacle_detected = self.front_ultrasonic.distance() > self.detect_obstacle_range
             # if moving will cause the robot to move through the obstacle
             next_after_obstacle = next_radius < self.detect_obstacle_range
+            # sensor should not detect something in the robot
+            if obstacle_detected < self.front_sensor_offset:
+                self.set_phase(Phase.FAULT)
+                return None
             if (next_radius > roomba_radius) or (obstacle_detected and next_after_obstacle):
                 self.move_forward(-self.move_dist)
                 self.turn(self.turn_angle)
@@ -392,6 +394,9 @@ class Robot:
                 ultrasonic_value_file.close()
             else:
                 curr_ultrasonic_value = self.front_ultrasonic.distance()
+                if curr_ultrasonic_value < self.front_sensor_offset:
+                    self.set_phase(Phase.FAULT)
+                    return None
             if (self.phase == Phase.TRAVERSE) or (self.phase == Phase.RETURN) or (self.phase == Phase.DOCKING) or (
                     self.phase == Phase.AVOID_OBSTACLE):
                 if curr_ultrasonic_value < self.detect_obstacle_range:
@@ -434,8 +439,12 @@ class Robot:
         dist_to_goal_decreases = False
         boundary_traversed = False
         while True:
-            if not self.fault:  # fault has priority over obstacle avoidance
+            if self.phase == Phase.fault:  # fault has priority over obstacle avoidance
+                return None
+            else:
                 dist_from_init = math.sqrt((self.x_pos - init_x) ** 2 + (self.y_pos - init_y) ** 2)
+                curr_dist_to_goal = math.sqrt(
+                    (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
                 if dist_from_init > init_threshold:
                     gate = True
                 if curr_dist_to_goal < goal_threshold and gate:  # exits obstacle avoidance if robot close to goal
@@ -459,9 +468,6 @@ class Robot:
                         (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
                     dist_to_goal_decreases = (curr_dist_to_goal < dist_to_goal)
                     boundary_traversed = dist_from_init < init_threshold
-            else:
-                self.set_phase(Phase.FAULT)
-                return None
             time.sleep(10)  # don't hog the cpu
 
     def execute_boundary_following(self, min_dist):
