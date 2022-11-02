@@ -14,10 +14,6 @@ from engine.ekf import LocalizationEKF
 from engine.sensor_module import SensorModule
 from constants.geo_fences import ENGINEERING_QUAD
 
-# import electrical.gps as gps
-# import electrical.imu as imu
-# import electrical.rf_module as rf_module
-
 
 from enum import Enum
 import time
