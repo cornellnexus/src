@@ -317,9 +317,14 @@ class Grid:
                     if leftmost_node_pos is None or col < leftmost_node_pos[1]:
                         leftmost_node = node
                         leftmost_node_pos = (row, col)
+                if node.is_active and self.is_on_border(row, col, rows-1, cols+1):
+                    # check if this is an active node and on the border
+                    self.nodes[row][col].is_border = True
                     if rightmost_node_pos is None or col > rightmost_node_pos[1]:
                         rightmost_node = node
                         rightmost_node_pos = (row, col)
+                    
+                    
                         
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
@@ -356,6 +361,8 @@ class Grid:
         rows = self.nodes.shape[0]
         phase = WaypointPhase.DOWN
         curr_pos = self.rightmost_node_pos
+        print("leftmost_node_pos", self.leftmost_node_pos )
+        print("rightmost_node_pos", curr_pos)
         waypoints = []
         waypoints.append(curr_pos)
         while (phase != WaypointPhase.TERMINATE):
