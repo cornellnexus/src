@@ -1,13 +1,14 @@
 import numpy as np
 import math
+from electrical import motor_controller
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from electrical.motor_controller import MotorController
 from constants.definitions import CSV_PATH
 
 
-# import electrical.gps as gps 
-# import electrical.imu as imu 
+# import electrical.gps as gps
+# import electrical.imu as imu
 # import electrical.radio_module as radio_module
 
 
@@ -28,6 +29,7 @@ class Phase(Enum):
     COMPLETE = 6
     FAULT = 7
 
+
 class Robot:
     """
     A class whose objects contain robot-specific information, and methods to execute individual phases.
@@ -46,7 +48,7 @@ class Robot:
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0):
+                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0, motor_controller=None):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -102,6 +104,9 @@ class Robot:
         self.gyro_rotation = [0, 0, 0]  # TEMPORARY
         self.linear_v = 0
         self.angular_v = 0
+        if not self.is_sim:
+            self.motor_controller = MotorController(self.is_sim, wheel_radius=0,
+                                                    vm_load1=1, vm_load2=1, L=0, R=0)
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
@@ -149,8 +154,9 @@ class Robot:
 
         Arguments:
             target: target coordinates in the form (latitude, longitude)
-            allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
-                have "visited" that node
+            allowed_dist_error: the maximum distance in meters that the robot 
+            can be from a node for the robot to have "visited" that node
+            database: 
         """
         predicted_state = self.state  # this will come from Kalman Filter
 
@@ -159,16 +165,19 @@ class Robot:
                                    float(predicted_state[1]) - target[1])
 
         while distance_away > allowed_dist_error:
-            self.state[0] = np.random.normal(
-                self.state[0], self.position_noise)
-            self.state[1] = np.random.normal(
-                self.state[1], self.position_noise)
+            if self.is_sim:
+                # Adding simulated noise to the robot's state based on gaussian distribution
+                self.state[0] = np.random.normal(
+                    self.state[0], self.position_noise)
+                self.state[1] = np.random.normal(
+                    self.state[1], self.position_noise)
 
-            x_error = target[0] - self.state[0]
-            y_error = target[1] - self.state[1]
+            # Error in terms of latitude and longitude, NOT meters
+            x_coords_error = target[0] - self.state[0]
+            y_coords_error = target[1] - self.state[1]
 
-            x_vel = self.loc_pid_x.update(x_error)
-            y_vel = self.loc_pid_y.update(y_error)
+            x_vel = self.loc_pid_x.update(x_coords_error)
+            y_vel = self.loc_pid_y.update(y_coords_error)
 
             cmd_v, cmd_w = feedback_lin(
                 predicted_state, x_vel, y_vel, self.epsilon)
@@ -176,30 +185,43 @@ class Robot:
             # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.max_velocity, self.radius)
+            # self.linear_v = limited_cmd_v[0]
+            # self.angular_v = limited_cmd_w[0]
 
-            self.travel(self.time_step * limited_cmd_v,
-                        self.time_step * limited_cmd_w)
-
-            self.linear_v = limited_cmd_v[0]
-            self.angular_v = limited_cmd_w[0]
-
-            # sleep in real robot.
-
-            # write robot location and mag heading in csv (for gui to display)
-            with open(CSV_PATH + '/datastore.csv', 'a') as fd:
-                fd.write(
-                    str(self.state[0])[1:-1] + ',' + str(self.state[1])[1:-1] + ',' + str(self.state[2])[1:-1] + '\n')
-            time.sleep(0.001)
+            if self.is_sim:
+                # this is just simulating movement:
+                self.travel(self.time_step * limited_cmd_v[0],
+                            self.time_step * limited_cmd_w[0])
+            else:
+                self.motor_controller.spin_motors(
+                    limited_cmd_w[0], limited_cmd_v[0])
+                # TODO: sleep??
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
+
             # TODO: Do we want to update self.state with this new predicted state????
+
+            if self.is_sim:
+                # FOR GUI: writing robot location and mag heading in CSV
+                self.write_to_csv(predicted_state)
+
+            # FOR DATABASE: updating our database with new predicted state
+            # TODO: can the code above be simplified / use the database instead?
             database.update_data(
-                "state", self.state[0], self.state[1], self.state[2])
+                "state", predicted_state[0], predicted_state[1], predicted_state[2])
 
             # location error (in meters)
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
+
+    def write_to_csv(predicted_state):
+        cwd = os.getcwd()
+        cd = cwd + "/csv"
+        with open(cd + '/datastore.csv', 'a') as fd:
+            fd.write(
+                str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[1:-1] + '\n')
+        time.sleep(0.001)
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
@@ -221,12 +243,14 @@ class Robot:
             w = self.head_pid.update(theta_error)  # angular velocity
             _, limited_cmd_w = limit_cmds(0, w, self.max_velocity, self.radius)
 
-            self.travel(0, self.time_step * limited_cmd_w)
-            # sleep in real robot
+            if self.is_sim:
+                self.travel(0, self.time_step * limited_cmd_w[0])
+            else:
+                self.motor_controller.spin_motors(limited_cmd_w[0], 0)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
-            # TODO: Do we want to update self.state with this new predicted state????
+
             database.update_data(
                 "state", self.state[0], self.state[1], self.state[2])
 
@@ -253,14 +277,13 @@ class Robot:
         print('heading: ' + str(self.state[2]))
 
     def execute_setup(self, radio_session, gps, imu, motor_controller):
-        gps_setup = gps.setup() 
+        gps_setup = gps.setup()
         imu_setup = imu.setup()
         radio_session.setup_robot()
         motor_controller.setup()
 
-        if (radio_session.connected and gps_setup and imu_setup): 
+        if (radio_session.connected and gps_setup and imu_setup):
             self.phase = Phase.TRAVERSE
-
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius, database):
@@ -300,7 +323,8 @@ class Robot:
                 None
         """
         dt = 0
-        exit_boolean = False  # TODO: battery_limit, time_limit, tank_capacity is full, obstacle avoiding
+        # TODO: battery_limit, time_limit, tank_capacity is full, obstacle avoiding
+        exit_boolean = False
         while not exit_boolean:
 
             curr_x = self.state[0]
@@ -318,7 +342,7 @@ class Robot:
                 self.move_forward(self.move_dist)
             dt += 1
             exit_boolean = (dt > time_limit)
-        self.phase = Phase.COMPLETE # TODO: CHANGE the next phase to return
+        self.phase = Phase.COMPLETE  # TODO: CHANGE the next phase to return
         return None
 
     def set_phase(self, new_phase):
