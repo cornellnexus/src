@@ -307,9 +307,11 @@ class Grid:
         rightmost_node = None
         leftmost_node_pos = None
         rightmost_node_pos = None
-        for row in range(rows):
-            for col in range(cols):
+        
+        for col in range(cols):
+            for row in range(rows):
                 node = self.nodes[row][col]
+                #border node 1 left active node 
                 if node.is_active and self.is_on_border(row, col, rows-1, cols-1):
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
@@ -317,10 +319,10 @@ class Grid:
                     if leftmost_node_pos is None or col < leftmost_node_pos[1]:
                         leftmost_node = node
                         leftmost_node_pos = (row, col)
-                if node.is_active and self.is_on_border(row, col, rows-1, cols+1):
+                if node.is_active and self.is_on_border(row, col, rows +1 , cols +1):
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
-                    if rightmost_node_pos is None or col > rightmost_node_pos[1]:
+                    if rightmost_node_pos is None or row > rightmost_node_pos[0]:
                         rightmost_node = node
                         rightmost_node_pos = (row, col)
                     
