@@ -4,6 +4,7 @@ from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get
 from enum import Enum
 
 
+
 class Grid:
     """
     Instances represent the current grid of the robot's traversal.
@@ -23,6 +24,7 @@ class Grid:
 
         #leftmost_node: the leftmost active node in the Grid which is used as the starting node in lawnmower and spiral traversal.
         #leftmost_node_pos: the (row,col) position of the leftmost node
+        #rightmost_node_pos : the (row,col) position of the rightmost node
         #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
         #active_waypoints_list: a list of active waypoints for every traversal algorithm. It is used to implement a color visualizaition of active waypoints.
         #inactive_waypoints_list: a list of inactive waypoints for every traversal algorithm. It is used to implement a color visualization of inactive waypoints. 
@@ -115,14 +117,16 @@ class Grid:
         self.border_nodes = None
         self.leftmost_node = None
         self.leftmost_node_pos = None
+        self.rightmost_node = None
+        self.rightmost_node_pos = None
         self.active_waypoints_list = []
         self.inactive_waypoints_list = []
 
     def get_active_waypoints_list(self):
         return self.active_waypoints_list
-
+    
     def get_inactive_waypoints_list(self):
-        return (self.inactive_waypoints_list)
+        return(self.inactive_waypoints_list)
 
     def get_num_rows(self):
         return self.num_rows
@@ -155,9 +159,10 @@ class Grid:
             self.active_waypoints_list.append(node)
         else:
             self.inactive_waypoints_list.append(node)
+         
+
 
     # --------------------- METHODS TO FINISH INITIALIZATION OF ACTIVATED GRID -------------- #
-
 
     def is_on_border(self, row, col, row_limit, col_limit):
         """
@@ -183,6 +188,7 @@ class Grid:
                     return True
         return False
 
+
     # --------------------- ADJUSTABLE TRAVERSAL ALGORITHMS -------------- #
 
     def get_neighbor_node(self, row, col, row_max, col_max):
@@ -200,24 +206,20 @@ class Grid:
         if not neighbor_node.is_active_node():
             return None
         else:
-            return neighbor_node
-
+           return neighbor_node
 
     ##Activates rectangle based on row start/end, col start/end
     def activate_rectangle(self, row, col, row_limit, col_limit):
-
         """
         Activates all the nodes in a rectangle.
         """
         for x in range(row, row_limit):
             for y in range(col, col_limit):
-            
                 self.nodes[x,y].is_active = True
         return self.nodes
 
-
-    # Activates circle based on center and radius
-    def activate_circle(self, circle_center_row, circle_center_col, circle_radius):
+    ##Activates circle based on center and radius
+    def activate_circle(self,circle_center_row, circle_center_col, circle_radius):
         """
         Activates all the nodes in a circle.
         """
@@ -226,41 +228,40 @@ class Grid:
         for x in range(rows):
             for y in range(cols):
                 if ((x-circle_center_row)**2 + (y-circle_center_col)**2 - circle_radius**2) < 0:
-                    self.nodes[x, y].is_active = True
+                    self.nodes[x,y].is_active = True
 
+
+ 
+ 
     # A function to check whether point P(x, y)
     # lies inside the triangle formed by
     # A(x1, y1), B(x2, y2) and C(x3, y3)
-
-    def is_inside_triangle(self, x1, y1, x2, y2, x3, y3, x, y):
+    def isInsideTriangle(self, x1, y1, x2, y2, x3, y3, x, y):
         def area(x1, y1, x2, y2, x3, y3):
-
+    
             return abs((x1 * (y2 - y3) + x2 * (y3 - y1)
                         + x3 * (y1 - y2)) / 2.0)
-
+        
         # Calculate area of triangle ABC
         A = area(x1, y1, x2, y2, x3, y3)
-
+    
         # Calculate area of triangle PBC
         A1 = area(x, y, x2, y2, x3, y3)
-
+        
         # Calculate area of triangle PAC
         A2 = area(x1, y1, x, y, x3, y3)
-
+        
         # Calculate area of triangle PAB
         A3 = area(x1, y1, x2, y2, x, y)
-
+        
         # Check if sum of A1, A2 and A3
         # is same as A
-        if (A == A1 + A2 + A3):
+        if(A == A1 + A2 + A3):
             return True
         else:
             return False
-
-    # Activate triangle based on three points
-
-    def activate_traingle(self, x1, y1, x2, y2, x3, y3):
-
+    ##Activate triangle based on three points
+    def activate_triangle(self,x1,y1,x2,y2,x3,y3):
         """
         Activates all the nodes in a traingle.
         """
@@ -268,28 +269,28 @@ class Grid:
         cols = self.nodes.shape[0]
         for x in range(rows):
             for y in range(cols):
-                if self.isInsideTriangle(x1, y1, x2, y2, x3, y3, x, y):
-                    self.nodes[x, y].is_active = True
+                if self.isInsideTriangle(x1,y1,x2,y2,x3,y3,x,y):
+                    self.nodes[x,y].is_active = True
 
-    # Checks if node is on border of activated nodes
-    def is_on_border(self, row, col, row_limit, col_limit):
-        min_col = max(0, col-1)
-        min_row = max(0, row-1)
-        max_col = min(col_limit, col+1)
-        max_row = min(row_limit, row+1)
+    ##Checks if node is on border of activated nodes
+    def is_on_border(self,row, col, row_limit, col_limit):
+            min_col = max(0, col-1)
+            min_row = max(0, row-1)
+            max_col = min(col_limit, col+1)
+            max_row = min(row_limit, row+1)
 
-        # If this node is on the very edge of the grid, it is automatically a border node
-        if min_col == 0 or min_row == 0 or max_col == col_limit or max_row == row_limit:
-            return True
+            # If this node is on the very edge of the grid, it is automatically a border node
+            if min_col == 0 or min_row == 0 or max_col == col_limit or max_row == row_limit:
+                return True
 
-        # If the node has a neighboring node that is inactive, it is a border node
-        for col in range(min_col, max_col+1):
-            for row in range(min_row, max_row+1):
-                if not self.nodes[row][col].is_active:
-                    return True
-        return False
+            # If the node has a neighboring node that is inactive, it is a border node
+            for col in range(min_col, max_col+1):
+                for row in range(min_row, max_row+1):
+                    if not self.nodes[row][col].is_active:
+                        return True
+            return False
 
-    # Finds the border nodes given the activated nodes.
+    ##Finds the border nodes given the activated nodes.
     def find_border_nodes(self):
         """
             Find all activated border nodes on the grid.
@@ -303,7 +304,9 @@ class Grid:
         cols = self.nodes.shape[1]
         rows = self.nodes.shape[0]
         leftmost_node = None
+        rightmost_node = None
         leftmost_node_pos = None
+        rightmost_node_pos = None
         for row in range(rows):
             for col in range(cols):
                 node = self.nodes[row][col]
@@ -314,14 +317,19 @@ class Grid:
                     if leftmost_node_pos is None or col < leftmost_node_pos[1]:
                         leftmost_node = node
                         leftmost_node_pos = (row, col)
+                    if rightmost_node_pos is None or col > rightmost_node_pos[1]:
+                        rightmost_node = node
+                        rightmost_node_pos = (row, col)
+                        
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
         self.leftmost_node_pos = leftmost_node_pos
+        self.rightmost_node = rightmost_node
+        self.rightmost_node_pos = rightmost_node_pos
 
-    # Return bottom most node that is activated in the right column
-
+    
+    ##Return bottom most node that is activated in the right column
     def bottom_rightmost_node(self, pos):
-
         # node_info: (node, row, col)
         candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]+1]
         if (candidate_nodes == []):
@@ -329,28 +337,36 @@ class Grid:
         else:
             node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
             return (node_info[1],node_info[2])
+    
+    def bottom_leftmost_node(self, pos):
+        # node_info: (node, row, col)
+        candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]-1]
+        if (candidate_nodes == []):
+            return None
+        else:
+            node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
+            return (node_info[1],node_info[2])
 
 
-    # Given border and active nodes, compute lawnmower traversal
-
+    ##Given border and active nodes, compute lawnmower traversal
     def get_all_lawnmower_waypoints_adjustable(self):
         class WaypointPhase(Enum):
             DOWN = 1
             TERMINATE = 2
         rows = self.nodes.shape[0]
         phase = WaypointPhase.DOWN
-        curr_pos = self.leftmost_node_pos
+        curr_pos = self.rightmost_node_pos
         waypoints = []
         waypoints.append(curr_pos)
         while (phase != WaypointPhase.TERMINATE):
             if (phase == WaypointPhase.DOWN):
-                new_pos = (curr_pos[0]+1, curr_pos[1])
-                if curr_pos[0]+1 == rows and self.nodes[new_pos].is_active:
+                new_pos = (curr_pos[0]-1,curr_pos[1])
+                if curr_pos[0]-1 == rows and self.nodes[new_pos].is_active:
                     waypoints.append(new_pos)
-                    right_pos = self.bottom_rightmost_node(new_pos)
-                    if right_pos is not None:
-                        waypoints.append(right_pos)
-                        curr_pos = right_pos
+                    left_pos = self.bottom_leftmost_node(new_pos)
+                    if left_pos is not None:
+                        waypoints.append(left_pos)
+                        curr_pos = left_pos
                         phase = WaypointPhase.DOWN
                     else:
                         phase = WaypointPhase.TERMINATE
@@ -358,14 +374,92 @@ class Grid:
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    right_pos = self.bottom_rightmost_node(new_pos)
-                    if right_pos is not None:
-                        waypoints.append(right_pos)
-                        curr_pos = right_pos
+                    left_pos = self.bottom_leftmost_node(new_pos)
+                    if left_pos is not None:
+                        waypoints.append(left_pos)
+                        curr_pos = left_pos
                         phase = WaypointPhase.DOWN
                     else:
                         phase = WaypointPhase.TERMINATE
         return waypoints
+
+
+
+    # def get_all_lawnmower_waypoints_adjustable(self):
+    
+    #     class WaypointPhase(Enum):
+    #         DOWN = 1
+    #         TERMINATE = 2
+    #     #direction the robot is traversing to 
+    #     class Direction(Enum):
+    #         RIGHT = 1
+    #         LEFT = 2
+  
+    #     def make_new_pos(direction,curr_pos):
+    #             if direction == Direction.RIGHT:
+    #                 return (curr_pos[0]+1,curr_pos[1])
+    #             if direction == Direction.LEFT: 
+    #                 return (curr_pos[0]-1,curr_pos[1])
+        
+    #     def end_of_row(direction, num_rows):
+    #         if direction == Direction.RIGHT:
+    #             return curr_pos[0]+1 == num_rows
+    #         if direction == Direction.LEFT: 
+    #             return (curr_pos[0]-1,curr_pos[1])
+    #     def bottom_most(direction, new_pos):
+    #         if direction == Direction.RIGHT:
+    #             return self.bottom_rightmost_node(new_pos)
+    #         if direction == Direction.LEFT: 
+    #             return self.bottom_leftmost_node(new_pos)
+
+    #     def change_direction(direction):
+    #         if direction == Direction.RIGHT:
+    #             return Direction.LEFT
+    #         if direction == Direction.LEFT:
+    #             return Direction.RIGHT
+
+    #     num_rows = self.nodes.shape[0]
+    #     phase = WaypointPhase.DOWN
+    #     direction = Direction.RIGHT
+    #     curr_pos = self.leftmost_node_pos
+    #     waypoints = []
+    #     waypoints.append(curr_pos)
+    #     while (phase != WaypointPhase.TERMINATE):
+    #         #if we are moving right
+    #         if (phase == WaypointPhase.DOWN):
+               
+    #             # move right by 1 row on current column
+    #                 new_pos = make_new_pos(direction, curr_pos)
+
+    #                 # if we are at the end of the row and it is still active
+    #                 if end_of_row(direction,num_rows) and self.nodes[new_pos].is_active:
+    #                     #add current position to waypoints
+    #                     waypoints.append(new_pos)
+    #                     bottom_pos = bottom_most(direction, new_pos)
+    #                     # add the last right node
+    #                     if bottom_pos is not None:
+    #                         waypoints.append(bottom_pos)
+    #                         curr_pos = bottom_pos
+    #                         phase = WaypointPhase.DOWN
+    #                     # no more nodes, terminate
+    #                     else:
+    #                         phase = WaypointPhase.TERMINATE
+    #                 #add current node to waypoinst
+    #                 elif self.nodes[new_pos].is_active:
+    #                     waypoints.append(new_pos)
+    #                     curr_pos = new_pos
+
+    #                 else:
+    #                     bottom_pos = bottom_most(direction, new_pos)
+    #                     # add the last right node
+    #                     if bottom_pos is not None:
+    #                         waypoints.append(bottom_pos)
+    #                         curr_pos = bottom_pos
+    #                         phase = WaypointPhase.DOWN
+    #                     else:
+    #                         phase = WaypointPhase.TERMINATE
+            
+    #     return waypoints
 
     # --------------------- STANDARD TRAVERSAL ALGORITHMS -------------- #
 
@@ -454,7 +548,7 @@ class Grid:
                 waypoints.append(node2)
         return waypoints
 
-    def get_straight_line_waypoints(self, y_start_row=0, y_start_pct=None):
+    def get_straight_line_waypoints(self,y_start_row=0,y_start_pct=None):
         """
         Returns the robot's lawnmower border traversal path for the current grid using
         only nodes in a straight line . Starting node is the left-most node starting at
@@ -515,9 +609,10 @@ class Grid:
         elif mode == ControlMode.SPIRAL:
             waypoints = self.get_spiral_waypoints()
         elif mode == ControlMode.STRAIGHT:
-            waypoints = self.get_straight_line_waypoints(y_start_pct=0.5)
+            waypoints = self.get_straight_line_waypoints(y_start_pct =0.5)
         elif mode == ControlMode.LAWNMOWER_A:
             waypoints = self.get_all_lawnmower_waypoints_adjustable()
         else:
             return []
         return waypoints
+
