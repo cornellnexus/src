@@ -253,10 +253,8 @@ class Robot:
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
 
-    def write_to_csv(predicted_state):
-        cwd = os.getcwd()
-        cd = cwd + "/csv"
-        with open(cd + '/datastore.csv', 'a') as fd:
+    def write_to_csv(self, predicted_state):
+        with open(CSV_PATH + '/datastore.csv', 'a') as fd:
             fd.write(
                 str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[1:-1] + '\n')
         time.sleep(0.001)
