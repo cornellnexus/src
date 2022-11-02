@@ -238,8 +238,6 @@ class Robot:
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
 
-            # TODO: Do we want to update self.state with this new predicted state????
-
             if self.is_sim:
                 # FOR GUI: writing robot location and mag heading in CSV
                 self.write_to_csv(predicted_state)
