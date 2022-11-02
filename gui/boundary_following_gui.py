@@ -17,6 +17,8 @@ class Robot:
         self.width = width
         self.x = startpos[0]
         self.y = startpos[1]
+        self.startX = startpos[0]
+        self.startY = startpos[1]
         self.endX = endpos[0]
         self.endY = endpos[1]
         self.heading = 0
@@ -52,15 +54,24 @@ class Robot:
         self.velocityRight = self.minSpeed
         self.velocityLeft = self.minSpeed
 
+    def arctan(self, startX, startY, endX, endY):
+        xLength = endX - startX
+        yLength = endY - startY
+        return np.arctan(yLength / xLength)
+
     def kinematics(self, dt):
+        # Angle between robot and line to destination
+        angle = self.arctan(self.startX, self.startY, self.endX + 40, self.endY + 41)
+        self.heading = angle * -1
+
         self.x += ((self.velocityLeft + self.velocityRight) / 2) * \
             math.cos(self.heading) * dt
         self.y -= ((self.velocityLeft + self.velocityRight) / 2) * \
             math.sin(self.heading) * dt
-        self.heading += (self.velocityRight -
-                         self.velocityLeft) / self.width * dt
-        if self.heading > 2*math.pi or self.heading < -2 * math.pi:
-            self.heading = 0
+        # self.heading += (self.velocityRight -
+        #                  self.velocityLeft) / self.width * dt
+        # if self.heading > 2*math.pi or self.heading < -2 * math.pi:
+        #     self.heading = 0
         self.velocityRight = max(
             min(self.maxSpeed, self.velocityRight), self.minSpeed)
         self.velocityLeft = max(
