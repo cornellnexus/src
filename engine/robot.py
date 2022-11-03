@@ -12,6 +12,9 @@ from constants.definitions import *
 # import electrical.gps as gps
 # import electrical.imu as imu
 # import electrical.radio_module as radio_module
+from engine.ekf import LocalizationEKF
+from engine.sensor_module import SensorModule
+from constants.geo_fences import ENGINEERING_QUAD
 
 
 from enum import Enum
@@ -52,7 +55,8 @@ class Robot:
                  lf_ultrasonic=None, lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None, is_sim=True,
                  position_kp=1, position_ki=0, position_kd=0, position_noise=0, heading_kp=1, heading_ki=0,
                  heading_kd=0, heading_noise=0, init_phase=1, time_step=1, move_dist=.5, turn_angle=3,
-                 plastic_weight=0, init_threshold=1, goal_threshold=1, motor_controller=None):
+                 plastic_weight=0, use_ekf=False, init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None, 
+                 gps=None, imu=None, init_threshold=1, goal_threshold=1, motor_controller=None):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -111,6 +115,13 @@ class Robot:
         self.acceleration = [0, 0, 0]  # TEMPORARY
         self.magnetic_field = [0, 0, 0]  # TEMPORARY
         self.gyro_rotation = [0, 0, 0]  # TEMPORARY
+        self.init_gps = init_gps
+        self.gps_data = gps_data
+        self.imu_data = imu_data  # will be filled by execute_setup
+        self.ekf_var = ekf_var
+        self.gps = gps
+        self.imu = imu
+        self.mc = motor_controller
         self.linear_v = 0
         self.angular_v = 0
         self.width = width
@@ -157,9 +168,30 @@ class Robot:
         with open(CSV_PATH + '/phases.csv', 'a') as fd:
             fd.write(str(self.phase) + '\n')
 
-    def travel(self, dist, turn_angle):
+    def update_ekf_step(self):
+        zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
+        # self.ekf_var.update_step(self.ekf_var.mu, self.ekf_var.sigma, sensor_module.get_measurement(self.init_gps))
+        self.gps_data = (self.gps.get_gps()["long"], self.gps.get_gps()["lat"])
+        self.imu_data = self.imu.get_gps()
+        x, y = get_vincenty_x(
+            self.init_gps, self.gps_data), get_vincenty_y(self.init_gps, self.gps_data)
+        heading = math.degrees(math.atan2(
+            self.imu_data["mag"]["y"], self.imu_data["mag"]["x"]))
+
+        measurements = np.array([[x], [y], [heading]])
+
+        self.ekf_var.update_step(
+            self.ekf_var.mu, self.ekf_var.sigma, measurements)
+        new_x = self.ekf_var.mu[0][0]
+        new_y = self.ekf_var.mu[1][0]
+        new_heading = self.ekf_var.mu[2][0]
+        new_state = np.array([[new_x], [new_y], [new_heading]])
+        return new_state
+
+    def travel(self, velocity, omega):
         # Moves the robot with both linear and angular velocity
-        self.state = np.round(integrate_odom(self.state, dist, turn_angle), 3)
+        self.state = np.round(integrate_odom(
+            self.state, velocity, omega), 3)
         # if it is a simulation,
         if self.is_sim:
             self.truthpose = np.append(
@@ -180,7 +212,6 @@ class Robot:
     def move_to_target_node(self, target, allowed_dist_error, database):
         """
         Moves robot to target + or - allowed_dist_error
-
         Arguments:
             target: target coordinates in the form (latitude, longitude)
             allowed_dist_error: the maximum distance in meters that the robot 
@@ -226,10 +257,11 @@ class Robot:
                     limited_cmd_w[0], limited_cmd_v[0])
                 # TODO: sleep??
 
+            if not self.is_sim:
+                self.state = self.update_ekf_step()
+
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
-
-            # TODO: Do we want to update self.state with this new predicted state????
 
             if self.is_sim:
                 # FOR GUI: writing robot location and mag heading in CSV
@@ -244,10 +276,8 @@ class Robot:
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
 
-    def write_to_csv(predicted_state):
-        cwd = os.getcwd()
-        cd = cwd + "/csv"
-        with open(cd + '/datastore.csv', 'a') as fd:
+    def write_to_csv(self, predicted_state):
+        with open(CSV_PATH + '/datastore.csv', 'a') as fd:
             fd.write(
                 str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[1:-1] + '\n')
         time.sleep(0.001)
@@ -267,15 +297,18 @@ class Robot:
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
 
         while abs_heading_error > allowed_heading_error:
-            self.state[2] = np.random.normal(self.state[2], self.heading_noise)
+            if self.is_sim:
+                self.state[2] = np.random.normal(self.state[2], self.heading_noise)
+            else:
+                self.state = self.update_ekf_step()
             theta_error = target_heading - self.state[2]
             w = self.head_pid.update(theta_error)  # angular velocity
             _, limited_cmd_w = limit_cmds(0, w, self.max_velocity, self.radius)
 
             if self.is_sim:
-                self.travel(0, self.time_step * limited_cmd_w[0])
+                self.travel(0, self.time_step * limited_cmd_w)
             else:
-                self.motor_controller.spin_motors(limited_cmd_w[0], 0)
+                self.motor_controller.spin_motors(limited_cmd_w, 0)
 
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
@@ -309,7 +342,24 @@ class Robot:
         gps_setup = gps.setup()
         imu_setup = imu.setup()
         radio_session.setup_robot()
-        motor_controller.setup()
+        motor_controller.setup(self.is_sim)
+
+        zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
+        self.init_gps = (gps.get_gps()["long"], gps.get_gps()["lat"])
+        self.imu_data = imu.get_gps()
+        x_init, y_init = (0, 0)
+        heading_init = math.degrees(math.atan2(
+            self.imu_data["mag"]["y"], self.imu_data["mag"]["x"]))
+
+        # mu is meters from start position (bottom left position facing up)
+        mu = np.array([[x_init], [y_init], [heading_init]])
+
+        # confidence of mu, set it to high initially b/c not confident, algo brings it down
+        sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
+        self.ekf_var = LocalizationEKF(mu, sigma)
+        self.gps = gps
+        self.imu = imu
+        self.motor_controller = motor_controller
         if (radio_session.connected and gps_setup and imu_setup):
             obstacle_avoidance = threading.Thread(target=self.track_obstacle, daemon=True)
             obstacle_avoidance.start()  # spawn thread to monitor obstacles
@@ -379,10 +429,16 @@ class Robot:
                 self.set_phase(Phase.FAULT)
                 return None
             if (next_radius > roomba_radius) or (obstacle_detected and next_after_obstacle):
-                self.move_forward(-self.move_dist)
-                self.turn(self.turn_angle)
+              if self.is_sim:
+                  self.move_forward(-self.move_dist)
+                  self.turn(self.turn_angle)
+              else:
+                  self.motor_controller.motors(0, 0)  # TODO: change this to pid or time based. NEED TO MAKE SURE ROBOT DOESN'T BREAK WHEN GOING FROM POS VEL TO NEG VEL IN A SHORT PERIOD OF TIME -> ramp down prob            
             else:
-                self.move_forward(self.move_dist)
+              if self.is_sim:
+                  self.move_forward(self.move_dist)
+              else:
+                  self.motor_controller.motors(0, 0)  # TODO: determine what vel to run this at
             dt += 1
             exit_boolean = (dt > time_limit)
         self.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
