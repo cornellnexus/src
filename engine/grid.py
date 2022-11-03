@@ -351,7 +351,7 @@ class Grid:
         if (candidate_nodes == []):
             return None
         else:
-            node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
+            node_info = max(candidate_nodes,key=lambda node_info: node_info[1])
             return (node_info[1],node_info[2])
 
 
