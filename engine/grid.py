@@ -389,16 +389,18 @@ class Grid:
                         curr_pos = new_pos
                     else:
                         print("branch 3",new_pos)
-                        left_pos = self.bottom_leftmost_node(new_pos)
+                        left_pos = self.bottom_rightmost_node(new_pos)
                         if left_pos is not None:
                             waypoints.append(left_pos)
                             curr_pos = left_pos
                             phase = WaypointPhase.DOWN
+                            direction = Direction.RIGHT
                         else:
                             phase = WaypointPhase.TERMINATE
                 if direction == Direction.RIGHT:
                     new_pos = (curr_pos[0]+1,curr_pos[1])
                     if curr_pos[0]+1 == rows and self.nodes[new_pos].is_active:
+                        print("branch 1", new_pos)
                         waypoints.append(new_pos)
                         right_pos = self.bottom_rightmost_node(new_pos)
                         if right_pos is not None:
@@ -408,14 +410,17 @@ class Grid:
                         else:
                             phase = WaypointPhase.TERMINATE
                     elif self.nodes[new_pos].is_active:
+                        print("branch 2", new_pos)
                         waypoints.append(new_pos)
                         curr_pos = new_pos
                     else:
-                        right_pos = self.bottom_rightmost_node(new_pos)
+                        print("branch 3", new_pos)
+                        right_pos = self.bottom_leftmost_node(new_pos)
                         if right_pos is not None:
                             waypoints.append(right_pos)
                             curr_pos = right_pos
                             phase = WaypointPhase.DOWN
+                            direction = Direction.LEFT
                         else:
                             phase = WaypointPhase.TERMINATE
         return waypoints
