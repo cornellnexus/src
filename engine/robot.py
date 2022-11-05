@@ -4,7 +4,7 @@ from enum import Enum
 from electrical import motor_controller
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
-from csv.csv_util import write_state_to_csv, write_phase_to_csv
+from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
 
 # from electrical.motor_controller import MotorController
 # import electrical.gps as GPS 
