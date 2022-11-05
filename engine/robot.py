@@ -1,26 +1,20 @@
 import numpy as np
 import math
+from enum import Enum
 from electrical import motor_controller
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
+from csv.csv_util import write_state_to_csv, write_phase_to_csv
+
 # from electrical.motor_controller import MotorController
 # import electrical.gps as GPS 
 # import electrical.imu as IMU 
 # import electrical.radio_module as RadioModule
 # import serial
 
-from constants.definitions import CSV_PATH
-
-
 from engine.ekf import LocalizationEKF
 from engine.sensor_module import SensorModule
 from constants.geo_fences import ENGINEERING_QUAD
-
-
-from enum import Enum
-import time
-import sys
-
 
 class Phase(Enum):
     """
@@ -143,7 +137,7 @@ class Robot:
         # TODO: wrap in try/except (error when calling execute_setup_test.py)
         # write in csv
         if self.is_store:
-            self.write_to_csv(self.phase)
+            write_phase_to_csv(self.phase)
 
     def update_ekf_step(self):
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
@@ -242,7 +236,7 @@ class Robot:
 
             if self.is_sim and self.is_store:
                 # FOR GUI: writing robot location and mag heading in CSV
-                self.write_to_csv(predicted_state)
+                write_state_to_csv(predicted_state)
 
             # FOR DATABASE: updating our database with new predicted state
             # TODO: can the code above be simplified / use the database instead?
@@ -253,15 +247,6 @@ class Robot:
             distance_away = math.hypot(float(predicted_state[0]) - target[0],
                                        float(predicted_state[1]) - target[1])
 
-    def write_to_csv(self, predicted_state):
-        with open(CSV_PATH + '/datastore.csv', 'a') as fd:
-            fd.write(
-                str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[1:-1] + '\n')
-        time.sleep(0.001)
-
-    def write_to_csv(self, phase):
-        with open(CSV_PATH + '/phases.csv', 'a') as fd:
-            fd.write(str(phase) + '\n')
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
@@ -415,7 +400,7 @@ class Robot:
     def set_phase(self, new_phase):
         self.phase = new_phase
         if self.is_store:
-            self.write_to_csv(self.phase)
+            write_phase_to_csv(self.phase)
 
     def execute_avoid_obstacle(self):
         # TODO: SET BACK TO ORIGINAL MISSION (TRAVERSE OR RETURN)
