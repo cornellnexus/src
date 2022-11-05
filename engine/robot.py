@@ -3,7 +3,7 @@ import threading
 import numpy as np
 import math
 from electrical import motor_controller
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from engine.pid_controller import PID
 # from electrical.motor_controller import MotorController
 # import electrical.gps as GPS 
@@ -11,13 +11,11 @@ from engine.pid_controller import PID
 # import electrical.radio_module as RadioModule
 # import serial
 
-from constants.definitions import CSV_PATH
-
+from constants.definitions import *
 
 from engine.ekf import LocalizationEKF
 from engine.sensor_module import SensorModule
 from constants.geo_fences import ENGINEERING_QUAD
-
 
 from enum import Enum
 import time
@@ -44,7 +42,7 @@ class Robot:
     Initializes the robot with the given position and heading.
     Parameters:
     state = Robot's state, np.array
-        state contain's the robot's x position, y position, and heading
+        state contains the robot's x position, y position, and heading
     phase = 'collect' when traversing through grid, 'return' when returning to
         base station
     is_sim = False when running code with physical robot, True otherwise
@@ -57,7 +55,7 @@ class Robot:
                  lf_ultrasonic=None, lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None, is_sim=True,
                  position_kp=1, position_ki=0, position_kd=0, position_noise=0, heading_kp=1, heading_ki=0,
                  heading_kd=0, heading_noise=0, init_phase=1, time_step=1, move_dist=.5, turn_angle=3,
-                 plastic_weight=0, use_ekf=False, init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None, 
+                 plastic_weight=0, use_ekf=False, init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None,
                  gps=None, imu=None, init_threshold=1, goal_threshold=1, motor_controller=None):
         """
         Arguments:
@@ -225,8 +223,7 @@ class Robot:
         predicted_state = self.state  # this will come from Kalman Filter
 
         # location error (in meters)
-        distance_away = math.hypot(float(predicted_state[0]) - target[0],
-                                   float(predicted_state[1]) - target[1])
+        distance_away = self.calculate_dist(target, predicted_state)
 
         while distance_away > allowed_dist_error:
             if self.is_sim:
@@ -277,13 +274,13 @@ class Robot:
                 "state", predicted_state[0], predicted_state[1], predicted_state[2])
 
             # location error (in meters)
-            distance_away = math.hypot(float(predicted_state[0]) - target[0],
-                                       float(predicted_state[1]) - target[1])
+            distance_away = self.calculate_dist(target, predicted_state)
 
     def write_to_csv(self, predicted_state):
         with open(CSV_PATH + '/datastore.csv', 'a') as fd:
             fd.write(
-                str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[1:-1] + '\n')
+                str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[
+                                                                                            1:-1] + '\n')
         time.sleep(0.001)
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
@@ -411,9 +408,6 @@ class Robot:
             Returns:
                 None
         """
-        # to add obstacle avoidance, can either change roomba to go to point on the circle in the direction of the
-        # robot direction or use raw sensor value
-        # can we guarantee that when giving a velocity that the robot will move at that velocity?
         dt = 0
         # TODO: battery_limit, time_limit, tank_capacity is full
         exit_boolean = False
@@ -423,26 +417,27 @@ class Robot:
             curr_y = self.state[1]
             new_x = curr_x + self.move_dist * math.cos(self.state[2]) * self.time_step
             new_y = curr_y + self.move_dist * math.sin(self.state[2]) * self.time_step
-            next_radius = math.sqrt(
-                abs(new_x - base_station_loc[0]) ** 2 + abs(new_y - base_station_loc[1]) ** 2)
-            obstacle_detected = self.front_ultrasonic.distance() > self.detect_obstacle_range
+            next_radius = self.calculate_dist(base_station_loc, (new_x, new_y))
+            is_detecting_obstacle = self.front_ultrasonic.distance() < self.detect_obstacle_range
             # if moving will cause the robot to move through the obstacle
-            next_after_obstacle = next_radius < self.detect_obstacle_range
+            is_next_timestep_blocked = next_radius < self.detect_obstacle_range
             # sensor should not detect something in the robot
-            if obstacle_detected < self.front_sensor_offset:
+            if is_detecting_obstacle < self.front_sensor_offset:
                 self.set_phase(Phase.FAULT)
                 return None
-            if (next_radius > roomba_radius) or (obstacle_detected and next_after_obstacle):
-              if self.is_sim:
-                  self.move_forward(-self.move_dist)
-                  self.turn(self.turn_angle)
-              else:
-                  self.motor_controller.motors(0, 0)  # TODO: change this to pid or time based. NEED TO MAKE SURE ROBOT DOESN'T BREAK WHEN GOING FROM POS VEL TO NEG VEL IN A SHORT PERIOD OF TIME -> ramp down prob            
+            if (next_radius > roomba_radius) or (is_detecting_obstacle and is_next_timestep_blocked):
+                if self.is_sim:
+                    self.move_forward(-self.move_dist)
+                    self.turn(self.turn_angle)
+                else:
+                    self.motor_controller.motors(0, 0)
+                    # TODO: change this to pid or time based. NEED TO MAKE SURE ROBOT DOESN'T BREAK WHEN GOING FROM
+                    #  POS VEL TO NEG VEL IN A SHORT PERIOD OF TIME -> ramp down prob
             else:
-              if self.is_sim:
-                  self.move_forward(self.move_dist)
-              else:
-                  self.motor_controller.motors(0, 0)  # TODO: determine what vel to run this at
+                if self.is_sim:
+                    self.move_forward(self.move_dist)
+                else:
+                    self.motor_controller.motors(0, 0)  # TODO: determine what vel to run this at
             dt += 1
             exit_boolean = (dt > time_limit)
         self.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
@@ -455,7 +450,11 @@ class Robot:
             fd.write(str(self.phase) + '\n')
 
     def track_obstacle(self):
-        # make this async so main algorithm keeps running
+        """ Continuously checks if there's an obstacle in the way.
+            Will be executing on a separate, asynchronous thread.
+            Precondition:
+                Front ultrasonic sensor is mounted in the center front/x position of the robot (width/2)
+        """
         # assuming front sensor is mounted in the center x position (width/2)
         condition = True
         curr_ultrasonic_value = 0
@@ -478,74 +477,71 @@ class Robot:
             if (self.phase == Phase.TRAVERSE) or (self.phase == Phase.RETURN) or (self.phase == Phase.DOCKING) or (
                     self.phase == Phase.AVOID_OBSTACLE):
                 if curr_ultrasonic_value < self.detect_obstacle_range:
-                    # didn't check whether we can reach goal before contacting obstacle because obstacle detection does
-                    # not detect angle, so obstacle could be calculated to be falsely farther away than the goal. Not
-                    # optimal because in cases, robot will execute boundary following when it can reach goal
-                    self.dist_to_goal = math.sqrt(
-                        (self.state[0] - self.goal_location[0]) ** 2 + (self.state[1] - self.goal_location[1]) ** 2)
+                    # Note: didn't check whether we can reach goal before contacting obstacle because obstacle
+                    # detection does not detect angle, so obstacle could be calculated to be falsely farther away than
+                    # the goal. Not optimal because in cases, robot will execute boundary following when it can reach
+                    # goal
+                    self.dist_to_goal = self.calculate_dist(self.goal_location, self.state)
                     self.avoid_obstacle = True
-                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                        fd.write("Avoid" + '\n')
+                    if self.is_sim:
+                        with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                            fd.write("Avoid" + '\n')
                 else:
                     self.avoid_obstacle = False
-                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                        fd.write("Not Avoid" + '\n')
+                    if self.is_sim:
+                        with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                            fd.write("Not Avoid" + '\n')
             if curr_ultrasonic_value < 0:
                 self.set_phase(Phase.FAULT)  # value should not go below 0; sensor is broken
-                with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                    fd.write("Fault" + '\n')
+                if self.is_sim:
+                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                        fd.write("Fault" + '\n')
 
         # time.sleep(10)  # don't hog the cpu
 
-    def execute_avoid_obstacle(self, dist_to_goal, prev_phase, init_threshold, goal_threshold):
+    def execute_avoid_obstacle(self, dist_to_goal):
         """ Execute obstacle avoidance
             Args:
                 dist_to_goal (Double): The distance from the robot to the goal at the start of the phase
-                prev_phase (Phase): The previous phase to return to after executing obstacle avoidance
-                init_threshold (Double): Radius from initial position that robot has to leave before it can detect if
-                    goal is unreachable
-                goal_threshold (Double): Threshold from goal that will be detected as reaching goal
             Returns:
                 prev_phase (Phase)
         """
         init_x = self.x_pos
         init_y = self.y_pos
-        # threshold is arbitrary, set later. sometimes location reading will be inaccurate or not frequent enough to
-        # read that we've arrived back to the init x y pos. make it small enough that robot actually leaves threshold
-        # at some time during boundary following or add timeout to branch making gate = True
+        # Note: init_threshold is arbitrary, set later. sometimes location reading will be inaccurate or not frequent
+        # enough to read that we've arrived back to the init x y pos. make it small enough that robot actually leaves
+        # init_threshold at some time during boundary following or add timeout to branch making gate = True
         gate = False
-        dist_to_goal_decreases = False
-        boundary_traversed = False
+        did_dist_to_goal_decreased = False
+        has_traversed_boundary = False
+        curr_dist_to_goal = self.calculate_dist(self.goal_location, (self.x_pos, self.y_pos))
         while True:
             if self.phase == Phase.fault:  # fault has priority over obstacle avoidance
                 return None
             else:
-                dist_from_init = math.sqrt((self.x_pos - init_x) ** 2 + (self.y_pos - init_y) ** 2)
-                curr_dist_to_goal = math.sqrt(
-                    (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
-                if dist_from_init > init_threshold:
+                dist_from_init = self.calculate_dist((self.x_pos, self.y_pos), (init_x, init_y))
+                if dist_from_init > self.init_threshold:
                     gate = True
-                if curr_dist_to_goal < goal_threshold and gate:  # exits obstacle avoidance if robot close to goal
-                    self.set_phase(prev_phase)
+                if curr_dist_to_goal < self.goal_threshold and gate:  # exits obstacle avoidance if robot close to goal
+                    self.set_phase(self.prev_phase)
                     return None
-                elif boundary_traversed and gate:
+                elif has_traversed_boundary and gate:
                     self.set_phase(Phase.FAULT)  # cannot reach goal
                     return None
-                elif dist_to_goal_decreases:
+                elif did_dist_to_goal_decreased:
                     # don't include condition on whether there is a new obstacle bc it will be caught and
                     # current algorithm will continue traversing current boundary (instead of traversing new obstacle)
                     # not optimal because frequently will have to go back to obstacle avoidance
-                    self.set_phase(prev_phase)  # goes back to prev traversal
+                    self.set_phase(self.prev_phase)  # goes back to prev traversal
                     return None
                     # check position of goal and if obstacle in way of goal (using side sensors) then keep doing
                     # boundary following except with new init_x, init_y, gate,
                 else:
                     self.execute_boundary_following(0)  # add code directly here
                     # update conditions
-                    curr_dist_to_goal = math.sqrt(
-                        (self.x_pos - self.goal_location[0]) ** 2 + (self.y_pos - self.goal_location[1]) ** 2)
-                    dist_to_goal_decreases = (curr_dist_to_goal < dist_to_goal)
-                    boundary_traversed = dist_from_init < init_threshold
+                    curr_dist_to_goal = self.calculate_dist(self.goal_location, (self.x_pos, self.y_pos))
+                    did_dist_to_goal_decreased = (curr_dist_to_goal < dist_to_goal)
+                    has_traversed_boundary = dist_from_init < self.init_threshold
             time.sleep(10)  # don't hog the cpu
 
     def execute_boundary_following(self, min_dist):
@@ -583,3 +579,6 @@ class Robot:
     def execute_docking(self):
         # TODO: add traverse to doc at base station in case mission didnt finish
         self.set_phase(Phase.COMPLETE)  # temporary for simulation purposes
+
+    def calculate_dist(self, init_pos, final_pos):
+        return math.sqrt((final_pos[0] - init_pos[0]) ** 2 + (final_pos[1] - init_pos[1]) ** 2)
