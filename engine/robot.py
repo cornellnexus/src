@@ -367,11 +367,12 @@ class Robot:
     def execute_avoid_obstacle(self, dist_to_goal, prev_phase):
         pass
 
-    # Currently, algorithm only supports using the right side sensors of the robot for boundary following.
-    # When encountering an obstacle, robot will begin boundary following by going clockwise around the object.
-    # This was arbitrarily decided since currently there is no better way to determine which direction the robot should
-    # navigate around the obstacle.
-    '''
+    def execute_boundary_following(self, min_dist):
+        '''
+        Currently, algorithm only supports using the right side sensors of the robot for boundary following.
+        When encountering an obstacle, robot will begin boundary following by going clockwise around the object.
+        This was arbitrarily decided since currently there is no better way to determine which direction the robot should
+        navigate around the obstacle.
         Robot will always begin boundary following by going clockwise (turning left when encountering an obstacle)
         1. Determine if robot is parallel using the ultrasonic sensor data
             * Three cases:
@@ -383,8 +384,7 @@ class Robot:
                     * With a margin of error accounting for not uniform obstacles
         2. Once both sensors are displaying the same values, move forward (boundary following)
         3. Exits boundary following when conditions met in execute_avoid_obstacle() method
-    '''
-    def execute_boundary_following(self, min_dist):
+        '''
         front_dist = self.rf_ultrasonic.distance()
         back_dist = self.rb_ultrasonic.distance()
         margin = 1 
