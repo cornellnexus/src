@@ -5,13 +5,15 @@ import math
 from electrical import motor_controller
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
-from electrical.motor_controller import MotorController
-from constants.definitions import *
+# from electrical.motor_controller import MotorController
+# import electrical.gps as GPS 
+# import electrical.imu as IMU 
+# import electrical.radio_module as RadioModule
+# import serial
+
+from constants.definitions import CSV_PATH
 
 
-# import electrical.gps as gps
-# import electrical.imu as imu
-# import electrical.radio_module as radio_module
 from engine.ekf import LocalizationEKF
 from engine.sensor_module import SensorModule
 from constants.geo_fences import ENGINEERING_QUAD
@@ -144,9 +146,11 @@ class Robot:
                                          self.max_sensor_range)  # set ultrasonic detection range
         self.init_threshold = init_threshold
         self.goal_threshold = goal_threshold
-        if not self.is_sim:
-            self.motor_controller = MotorController(self.is_sim, wheel_radius=0,
-                                                    vm_load1=1, vm_load2=1, L=0, R=0)
+        # if not self.is_sim:
+        #     self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
+        #     self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
+        #     self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
+        #     self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
