@@ -49,17 +49,17 @@ class MotorControllerTest:
 	def test_straight(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
-			self.motor_controller.motors(0,30)
+			self.motor_controller.spin_motors(0,30)
 	
 	def test_stop(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
-			self.motor_controller.motors(0,0)
+			self.motor_controller.spin_motors(0,0)
 	
 	def test_turning_and_moving(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
-			self.motor_controller.motors(20,30)
+			self.motor_controller.spin_motors(20,30)
 
 	def run(self): 
 		self.test_straight()
