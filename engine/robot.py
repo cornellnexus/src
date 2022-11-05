@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from electrical import motor_controller
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from engine.pid_controller import PID
 # from electrical.motor_controller import MotorController
 # import electrical.gps as GPS 
