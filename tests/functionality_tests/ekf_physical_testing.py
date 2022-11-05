@@ -10,10 +10,10 @@ stopTime = time.time() + 10
 
 while time.time() < stopTime:
     #Move at a constant arbitrary velocity (hard-coded to 5)
-    motor_controller.motors(0, 5)
+    motor_controller.spin_motors(0, 5)
     sensor_module.update_gps_data()
     sensor_module.update_imu_data()
 
-motor_controller.motors(0,0)
+motor_controller.spin_motors(0,0)
 
 GPIO.cleanup()
