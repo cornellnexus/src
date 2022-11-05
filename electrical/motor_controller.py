@@ -3,7 +3,6 @@ import time
 if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
 
-
 class BasicMotorController:
     """ 
     BasicMotorController contains pinouts to configure motor controller, as well as 
@@ -90,7 +89,6 @@ class MotorController:
         L: radius of left motor #TODO: double check this 
         R: radius of right motor #TODO: double check this
     """
-
     def __init__(self, wheel_radius, vm_load1, vm_load2, L, R):
         self.wheel_radius = wheel_radius
         self.vm_load1 = vm_load1
