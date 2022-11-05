@@ -11,40 +11,42 @@ def distance(point1, point2):
 
 
 class Robot:
-    def __init__(self, startpos, endpos, width):
+    def __init__(self, startpos, endpos, width, velocityLeft, velocityRight, maxSpeed, minSpeed, minimumObstacleDistance, countDown):
         self.metersToPixels = 3779.52  # meters to pixels conversion
         # robot dimensions
-        self.width = width
+        self.width = width * self.metersToPixels
         self.x = startpos[0]
         self.y = startpos[1]
         self.startX = startpos[0]
         self.startY = startpos[1]
         self.endX = endpos[0]
         self.endY = endpos[1]
-        self.heading = 0
-        self.velocityLeft = 0.01 * self.metersToPixels
-        self.velocityRight = 0.01 * self.metersToPixels
-        self.maxSpeed = 0.02 * self.metersToPixels
-        self.minSpeed = 0.01 * self.metersToPixels
-        self.minimumObstacleDistance = 100
-        self.countDown = 5  # in seconds
+        self.setHeading()
+        self.velocityLeft = velocityLeft * self.metersToPixels
+        self.velocityRight = velocityRight * self.metersToPixels
+        self.maxSpeed = maxSpeed * self.metersToPixels
+        self.minSpeed = minSpeed * self.metersToPixels
+        self.minimumObstacleDistance = minimumObstacleDistance
+        self.countDown = countDown  # in seconds
+        self.closestObstacle = None
+        self.distFromClosestObstacle = np.inf
+
+    def detect_obstacles(self, point_cloud) :
+        if len(point_cloud) > 0:
+            for point in point_cloud:
+                if self.distFromClosestObstacle > distance([self.x, self.y], point):
+                    self.distFromClosestObstacle = distance([self.x, self.y], point)
+                    self.closestObstacle = point
+            if self.distFromClosestObstacle < self.minimumObstacleDistance:
+                return True
+        self.closestObstacle = None
+        self.distFromClosestObstacle = np.inf
+        return False
 
     def avoid_obstacles(self, point_cloud, dt):
-        closestObstacle = None
-        dist = np.inf
-        if len(point_cloud) > 1:
-            for point in point_cloud:
-                if dist > distance([self.x, self.y], point):
-                    dist = distance([self.x, self.y], point)
-                    closestObstacle = (point, dist)
-            if closestObstacle[1] < self.minimumObstacleDistance and self.countDown > 0:
-                self.countDown -= dt
-                self.move_backward()
-            else:
-                # reset count down
-                self.countDown = 5
-                # move forward
-                self.move_forward()
+        self.move_backward()
+        self.kinematics(dt)
+        self.heading += 0.001
 
     def move_backward(self):
         self.velocityRight = - self.minSpeed
@@ -59,19 +61,26 @@ class Robot:
         yLength = endY - startY
         return np.arctan(yLength / xLength)
 
-    def kinematics(self, dt):
+    def setHeading(self):
         # Angle between robot and line to destination
         angle = self.arctan(self.startX, self.startY, self.endX + 40, self.endY + 41)
         self.heading = angle * -1
 
+    def updateHeading(self):
+        angle = self.arctan(self.x, self.y, self.endX + 40, self.endY + 41)
+        finalHeading = angle * -1
+        if math.fabs(finalHeading - self.heading) > 0.1:
+            if finalHeading > self.heading:
+                self.heading += 0.01
+            else:
+                self.heading -= 0.01
+
+
+    def kinematics(self, dt):
         self.x += ((self.velocityLeft + self.velocityRight) / 2) * \
             math.cos(self.heading) * dt
         self.y -= ((self.velocityLeft + self.velocityRight) / 2) * \
             math.sin(self.heading) * dt
-        # self.heading += (self.velocityRight -
-        #                  self.velocityLeft) / self.width * dt
-        # if self.heading > 2*math.pi or self.heading < -2 * math.pi:
-        #     self.heading = 0
         self.velocityRight = max(
             min(self.maxSpeed, self.velocityRight), self.minSpeed)
         self.velocityLeft = max(
