@@ -371,6 +371,19 @@ class Robot:
     # When encountering an obstacle, robot will begin boundary following by going clockwise around the object.
     # This was arbitrarily decided since currently there is no better way to determine which direction the robot should
     # navigate around the obstacle.
+    '''
+        Robot will always begin boundary following by going clockwise (turning left when encountering an obstacle)
+        1. Determine if robot is parallel using the ultrasonic sensor data
+            * Three cases:
+                1. Front right sensor is farther away from the obstacle than the back right sensor
+                    * Turn right until sensor inputs are equalized (front of the robot will turn closer toward the obstacle)
+                2. Front right sensor is closer to the obstacle than the back right sensor
+                    *  Turn left until sensor inputs are equalized (front of the robot will turn away from the obstacle)
+                3. Both right-side sensors displaying the same value
+                    * With a margin of error accounting for not uniform obstacles
+        2. Once both sensors are displaying the same values, move forward (boundary following)
+        3. Exits boundary following when conditions met in execute_avoid_obstacle() method
+    '''
     def execute_boundary_following(self, min_dist):
         front_dist = self.rf_ultrasonic.distance()
         back_dist = self.rb_ultrasonic.distance()
@@ -390,20 +403,6 @@ class Robot:
             self.turn(turn_angle)
         else:
             self.turn(-1 * turn_angle)
-
-        '''
-        Robot will always begin boundary following by going clockwise (turning left when encountering an obstacle)
-        1. Determine if robot is parallel using the ultrasonic sensor data
-            * Three cases:
-                1. Front right sensor is farther away from the obstacle than the back right sensor
-                    * Turn right until sensor inputs are equalized (front of the robot will turn closer toward the obstacle)
-                2. Front right sensor is closer to the obstacle than the back right sensor
-                    *  Turn left until sensor inputs are equalized (front of the robot will turn away from the obstacle)
-                3. Both right-side sensors displaying the same value
-                    * With a margin of error accounting for not uniform obstacles
-        2. Once both sensors are displaying the same values, move forward (boundary following)
-        3. Exits boundary following when conditions met in execute_avoid_obstacle() method
-        '''
 
     # to do:
         # determine ccw or cw
