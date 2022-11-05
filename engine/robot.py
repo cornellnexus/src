@@ -51,7 +51,7 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
+    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, is_store=False, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
                  init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0, use_ekf=False,
                  init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None, gps=None, imu=None, motor_controller=None):
@@ -65,6 +65,7 @@ class Robot:
             max_v: the maximum velocity of the robot
             radius: the radius of the robot
             is_sim: False if the physical robot is being used, True otherwise
+            is_store: False if csv data should not be stored, True otherwise
             position_kp: the proportional factor of the position PID
             position_ki: the integral factor of the position PID
             position_kd: the derivative factor of the position PID
@@ -87,6 +88,7 @@ class Robot:
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
         self.is_sim = is_sim
+        self.is_store = is_store
         self.phase = Phase(init_phase)
         self.epsilon = epsilon
         self.max_velocity = max_v
@@ -140,8 +142,8 @@ class Robot:
 
         # TODO: wrap in try/except (error when calling execute_setup_test.py)
         # write in csv
-        with open(CSV_PATH + '/phases.csv', 'a') as fd:
-            fd.write(str(self.phase) + '\n')
+        if self.is_store:
+            self.write_to_csv(self.phase)
 
     def update_ekf_step(self):
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
@@ -238,7 +240,7 @@ class Robot:
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
 
-            if self.is_sim:
+            if self.is_sim and self.is_store:
                 # FOR GUI: writing robot location and mag heading in CSV
                 self.write_to_csv(predicted_state)
 
@@ -256,6 +258,10 @@ class Robot:
             fd.write(
                 str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[1:-1] + '\n')
         time.sleep(0.001)
+
+    def write_to_csv(self, phase):
+        with open(CSV_PATH + '/phases.csv', 'a') as fd:
+            fd.write(str(phase) + '\n')
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
@@ -408,9 +414,8 @@ class Robot:
 
     def set_phase(self, new_phase):
         self.phase = new_phase
-
-        with open(CSV_PATH + '/phases.csv', 'a') as fd:
-            fd.write(str(self.phase) + '\n')
+        if self.is_store:
+            self.write_to_csv(self.phase)
 
     def execute_avoid_obstacle(self):
         # TODO: SET BACK TO ORIGINAL MISSION (TRAVERSE OR RETURN)
