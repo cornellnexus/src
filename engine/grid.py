@@ -211,7 +211,6 @@ class Grid:
         """
         for x in range(row, row_limit):
             for y in range(col, col_limit):
-            
                 self.nodes[x,y].is_active = True
         return self.nodes
 
