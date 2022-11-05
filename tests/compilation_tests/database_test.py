@@ -50,7 +50,7 @@ class TestDataBase(unittest.TestCase):
                  "position_noise: 0,\n" \
                  "heading_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0]"
 
-        db_initial_str = "phase: 2,\nstate [x, y, heading]: [10, 20, 50],\nis_sim: False,\nplastic_weight: 2,\n" \
+        db_initial_str = "phase: 2,\nstate [x, y, heading]: [10, 20, 50],\nis_sim: True,\nplastic_weight: 2,\n" \
                          "battery: 98,\nmove_dist: 0.6,\nacceleration [x, y, z]: [4.25, 3.2, 0.1],\n" \
                          "magnetic_field [x, y, z]: [0.1, 0.2, 0.3],\ngyro_rotation [x, y, z]: [0.5, 0.2, 0.6],\n" \
                          "position_pid [proportional factor, integral factor, derivative factor]: [0.12, 1.7, 9.2],\n" \
@@ -80,7 +80,7 @@ class TestDataBase(unittest.TestCase):
                                                    "position_noise"), ([1, 0, 0], "heading_pid")
                      ]
 
-        db_initial_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (False, "is_sim"),
+        db_initial_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (True, "is_sim"),
                              (2, "plastic_weight"),
                              (98, "battery"), (0.6, "move_dist"), ([
                                  4.25, 3.2, 0.1], "acceleration"),
@@ -141,7 +141,7 @@ class TestDataBase(unittest.TestCase):
                                                        "position_noise"), ([1, 0, 0], "heading_pid")
                          ]
 
-        db_initial_new_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (False, "is_sim"),
+        db_initial_new_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (True, "is_sim"),
                                  (2, "plastic_weight"),
                                  (98, "battery"), (0.6, "move_dist"), ([
                                      4.25, 3.2, 0.1], "acceleration"),
