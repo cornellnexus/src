@@ -81,13 +81,13 @@ class Grid:
             # traversal.
             for i in range(cols):
                 for j in range(rows):
-                    #is_border = (j == 0 or j == rows - 1)
+                    is_border = (j == 0 or j == rows - 1)
                     if i % 2 == 0:
                         lat = gps_origin[0] + j * lat_step
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y)  # , is_border)
+                        node = Node(lat, long, x, y, is_border)
                         node_list[j, i] = node
                     elif i % 2 == 1:
                         lat = gps_origin[0] + \
@@ -95,7 +95,7 @@ class Grid:
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y)  # , is_border)
+                        node = Node(lat, long, x, y, is_border)
                         row_index = rows - (j + 1)
                         node_list[row_index, i] = node
 
