@@ -257,9 +257,7 @@ class Grid:
             return False
 
     # Activate triangle based on three points
-
-    def activate_traingle(self, x1, y1, x2, y2, x3, y3):
-
+    def activate_triangle(self, x1, y1, x2, y2, x3, y3):
         """
         Activates all the nodes in a traingle.
         """
@@ -267,7 +265,7 @@ class Grid:
         cols = self.nodes.shape[0]
         for x in range(rows):
             for y in range(cols):
-                if self.isInsideTriangle(x1, y1, x2, y2, x3, y3, x, y):
+                if self.is_inside_triangle(x1, y1, x2, y2, x3, y3, x, y):
                     self.nodes[x, y].is_active = True
 
     # Checks if node is on border of activated nodes
