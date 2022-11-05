@@ -31,6 +31,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
+    # Add map and get change in time between screen refresh
     dt = (pygame.time.get_ticks() - last_time) / 1000
     last_time = pygame.time.get_ticks()
     gfx.map.blit(gfx.map_img, (0, 0))
@@ -45,16 +46,25 @@ while running:
     endSurf.fill(gfx.red)
     gfx.map.blit(endSurf, (end[0], end[1]))
 
-    # Adding following line
+    # Adding green following line
     pygame.draw.line(gfx.map, gfx.green, start, (end[0] + 40, end[1] + 41))
 
     # Check if robot has reached end
     if (robot.x > end[0] and robot.x < end[0] + 81) and (robot.y > end[1] and robot.y < end[1] + 80):
         running = False
 
+    # Move robot
     robot.kinematics(dt)
+
+    # Draws the robot
     gfx.draw_robot(robot.x, robot.y, robot.heading)
+
+    # Read sensor data and create a point cloud
     point_cloud = ultra_sonic.sense_obstacles(robot.x, robot.y, robot.heading)
+
+    # Execute obstacle avoidance behavior
     robot.avoid_obstacles(point_cloud, dt)
+
+    # Draw point cloud and update screen
     gfx.draw_sensor_data(point_cloud)
     pygame.display.update()
