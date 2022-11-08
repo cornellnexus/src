@@ -499,7 +499,7 @@ class Robot:
 
         # time.sleep(10)  # don't hog the cpu
 
-    def execute_avoid_obstacle(self, dist_to_goal):
+    def execute_avoid_obstacle(self, dist_to_goal, database):
         """ Execute obstacle avoidance
             Args:
                 dist_to_goal (Double): The distance from the robot to the goal at the start of the phase
@@ -532,10 +532,18 @@ class Robot:
                     # don't include condition on whether there is a new obstacle bc it will be caught and
                     # current algorithm will continue traversing current boundary (instead of traversing new obstacle)
                     # not optimal because frequently will have to go back to obstacle avoidance
-                    self.set_phase(self.prev_phase)  # goes back to prev traversal
+                    heading_threshold = 1
+                    target_heading = math.atan2(self.goal_location[1] - self.y_pos, self.goal_location[0] - self.x_pos)
+                    self.turn_to_target_heading(target_heading, heading_threshold, database)
+                    curr_ultrasonic_value = self.front_ultrasonic.distance()
+                    if curr_ultrasonic_value < self.detect_obstacle_range:
+                        return self.execute_avoid_obstacle(curr_dist_to_goal, database)
+                    else:
+                        self.set_phase(self.prev_phase)
                     return None
-                    # check position of goal and if obstacle in way of goal (using side sensors) then keep doing
+                    # TODO: check position of goal and if obstacle in way of goal (using side sensors) then keep doing
                     # boundary following except with new init_x, init_y, gate,
+
                 else:
                     self.execute_boundary_following(0)  # add code directly here
                     # update conditions
