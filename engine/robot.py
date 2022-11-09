@@ -56,7 +56,7 @@ class Robot:
                  position_kp=1, position_ki=0, position_kd=0, position_noise=0, heading_kp=1, heading_ki=0,
                  heading_kd=0, heading_noise=0, init_phase=1, time_step=1, move_dist=.5, turn_angle=3,
                  plastic_weight=0, use_ekf=False, init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None,
-                 gps=None, imu=None, init_threshold=1, goal_threshold=1, motor_controller=None):
+                 gps=None, imu=None, init_threshold=1, goal_threshold=1, noise_margin=1, motor_controller=None):
         """
         Arguments:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -87,9 +87,10 @@ class Robot:
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
             plastic_weight: the weight of the trash the robot has collected
-            init_threshold (Double): Radius from initial position that robot has to leave before it can detect if
-                goal is unreachable in obstacle avoidance
+            init_threshold (Double): Radius from initial position that will detect robot is back in initial position
             goal_threshold (Double): Threshold from goal that will be detected as reaching goal in obstacle avoidance
+            noise_margin (Double): Margin from init_threshold that the robot has to leave before detecting robot has
+                left initial position
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
@@ -144,6 +145,7 @@ class Robot:
                                          self.max_sensor_range)  # set ultrasonic detection range
         self.init_threshold = init_threshold
         self.goal_threshold = goal_threshold
+        self.noise_margin = noise_margin
         # if not self.is_sim:
         #     self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
         #     self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
@@ -456,19 +458,20 @@ class Robot:
                 Front ultrasonic sensor is mounted in the center front/x position of the robot (width/2)
         """
         # assuming front sensor is mounted in the center x position (width/2)
-        condition = True
-        curr_ultrasonic_value = 0
         counter = 0  # added for testing
-        while condition:
+        while True:
             if self.is_sim:
                 ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
                                              "r")  # added for testing
                 content = ultrasonic_value_file.readlines()
-                line = content[counter]
-                counter += 1
-                curr_ultrasonic_value = float((''.join(line.rstrip('\n')).strip('()').split(', '))[0])
-                condition = (counter <= (len(content) - 1))
                 ultrasonic_value_file.close()
+                try:
+                    line = content[counter]
+                    counter += 1
+                    curr_ultrasonic_value = float((''.join(line.rstrip('\n')).strip('()').split(', '))[0])
+                except IndexError:
+                    print("no more sensor data")
+                    break
             else:
                 curr_ultrasonic_value = self.front_ultrasonic.distance()
                 if curr_ultrasonic_value < self.front_sensor_offset:
@@ -506,12 +509,15 @@ class Robot:
             Returns:
                 prev_phase (Phase)
         """
+        # TODO: ADD NOISE MARGIN: let t0 be the time when the robot first left the init threshold.
+        #  At t0+1, noise can make it such that the robot re-entered the threshold.
+        #  Add margin to threshold initially and disable margin once the robot first left threshold.
         init_x = self.x_pos
         init_y = self.y_pos
         # Note: init_threshold is arbitrary, set later. sometimes location reading will be inaccurate or not frequent
-        # enough to read that we've arrived back to the init x y pos. make it small enough that robot actually leaves
-        # init_threshold at some time during boundary following or add timeout to branch making gate = True
-        gate = False
+        #  enough to read that we've arrived back to the init x y pos. make it small enough that robot actually leaves
+        #  init_threshold at some time during boundary following or add timeout to branch making gate = True
+        has_left_init_thresh = False
         did_dist_to_goal_decreased = False
         has_traversed_boundary = False
         curr_dist_to_goal = self.calculate_dist(self.goal_location, (self.x_pos, self.y_pos))
@@ -520,18 +526,18 @@ class Robot:
                 return None
             else:
                 dist_from_init = self.calculate_dist((self.x_pos, self.y_pos), (init_x, init_y))
-                if dist_from_init > self.init_threshold:
-                    gate = True
-                if curr_dist_to_goal < self.goal_threshold and gate:  # exits obstacle avoidance if robot close to goal
+                if dist_from_init > (self.init_threshold + self.noise_margin):
+                    has_left_init_thresh = True
+                if curr_dist_to_goal < self.goal_threshold:  # exits obstacle avoidance if robot close to goal
                     self.set_phase(self.prev_phase)
                     return None
-                elif has_traversed_boundary and gate:
+                elif has_traversed_boundary and has_left_init_thresh:
                     self.set_phase(Phase.FAULT)  # cannot reach goal
                     return None
                 elif did_dist_to_goal_decreased:
                     # don't include condition on whether there is a new obstacle bc it will be caught and
-                    # current algorithm will continue traversing current boundary (instead of traversing new obstacle)
-                    # not optimal because frequently will have to go back to obstacle avoidance
+                    #  current algorithm will continue traversing current boundary (instead of traversing new obstacle)
+                    #  not optimal because frequently will have to go back to obstacle avoidance
                     heading_threshold = 1
                     target_heading = math.atan2(self.goal_location[1] - self.y_pos, self.goal_location[0] - self.x_pos)
                     self.turn_to_target_heading(target_heading, heading_threshold, database)
@@ -542,7 +548,7 @@ class Robot:
                         self.set_phase(self.prev_phase)
                     return None
                     # TODO: check position of goal and if obstacle in way of goal (using side sensors) then keep doing
-                    # boundary following except with new init_x, init_y, gate,
+                    #  boundary following except with new init_x, init_y, gate,
 
                 else:
                     self.execute_boundary_following(0)  # add code directly here
