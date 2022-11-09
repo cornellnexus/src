@@ -86,6 +86,11 @@ class Robot:
         self.velocityLeft = max(
             min(self.maxSpeed, self.velocityLeft), self.minSpeed)
 
+    def side_sensor_angle(self):
+        x = 20 * math.cos(self.heading)
+        y = 20 * math.sin(self.heading)
+        return [x, y]
+
 
 class Graphics:
     def __init__(self, dimensions, robot_img_path, map_img_path):
@@ -97,6 +102,7 @@ class Graphics:
         self.blue = (0, 0, 255)
         self.red = (255, 0, 0)
         self.yellow = (255, 255, 0)
+        self.purple = (255, 0, 255)
         # ---------MAP--------
         # load images
         self.robot = pygame.image.load(robot_img_path)
@@ -117,6 +123,10 @@ class Graphics:
     def draw_sensor_data(self, point_cloud):
         for point in point_cloud:
             pygame.draw.circle(self.map, self.red, point, 3, 0)
+
+    def draw_side_sensor_data(self, point_cloud):
+        for point in point_cloud:
+            pygame.draw.circle(self.map, self.purple, point, 3, 0)
 
 
 class Ultrasonic:
@@ -140,6 +150,26 @@ class Ultrasonic:
                 if 0 < x < self.map_width and 0 < y < self.map_height:
                     color = self.map.get_at((x, y))
                     self.map.set_at((x, y), (0, 208, 255))
+                    if (color[0], color[1], color[2]) == (0, 0, 0):
+                        obstacles.append([x, y])
+                        break
+        return obstacles
+    
+    def side_sense_obstacles(self, x, y, heading):
+        obstacles = []
+        x1, y1 = x, y
+        start_angle = heading - self.sensor_range[1]
+        finish_angle = heading + self.sensor_range[1]
+        for angle in np.linspace(start_angle, finish_angle, 10, False):
+            x2 = x1 + self.sensor_range[0] * math.cos(angle)
+            y2 = y1 - self.sensor_range[0] * math.sin(angle)
+            for i in range(0, 100):
+                u = i / 100
+                x = int(x2 * u + x1 * (1 - u))
+                y = int(y2 * u + y1 * (1 - u))
+                if 0 < x < self.map_width and 0 < y < self.map_height:
+                    color = self.map.get_at((x, y))
+                    self.map.set_at((x, y), (75, 0, 130))
                     if (color[0], color[1], color[2]) == (0, 0, 0):
                         obstacles.append([x, y])
                         break

@@ -17,8 +17,14 @@ end = (800, 150)
 robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.01, 100, 5)
 
 # the sensor
-sensor_range = 250, math.radians(40) # range is 240, angle of detection is 40 radians
+sensor_range = 250, math.radians(40) # range is 250, angle of detection is 40 radians
 ultra_sonic = Ultrasonic(sensor_range, gfx.map)
+
+ultra_sonic_left_top = Ultrasonic(sensor_range, gfx.map)
+ultra_sonic_left_bottom = Ultrasonic(sensor_range, gfx.map)
+ultra_sonic_right_top = Ultrasonic(sensor_range, gfx.map)
+ultra_sonic_right_bottom = Ultrasonic(sensor_range, gfx.map)
+
 dt = 0
 last_time = pygame.time.get_ticks()
 
@@ -56,6 +62,13 @@ while running:
 
     # Read sensor data and create a point cloud
     point_cloud = ultra_sonic.sense_obstacles(robot.x, robot.y, robot.heading)
+
+    sensor_directions = robot.side_sensor_angle()
+    point_cloud_LT = ultra_sonic_left_top.side_sense_obstacles(robot.x + sensor_directions[0], robot.y - sensor_directions[1], robot.heading + math.pi/2)
+    point_cloud_LB = ultra_sonic_left_bottom.side_sense_obstacles(robot.x - sensor_directions[0], robot.y + sensor_directions[1], robot.heading + math.pi/2)
+    point_cloud_RT = ultra_sonic_right_top.side_sense_obstacles(robot.x + sensor_directions[0], robot.y - sensor_directions[1], robot.heading - math.pi/2)
+    point_cloud_RB = ultra_sonic_right_bottom.side_sense_obstacles(robot.x - sensor_directions[0], robot.y + sensor_directions[1], robot.heading - math.pi/2)
+    
     if robot.detect_obstacles(point_cloud):
         obstacleDetected = True
     
@@ -74,4 +87,9 @@ while running:
 
     # Draw point cloud and update screen
     gfx.draw_sensor_data(point_cloud)
+    gfx.draw_side_sensor_data(point_cloud_LT)
+    gfx.draw_side_sensor_data(point_cloud_LB)
+    gfx.draw_side_sensor_data(point_cloud_RT)
+    gfx.draw_side_sensor_data(point_cloud_RB)
+
     pygame.display.update()
