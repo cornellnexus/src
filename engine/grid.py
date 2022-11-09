@@ -354,7 +354,9 @@ class Grid:
             node_info = max(candidate_nodes,key=lambda node_info: node_info[1])
             return (node_info[1],node_info[2])
 
+    
 
+        
     ##Given border and active nodes, compute lawnmower traversal
     def get_all_lawnmower_waypoints_adjustable(self):
         class WaypointPhase(Enum):
@@ -363,6 +365,35 @@ class Grid:
         class Direction(Enum):
             RIGHT = 1
             LEFT = 2
+        
+        def sock( direction, pos):
+            waypoints = []
+            if direction == Direction.RIGHT:
+                print("RRRRRR")
+                waypoints.append((pos[0], pos[1]-1))
+                waypoints.append((pos[0]+1, pos[1]))
+                waypoints.append((pos[0], pos[1]+1))
+
+            else:
+                print("LLLLLLLL")
+                waypoints.append((pos[0], pos[1]-1))
+                waypoints.append((pos[0]-1, pos[1]))
+                waypoints.append((pos[0], pos[1]+1))
+                
+            return waypoints
+
+        def sock_over(direction, pos):
+            waypoints = []
+            if direction == Direction.RIGHT:
+                waypoints.append((pos[0]+1, pos[1]+1))
+                waypoints.append((pos[0], pos[1]+1))
+                waypoints.append((pos[0]-1, pos[1]+1))
+            else:
+                waypoints.append((pos[0]-1, pos[1]+1))
+                waypoints.append((pos[0], pos[1]+1))
+                waypoints.append((pos[0]+1, pos[1]-1))
+            
+            return waypoints
         rows = self.nodes.shape[0]
         phase = WaypointPhase.DOWN
         curr_pos = self.leftmost_node_pos
@@ -372,16 +403,13 @@ class Grid:
         while (phase != WaypointPhase.TERMINATE):
             if direction == Direction.LEFT:
                 new_pos = (curr_pos[0]-1,curr_pos[1])
-                # next_next_pos = (curr_pos[0]-2,curr_pos[1])
                 if self.nodes[new_pos].is_active:
-                    print("branch 2 ",new_pos)
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    print("branch 3",new_pos)
                     left_pos = self.bottom_rightmost_node(new_pos)
                     if left_pos is not None:
-                        waypoints.append(left_pos)
+                        waypoints += sock(Direction.LEFT,left_pos)
                         curr_pos = left_pos
                         direction = Direction.RIGHT
                     else:
@@ -396,7 +424,8 @@ class Grid:
                     print("branch 3", new_pos)
                     right_pos = self.bottom_leftmost_node(new_pos)
                     if right_pos is not None:
-                        waypoints.append(right_pos)
+                        # waypoints.append(right_pos)
+                        waypoints += sock(Direction.RIGHT,right_pos)
                         curr_pos = right_pos
                         direction = Direction.LEFT
                     else:
