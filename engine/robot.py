@@ -5,6 +5,7 @@ from electrical import motor_controller
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
 from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
+import time
 
 # from electrical.motor_controller import MotorController
 # import electrical.gps as GPS 
@@ -235,8 +236,10 @@ class Robot:
             predicted_state = self.state  # this will come from Kalman Filter
 
             if self.is_sim and self.is_store:
+                # TODO: Update to use databse information
                 # FOR GUI: writing robot location and mag heading in CSV
                 write_state_to_csv(predicted_state)
+                time.sleep(0.001) # Delays calculation for GUI map
 
             # FOR DATABASE: updating our database with new predicted state
             # TODO: can the code above be simplified / use the database instead?
