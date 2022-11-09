@@ -60,9 +60,24 @@ def get_plot_boundaries(nodes, delta):
     return xlim, ylim
 
 if __name__ == "__main__":
+    global rpi_comms, is_sim, is_store
+    rpi_comms = False # Set to true when the rpi/robot is communicating w/ the GUI
+    is_sim = True # Set to true when simulating the rpi, set to false when running on rpi
+    is_store = False # Set to true when we want to track/store csv data
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
+
+    if is_sim and is_store:
+        # open csv file of rpi to gui data
+        rpi_to_gui = open(
+            (CSV_PATH + '/rpi_to_gui_simulation.csv'), "a")
+
     # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600) # RPI_GUI_TEST
     r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5,
-                 radius=0.2, init_phase=Phase.TRAVERSE)
+                 radius=0.2, init_phase=Phase.TRAVERSE, 
+                 is_sim=is_sim, is_store=is_store)
+
     base_r2d2 = BaseStation((42.444250, -76.483682))
     database = DataBase(r2d2)
     m = Mission(robot=r2d2, base_station=base_r2d2,
@@ -86,25 +101,12 @@ if __name__ == "__main__":
             rpi_to_gui.close()
 
     '''------------------- MISSION EXECUTION -------------------'''
-    global rpi_comms, is_sim, is_store
-    rpi_comms = True # Set to true when the rpi/robot is communicating w/ the GUI
-    is_sim = True # Set to true when simulating the rpi, set to false when running on rpi
-    is_store = False # Set to true when we want to track/store csv data
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(format=format, level=logging.INFO,
-                        datefmt="%H:%M:%S")
-
-    if is_sim and is_store:
-        # open csv file of rpi to gui data
-        rpi_to_gui = open(
-            (CSV_PATH + '/rpi_to_gui_simulation.csv'), "a")
-
-
     packet_sender = threading.Thread(target=send_packet_to_gui, args=(
         1,), daemon=True)  # Thread to read and send robot properties
     packet_sender.start()
+
     m.execute_mission(database)  # Run main mission
-    rpi_comms = False
+
     # once gui.gui.py is closed, also close gui.retrieve_inputs.py
     os.system("pkill -f gui.retrieve_inputs")
 
