@@ -1,3 +1,7 @@
+import math
+
+import numpy
+
 from engine.node import Node
 import numpy as np
 from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get_vincenty_y
@@ -382,6 +386,27 @@ class Grid:
                 
             return waypoints
 
+        def plot_circle(start_pos, end_pos, center, orientation):
+            r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
+            theta_init = math.atan2(start_pos[1]-center[1], start_pos[0]-center[0])
+            theta_end = math.atan2(end_pos[1]-center[1], end_pos[0]-center[0])
+            circle_plt = []
+            if theta_end < theta_init:
+                theta_end = theta_end + 2*math.pi
+            if orientation == "ccw":
+                theta = theta_init
+                while theta < theta_end:
+                    circle_plt.append((r*math.cos(theta)+start_pos[0], r*math.sin(theta)+start_pos[1]))
+                    theta = theta + math.pi/12
+            elif orientation == "cw":
+                theta = theta_end
+                while theta > theta_init:
+                    circle_plt.append((r*math.cos(theta)+start_pos[0], r*math.sin(theta)+start_pos[1]))
+                    theta = theta - math.pi/12
+            else:
+                raise Exception("invalid orientation")
+            return circle_plt
+
         def sock_over(direction, pos):
             waypoints = []
             if direction == Direction.RIGHT:
@@ -409,7 +434,8 @@ class Grid:
                 else:
                     left_pos = self.bottom_rightmost_node(new_pos)
                     if left_pos is not None:
-                        waypoints += sock(Direction.LEFT,left_pos)
+                        waypoints += plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-2), (left_pos[0], left_pos[1]-1), "cw")
+                        # waypoints += sock(Direction.LEFT,left_pos)
                         curr_pos = left_pos
                         direction = Direction.RIGHT
                     else:
@@ -425,7 +451,8 @@ class Grid:
                     right_pos = self.bottom_leftmost_node(new_pos)
                     if right_pos is not None:
                         # waypoints.append(right_pos)
-                        waypoints += sock(Direction.RIGHT,right_pos)
+                        waypoints += plot_circle((right_pos[0], right_pos[1]), (right_pos[0],right_pos[1]+2), (right_pos[0], right_pos[1]+1), "ccw")
+                        # waypoints += sock(Direction.RIGHT,right_pos)
                         curr_pos = right_pos
                         direction = Direction.LEFT
                     else:
