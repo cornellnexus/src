@@ -38,29 +38,30 @@ while True:
 		ret, image = cap.read()
 		(corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
 		if corners != ():
-			(topLeft, topRight, bottomRight, bottomLeft) = corners[0][0]
-			pixel_width = np.sqrt((bottomRight[0] - bottomLeft[0])**2 + (bottomRight[1] - bottomLeft[1])**2)
-			vert_distance = distance_to_camera(known_width,focal_length,pixel_width)
-			# print(f"{vert_distance} in")
-			cxt,cyt = int((topLeft[0] + bottomRight[0])//2),int((topLeft[1] + bottomRight[1])//2)
-			cx, cy = int(960),int(540)
-			cv2.circle(image, (cxt, cyt), radius = 20, color = (0, 0, 255), thickness = -1)
-			cv2.circle(image, (cx, cy), radius = 20, color = (0, 0, 255), thickness = -1)
-			cv2.line(image,(cxt, cyt),(cx, cy), color = (0, 0, 0), thickness = 2)
-			# print(cxt, cyt)
-			ratio= known_width/pixel_width
-			# print(ratio)
-			dpix = np.sqrt((cx-cxt)**2+(cy-cyt)**2)
-			horiz_dist = dpix * ratio
-			midpoint = (int((cx + cxt) //2 ), int((cy + cyt) //2 - 25 ))
-			midpoint2 = (int((cx + cxt) //2), int((cy + cyt) //2 + 50 ))
-			midpoint3 = (int((cx + cxt) //2), int((cy + cyt) //2 - 100 ))
-			cv2.putText(image, f"{horiz_dist: .2f} in", midpoint, cv2.FONT_HERSHEY_COMPLEX, 1, (0, 101, 255), 2)
-			# print(d_in)
-			angle = np.degrees(np.arcsin(horiz_dist/(vert_distance)))
-			cv2.putText(image, f"{angle:.2f} degrees", midpoint2, cv2.FONT_HERSHEY_COMPLEX, 1, (0, 101, 255), 2)
-			cv2.putText(image, f"{vert_distance:.2f} in (vert)", midpoint3, cv2.FONT_HERSHEY_COMPLEX, 1, (255,0, 255), 2)
-			# print(f"{angle} degrees")
+			for corner in corners:
+					(topLeft, topRight, bottomRight, bottomLeft) = corner[0]
+					pixel_width = np.sqrt((bottomRight[0] - bottomLeft[0])**2 + (bottomRight[1] - bottomLeft[1])**2)
+					vert_distance = distance_to_camera(known_width,focal_length,pixel_width)
+					# print(f"{vert_distance} in")
+					cxt,cyt = int((topLeft[0] + bottomRight[0])//2),int((topLeft[1] + bottomRight[1])//2)
+					cx, cy = int(960),int(540)
+					cv2.circle(image, (cxt, cyt), radius = 20, color = (0, 0, 255), thickness = -1)
+					cv2.circle(image, (cx, cy), radius = 20, color = (0, 0, 255), thickness = -1)
+					cv2.line(image,(cxt, cyt),(cx, cy), color = (0, 0, 0), thickness = 2)
+					# print(cxt, cyt)
+					ratio= known_width/pixel_width
+					# print(ratio)
+					dpix = np.sqrt((cx-cxt)**2+(cy-cyt)**2)
+					horiz_dist = dpix * ratio
+					midpoint = (int((cx + cxt) //2 ), int((cy + cyt) //2 - 25 ))
+					midpoint2 = (int((cx + cxt) //2), int((cy + cyt) //2 + 50 ))
+					midpoint3 = (int((cx + cxt) //2), int((cy + cyt) //2 - 100 ))
+					cv2.putText(image, f"{horiz_dist: .2f} in", midpoint, cv2.FONT_HERSHEY_COMPLEX, 1, (0, 101, 255), 2)
+					# print(d_in)
+					angle = np.degrees(np.arcsin(horiz_dist/(vert_distance)))
+					cv2.putText(image, f"{angle:.2f} degrees", midpoint2, cv2.FONT_HERSHEY_COMPLEX, 1, (0, 101, 255), 2)
+					cv2.putText(image, f"{vert_distance:.2f} in (vert)", midpoint3, cv2.FONT_HERSHEY_COMPLEX, 1, (255,0, 255), 2)
+					# print(f"{angle} degrees")
 		cv2.imshow("yolo", image)
 		key = cv2.waitKey(1) & 0xFF
 		if key == ord('q'):

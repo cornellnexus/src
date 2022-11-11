@@ -91,7 +91,7 @@ while True:
                 ((Dist[0][1] - Dist[1][1])**2))**(0.5)
                 cv2.putText(image, str(int(measure*(ed))) + "cm", (int(300), int(
                 300)), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255))
-        cv2.imshow(window, image)
+    cv2.imshow(window, image)
 
     Dist2 = []
     ret2, image2 = cap2.read()
@@ -143,7 +143,7 @@ while True:
                 ((Dist2[0][1] - Dist2[1][1])**2))**(0.5)
                 cv2.putText(image2, str(int(measure2*(ed))) + "cm", (int(300), int(
                 300)), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 0, 255))
-        cv2.imshow(window2, image2)
+    cv2.imshow(window2, image2)
     key = cv2.waitKey(1) & 0xFF
     if key == ord('q'):
         break
