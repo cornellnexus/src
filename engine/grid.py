@@ -404,7 +404,12 @@ class Grid:
                     curr_pos = new_pos
                 else:
                     left_pos = self.bottom_rightmost_node(new_pos)
+                    print("left pos",left_pos,"new_pos",new_pos)
                     if left_pos is not None:
+                        new_pos = (new_pos[0]+1, new_pos[1])
+                        while new_pos[0] < left_pos[0]:
+                            waypoints.remove(new_pos)
+                            new_pos = (new_pos[0]+1, new_pos[1])
                         waypoints += plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-2), (left_pos[0], left_pos[1]-1), "cw")
                         curr_pos = left_pos
                         direction = Direction.RIGHT
@@ -413,13 +418,19 @@ class Grid:
             if direction == Direction.RIGHT:
                 new_pos = (curr_pos[0]+1,curr_pos[1])
                 if self.nodes[new_pos].is_active:
-                    print("branch 2", new_pos)
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    print("branch 3", new_pos)
                     right_pos = self.bottom_leftmost_node(new_pos)
+                    new_pos = (new_pos[0]-1, new_pos[1])
+                    print("right pos",right_pos,"new_pos",new_pos)
                     if right_pos is not None:
+                        while new_pos[0] > right_pos[0]:
+                            while new_pos in waypoints:
+                                waypoints.remove(new_pos)
+                            print(new_pos)
+                            print(new_pos in waypoints)
+                            new_pos = (new_pos[0]-1, new_pos[1])
                         waypoints += plot_circle((right_pos[0], right_pos[1]), (right_pos[0],right_pos[1]+2), (right_pos[0], right_pos[1]+1), "ccw")
                         curr_pos = right_pos
                         direction = Direction.LEFT
