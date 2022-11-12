@@ -155,6 +155,10 @@ class Graphics:
         for point in point_cloud:
             pygame.draw.circle(self.map, self.purple, point, 3, 0)
 
+    def draw_pt(self, pt):
+        print("drawing")
+        pygame.draw.circle(self.map, self.blue, pt, 10, 0)
+
 
 class Ultrasonic:
     def __init__(self, sensor_range, map):
@@ -201,3 +205,16 @@ class Ultrasonic:
                         obstacles.append([x, y])
                         break
         return obstacles
+
+    def min_distance(self, curr_pos, point_cloud):
+        if len(point_cloud) == 0:
+            return "None"
+        else:
+            min_dist = math.dist(point_cloud[0], curr_pos)
+            min_point = point_cloud[0]
+            for points in point_cloud:
+                dist = math.dist(points, curr_pos)
+                if dist < min_dist:
+                    min_dist = dist
+                    min_point = points
+            return min_point

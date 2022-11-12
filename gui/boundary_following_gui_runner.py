@@ -68,7 +68,12 @@ while running:
     point_cloud_LB = ultra_sonic_left_bottom.side_sense_obstacles(robot.x - sensor_directions[0], robot.y + sensor_directions[1], robot.heading + math.pi/2)
     point_cloud_RT = ultra_sonic_right_top.side_sense_obstacles(robot.x + sensor_directions[0], robot.y - sensor_directions[1], robot.heading - math.pi/2)
     point_cloud_RB = ultra_sonic_right_bottom.side_sense_obstacles(robot.x - sensor_directions[0], robot.y + sensor_directions[1], robot.heading - math.pi/2)
-    
+    pt = ultra_sonic.min_distance((robot.x, robot.y), point_cloud)
+    pt_LT = ultra_sonic.min_distance((robot.x + sensor_directions[0], robot.y - sensor_directions[1]), point_cloud_LT)
+    if pt_LT != "None":
+        gfx.draw_pt(pt_LT)
+    print(pt_LT)
+
     if robot.detect_obstacles(point_cloud):
         obstacleDetected = True
     
