@@ -227,10 +227,8 @@ class Grid:
         """
         Activates all the nodes in a circle.
         """
-        rows = self.nodes.shape[0]
-        cols = self.nodes.shape[0]
-        for x in range(rows):
-            for y in range(cols):
+        for x in range(self.num_rows):
+            for y in range(self.num_cols):
                 if ((x-circle_center_row)**2 + (y-circle_center_col)**2 - circle_radius**2) < 0:
                     self.nodes[x,y].is_active = True
 
@@ -275,10 +273,8 @@ class Grid:
         """
         Activates all the nodes in a traingle.
         """
-        rows = self.nodes.shape[0]
-        cols = self.nodes.shape[0]
-        for x in range(rows):
-            for y in range(cols):
+        for x in range(self.num_rows):
+            for y in range(self.num_cols):
                 if self.isInsideTriangle(x1,y1,x2,y2,x3,y3,x,y):
                     self.nodes[x,y].is_active = True
 
@@ -311,25 +307,23 @@ class Grid:
             'border_nodes' will be initialized.
         """
         border_list = []
-        cols = self.nodes.shape[1]
-        rows = self.nodes.shape[0]
         leftmost_node = None
         rightmost_node = None
         leftmost_node_pos = None
         rightmost_node_pos = None
         
-        for row in range(rows):
-            for col in range(cols):
+        for row in range(self.num_rows):
+            for col in range(self.num_cols):
                 node = self.nodes[row][col]
                 #border node 1 left active node 
-                if node.is_active and self.is_on_border(row, col, rows-1, cols-1):
+                if node.is_active and self.is_on_border(row, col, self.num_rows-1, self.num_cols-1):
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
                     border_list.append((node, row, col))
                     if leftmost_node_pos is None or col < leftmost_node_pos[1]:
                         leftmost_node = node
                         leftmost_node_pos = (row, col)
-                if node.is_active and self.is_on_border(row, col, rows , cols):
+                if node.is_active and self.is_on_border(row, col, self.num_rows , self.num_cols):
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
                     if rightmost_node_pos is None or row > rightmost_node_pos[0]:
@@ -480,8 +474,6 @@ class Grid:
         """
         waypoints = []
         node_list = self.nodes
-        rows = node_list.shape[0]
-        cols = node_list.shape[1]
 
         col = 0  # start at bottom left corner
         row = 0
@@ -491,13 +483,13 @@ class Grid:
         step_row = (0, 1, 0, -1)
         turn_state = 0  # turn_state is a variable that must be between 0..3
 
-        for _ in range(rows * cols):  # for loop over all nodes
+        for _ in range(self.num_rows * self.num_cols):  # for loop over all nodes
             node = node_list[row, col]
             self.determine_active_waypoints(node)
             waypoints.append(node)
             next_col = col + step_col[turn_state]
             next_row = row + step_row[turn_state]
-            if 0 <= next_col < cols and 0 <= next_row < rows and not node_list[next_row, next_col] in waypoints:
+            if 0 <= next_col < self.num_cols and 0 <= next_row < self.num_rows and not node_list[next_row, next_col] in waypoints:
                 col = next_col
                 row = next_row
             else:
@@ -516,16 +508,14 @@ class Grid:
         """
         waypoints = []
         node_list = self.nodes
-        rows = node_list.shape[0]
-        cols = node_list.shape[1]
-        for i in range(cols):
-            for j in range(rows):
+        for i in range(self.num_cols):
+            for j in range(self.num_rows):
                 if i % 2 == 0:
                     node = node_list[j, i]
                     self.determine_active_waypoints(node)
                     waypoints.append(node)
                 elif i % 2 == 1:
-                    row_index = rows - (j + 1)
+                    row_index = self.num_rows - (j + 1)
                     node = node_list[row_index, i]
                     self.determine_active_waypoints(node)
                     waypoints.append(node)
@@ -539,18 +529,16 @@ class Grid:
         """
         waypoints = []
         node_list = self.nodes
-        rows = node_list.shape[0]
-        cols = node_list.shape[1]
-        for i in range(cols):
+        for i in range(self.num_cols):
             if i % 2 == 0:
                 node1 = node_list[0, i]
-                node2 = node_list[rows - 1, i]
+                node2 = node_list[self.num_rows - 1, i]
                 self.determine_active_waypoints(node1)
                 self.determine_active_waypoints(node2)
                 waypoints.append(node1)
                 waypoints.append(node2)
             elif i % 2 == 1:
-                node1 = node_list[rows - 1, i]
+                node1 = node_list[self.num_rows - 1, i]
                 node2 = node_list[0, i]
                 self.determine_active_waypoints(node1)
                 self.determine_active_waypoints(node2)
@@ -572,13 +560,11 @@ class Grid:
         """
         waypoints = []
         node_list = self.nodes
-        rows = node_list.shape[0]
-        cols = node_list.shape[1]
         if y_start_pct is not None:
-            selected_row = int(y_start_pct*rows)
+            selected_row = int(y_start_pct*self.num_rows)
         else:
             selected_row = y_start_row
-        for i in range(cols):
+        for i in range(self.num_cols):
             selected_row_node = node_list[selected_row][i]
             self.determine_active_waypoints(selected_row_node)
             waypoints.append(selected_row_node)
