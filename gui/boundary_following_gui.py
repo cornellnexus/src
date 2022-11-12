@@ -1,3 +1,4 @@
+import time
 import pygame
 import math
 import numpy as np
@@ -31,7 +32,7 @@ class Robot:
         self.closestObstacle = None
         self.distFromClosestObstacle = np.inf
 
-    def detect_obstacles(self, point_cloud) :
+    def detect_obstacles(self, point_cloud):
         if len(point_cloud) > 0:
             for point in point_cloud:
                 if self.distFromClosestObstacle > distance([self.x, self.y], point):
@@ -43,10 +44,36 @@ class Robot:
         self.distFromClosestObstacle = np.inf
         return False
 
-    def avoid_obstacles(self, point_cloud, dt):
-        self.move_backward()
-        self.kinematics(dt)
-        self.heading += 0.001
+    def avoid_obstacles(self, front_point_cloud, left_top_point_cloud, left_bottom_point_cloud, right_top_point_cloud, right_bottom_point_cloud, dt):
+        #left_value = self.check_parallel(left_top_point_cloud, left_bottom_point_cloud, 1)
+        right_value = self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 1)
+        # if left_value == 0 and right_value == 0:
+        if right_value == 0:
+            # distance_to_front_obstacle = np.inf
+            # for point in front_point_cloud:
+            #     distance_to_front_obstacle = min(distance(point, (self.x, self.y)), distance_to_front_obstacle)
+            self.move_forward()
+            self.kinematics(dt)
+        else:
+            #self.heading += -0.001 * left_value + -0.001 * right_value
+            self.heading += -0.001 * right_value
+
+    def check_parallel(self, fpc, bpc, margin):
+        min_dist_front = np.inf
+        min_dist_back = np.inf
+        for point in fpc:
+            local_min_distance = min(distance(point, (self.x, self.y)), self.minimumObstacleDistance)
+            if local_min_distance != self.minimumObstacleDistance:
+                min_dist_front = min(min_dist_front, local_min_distance)
+        for point in bpc:
+            local_min_distance = min(distance(point, (self.x, self.y)), self.minimumObstacleDistance)
+            if local_min_distance != self.minimumObstacleDistance:
+                min_dist_back = min(min_dist_back, local_min_distance)
+        if abs(min_dist_front - min_dist_back) < margin:
+            return 0
+        if min_dist_front > min_dist_back:
+            return 1
+        return -1
 
     def move_backward(self):
         self.velocityRight = - self.minSpeed
@@ -69,7 +96,7 @@ class Robot:
     def updateHeading(self):
         angle = self.arctan(self.x, self.y, self.endX + 40, self.endY + 41)
         finalHeading = angle * -1
-        if math.fabs(finalHeading - self.heading) > 0.1:
+        if np.abs(finalHeading - self.heading) > 0.1:
             if finalHeading > self.heading:
                 self.heading += 0.01
             else:
@@ -96,7 +123,7 @@ class Graphics:
     def __init__(self, dimensions, robot_img_path, map_img_path):
         pygame.init()
         # Colors
-        self.black = (0, 0, 0)
+        self.black = (0.1, 0.1, 0.1)
         self.white = (255, 255, 255)
         self.green = (0, 255, 0)
         self.blue = (0, 0, 255)

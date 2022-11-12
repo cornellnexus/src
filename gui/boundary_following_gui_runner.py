@@ -79,7 +79,7 @@ while running:
         robot.updateHeading()
     else:
         # Execute obstacle avoidance behaviors
-        robot.avoid_obstacles(point_cloud, dt)
+        robot.avoid_obstacles(point_cloud, point_cloud_LT, point_cloud_LB, point_cloud_RT, point_cloud_RB, dt)
         obstacleDetected = False
 
     # Draws the robot
