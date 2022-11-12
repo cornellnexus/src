@@ -13,13 +13,13 @@ Unit tests for database.py
 class TestDataBase(unittest.TestCase):
     # DataBase instances to test on
     robot_default = Robot(x_pos=0, y_pos=0, heading=0, epsilon=0, max_v=0,
-                          radius=0, is_sim=True)
+                          radius=0)
 
     db_default = DataBase(robot_default)
 
     # We can't make is_sim false because it fails GitHub merge tests.
     robot_initial = Robot(x_pos=0, y_pos=0, heading=0, epsilon=0, max_v=0,
-                          radius=0, is_sim=True, plastic_weight=2, move_dist=.6, position_noise=0.23)
+                          radius=0, plastic_weight=2, move_dist=.6, position_noise=0.23)
     robot_initial.position_kp = 0.12
     robot_initial.position_ki = 1.7
     robot_initial.position_kd = 9.2
@@ -32,6 +32,7 @@ class TestDataBase(unittest.TestCase):
     robot_initial.magnetic_field = [0.1, 0.2, 0.3]
     robot_initial.gyro_rotation = [0.5, 0.2, 0.6]
     robot_initial.acceleration = [4.25, 3.2, 0.1]
+    robot_initial.is_sim = False
 
     db_initial = DataBase(robot_initial)
 
@@ -177,8 +178,7 @@ class TestDataBase(unittest.TestCase):
                     self.assertEqual(ans, database.get_data(name), name)
 
     def test_phase_as_value(self):
-        robot_phase = Robot(x_pos= 0, y_pos =0, heading =0, epsilon =0, max_v =0, 
-    radius =0, is_sim=True)
+        robot_phase = Robot(x_pos= 0, y_pos =0, heading =0, epsilon =0, max_v =0, radius =0)
         db_robot_phase = DataBase(robot_phase)
         phases = list(Phase)
         num_phases = len(phases)

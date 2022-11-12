@@ -3,11 +3,13 @@ import math
 from electrical import motor_controller
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from engine.pid_controller import PID
-# from electrical.motor_controller import MotorController
-# import electrical.gps as GPS 
-# import electrical.imu as IMU 
-# import electrical.radio_module as RadioModule
-# import serial
+from engine.is_raspberrypi import is_raspberrypi
+if is_raspberrypi():
+    from electrical.motor_controller import MotorController
+    import electrical.gps as GPS 
+    import electrical.imu as IMU 
+    import electrical.radio_module as RadioModule
+    import serial
 
 from constants.definitions import CSV_PATH
 
@@ -51,7 +53,7 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, position_kp=1, position_ki=0,
+    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
                  init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0, use_ekf=False,
                  init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None, gps=None, imu=None, motor_controller=None):
@@ -86,7 +88,7 @@ class Robot:
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
-        self.is_sim = is_sim
+        self.is_sim = not is_raspberrypi()
         self.phase = Phase(init_phase)
         self.epsilon = epsilon
         self.max_velocity = max_v
@@ -117,11 +119,11 @@ class Robot:
         self.mc = motor_controller
         self.linear_v = 0
         self.angular_v = 0
-        # if not self.is_sim:
-        #     self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
-        #     self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-        #     self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
-        #     self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
+        if not self.is_sim:
+            self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
+            self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
+            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
+            self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,

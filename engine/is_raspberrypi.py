@@ -1,5 +1,5 @@
 import io
-import os
+
 def is_raspberrypi():
     """
     Return True if the current device is a raspberry_pi, False otherwise.
@@ -10,6 +10,3 @@ def is_raspberrypi():
             if 'raspberry pi' in m.read().lower(): return True
     except Exception: pass
     return False
-
-
-print(is_raspberrypi())
