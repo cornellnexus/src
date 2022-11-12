@@ -417,13 +417,14 @@ class Grid:
                                 waypoints.remove(new_pos)
                             new_pos = (new_pos[0]+1, new_pos[1])
                         circle_plt = plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-1), (left_pos[0], left_pos[1]-.5), "cw")
-                        print(circle_plt)
+                        # print(circle_plt)
                         waypoints += circle_plt
                         direction = Direction.RIGHT
                         if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:  
                             curr_pos = left_pos
-                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+1)) is not None :
-                            curr_pos = self.bottom_rightmost_node((new_pos[0],new_pos[1]+1))
+                        elif self.bottom_rightmost_node((new_pos[0],new_pos[1]+1)) is not None :
+                            curr_pos = self.bottom_rightmost_node((new_pos[0],new_pos[1]))
+                            print(curr_pos,direction)
                         else:
                             phase = WaypointPhase.TERMINATE
                     else:
@@ -442,13 +443,14 @@ class Grid:
                                 waypoints.remove(new_pos)
                             new_pos = (new_pos[0]-1, new_pos[1])
                         circle_plt = plot_circle((right_pos[0], right_pos[1]-1), (right_pos[0],right_pos[1]), (right_pos[0], right_pos[1]-.5), "ccw")
-                        print(circle_plt)
+                        # print(circle_plt)
                         waypoints += circle_plt
                         direction = Direction.LEFT
                         if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:
                             curr_pos = right_pos
-                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+1))  is not None:
-                            curr_pos = self.bottom_leftmost_node((new_pos[0],new_pos[1]+1))
+                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+1)) is not None:
+                            curr_pos = self.bottom_leftmost_node((new_pos[0],new_pos[1]))
+                            print(curr_pos,direction)
                         else:
                             phase = WaypointPhase.TERMINATE
                     
