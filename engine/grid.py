@@ -376,19 +376,34 @@ class Grid:
             RIGHT = 1
             LEFT = 2
 
+        class Orientation(Enum):
+            CW = 1
+            CCW = 2
+
         def plot_circle(start_pos, end_pos, center, orientation):
+            """
+            Returns a circle of nodes starting from the start_pos, going at orientation orientation, and ending at the
+            end_pos with center center.
+
+            Arguments:
+                start_pos: float tuple representing the starting point of the circle being plotted
+                end_pos: float tuple representing the ending point of the circle being plotted
+                center: float tuple representing the center point of the circle being plotted
+                orientation: orientation that the nodes are being plotted from, starting with the start_pos and ending
+                    at the end_pos
+            """
             r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
             theta_init = math.atan2(start_pos[1]-center[1], start_pos[0]-center[0])
             theta_end = math.atan2(end_pos[1]-center[1], end_pos[0]-center[0])
             circle_plt = []
             if theta_end < theta_init:
                 theta_end = theta_end + 2*math.pi
-            if orientation == "ccw":
+            if orientation == Orientation.CCW:
                 theta = theta_init
                 while theta < theta_end:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
                     theta = theta + math.pi/12
-            elif orientation == "cw":
+            elif orientation == Orientation.CW:
                 theta = theta_end
                 while theta > theta_init:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
@@ -416,8 +431,9 @@ class Grid:
                             while new_pos in waypoints:
                                 waypoints.remove(new_pos)
                             new_pos = (new_pos[0]+1, new_pos[1])
-                        circle_plt = plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-1), (left_pos[0], left_pos[1]-.5), "cw")
-                        # print(circle_plt)
+                        circle_plt = plot_circle((left_pos[0], left_pos[1]), (left_pos[0], left_pos[1]-1),
+                                                 (left_pos[0], left_pos[1]-.5), Orientation.CW)
+                        print(circle_plt)
                         waypoints += circle_plt
                         direction = Direction.RIGHT
                         if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:  
@@ -442,8 +458,9 @@ class Grid:
                             while new_pos in waypoints:
                                 waypoints.remove(new_pos)
                             new_pos = (new_pos[0]-1, new_pos[1])
-                        circle_plt = plot_circle((right_pos[0], right_pos[1]-1), (right_pos[0],right_pos[1]), (right_pos[0], right_pos[1]-.5), "ccw")
-                        # print(circle_plt)
+                        circle_plt = plot_circle((right_pos[0], right_pos[1]-1), (right_pos[0],right_pos[1]),
+                                                 (right_pos[0], right_pos[1]-.5), Orientation.CCW)
+                        print(circle_plt)
                         waypoints += circle_plt
                         direction = Direction.LEFT
                         if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:
