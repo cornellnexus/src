@@ -410,18 +410,18 @@ class Grid:
                     curr_pos = new_pos
                 else:
                     left_pos = self.bottom_rightmost_node(new_pos)
-                    print("left pos",left_pos,"new_pos",new_pos)
                     if left_pos is not None:
                         new_pos = (new_pos[0]+1, new_pos[1])
                         while new_pos[0] < left_pos[0]:
                             while new_pos in waypoints:
                                 waypoints.remove(new_pos)
                             new_pos = (new_pos[0]+1, new_pos[1])
-                        print(plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-2), (left_pos[0], left_pos[1]-1), "cw"))
                         waypoints += plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-2), (left_pos[0], left_pos[1]-1), "cw")
                         direction = Direction.RIGHT
                         if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:  
                             curr_pos = left_pos
+                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+2)) is not None :
+                            curr_pos = self.bottom_rightmost_node((new_pos[0],new_pos[1]+1))
                         else:
                             phase = WaypointPhase.TERMINATE
                     else:
@@ -434,18 +434,17 @@ class Grid:
                 else:
                     right_pos = self.bottom_leftmost_node(new_pos)
                     new_pos = (new_pos[0]-1, new_pos[1])
-                    print("right pos",right_pos,"new_pos",new_pos)
                     if right_pos is not None:
                         while new_pos[0] > right_pos[0]:
                             while new_pos in waypoints:
                                 waypoints.remove(new_pos)
-                            print(new_pos)
                             new_pos = (new_pos[0]-1, new_pos[1])
-                        print(plot_circle((right_pos[0], right_pos[1]), (right_pos[0],right_pos[1]+2), (right_pos[0], right_pos[1]+1), "ccw"))
                         waypoints += plot_circle((right_pos[0], right_pos[1]), (right_pos[0],right_pos[1]+2), (right_pos[0], right_pos[1]+1), "ccw")
                         direction = Direction.LEFT
                         if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:
                             curr_pos = right_pos
+                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+2))  is not None:
+                            curr_pos = self.bottom_leftmost_node((new_pos[0],new_pos[1]+1))
                         else:
                             phase = WaypointPhase.TERMINATE
                     
