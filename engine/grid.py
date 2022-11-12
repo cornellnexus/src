@@ -311,7 +311,6 @@ class Grid:
         for row in range(rows):
             for col in range(cols):
                 node = self.nodes[row][col]
-                #border node 1 left active node 
                 if node.is_active and self.is_on_border(row, col, rows-1, cols-1):
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
@@ -337,6 +336,17 @@ class Grid:
     
     ##Return bottom most node that is activated in the right column
     def bottom_rightmost_node(self, pos):
+        """
+        A helper function for get_all_lawnmower_waypoints_adjustable, finds the rightmost
+        node of the row above current pos.
+
+        Parameters:
+        parameter1: pos
+        precondition: None
+
+        returns:  Returns the furthest right node on the row above the current pos, 
+        or return None if there is no nodes in the row above.
+        """
         # node_info: (node, row, col)
         candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]+1]
         if (candidate_nodes == []):
@@ -346,6 +356,17 @@ class Grid:
             return (node_info[1],node_info[2])
     
     def bottom_leftmost_node(self, pos):
+        """
+        A helper function for get_all_lawnmower_waypoints_adjustable, finds the leftmost
+        node of the row above current pos.
+
+        Parameters:
+        parameter1: pos
+        precondition: None
+
+        returns:  Returns the furthest left node on the row above the current pos, 
+        or return None if there is no nodes in the row above.
+        """
         # node_info: (node, row, col)
         candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]+1]
         if (candidate_nodes == []):
@@ -374,11 +395,9 @@ class Grid:
                 new_pos = (curr_pos[0]-1,curr_pos[1])
                 # next_next_pos = (curr_pos[0]-2,curr_pos[1])
                 if self.nodes[new_pos].is_active:
-                    print("branch 2 ",new_pos)
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    print("branch 3",new_pos)
                     left_pos = self.bottom_rightmost_node(new_pos)
                     if left_pos is not None:
                         waypoints.append(left_pos)
@@ -389,11 +408,9 @@ class Grid:
             if direction == Direction.RIGHT:
                 new_pos = (curr_pos[0]+1,curr_pos[1])
                 if self.nodes[new_pos].is_active:
-                    print("branch 2", new_pos)
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    print("branch 3", new_pos)
                     right_pos = self.bottom_leftmost_node(new_pos)
                     if right_pos is not None:
                         waypoints.append(right_pos)
