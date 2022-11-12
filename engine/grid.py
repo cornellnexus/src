@@ -265,10 +265,11 @@ class Grid:
         else:
             return False
     
+    ##Activate a single vertical line of length n with bottom starting at x, y 
     def activate_line(self,x,y,n):
         for i in range(n):
             self.nodes[x,y+i].is_active = True
-            
+
     ##Activate triangle based on three points
     def activate_triangle(self,x1,y1,x2,y2,x3,y3):
         """
@@ -419,8 +420,10 @@ class Grid:
                         print(plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-2), (left_pos[0], left_pos[1]-1), "cw"))
                         waypoints += plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-2), (left_pos[0], left_pos[1]-1), "cw")
                         direction = Direction.RIGHT
-                    if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:  
-                        curr_pos = left_pos
+                        if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:  
+                            curr_pos = left_pos
+                        else:
+                            phase = WaypointPhase.TERMINATE
                     else:
                         phase = WaypointPhase.TERMINATE
             if direction == Direction.RIGHT:
@@ -441,8 +444,11 @@ class Grid:
                         print(plot_circle((right_pos[0], right_pos[1]), (right_pos[0],right_pos[1]+2), (right_pos[0], right_pos[1]+1), "ccw"))
                         waypoints += plot_circle((right_pos[0], right_pos[1]), (right_pos[0],right_pos[1]+2), (right_pos[0], right_pos[1]+1), "ccw")
                         direction = Direction.LEFT
-                    if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:  
-                        curr_pos = right_pos
+                        if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:
+                            curr_pos = right_pos
+                        else:
+                            phase = WaypointPhase.TERMINATE
+                    
                     else:
                         phase = WaypointPhase.TERMINATE
         return waypoints
