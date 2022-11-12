@@ -386,12 +386,12 @@ class Grid:
             if orientation == "ccw":
                 theta = theta_init
                 while theta < theta_end:
-                    circle_plt.append((r*math.cos(theta)+start_pos[0], r*math.sin(theta)+start_pos[1]))
+                    circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
                     theta = theta + math.pi/12
             elif orientation == "cw":
                 theta = theta_end
                 while theta > theta_init:
-                    circle_plt.append((r*math.cos(theta)+start_pos[0], r*math.sin(theta)+start_pos[1]))
+                    circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
                     theta = theta - math.pi/12
             else:
                 raise Exception("invalid orientation")
@@ -416,7 +416,9 @@ class Grid:
                             while new_pos in waypoints:
                                 waypoints.remove(new_pos)
                             new_pos = (new_pos[0]+1, new_pos[1])
-                        waypoints += plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-2), (left_pos[0], left_pos[1]-1), "cw")
+                        circle_plt = plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-1), (left_pos[0], left_pos[1]-.5), "cw")
+                        print(circle_plt)
+                        waypoints += circle_plt
                         direction = Direction.RIGHT
                         if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:  
                             curr_pos = left_pos
@@ -439,7 +441,9 @@ class Grid:
                             while new_pos in waypoints:
                                 waypoints.remove(new_pos)
                             new_pos = (new_pos[0]-1, new_pos[1])
-                        waypoints += plot_circle((right_pos[0], right_pos[1]), (right_pos[0],right_pos[1]+2), (right_pos[0], right_pos[1]+1), "ccw")
+                        circle_plt = plot_circle((right_pos[0], right_pos[1]-1), (right_pos[0],right_pos[1]), (right_pos[0], right_pos[1]-.5), "ccw")
+                        print(circle_plt)
+                        waypoints += circle_plt
                         direction = Direction.LEFT
                         if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:
                             curr_pos = right_pos
