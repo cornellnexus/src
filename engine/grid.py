@@ -408,7 +408,8 @@ class Grid:
                     if left_pos is not None:
                         new_pos = (new_pos[0]+1, new_pos[1])
                         while new_pos[0] < left_pos[0]:
-                            waypoints.remove(new_pos)
+                            while new_pos in waypoints:
+                                waypoints.remove(new_pos)
                             new_pos = (new_pos[0]+1, new_pos[1])
                         waypoints += plot_circle((left_pos[0],left_pos[1]), (left_pos[0], left_pos[1]-2), (left_pos[0], left_pos[1]-1), "cw")
                         curr_pos = left_pos
