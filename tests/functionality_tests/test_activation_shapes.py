@@ -49,7 +49,7 @@ def main():
     if activation_type == "line":
         x = rows // 2
         y = 0
-        grid.activate_line(x,y,10)
+        grid.activate_line(x,y,16)
         grid.find_border_nodes()
         way_points = grid.get_all_lawnmower_waypoints_adjustable()
 

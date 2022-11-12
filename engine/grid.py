@@ -420,7 +420,7 @@ class Grid:
                         direction = Direction.RIGHT
                         if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:  
                             curr_pos = left_pos
-                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+2)) is not None :
+                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+1)) is not None :
                             curr_pos = self.bottom_rightmost_node((new_pos[0],new_pos[1]+1))
                         else:
                             phase = WaypointPhase.TERMINATE
@@ -443,7 +443,7 @@ class Grid:
                         direction = Direction.LEFT
                         if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:
                             curr_pos = right_pos
-                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+2))  is not None:
+                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+1))  is not None:
                             curr_pos = self.bottom_leftmost_node((new_pos[0],new_pos[1]+1))
                         else:
                             phase = WaypointPhase.TERMINATE
