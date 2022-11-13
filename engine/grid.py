@@ -130,7 +130,7 @@ class Grid:
         return self.active_waypoints_list
     
     def get_inactive_waypoints_list(self):
-        return(self.inactive_waypoints_list)
+        return self.inactive_waypoints_list
 
     def get_num_rows(self):
         return self.num_rows
