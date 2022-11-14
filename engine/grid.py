@@ -274,21 +274,20 @@ class Grid:
 
     ##Checks if node is on border of activated nodes
     def is_on_border(self,row, col, row_limit, col_limit):
-            min_col = max(0, col-1)
-            min_row = max(0, row-1)
-            max_col = min(col_limit, col+1)
-            max_row = min(row_limit, row+1)
+        min_col = max(0, col-1)
+        min_row = max(0, row-1)
+        max_col = min(col_limit, col+1)
+        max_row = min(row_limit, row+1)
+        # If this node is on the very edge of the grid, it is automatically a border node
+        if row == 0 or col == 0 or col == self.get_num_cols or row == self.get_num_rows:
+            return True
 
-            # If this node is on the very edge of the grid, it is automatically a border node
-            if min_col == 0 or min_row == 0 or max_col == col_limit or max_row == row_limit:
-                return True
-
-            # If the node has a neighboring node that is inactive, it is a border node
-            for col in range(min_col, max_col+1):
-                for row in range(min_row, max_row+1):
-                    if not self.nodes[row][col].is_active:
-                        return True
-            return False
+        # If the node has a neighboring node that is inactive, it is a border node
+        for col in range(min_col, max_col+1):
+            for row in range(min_row, max_row+1):
+                if not self.nodes[row][col].is_active:
+                    return True
+        return False
 
     ##Finds the border nodes given the activated nodes.
     def find_border_nodes(self):
