@@ -328,7 +328,7 @@ class Grid:
         is no more nodes in the next row, return None. 
 
         pos: the current position (col,row)
-        dir: 'R' returns rightmost node, otherwise function returns leftmost node
+        dir: 'L' returns leftmost node, otherwise function returns rightmost node
         """
         # node_info: (node, row, col)
         candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]+1]
@@ -336,9 +336,9 @@ class Grid:
             return None
         else:
             if dir == 'R':
-                node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
-            else: 
                 node_info = max(candidate_nodes,key=lambda node_info: node_info[1])
+            else: 
+                node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
             return (node_info[1],node_info[2])
 
 
@@ -401,7 +401,7 @@ class Grid:
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    left_pos = self.nextrow_sidemost_node(new_pos, 'R')
+                    left_pos = self.nextrow_sidemost_node(new_pos, 'L')
                     if left_pos is not None:
                         new_pos = (new_pos[0]+1, new_pos[1])
                         while new_pos[0] < left_pos[0]:
@@ -414,8 +414,8 @@ class Grid:
                         direction = Direction.RIGHT
                         if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:
                             curr_pos = left_pos
-                        elif self.nextrow_sidemost_node((new_pos[0],new_pos[1]+1),'R') is not None :
-                            curr_pos = self.nextrow_sidemost_node((new_pos[0],new_pos[1]),'R')
+                        elif self.nextrow_sidemost_node((new_pos[0],new_pos[1]+1),'L') is not None :
+                            curr_pos = self.nextrow_sidemost_node((new_pos[0],new_pos[1]),'L')
                         else:
                             phase = WaypointPhase.TERMINATE
                     else:
@@ -426,7 +426,7 @@ class Grid:
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    right_pos = self.nextrow_sidemost_node(new_pos, 'L')
+                    right_pos = self.nextrow_sidemost_node(new_pos, 'R')
                     new_pos = (new_pos[0]-1, new_pos[1])
                     if right_pos is not None:
                         while new_pos[0] > right_pos[0]:
@@ -439,8 +439,8 @@ class Grid:
                         direction = Direction.LEFT
                         if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:
                             curr_pos = right_pos
-                        elif self.nextrow_sidemost_node((new_pos[0],new_pos[1]+1),'L') is not None:
-                            curr_pos = self.nextrow_sidemost_node((new_pos[0],new_pos[1]),'L')
+                        elif self.nextrow_sidemost_node((new_pos[0],new_pos[1]+1),'R') is not None:
+                            curr_pos = self.nextrow_sidemost_node((new_pos[0],new_pos[1]),'R')
                         else:
                             phase = WaypointPhase.TERMINATE
                     else:
