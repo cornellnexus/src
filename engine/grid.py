@@ -258,10 +258,7 @@ class Grid:
         
         # Check if sum of A1, A2 and A3
         # is same as A
-        if(A == A1 + A2 + A3):
-            return True
-        else:
-            return False
+        return A == (A1 + A2 + A3)
     
     ##Activate a single vertical line of length n with bottom starting at x, y 
     def activate_line(self,x,y,n):
