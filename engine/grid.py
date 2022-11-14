@@ -389,14 +389,14 @@ class Grid:
                 if theta_end < theta_init:
                     theta_end = theta_end + 2 * math.pi
                 theta = theta_init
-                while theta < theta_end:
+                while theta < theta_end + theta_step:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
                     theta = theta + theta_step
             elif orientation == Orientation.CW:
                 if theta_init < theta_end:
                     theta_init = theta_init + 2 * math.pi
                 theta = theta_init
-                while theta > theta_end:
+                while theta > theta_end - theta_step:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
                     theta = theta - theta_step
             else:
