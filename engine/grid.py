@@ -512,7 +512,7 @@ class Grid:
                     self.determine_active_waypoints(node)
                     waypoints.append(node)
                 elif i % 2 == 1:
-                    row_index = self.num_rows - (j + 1)
+                    row_index = self.num_rows - (j + 1)  # adds the nodes in reverse order (not zigzag)
                     node = node_list[row_index, i]
                     self.determine_active_waypoints(node)
                     waypoints.append(node)
