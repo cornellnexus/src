@@ -28,7 +28,6 @@ class Grid:
 
         #leftmost_node: the leftmost active node in the Grid which is used as the starting node in lawnmower and spiral traversal.
         #leftmost_node_pos: the (row,col) position of the leftmost node
-        #rightmost_node_pos : the (row,col) position of the rightmost node
         #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
         #active_waypoints_list: a list of active waypoints for every traversal algorithm. It is used to implement a color visualizaition of active waypoints.
         #inactive_waypoints_list: a list of inactive waypoints for every traversal algorithm. It is used to implement a color visualization of inactive waypoints. 
@@ -121,8 +120,6 @@ class Grid:
         self.border_nodes = None
         self.leftmost_node = None
         self.leftmost_node_pos = None
-        self.rightmost_node = None
-        self.rightmost_node_pos = None
         self.active_waypoints_list = []
         self.inactive_waypoints_list = []
 
@@ -305,9 +302,7 @@ class Grid:
         """
         border_list = []
         leftmost_node = None
-        rightmost_node = None
         leftmost_node_pos = None
-        rightmost_node_pos = None
         
         for row in range(self.num_rows):
             for col in range(self.num_cols):
@@ -325,8 +320,6 @@ class Grid:
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
         self.leftmost_node_pos = leftmost_node_pos
-        self.rightmost_node = rightmost_node
-        self.rightmost_node_pos = rightmost_node_pos
 
     
     def nextrow_sidemost_node(self, pos, dir):
@@ -362,7 +355,7 @@ class Grid:
             CW = 1
             CCW = 2
 
-        def plot_circle(start_pos, end_pos, center, orientation, smoothness: 12):
+        def plot_circle(start_pos, end_pos, center, orientation, smoothness= 12):
             """
             Returns a circle of nodes starting from the start_pos, going at orientation orientation, and ending at the
             end_pos with center center.
