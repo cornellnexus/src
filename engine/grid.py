@@ -236,7 +236,7 @@ class Grid:
     # A function to check whether point P(x, y)
     # lies inside the triangle formed by
     # A(x1, y1), B(x2, y2) and C(x3, y3)
-    def isInsideTriangle(self, x1, y1, x2, y2, x3, y3, x, y):
+    def is_inside_triangle(self, x1, y1, x2, y2, x3, y3, x, y):
         def area(x1, y1, x2, y2, x3, y3):
     
             return abs((x1 * (y2 - y3) + x2 * (y3 - y1)
