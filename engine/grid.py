@@ -367,7 +367,7 @@ class Grid:
             CW = 1
             CCW = 2
 
-        def plot_circle(start_pos, end_pos, center, orientation, smoothness= 12):
+        def plot_circle(start_pos, end_pos, center, orientation, theta_step= math.pi/12):
             """
             Returns a circle of nodes starting from the start_pos, going at orientation orientation, and ending at the
             end_pos with center center.
@@ -378,8 +378,8 @@ class Grid:
                 center: float tuple representing the center point of the circle being plotted
                 orientation: orientation that the nodes are being plotted from, starting with the start_pos and ending
                     at the end_pos
-                smoothness: int representing how subdivided the angle will be when plotting the turning arch. The 
-                greater the value, the smoother the curve will be. Default value = 12.
+                theta_step: float representing the angle step when plotting the turning arch. The 
+                smaller the value, the smoother the curve will be. Default value = math.pi/12.
             """
             r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
             theta_init = math.atan2(start_pos[1]-center[1], start_pos[0]-center[0])
@@ -391,12 +391,12 @@ class Grid:
                 theta = theta_init
                 while theta < theta_end:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
-                    theta = theta + math.pi/smoothness
+                    theta = theta + theta_step
             elif orientation == Orientation.CW:
                 theta = theta_end
                 while theta > theta_init:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
-                    theta = theta - math.pi/smoothness
+                    theta = theta - theta_step
             else:
                 raise Exception("invalid orientation")
             return circle_plt
