@@ -385,16 +385,18 @@ class Grid:
             theta_init = math.atan2(start_pos[1]-center[1], start_pos[0]-center[0])
             theta_end = math.atan2(end_pos[1]-center[1], end_pos[0]-center[0])
             circle_plt = []
-            if theta_end < theta_init:
-                theta_end = theta_end + 2*math.pi
             if orientation == Orientation.CCW:
+                if theta_end < theta_init:
+                    theta_end = theta_end + 2 * math.pi
                 theta = theta_init
                 while theta < theta_end:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
                     theta = theta + theta_step
             elif orientation == Orientation.CW:
-                theta = theta_end
-                while theta > theta_init:
+                if theta_init < theta_end:
+                    theta_init = theta_init + 2 * math.pi
+                theta = theta_init
+                while theta > theta_end:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
                     theta = theta - theta_step
             else:
@@ -420,7 +422,7 @@ class Grid:
                             while new_pos in waypoints:
                                 waypoints.remove(new_pos)
                             new_pos = (new_pos[0]+1, new_pos[1])
-                        circle_plt = plot_circle((left_pos[0], left_pos[1]), (left_pos[0], left_pos[1]-1),
+                        circle_plt = plot_circle((left_pos[0], left_pos[1]-1), (left_pos[0], left_pos[1]),
                                                  (left_pos[0], left_pos[1]-.5), Orientation.CW)
                         waypoints += circle_plt
                         direction = Direction.RIGHT
