@@ -307,14 +307,14 @@ class Grid:
         for row in range(self.num_rows):
             for col in range(self.num_cols):
                 node = self.nodes[row][col]
-                if node.is_active and self.is_on_border(row, col, self.num_rows-1, self.num_cols-1):
+                if node.is_active and self.is_on_border(row, col, self.num_rows, self.num_cols):
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
                     border_list.append((node, row, col))
                     if leftmost_node_pos is None or col < leftmost_node_pos[1]:
                         leftmost_node = node
                         leftmost_node_pos = (row, col)
-                    
+
                     
                         
         self.border_nodes = border_list
