@@ -344,6 +344,17 @@ class Grid:
 
     ##Given border and active nodes, compute lawnmower traversal
     def get_all_lawnmower_waypoints_adjustable(self):
+        """
+        returns the waypoints being traversed. The algorithm traverses from bottom
+        up starting from left to right. 
+        
+        There are two big branches: 
+            * Direction.LEFT branch handles traversal from right towards left and 
+            turning clock wise at the end of the row (or terminating).
+            * Direction.RIGHT branch handles traversal from left towards right 
+            and turning counter clock wise at the end of the row (or terminating).
+        The plot_circle plots the circular waypoints during the turn
+        """
         class WaypointPhase(Enum):
             DOWN = 1
             TERMINATE = 2
@@ -351,6 +362,7 @@ class Grid:
             RIGHT = 1
             LEFT = 2
 
+        #Clockwise or CounterClockwise
         class Orientation(Enum):
             CW = 1
             CCW = 2
