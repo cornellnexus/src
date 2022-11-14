@@ -195,7 +195,7 @@ class Grid:
 
     # --------------------- ADJUSTABLE TRAVERSAL ALGORITHMS -------------- #
 
-    def get_neighbor_node(self, row, col, row_max, col_max):
+    def get_active_neighbor_node(self, row, col, row_max, col_max):
         """
         Returns the active neighbor node at the given row and col position.
 
@@ -315,7 +315,6 @@ class Grid:
         for row in range(self.num_rows):
             for col in range(self.num_cols):
                 node = self.nodes[row][col]
-                #border node 1 left active node 
                 if node.is_active and self.is_on_border(row, col, self.num_rows-1, self.num_cols-1):
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
@@ -323,12 +322,6 @@ class Grid:
                     if leftmost_node_pos is None or col < leftmost_node_pos[1]:
                         leftmost_node = node
                         leftmost_node_pos = (row, col)
-                if node.is_active and self.is_on_border(row, col, self.num_rows , self.num_cols):
-                    # check if this is an active node and on the border
-                    self.nodes[row][col].is_border = True
-                    if rightmost_node_pos is None or row > rightmost_node_pos[0]:
-                        rightmost_node = node
-                        rightmost_node_pos = (row, col)
                     
                     
                         
@@ -339,28 +332,26 @@ class Grid:
         self.rightmost_node_pos = rightmost_node_pos
 
     
-    ##Return bottom most node that is activated in the right column
-    def bottom_rightmost_node(self, pos):
+    def nextrow_sidemost_node(self, pos, dir):
+        """
+        returns the rightmost or leftmost node on the row above the current position. If there 
+        is no more nodes in the next row, return None. 
+
+        pos: the current position (col,row)
+        dir: 'R' returns rightmost node, otherwise function returns leftmost node
+        """
         # node_info: (node, row, col)
         candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]+1]
         if (candidate_nodes == []):
             return None
         else:
-            node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
-            return (node_info[1],node_info[2])
-    
-    def bottom_leftmost_node(self, pos):
-        # node_info: (node, row, col)
-        candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]+1]
-        if (candidate_nodes == []):
-            return None
-        else:
-            node_info = max(candidate_nodes,key=lambda node_info: node_info[1])
+            if dir == 'R':
+                node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
+            else: 
+                node_info = max(candidate_nodes,key=lambda node_info: node_info[1])
             return (node_info[1],node_info[2])
 
-    
 
-        
     ##Given border and active nodes, compute lawnmower traversal
     def get_all_lawnmower_waypoints_adjustable(self):
         class WaypointPhase(Enum):
@@ -374,7 +365,7 @@ class Grid:
             CW = 1
             CCW = 2
 
-        def plot_circle(start_pos, end_pos, center, orientation):
+        def plot_circle(start_pos, end_pos, center, orientation, smoothness: 12):
             """
             Returns a circle of nodes starting from the start_pos, going at orientation orientation, and ending at the
             end_pos with center center.
@@ -385,6 +376,8 @@ class Grid:
                 center: float tuple representing the center point of the circle being plotted
                 orientation: orientation that the nodes are being plotted from, starting with the start_pos and ending
                     at the end_pos
+                smoothness: int representing how subdivided the angle will be when plotting the turning arch. The 
+                greater the value, the smoother the curve will be. Default value = 12.
             """
             r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
             theta_init = math.atan2(start_pos[1]-center[1], start_pos[0]-center[0])
@@ -396,12 +389,12 @@ class Grid:
                 theta = theta_init
                 while theta < theta_end:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
-                    theta = theta + math.pi/12
+                    theta = theta + math.pi/smoothness
             elif orientation == Orientation.CW:
                 theta = theta_end
                 while theta > theta_init:
                     circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
-                    theta = theta - math.pi/12
+                    theta = theta - math.pi/smoothness
             else:
                 raise Exception("invalid orientation")
             return circle_plt
@@ -418,7 +411,7 @@ class Grid:
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    left_pos = self.bottom_rightmost_node(new_pos)
+                    left_pos = self.nextrow_sidemost_node(new_pos, 'R')
                     if left_pos is not None:
                         new_pos = (new_pos[0]+1, new_pos[1])
                         while new_pos[0] < left_pos[0]:
@@ -431,8 +424,8 @@ class Grid:
                         direction = Direction.RIGHT
                         if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:
                             curr_pos = left_pos
-                        elif self.bottom_rightmost_node((new_pos[0],new_pos[1]+1)) is not None :
-                            curr_pos = self.bottom_rightmost_node((new_pos[0],new_pos[1]))
+                        elif self.nextrow_sidemost_node((new_pos[0],new_pos[1]+1),'R') is not None :
+                            curr_pos = self.nextrow_sidemost_node((new_pos[0],new_pos[1]),'R')
                         else:
                             phase = WaypointPhase.TERMINATE
                     else:
@@ -443,7 +436,7 @@ class Grid:
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
-                    right_pos = self.bottom_leftmost_node(new_pos)
+                    right_pos = self.nextrow_sidemost_node(new_pos, 'L')
                     new_pos = (new_pos[0]-1, new_pos[1])
                     if right_pos is not None:
                         while new_pos[0] > right_pos[0]:
@@ -456,8 +449,8 @@ class Grid:
                         direction = Direction.LEFT
                         if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:
                             curr_pos = right_pos
-                        elif self.bottom_leftmost_node((new_pos[0],new_pos[1]+1)) is not None:
-                            curr_pos = self.bottom_leftmost_node((new_pos[0],new_pos[1]))
+                        elif self.nextrow_sidemost_node((new_pos[0],new_pos[1]+1),'L') is not None:
+                            curr_pos = self.nextrow_sidemost_node((new_pos[0],new_pos[1]),'L')
                         else:
                             phase = WaypointPhase.TERMINATE
                     else:
