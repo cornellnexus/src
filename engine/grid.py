@@ -8,7 +8,6 @@ from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get
 from enum import Enum
 
 
-
 class Grid:
     """
     Instances represent the current grid of the robot's traversal.
@@ -86,7 +85,7 @@ class Grid:
             # traversal.
             for i in range(cols):
                 for j in range(rows):
-                    #is_border = (j == 0 or j == rows - 1)
+                    # is_border = (j == 0 or j == rows - 1)
                     if i % 2 == 0:
                         lat = gps_origin[0] + j * lat_step
                         long = gps_origin[1] + i * long_step
@@ -96,7 +95,7 @@ class Grid:
                         node_list[j, i] = node
                     elif i % 2 == 1:
                         lat = gps_origin[0] + \
-                            ((rows - 1) * lat_step) - j * lat_step
+                              ((rows - 1) * lat_step) - j * lat_step
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
@@ -125,7 +124,7 @@ class Grid:
 
     def get_active_waypoints_list(self):
         return self.active_waypoints_list
-    
+
     def get_inactive_waypoints_list(self):
         return self.inactive_waypoints_list
 
@@ -153,15 +152,13 @@ class Grid:
 
     def determine_active_waypoints(self, node):
         """
-        Determines whether a waypoint on a traversal algorithm is active. If active, the node is 
-        appended to active_waypoints. Else, if inactive, the node is appended to inactive_waypoints. 
+        Determines whether a waypoint on a traversal algorithm is active. If active, the node is
+        appended to active_waypoints. Else, if inactive, the node is appended to inactive_waypoints.
         """
         if node.is_active:
             self.active_waypoints_list.append(node)
         else:
             self.inactive_waypoints_list.append(node)
-         
-
 
     # --------------------- METHODS TO FINISH INITIALIZATION OF ACTIVATED GRID -------------- #
 
@@ -173,10 +170,10 @@ class Grid:
         1. Any of its neighboring nodes are inactive.
         2. It exists on the very edge of the grid.
         """
-        min_col = max(0, col-1)
-        min_row = max(0, row-1)
-        max_col = min(col_limit, col+1)
-        max_row = min(row_limit, row+1)
+        min_col = max(0, col - 1)
+        min_row = max(0, row - 1)
+        max_col = min(col_limit, col + 1)
+        max_row = min(row_limit, row + 1)
 
         # If this node is on the very edge of the grid, it is automatically a border node
         if min_col == 0 or min_row == 0 or max_col == col_limit or max_row == row_limit:
@@ -188,7 +185,6 @@ class Grid:
                 if not self.nodes[row][col].is_active_node():
                     return True
         return False
-
 
     # --------------------- ADJUSTABLE TRAVERSAL ALGORITHMS -------------- #
 
@@ -207,7 +203,7 @@ class Grid:
         if not neighbor_node.is_active_node():
             return None
         else:
-           return neighbor_node
+            return neighbor_node
 
     ##Activates rectangle based on row start/end, col start/end
     def activate_rectangle(self, row, col, row_limit, col_limit):
@@ -216,79 +212,75 @@ class Grid:
         """
         for x in range(row, row_limit):
             for y in range(col, col_limit):
-                self.nodes[x,y].is_active = True
+                self.nodes[x, y].is_active = True
         return self.nodes
 
     ##Activates circle based on center and radius
-    def activate_circle(self,circle_center_row, circle_center_col, circle_radius):
+    def activate_circle(self, circle_center_row, circle_center_col, circle_radius):
         """
         Activates all the nodes in a circle.
         """
         for x in range(self.num_rows):
             for y in range(self.num_cols):
-                if ((x-circle_center_row)**2 + (y-circle_center_col)**2 - circle_radius**2) < 0:
-                    self.nodes[x,y].is_active = True
+                if ((x - circle_center_row) ** 2 + (y - circle_center_col) ** 2 - circle_radius ** 2) < 0:
+                    self.nodes[x, y].is_active = True
 
-
- 
- 
     # A function to check whether point P(x, y)
     # lies inside the triangle formed by
     # A(x1, y1), B(x2, y2) and C(x3, y3)
     def isInsideTriangle(self, x1, y1, x2, y2, x3, y3, x, y):
         def area(x1, y1, x2, y2, x3, y3):
-    
             return abs((x1 * (y2 - y3) + x2 * (y3 - y1)
                         + x3 * (y1 - y2)) / 2.0)
-        
+
         # Calculate area of triangle ABC
         A = area(x1, y1, x2, y2, x3, y3)
-    
+
         # Calculate area of triangle PBC
         A1 = area(x, y, x2, y2, x3, y3)
-        
+
         # Calculate area of triangle PAC
         A2 = area(x1, y1, x, y, x3, y3)
-        
+
         # Calculate area of triangle PAB
         A3 = area(x1, y1, x2, y2, x, y)
-        
+
         # Check if sum of A1, A2 and A3
         # is same as A
         return A == (A1 + A2 + A3)
-    
-    ##Activate a single vertical line of length n with bottom starting at x, y 
-    def activate_line(self,x,y,n):
+
+    ##Activate a single vertical line of length n with bottom starting at x, y
+    def activate_line(self, x, y, n):
         for i in range(n):
-            self.nodes[x,y+i].is_active = True
+            self.nodes[x, y + i].is_active = True
 
     ##Activate triangle based on three points
-    def activate_triangle(self,x1,y1,x2,y2,x3,y3):
+    def activate_triangle(self, x1, y1, x2, y2, x3, y3):
         """
         Activates all the nodes in a traingle.
         """
         for x in range(self.num_rows):
             for y in range(self.num_cols):
-                if self.isInsideTriangle(x1,y1,x2,y2,x3,y3,x,y):
-                    self.nodes[x,y].is_active = True
+                if self.isInsideTriangle(x1, y1, x2, y2, x3, y3, x, y):
+                    self.nodes[x, y].is_active = True
 
     ##Checks if node is on border of activated nodes
-    def is_on_border(self,row, col, row_limit, col_limit):
-            min_col = max(0, col-1)
-            min_row = max(0, row-1)
-            max_col = min(col_limit, col+1)
-            max_row = min(row_limit, row+1)
+    def is_on_border(self, row, col, row_limit, col_limit):
+        min_col = max(0, col - 1)
+        min_row = max(0, row - 1)
+        max_col = min(col_limit, col + 1)
+        max_row = min(row_limit, row + 1)
 
-            # If this node is on the very edge of the grid, it is automatically a border node
-            if min_col == 0 or min_row == 0 or max_col == col_limit or max_row == row_limit:
-                return True
+        # If this node is on the very edge of the grid, it is automatically a border node
+        if min_col == 0 or min_row == 0 or max_col == col_limit or max_row == row_limit:
+            return True
 
-            # If the node has a neighboring node that is inactive, it is a border node
-            for col in range(min_col, max_col+1):
-                for row in range(min_row, max_row+1):
-                    if not self.nodes[row][col].is_active:
-                        return True
-            return False
+        # If the node has a neighboring node that is inactive, it is a border node
+        for col in range(min_col, max_col + 1):
+            for row in range(min_row, max_row + 1):
+                if not self.nodes[row][col].is_active:
+                    return True
+        return False
 
     ##Finds the border nodes given the activated nodes.
     def find_border_nodes(self):
@@ -303,7 +295,7 @@ class Grid:
         border_list = []
         leftmost_node = None
         leftmost_node_pos = None
-        
+
         for row in range(self.num_rows):
             for col in range(self.num_cols):
                 node = self.nodes[row][col]
@@ -315,59 +307,80 @@ class Grid:
                         leftmost_node = node
                         leftmost_node_pos = (row, col)
 
-                    
-                        
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
         self.leftmost_node_pos = leftmost_node_pos
 
-    
     def nextrow_sidemost_node(self, pos, dir):
         """
-        returns the rightmost or leftmost node on the row above the current position. If there 
-        is no more nodes in the next row, return None. 
+        returns the rightmost or leftmost node on the row above the current position. If there
+        is no more nodes in the next row, return None.
 
         pos: the current position (col,row)
         dir: 'L' returns leftmost node, otherwise function returns rightmost node
         """
         # node_info: (node, row, col)
-        candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]+1]
-        if (candidate_nodes == []):
+        candidate_nodes_next = [node_info for node_info in self.border_nodes if node_info[2] == pos[1] + 1]
+        candidate_nodes_curr = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]]
+        if (candidate_nodes_next == [] and candidate_nodes_curr == []):
             return None
+        elif (candidate_nodes_next == []):
+            if dir == 'R':
+                node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[1])
+            else:
+                node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[1])
+            return (node_info_curr[1], node_info_curr[2])
+        elif (candidate_nodes_curr == []):
+            if dir == 'R':
+                node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[1])
+            else:
+                node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[1])
+            return (node_info_next[1], node_info_next[2])
         else:
             if dir == 'R':
-                node_info = max(candidate_nodes,key=lambda node_info: node_info[1])
-            else: 
-                node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
-            return (node_info[1],node_info[2])
-
+                node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[1])
+                node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[1])
+                if node_info_next[1] > node_info_curr[1]:
+                    node_info = node_info_curr
+                else:
+                    node_info = node_info_next
+            else:
+                node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[1])
+                node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[1])
+                if node_info_next[1] > node_info_curr[1]:
+                    node_info = node_info_next
+                else:
+                    node_info = node_info_curr
+            return (node_info[1], node_info[2])
 
     ##Given border and active nodes, compute lawnmower traversal
     def get_all_lawnmower_waypoints_adjustable(self):
         """
         returns the waypoints being traversed. The algorithm traverses from bottom
-        up starting from left to right. 
-        
-        There are two big branches: 
-            * Direction.LEFT branch handles traversal from right towards left and 
+        up starting from left to right.
+
+        There are two big branches:
+            * Direction.LEFT branch handles traversal from right towards left and
             turning clock wise at the end of the row (or terminating).
-            * Direction.RIGHT branch handles traversal from left towards right 
+            * Direction.RIGHT branch handles traversal from left towards right
             and turning counter clock wise at the end of the row (or terminating).
         The plot_circle plots the circular waypoints during the turn
         """
+
         class WaypointPhase(Enum):
             DOWN = 1
             TERMINATE = 2
+
         class Direction(Enum):
             RIGHT = 1
             LEFT = 2
 
-        #Clockwise or CounterClockwise
+        # Clockwise or CounterClockwise
         class Orientation(Enum):
             CW = 1
             CCW = 2
 
-        def plot_circle(start_pos, end_pos, center, orientation, theta_step= math.pi/12):
+        def plot_circle(start_pos, end_pos, center, orientation, theta_step=math.pi / 12):
             """
             Returns a circle of nodes starting from the start_pos, going at orientation orientation, and ending at the
             end_pos with center center.
@@ -378,26 +391,26 @@ class Grid:
                 center: float tuple representing the center point of the circle being plotted
                 orientation: orientation that the nodes are being plotted from, starting with the start_pos and ending
                     at the end_pos
-                theta_step: float representing the angle step when plotting the turning arch. The 
+                theta_step: float representing the angle step when plotting the turning arch. The
                 smaller the value, the smoother the curve will be. Default value = math.pi/12.
             """
             r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
-            theta_init = math.atan2(start_pos[1]-center[1], start_pos[0]-center[0])
-            theta_end = math.atan2(end_pos[1]-center[1], end_pos[0]-center[0])
+            theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
+            theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
             circle_plt = []
             if orientation == Orientation.CCW:
                 if theta_end < theta_init:
                     theta_end = theta_end + 2 * math.pi
                 theta = theta_init
                 while theta < theta_end + theta_step:
-                    circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
+                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
                     theta = theta + theta_step
             elif orientation == Orientation.CW:
                 if theta_init < theta_end:
                     theta_init = theta_init + 2 * math.pi
                 theta = theta_init
                 while theta > theta_end - theta_step:
-                    circle_plt.append((r*math.cos(theta)+center[0], r*math.sin(theta)+center[1]))
+                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
                     theta = theta - theta_step
             else:
                 raise Exception("invalid orientation")
@@ -409,58 +422,54 @@ class Grid:
         waypoints = []
         waypoints.append(curr_pos)
         while (phase != WaypointPhase.TERMINATE):
-            if direction == Direction.LEFT:
-                new_pos = (curr_pos[0]-1,curr_pos[1])
-                if self.nodes[new_pos].is_active:
-                    waypoints.append(new_pos)
-                    curr_pos = new_pos
+            if curr_pos[0] > self.num_rows - 1 or curr_pos[0] < 0 or curr_pos[1] > self.num_cols - 1 or curr_pos[1] < 0:
+                phase = WaypointPhase.TERMINATE
+            elif direction == Direction.LEFT:
+                new_pos = (curr_pos[0] - 1, curr_pos[1])
+                left_pos = self.nextrow_sidemost_node(curr_pos, 'L')
+                if left_pos == None:
+                    phase = WaypointPhase.TERMINATE
+                elif curr_pos[0] <= (left_pos[0] + 1):
+                    phase = WaypointPhase.TERMINATE
                 else:
-                    left_pos = self.nextrow_sidemost_node(new_pos, 'L')
-                    if left_pos is not None:
-                        new_pos = (new_pos[0]+1, new_pos[1])
-                        while new_pos[0] < left_pos[0]:
-                            while new_pos in waypoints:
-                                waypoints.remove(new_pos)
-                            new_pos = (new_pos[0]+1, new_pos[1])
-                        circle_plt = plot_circle((left_pos[0], left_pos[1]-1), (left_pos[0], left_pos[1]),
-                                                 (left_pos[0], left_pos[1]-.5), Orientation.CW)
+                    while curr_pos[0] > (left_pos[0] + 1):
+                        waypoints.append(new_pos)
+                        curr_pos = new_pos
+                        new_pos = (curr_pos[0] - 1, curr_pos[1])
+                    if curr_pos[1] + 1 >= self.num_cols:
+                        phase = WaypointPhase.TERMINATE
+                    if not self.nodes[(left_pos[0], curr_pos[1] + 1)].is_active:
+                        phase = WaypointPhase.TERMINATE
+                    else:
+                        circle_plt = plot_circle((left_pos[0] + 1, curr_pos[1]), (left_pos[0] + 1, curr_pos[1] + 1),
+                                                 (left_pos[0] + 1, curr_pos[1] + .5), Orientation.CW)
                         waypoints += circle_plt
                         direction = Direction.RIGHT
-                        if self.nodes[(left_pos[0]+1,left_pos[1])].is_active:
-                            curr_pos = left_pos
-                        elif self.nextrow_sidemost_node((new_pos[0],new_pos[1]+1),'L') is not None :
-                            curr_pos = self.nextrow_sidemost_node((new_pos[0],new_pos[1]),'L')
-                        else:
-                            phase = WaypointPhase.TERMINATE
-                    else:
-                        phase = WaypointPhase.TERMINATE
+                        curr_pos = (left_pos[0] + 1, curr_pos[1] + 1)
             else:
-                new_pos = (curr_pos[0]+1,curr_pos[1])
-                if self.nodes[new_pos].is_active:
-                    waypoints.append(new_pos)
-                    curr_pos = new_pos
+                new_pos = (curr_pos[0] + 1, curr_pos[1])
+                right_pos = self.nextrow_sidemost_node(curr_pos, 'R')
+                if right_pos == None:
+                    phase = WaypointPhase.TERMINATE
+                elif curr_pos[0] >= (right_pos[0] - 1):
+                    phase = WaypointPhase.TERMINATE
                 else:
-                    right_pos = self.nextrow_sidemost_node(new_pos, 'R')
-                    new_pos = (new_pos[0]-1, new_pos[1])
-                    if right_pos is not None:
-                        while new_pos[0] > right_pos[0]:
-                            while new_pos in waypoints:
-                                waypoints.remove(new_pos)
-                            new_pos = (new_pos[0]-1, new_pos[1])
-                        circle_plt = plot_circle((right_pos[0], right_pos[1]-1), (right_pos[0],right_pos[1]),
-                                                 (right_pos[0], right_pos[1]-.5), Orientation.CCW)
+                    while curr_pos[0] < (right_pos[0] - 1):
+                        waypoints.append(new_pos)
+                        curr_pos = new_pos
+                        new_pos = (curr_pos[0] + 1, curr_pos[1])
+                    if curr_pos[1] + 1 >= self.num_cols:
+                        phase = WaypointPhase.TERMINATE
+                    elif not self.nodes[(right_pos[0], curr_pos[1] + 1)].is_active:
+                        phase = WaypointPhase.TERMINATE
+                    else:
+                        circle_plt = plot_circle((right_pos[0] - 1, curr_pos[1]), (right_pos[0] - 1, curr_pos[1] + 1),
+                                                 (right_pos[0] - 1, curr_pos[1] + .5), Orientation.CCW)
                         waypoints += circle_plt
                         direction = Direction.LEFT
-                        if self.nodes[(right_pos[0]-1,right_pos[1])].is_active:
-                            curr_pos = right_pos
-                        elif self.nextrow_sidemost_node((new_pos[0],new_pos[1]+1),'R') is not None:
-                            curr_pos = self.nextrow_sidemost_node((new_pos[0],new_pos[1]),'R')
-                        else:
-                            phase = WaypointPhase.TERMINATE
-                    else:
-                        phase = WaypointPhase.TERMINATE
-        return waypoints
+                        curr_pos = (right_pos[0] - 1, curr_pos[1] + 1)
 
+        return waypoints
 
     # --------------------- STANDARD TRAVERSAL ALGORITHMS -------------- #
 
@@ -486,7 +495,8 @@ class Grid:
             waypoints.append(node)
             next_col = col + step_col[turn_state]
             next_row = row + step_row[turn_state]
-            if 0 <= next_col < self.num_cols and 0 <= next_row < self.num_rows and not node_list[next_row, next_col] in waypoints:
+            if 0 <= next_col < self.num_cols and 0 <= next_row < self.num_rows and not node_list[
+                                                                                           next_row, next_col] in waypoints:
                 col = next_col
                 row = next_row
             else:
@@ -543,7 +553,7 @@ class Grid:
                 waypoints.append(node2)
         return waypoints
 
-    def get_straight_line_waypoints(self,y_start_row=0,y_start_pct=None):
+    def get_straight_line_waypoints(self, y_start_row=0, y_start_pct=None):
         """
         Returns the robot's lawnmower border traversal path for the current grid using
         only nodes in a straight line . Starting node is the left-most node starting at
@@ -558,7 +568,7 @@ class Grid:
         waypoints = []
         node_list = self.nodes
         if y_start_pct is not None:
-            selected_row = int(y_start_pct*self.num_rows)
+            selected_row = int(y_start_pct * self.num_rows)
         else:
             selected_row = y_start_row
         for i in range(self.num_cols):
@@ -602,7 +612,7 @@ class Grid:
         elif mode == ControlMode.SPIRAL:
             waypoints = self.get_spiral_waypoints()
         elif mode == ControlMode.STRAIGHT:
-            waypoints = self.get_straight_line_waypoints(y_start_pct =0.5)
+            waypoints = self.get_straight_line_waypoints(y_start_pct=0.5)
         elif mode == ControlMode.LAWNMOWER_A:
             waypoints = self.get_all_lawnmower_waypoints_adjustable()
         else:
