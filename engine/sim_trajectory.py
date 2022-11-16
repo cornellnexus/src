@@ -12,7 +12,7 @@ from engine.base_station import BaseStation
 from engine.mission import Mission
 from engine.mission import ControlMode
 from engine.database import DataBase
-
+from engine.is_raspberrypi import is_raspberrypi
 import logging
 import threading
 import time
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     '''------------------- MISSION EXECUTION -------------------'''
     global rpi_comms, is_sim
     rpi_comms = True # Set to true when the rpi/robot is communicating w/ the GUI
-    is_sim = True # Set to true when simulating the rpi, set to false when running on rpi
+    is_sim = not is_raspberrypi() # Set to true when simulating the rpi, set to false when running on rpi
     format = "%(asctime)s: %(message)s"
     logging.basicConfig(format=format, level=logging.INFO,
                         datefmt="%H:%M:%S")
