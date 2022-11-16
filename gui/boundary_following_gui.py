@@ -44,37 +44,43 @@ class Robot:
         self.distFromClosestObstacle = np.inf
         return False
 
-    def avoid_obstacles(self, front_point_cloud, left_top_point_cloud, left_bottom_point_cloud, right_top_point_cloud, right_bottom_point_cloud, dt):
+    def avoid_obstacles(self, front_point_cloud, left_top_point_cloud, left_bottom_point_cloud, right_top_point_cloud, right_bottom_point_cloud, dt, min_front):
+        margin_to_obs = 50
         #left_value = self.check_parallel(left_top_point_cloud, left_bottom_point_cloud, 1)
-        right_value = self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 1)
+        parallel = self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 15)
         # if left_value == 0 and right_value == 0:
-        if right_value == 0:
-            # distance_to_front_obstacle = np.inf
-            # for point in front_point_cloud:
-            #     distance_to_front_obstacle = min(distance(point, (self.x, self.y)), distance_to_front_obstacle)
-            self.move_forward()
-            self.kinematics(dt)
+        if min_front == None:
+            condition = False
         else:
-            #self.heading += -0.001 * left_value + -0.001 * right_value
-            self.heading += -0.001 * right_value
+            condition = min_front[1] < margin_to_obs
+        if condition:
+            self.heading += 0.003
+        else:
+            if parallel == 0:
+                # distance_to_front_obstacle = np.inf
+                # for point in front_point_cloud:
+                #     distance_to_front_obstacle = min(distance(point, (self.x, self.y)), distance_to_front_obstacle)
+                self.move_forward()
+                self.kinematics(dt)
+            else:
+                #self.heading += -0.001 * left_value + -0.001 * right_value
+                # while not self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 1.5) == 0:
+                self.heading += -0.005 * parallel
 
     def check_parallel(self, fpc, bpc, margin):
         min_dist_front = np.inf
         min_dist_back = np.inf
         for point in fpc:
             local_min_distance = min(distance(point, (self.x, self.y)), self.minimumObstacleDistance)
-            if local_min_distance != self.minimumObstacleDistance:
-                min_dist_front = min(min_dist_front, local_min_distance)
+            min_dist_front = min(min_dist_front, local_min_distance)
         for point in bpc:
             local_min_distance = min(distance(point, (self.x, self.y)), self.minimumObstacleDistance)
-            if local_min_distance != self.minimumObstacleDistance:
-                min_dist_back = min(min_dist_back, local_min_distance)
+            min_dist_back = min(min_dist_back, local_min_distance)
         if abs(min_dist_front - min_dist_back) < margin:
             return 0
         if min_dist_front > min_dist_back:
             return 1
         return -1
-
     def move_backward(self):
         self.velocityRight = - self.minSpeed
         self.velocityLeft = - self.minSpeed/2
@@ -95,13 +101,14 @@ class Robot:
 
     def updateHeading(self):
         angle = self.arctan(self.x, self.y, self.endX + 40, self.endY + 41)
-        finalHeading = angle * -1
+        finalHeading = -angle
         if np.abs(finalHeading - self.heading) > 0.1:
             if finalHeading > self.heading:
-                self.heading += 0.01
+                return .01
             else:
-                self.heading -= 0.01
-
+                return -.01
+        else:
+            return 0
 
     def kinematics(self, dt):
         self.x += ((self.velocityLeft + self.velocityRight) / 2) * \
@@ -156,9 +163,11 @@ class Graphics:
             pygame.draw.circle(self.map, self.purple, point, 3, 0)
 
     def draw_pt(self, pt):
-        print("drawing")
-        pygame.draw.circle(self.map, self.blue, pt, 10, 0)
+        pygame.draw.circle(self.map, self.blue, pt[0], 10, 0)
 
+    def draw_side_pt_clouds(self, side_pt_clouds):
+        for pt_cloud in side_pt_clouds:
+            self.draw_side_sensor_data(pt_cloud)
 
 class Ultrasonic:
     def __init__(self, sensor_range, map):
@@ -208,7 +217,7 @@ class Ultrasonic:
 
     def min_distance(self, curr_pos, point_cloud):
         if len(point_cloud) == 0:
-            return "None"
+            return None
         else:
             min_dist = math.dist(point_cloud[0], curr_pos)
             min_point = point_cloud[0]
@@ -217,4 +226,4 @@ class Ultrasonic:
                 if dist < min_dist:
                     min_dist = dist
                     min_point = points
-            return min_point
+            return (min_point, min_dist)
