@@ -2,16 +2,18 @@ import numpy as np
 import math
 from enum import Enum
 from electrical import motor_controller
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from engine.pid_controller import PID
 from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
 import time
 
-# from electrical.motor_controller import MotorController
-# import electrical.gps as GPS 
-# import electrical.imu as IMU 
-# import electrical.radio_module as RadioModule
-# import serial
+from engine.is_raspberrypi import is_raspberrypi
+if is_raspberrypi():
+    from electrical.motor_controller import MotorController
+    import electrical.gps as GPS 
+    import electrical.imu as IMU 
+    import electrical.radio_module as RadioModule
+    import serial
 
 from engine.ekf import LocalizationEKF
 from engine.sensor_module import SensorModule
@@ -82,7 +84,7 @@ class Robot:
         """
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
-        self.is_sim = is_sim
+        self.is_sim = not is_raspberrypi()
         self.is_store = is_store
         self.phase = Phase(init_phase)
         self.epsilon = epsilon
@@ -114,11 +116,11 @@ class Robot:
         self.mc = motor_controller
         self.linear_v = 0
         self.angular_v = 0
-        # if not self.is_sim:
-        #     self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
-        #     self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-        #     self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
-        #     self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
+        if not self.is_sim:
+            self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
+            self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
+            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
+            self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
 
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,

@@ -12,7 +12,7 @@ from engine.base_station import BaseStation
 from engine.mission import Mission
 from engine.mission import ControlMode
 from engine.database import DataBase
-
+from engine.is_raspberrypi import is_raspberrypi
 import logging
 import threading
 import time
@@ -101,6 +101,22 @@ if __name__ == "__main__":
             rpi_to_gui.close()
 
     '''------------------- MISSION EXECUTION -------------------'''
+<<<<<<< HEAD
+=======
+    global rpi_comms, is_sim
+    rpi_comms = True # Set to true when the rpi/robot is communicating w/ the GUI
+    is_sim = not is_raspberrypi() # Set to true when simulating the rpi, set to false when running on rpi
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
+
+    if is_sim:
+        # open csv file of rpi to gui data
+        rpi_to_gui = open(
+            (CSV_PATH + '/rpi_to_gui_simulation.csv'), "a")
+
+
+>>>>>>> main
     packet_sender = threading.Thread(target=send_packet_to_gui, args=(
         1,), daemon=True)  # Thread to read and send robot properties
     packet_sender.start()

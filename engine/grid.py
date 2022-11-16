@@ -81,13 +81,13 @@ class Grid:
             # traversal.
             for i in range(cols):
                 for j in range(rows):
-                    #is_border = (j == 0 or j == rows - 1)
+                    is_border = (j == 0 or j == rows - 1)
                     if i % 2 == 0:
                         lat = gps_origin[0] + j * lat_step
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y)  # , is_border)
+                        node = Node(lat, long, x, y, is_border)
                         node_list[j, i] = node
                     elif i % 2 == 1:
                         lat = gps_origin[0] + \
@@ -95,7 +95,7 @@ class Grid:
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y)  # , is_border)
+                        node = Node(lat, long, x, y, is_border)
                         row_index = rows - (j + 1)
                         node_list[row_index, i] = node
 
@@ -257,9 +257,7 @@ class Grid:
             return False
 
     # Activate triangle based on three points
-
-    def activate_traingle(self, x1, y1, x2, y2, x3, y3):
-
+    def activate_triangle(self, x1, y1, x2, y2, x3, y3):
         """
         Activates all the nodes in a traingle.
         """
@@ -267,7 +265,7 @@ class Grid:
         cols = self.nodes.shape[0]
         for x in range(rows):
             for y in range(cols):
-                if self.isInsideTriangle(x1, y1, x2, y2, x3, y3, x, y):
+                if self.is_inside_triangle(x1, y1, x2, y2, x3, y3, x, y):
                     self.nodes[x, y].is_active = True
 
     # Checks if node is on border of activated nodes
