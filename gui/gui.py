@@ -24,6 +24,7 @@ from matplotlib import animation as animation
 from matplotlib import patches as patch
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
+from engine.is_raspberrypi import is_raspberrypi
 
 import os
 import math
@@ -38,7 +39,7 @@ import serial
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
 # ser = serial.Serial("/dev/tty.usbserial-017543DC", 57600)
-is_sim = True # Change to False when testing RPI to GUI connection
+is_sim = is_raspberrypi() # Change to False when testing RPI to GUI connection
 
 def get_control_mode(window):
     """
@@ -47,7 +48,6 @@ def get_control_mode(window):
     #TODO: replace using telemetry data
 
     if is_sim: 
-        path = get_path('csv')
         file = open(CSV_PATH+"/control_mode_test.csv", "r")
         try:
             last_line = file.readlines()[-1]

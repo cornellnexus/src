@@ -81,13 +81,13 @@ class Grid:
             # traversal.
             for i in range(cols):
                 for j in range(rows):
-                    #is_border = (j == 0 or j == rows - 1)
+                    is_border = (j == 0 or j == rows - 1)
                     if i % 2 == 0:
                         lat = gps_origin[0] + j * lat_step
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y)  # , is_border)
+                        node = Node(lat, long, x, y, is_border)
                         node_list[j, i] = node
                     elif i % 2 == 1:
                         lat = gps_origin[0] + \
@@ -95,7 +95,7 @@ class Grid:
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y)  # , is_border)
+                        node = Node(lat, long, x, y, is_border)
                         row_index = rows - (j + 1)
                         node_list[row_index, i] = node
 
@@ -202,15 +202,18 @@ class Grid:
         else:
             return neighbor_node
 
-    # Activates rectangle based on row start/end, col start/end
-    def activate_rectangle(nodes, row, col, row_limit, col_limit):
+
+    ##Activates rectangle based on row start/end, col start/end
+    def activate_rectangle(self, row, col, row_limit, col_limit):
+
         """
         Activates all the nodes in a rectangle.
         """
         for x in range(row, row_limit):
             for y in range(col, col_limit):
-                nodes[x, y].is_active = True
-        return nodes
+                self.nodes[x,y].is_active = True
+        return self.nodes
+
 
     # Activates circle based on center and radius
     def activate_circle(self, circle_center_row, circle_center_col, circle_radius):
@@ -252,9 +255,9 @@ class Grid:
             return True
         else:
             return False
-    # Activate triangle based on three points
 
-    def activate_traingle(self, x1, y1, x2, y2, x3, y3):
+    # Activate triangle based on three points
+    def activate_triangle(self, x1, y1, x2, y2, x3, y3):
         """
         Activates all the nodes in a traingle.
         """
@@ -262,7 +265,7 @@ class Grid:
         cols = self.nodes.shape[0]
         for x in range(rows):
             for y in range(cols):
-                if self.isInsideTriangle(x1, y1, x2, y2, x3, y3, x, y):
+                if self.is_inside_triangle(x1, y1, x2, y2, x3, y3, x, y):
                     self.nodes[x, y].is_active = True
 
     # Checks if node is on border of activated nodes
@@ -303,8 +306,8 @@ class Grid:
                 node = self.nodes[row][col]
                 if node.is_active and self.is_on_border(row, col, rows-1, cols-1):
                     # check if this is an active node and on the border
-                    self.nodes[row][col].on_border = True
-                    border_list.append(node)
+                    self.nodes[row][col].is_border = True
+                    border_list.append((node, row, col))
                     if leftmost_node_pos is None or col < leftmost_node_pos[1]:
                         leftmost_node = node
                         leftmost_node_pos = (row, col)
@@ -315,13 +318,15 @@ class Grid:
     # Return bottom most node that is activated in the right column
 
     def bottom_rightmost_node(self, pos):
-        candidate_nodes = [
-            node for node in self.border_nodes if node.y == pos[1]+1]
+
+        # node_info: (node, row, col)
+        candidate_nodes = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]+1]
         if (candidate_nodes == []):
             return None
         else:
-            node = min(candidate_nodes, key=lambda node: node.x)
-            return (node.x, node.y)
+            node_info = min(candidate_nodes,key=lambda node_info: node_info[1])
+            return (node_info[1],node_info[2])
+
 
     # Given border and active nodes, compute lawnmower traversal
 
@@ -331,7 +336,7 @@ class Grid:
             TERMINATE = 2
         rows = self.nodes.shape[0]
         phase = WaypointPhase.DOWN
-        curr_pos = self.lefmost_node_pos
+        curr_pos = self.leftmost_node_pos
         waypoints = []
         waypoints.append(curr_pos)
         while (phase != WaypointPhase.TERMINATE):
