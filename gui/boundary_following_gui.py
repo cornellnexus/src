@@ -45,7 +45,7 @@ class Robot:
         return False
 
     def avoid_obstacles(self, front_point_cloud, left_top_point_cloud, left_bottom_point_cloud, right_top_point_cloud, right_bottom_point_cloud, dt, min_front):
-        margin_to_obs = 50
+        margin_to_obs = 75
         #left_value = self.check_parallel(left_top_point_cloud, left_bottom_point_cloud, 1)
         parallel = self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 15)
         # if left_value == 0 and right_value == 0:
@@ -159,8 +159,11 @@ class Graphics:
             pygame.draw.circle(self.map, self.red, point, 3, 0)
 
     def draw_side_sensor_data(self, point_cloud):
+        count = 0
         for point in point_cloud:
-            pygame.draw.circle(self.map, self.purple, point, 3, 0)
+            if count % 3 == 0:
+                pygame.draw.circle(self.map, self.purple, point, 3, 0)
+            count = count + 1
 
     def draw_pt(self, pt):
         pygame.draw.circle(self.map, self.blue, pt[0], 10, 0)
@@ -209,7 +212,7 @@ class Ultrasonic:
                 y = int(y2 * u + y1 * (1 - u))
                 if 0 < x < self.map_width and 0 < y < self.map_height:
                     color = self.map.get_at((x, y))
-                    self.map.set_at((x, y), (75, 0, 130))
+                    #self.map.set_at((x, y), (75, 0, 130))
                     if (color[0], color[1], color[2]) == (0, 0, 0):
                         obstacles.append([x, y])
                         break

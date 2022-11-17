@@ -43,7 +43,7 @@ while running:
             running = False
 
     # Add map and get change in time between screen refresh
-    dt = (pygame.time.get_ticks() - last_time) / 200
+    dt = (pygame.time.get_ticks() - last_time) / 500
     last_time = pygame.time.get_ticks()
     gfx.map.blit(gfx.map_img, (0, 0))
 
@@ -72,22 +72,20 @@ while running:
     point_cloud_LB = ultra_sonic_left_bottom.side_sense_obstacles(robot.x - sensor_directions[0], robot.y + sensor_directions[1], robot.heading + math.pi/2)
     point_cloud_RT = ultra_sonic_right_top.side_sense_obstacles(robot.x + sensor_directions[0], robot.y - sensor_directions[1], robot.heading - math.pi/2)
     point_cloud_RB = ultra_sonic_right_bottom.side_sense_obstacles(robot.x - sensor_directions[0], robot.y + sensor_directions[1], robot.heading - math.pi/2)
+    
     pt = ultra_sonic.min_distance((robot.x, robot.y), point_cloud)
+    
     pt_LT = ultra_sonic_left_top.min_distance((robot.x + sensor_directions[0], robot.y - sensor_directions[1]), point_cloud_LT)
     pt_LB = ultra_sonic_left_bottom.min_distance((robot.x - sensor_directions[0], robot.y + sensor_directions[1]), point_cloud_LB)
     pt_RT = ultra_sonic_right_top.min_distance((robot.x + sensor_directions[0], robot.y - sensor_directions[1]), point_cloud_RT)
     pt_RB = ultra_sonic_right_bottom.min_distance((robot.x - sensor_directions[0], robot.y + sensor_directions[1]), point_cloud_RB)
     point_clouds = [point_cloud_LT, point_cloud_LB, point_cloud_RT, point_cloud_RB]
-    points = [pt, pt_LT, pt_LB, pt_RT, pt_RB]
-    for point in points:
-        if point != None:
-            gfx.draw_pt(point)
 
     if robot.detect_obstacles(point_cloud):
         obstacleDetected = True
 
     new_dist = math.sqrt((end[1] - robot.y)**2 + (end[0] - robot.x)**2)
-    if (not obstacleDetected) and new_dist <= dist_to_goal:
+    if (not obstacleDetected) and new_dist < dist_to_goal:
         # Move robot
         robot.move_forward()
         while not robot.updateHeading() == 0:
@@ -103,7 +101,10 @@ while running:
     gfx.draw_robot(robot.x, robot.y, robot.heading)
 
     # Draw point cloud and update screen
-    # gfx.draw_side_sensor_data(point_cloud_RT)
-    # gfx.draw_side_pt_clouds(point_clouds)
+    gfx.draw_sensor_data(point_cloud)
+    gfx.draw_side_sensor_data(point_cloud_LT)
+    gfx.draw_side_sensor_data(point_cloud_LB)
+    gfx.draw_side_sensor_data(point_cloud_RT)
+    gfx.draw_side_sensor_data(point_cloud_RB)
 
     pygame.display.update()
