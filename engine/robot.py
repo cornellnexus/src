@@ -56,7 +56,7 @@ class Robot:
     def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, width=0, front_ultrasonic=None, lf_ultrasonic=None,
                  lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None, is_sim=True, position_kp=1, position_ki=0,
                  position_kd=0, position_noise=0, heading_kp=1, heading_ki=0, heading_kd=0, heading_noise=0,
-                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0, use_ekf=False,
+                 init_phase=1, time_step=1, move_dist=.5, turn_angle=3, plastic_weight=0, goal_location=(0, 0), use_ekf=False,
                  init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None, gps=None, imu=None, motor_controller=None):
         """
         Arguments:
@@ -441,7 +441,6 @@ class Robot:
             #     self.prev_phase = Phase.TRAVERSE
             #     return None
         self.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
-        # self.phase = Phase.COMPLETE  # TODO: CHANGE the next phase to return
 
         return None
 
