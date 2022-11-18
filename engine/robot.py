@@ -154,6 +154,7 @@ class Robot:
             self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
             self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
 
+
         self.loc_pid_x = PID(
             Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
             output_limits=(None, None)
@@ -252,6 +253,7 @@ class Robot:
                 cmd_v, cmd_w, self.max_velocity, self.radius)
             # self.linear_v = limited_cmd_v[0]
             # self.angular_v = limited_cmd_w[0]
+
 
             if self.is_sim:
                 # this is just simulating movement:
@@ -391,6 +393,7 @@ class Robot:
             curr_waypoint = unvisited_waypoints[0].get_m_coords()
             # TODO: add obstacle avoidance support
             # TODO: add return when tank is full, etc
+            # TODO: add turn_to_target_heading
             self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
@@ -412,6 +415,9 @@ class Robot:
             Returns:
                 None
         """
+        # to add obstacle avoidance, can either change roomba to go to point on the circle in the direction of the
+        # robot direction or use raw sensor value
+        # can we guarantee that when giving a velocity that the robot will move at that velocity?
         dt = 0
         # TODO: battery_limit, time_limit, tank_capacity is full
         exit_boolean = False
@@ -562,6 +568,59 @@ class Robot:
 
     def execute_boundary_following(self, min_dist):
         pass
+
+    def execute_avoid_obstacle(self, dist_to_goal, prev_phase):
+        pass
+
+    def execute_boundary_following(self, min_dist):
+        '''
+        Currently, algorithm only supports using the right side sensors of the robot for boundary following.
+        When encountering an obstacle, robot will begin boundary following by going clockwise around the object.
+        This was arbitrarily decided since currently there is no better way to determine which direction the robot should
+        navigate around the obstacle.
+        Robot will always begin boundary following by going clockwise (turning left when encountering an obstacle)
+        1. Determine if robot is parallel using the ultrasonic sensor data
+            * Three cases:
+                1. Front right sensor is farther away from the obstacle than the back right sensor
+                    * Turn right until sensor inputs are equalized (front of the robot will turn closer toward the obstacle)
+                2. Front right sensor is closer to the obstacle than the back right sensor
+                    *  Turn left until sensor inputs are equalized (front of the robot will turn away from the obstacle)
+                3. Both right-side sensors displaying the same value
+                    * With a margin of error accounting for not uniform obstacles
+        2. Once both sensors are displaying the same values, move forward (boundary following)
+        3. Exits boundary following when conditions met in execute_avoid_obstacle() method
+        '''
+        front_dist = self.rf_ultrasonic.distance()
+        back_dist = self.rb_ultrasonic.distance()
+        margin = 1 
+        # Plus or minus distance value used to calculate if robot is parallel to an non-uniform object 
+        # (i.e. not a flat surface). forwardRightSensorReading - backRightSensorReading < margin means
+        # robot is parallel to object.
+        forward_dist = 0.01  # Distance moved forward by robot in one iteration of this method
+        turn_angle = math.pi / 90
+        # Turn angle of robot in one iteration of this method. Robot turns turn_angle if
+        # forwardRightSensorReading > backRightSensorReading and -turn_angle if
+        # forwardRightSensorReading < backRightSensorReading
+
+        if math.abs(front_dist - back_dist) < margin:
+            self.move_forward(forward_dist)
+        elif front_dist > back_dist:
+            self.turn(turn_angle)
+        else:
+            self.turn(-1 * turn_angle)
+
+    # to do:
+        # determine ccw or cw
+        # implement main algorithm to make sure robot is parallel
+        # test main algorithm
+        # add cases for smooth turning
+            # make sure to take into account width and length of robot and ultrasonic sensor value on both sides
+            # make sure to take into account situation when the gap you are turning into is smaller than the robot width
+        # add cases for obstacles when boundary following
+            # gap in wall but robot cannot fit
+        # add cases for sharp turns
+    # future to do:
+        # add dp to quit when following boundary
 
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """
