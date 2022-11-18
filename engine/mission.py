@@ -89,7 +89,8 @@ class Mission:
                                                                        self.roomba_radius, database)
 
             elif self.robot.phase == Phase.AVOID_OBSTACLE:
-                self.robot.execute_avoid_obstacle()
+                self.robot.execute_avoid_obstacle(self.robot.dist_to_goal, database)
+                # add goal_loc param if goal_loc becomes dynamic
 
             elif self.robot.phase == Phase.RETURN:
                 self.robot.execute_return(self.base_station_loc, self.base_station_angle,
