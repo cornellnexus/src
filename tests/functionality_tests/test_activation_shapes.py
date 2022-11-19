@@ -71,6 +71,11 @@ def main():
         grid.find_border_nodes()
         way_points = grid.get_all_lawnmower_waypoints_adjustable()
 
+    # Questions: what if we make a new file for visualizing the path? It would also help with catching exceptions.
+    #  For example, `node = grid.nodes[i,j]` can throw index out of bound error given STEP_SIZE_METERS of 100,
+    #   num rows and cols 3 and circle activation type because num_y_step and num_x_step in int and inversely
+    #   proportional to STEP_SIZE_METERS, so num_y_step and num_x_step is 0. Same problem when inputting row and col.
+    #   Not sure the formula for determining the max row and col to input tho
     for i in range(rows):
         for j in range(cols):
             node = grid.nodes[i,j]

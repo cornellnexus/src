@@ -402,14 +402,14 @@ class Grid:
                 if theta_end < theta_init:
                     theta_end = theta_end + 2 * math.pi
                 theta = theta_init
-                while theta < theta_end + theta_step:
+                while theta < theta_end:
                     circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
                     theta = theta + theta_step
             elif orientation == Orientation.CW:
                 if theta_init < theta_end:
                     theta_init = theta_init + 2 * math.pi
                 theta = theta_init
-                while theta > theta_end - theta_step:
+                while theta > theta_end:
                     circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
                     theta = theta - theta_step
             else:
@@ -422,14 +422,16 @@ class Grid:
         waypoints = []
         waypoints.append(curr_pos)
         while (phase != WaypointPhase.TERMINATE):
-            if curr_pos[0] > self.num_rows - 1 or curr_pos[0] < 0 or curr_pos[1] > self.num_cols - 1 or curr_pos[1] < 0:
+            if curr_pos == None:
+                phase = WaypointPhase.TERMINATE
+            elif curr_pos[0] > self.num_rows - 1 or curr_pos[0] < 0 or curr_pos[1] > self.num_cols - 1 or curr_pos[1] < 0:
                 phase = WaypointPhase.TERMINATE
             elif direction == Direction.LEFT:
                 new_pos = (curr_pos[0] - 1, curr_pos[1])
                 left_pos = self.nextrow_sidemost_node(curr_pos, 'L')
                 if left_pos == None:
                     phase = WaypointPhase.TERMINATE
-                elif curr_pos[0] <= (left_pos[0] + 1):
+                elif curr_pos[0] < (left_pos[0] + 1):
                     phase = WaypointPhase.TERMINATE
                 else:
                     while curr_pos[0] > (left_pos[0] + 1):
@@ -438,7 +440,7 @@ class Grid:
                         new_pos = (curr_pos[0] - 1, curr_pos[1])
                     if curr_pos[1] + 1 >= self.num_cols:
                         phase = WaypointPhase.TERMINATE
-                    if not self.nodes[(left_pos[0], curr_pos[1] + 1)].is_active:
+                    if not self.nodes[(left_pos[0]+1, curr_pos[1] + 1)].is_active:
                         phase = WaypointPhase.TERMINATE
                     else:
                         circle_plt = plot_circle((left_pos[0] + 1, curr_pos[1]), (left_pos[0] + 1, curr_pos[1] + 1),
@@ -451,7 +453,7 @@ class Grid:
                 right_pos = self.nextrow_sidemost_node(curr_pos, 'R')
                 if right_pos == None:
                     phase = WaypointPhase.TERMINATE
-                elif curr_pos[0] >= (right_pos[0] - 1):
+                elif curr_pos[0] > (right_pos[0] - 1):
                     phase = WaypointPhase.TERMINATE
                 else:
                     while curr_pos[0] < (right_pos[0] - 1):
@@ -460,7 +462,7 @@ class Grid:
                         new_pos = (curr_pos[0] + 1, curr_pos[1])
                     if curr_pos[1] + 1 >= self.num_cols:
                         phase = WaypointPhase.TERMINATE
-                    elif not self.nodes[(right_pos[0], curr_pos[1] + 1)].is_active:
+                    elif not self.nodes[(right_pos[0]-1, curr_pos[1] + 1)].is_active:
                         phase = WaypointPhase.TERMINATE
                     else:
                         circle_plt = plot_circle((right_pos[0] - 1, curr_pos[1]), (right_pos[0] - 1, curr_pos[1] + 1),
