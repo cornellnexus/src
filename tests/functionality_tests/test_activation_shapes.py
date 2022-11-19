@@ -18,6 +18,12 @@ def main():
         cols = int(input("number of cols:"))
     except:
         cols = grid.get_num_cols()
+    
+    if rows <= 2 and cols >=2:
+        h = rows
+        rows = cols
+        cols = h
+        print("flip rows, cols for traversal")
    
     activation_type = input("Activation type: ")
     plt.figure()
