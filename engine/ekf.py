@@ -16,17 +16,20 @@ class LocalizationEKF:
 
         # sigma: the standard deviation of the robot state distribution. [3x3 np array]
 
-        # R: the process noise covariance matrix [3x3 np array].
-            Note: The dimensions of R are n-by-n, where n is the degrees of freedom of the robot state. (n=3)
+        # Q: the process noise covariance matrix [3x3 np array].
+            Note: The dimensions of Q are n-by-n, where n is the degrees of freedom of the robot state. (n=3)
 
-        # Q: measurement noise covariance matrix [3x3 np array]
-            Note: The dimensions of Q are k-by-k, where k is the degrees of freedom of the measurement. (k=3)
+        # R: measurement noise covariance matrix [3x3 np array]
+            Note: The dimensions of R are k-by-k, where k is the degrees of freedom of the measurement. (k=3)
     """
+
     def __init__(self, init_mu, init_sigma):
         self.mu = init_mu
         self.sigma = init_sigma
-        self.R = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])  # process noise matrix
-        self.Q = np.array([[5, 0, 0], [0, 5, 0], [0, 0, 5]])  # measurement noise matrix
+        # process noise matrix
+        self.Q = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
+        self.R = np.array([[5, 0, 0], [0, 5, 0], [0, 0, 5]]
+                          )  # measurement noise matrix
 
     @staticmethod
     def get_predicted_state(pose, control):
@@ -63,9 +66,11 @@ class LocalizationEKF:
                           [0, 1, d*math.cos(theta_prev)],
                           [0, 0, 1]])
         else:
-            theta_t = [0,0,1];
-            x_t = [1, 0, d / phi * (math.cos(theta_prev + phi) - math.cos(theta_prev))];
-            y_t = [0, 1, - d / phi * (-math.sin(theta_prev + phi) + math.sin(theta_prev))];
+            theta_t = [0, 0, 1]
+            x_t = [1, 0, d / phi *
+                   (math.cos(theta_prev + phi) - math.cos(theta_prev))]
+            y_t = [0, 1, - d / phi *
+                   (-math.sin(theta_prev + phi) + math.sin(theta_prev))]
             G = np.array([x_t, y_t, theta_t])
         return G
 
@@ -79,8 +84,8 @@ class LocalizationEKF:
         Parameters:
         # pose: robot's state
         """
-        #First get data, convert data to how it relates to our pose 
-        #GPS -> meters away from origin 
+        # First get data, convert data to how it relates to our pose
+        # GPS -> meters away from origin
         # o           o          o X           o
 
         expected_measurement = pose
@@ -104,7 +109,7 @@ class LocalizationEKF:
         """
         jac_G = LocalizationEKF.get_g_jac(self.mu, control)
         mu_bar = LocalizationEKF.get_predicted_state(self.mu, control)
-        sigma_bar = jac_G * self.sigma * np.transpose(jac_G) + self.R
+        sigma_bar = jac_G * self.sigma * np.transpose(jac_G) + self.Q
 
         return mu_bar, sigma_bar
 
@@ -119,20 +124,20 @@ class LocalizationEKF:
         jac_H = self.get_h_jac(mu_bar)
 
         kalman_gain = \
-            (sigma_bar * np.transpose(jac_H) * inv(jac_H * sigma_bar * np.transpose(jac_H) + self.Q))
+            (sigma_bar * np.transpose(jac_H) *
+             inv(jac_H * sigma_bar * np.transpose(jac_H) + self.R))
         expected_measurement = self.get_expected_measurement(mu_bar)
-        
+
         # print("kalman_gain")
         # print(kalman_gain)
         # print("measurement")
         # print(measurement)
         # print("expected_measurement")
         # print(expected_measurement)
-       
+
         self.mu = mu_bar + (kalman_gain @ (measurement - expected_measurement))
         kh = kalman_gain * jac_H
         self.sigma = (np.eye(np.size(kh, 0)) - kh) @ sigma_bar
-
 
     # def localize(self, control, measurement):
     #     # TODO: currently, both predict and update steps are tied into one function. Should be separated
@@ -144,7 +149,7 @@ class LocalizationEKF:
     #         (sigma_bar
     #          * np.transpose(self.measurement_func_jacobian)
     #          * inv(self.measurement_func_jacobian * sigma_bar *
-    #                np.transpose(self.measurement_func_jacobian) + self.Q))
+    #                np.transpose(self.measurement_func_jacobian) + self.R))
     #
     #     self.mu = mu_bar + (kalman_gain @ (measurement - self.measurement_func(mu_bar)))
     #     kh = kalman_gain * self.measurement_func_jacobian
@@ -166,13 +171,13 @@ class LocalizationEKF:
 #     def localize(self, u, z):
 #         # Predict step
 #         mu_bar = self.g(self.mu, u)
-#         sigma_bar = self.jac_G * self.sigma * np.transpose(self.jac_G) + self.R
+#         sigma_bar = self.jac_G * self.sigma * np.transpose(self.jac_G) + self.Q
 #
 #         # Set kalman gain
 #         kalman_gain = (
 #                 sigma_bar
 #                 * np.transpose(self.jac_H)
-#                 * inv(self.jac_H * sigma_bar * np.transpose(self.jac_H) + self.Q)
+#                 * inv(self.jac_H * sigma_bar * np.transpose(self.jac_H) + self.R)
 #         )
 #
 #         # Update
@@ -211,11 +216,11 @@ class LocalizationEKF:
 #
 #     H_gps_jac = np.array([[1, 0], [0, 1]])
 #
-#     R = np.array([[10, 0], [0, 2]])
-#     Q = np.array([[2, 0], [0, 2]])
+#     Q = np.array([[10, 0], [0, 2]])
+#     R = np.array([[2, 0], [0, 2]])
 #
 #     ekf_gps = ExtendedKalmanFilter(
-#         initial_mu, initial_sigma, g_gps, G_gps_jac, h_gps, H_gps_jac, R, Q
+#         initial_mu, initial_sigma, g_gps, G_gps_jac, h_gps, H_gps_jac, Q, R
 #     )
 #     # (m,s) = ekf_gps.get_state()
 #     # print(ekf_gps.g(m,0))
