@@ -81,6 +81,11 @@ class Robot:
         if min_dist_front > min_dist_back:
             return 1
         return -1
+
+    def stop_moving(self):
+        self.velocityRight = 0
+        self.velocityLeft = 0
+
     def move_backward(self):
         self.velocityRight = - self.minSpeed
         self.velocityLeft = - self.minSpeed/2
@@ -101,9 +106,18 @@ class Robot:
 
     def updateHeading(self):
         angle = self.arctan(self.x, self.y, self.endX + 40, self.endY + 41)
+        curr_angle = self.heading
+        while curr_angle > 2*math.pi:
+            curr_angle = curr_angle - 2*math.pi
+        while curr_angle < 0:
+            curr_angle = curr_angle + 2*math.pi
         finalHeading = -angle
-        if np.abs(finalHeading - self.heading) > 0.1:
-            if finalHeading > self.heading:
+        while finalHeading > 2*math.pi:
+            finalHeading = finalHeading - 2*math.pi
+        while finalHeading < 0:
+            finalHeading = finalHeading + 2*math.pi
+        if np.abs(finalHeading - curr_angle) > 0.1:
+            if finalHeading > curr_angle:
                 return .01
             else:
                 return -.01
@@ -115,10 +129,8 @@ class Robot:
             math.cos(self.heading) * dt
         self.y -= ((self.velocityLeft + self.velocityRight) / 2) * \
             math.sin(self.heading) * dt
-        self.velocityRight = max(
-            min(self.maxSpeed, self.velocityRight), self.minSpeed)
-        self.velocityLeft = max(
-            min(self.maxSpeed, self.velocityLeft), self.minSpeed)
+        self.velocityRight = min(self.maxSpeed, self.velocityRight)
+        self.velocityLeft = min(self.maxSpeed, self.velocityLeft)
 
     def side_sensor_angle(self):
         x = 20 * math.cos(self.heading)
@@ -158,12 +170,13 @@ class Graphics:
         for point in point_cloud:
             pygame.draw.circle(self.map, self.red, point, 3, 0)
 
-    def draw_side_sensor_data(self, point_cloud):
+    def draw_side_sensor_data(self, point_clouds):
         count = 0
-        for point in point_cloud:
-            if count % 3 == 0:
-                pygame.draw.circle(self.map, self.purple, point, 3, 0)
-            count = count + 1
+        for point_cloud in point_clouds:
+            for point in point_cloud:
+                if count % 3 == 0:
+                    pygame.draw.circle(self.map, self.purple, point, 3, 0)
+                count = count + 1
 
     def draw_pt(self, pt):
         pygame.draw.circle(self.map, self.blue, pt[0], 10, 0)
@@ -173,10 +186,13 @@ class Graphics:
             self.draw_side_sensor_data(pt_cloud)
 
 class Ultrasonic:
-    def __init__(self, sensor_range, map):
+    def __init__(self, sensor_range, map, pos, is_side):
         self.sensor_range = sensor_range
         self.map_width, self.map_height = pygame.display.get_surface().get_size()
         self.map = map
+        self.pos = pos
+        self.pt = None
+        self.is_side = is_side
 
     def sense_obstacles(self, x, y, heading):
         obstacles = []
@@ -198,8 +214,10 @@ class Ultrasonic:
                         break
         return obstacles
     
-    def side_sense_obstacles(self, x, y, heading):
+    def side_sense_obstacles(self, pos, heading):
         obstacles = []
+        x = pos[0]
+        y = pos[1]
         x1, y1 = x, y
         start_angle = heading - self.sensor_range[1]
         finish_angle = heading + self.sensor_range[1]
@@ -230,3 +248,9 @@ class Ultrasonic:
                     min_dist = dist
                     min_point = points
             return (min_point, min_dist)
+
+    def update_pt(self, pt):
+        self.pt = pt
+
+    def update_pos(self, pos):
+        self.pos = pos
