@@ -7,9 +7,18 @@ def main():
 
     grid=Grid(42.444250, 42.444599, -76.483682, -76.483276)
 
-    
-    rows = grid.get_num_rows()
-    cols = grid.get_num_cols()
+
+    try: 
+        rows = int(input("number of rows:"))
+    except:
+        rows = grid.get_num_rows()
+
+
+    try: 
+        cols = int(input("number of cols:"))
+    except:
+        cols = grid.get_num_cols()
+   
     activation_type = input("Activation type: ")
     plt.figure()
     plt.title("Activated Nodes")
@@ -17,6 +26,15 @@ def main():
     plt.ylim(-1, cols+1)
     plt.grid()
     
+    if activation_type == "grid":
+        rec_row_start = 0 
+        rec_row_limit = rows 
+        rec_col_start = 0 
+        rec_col_limit = cols
+        grid.activate_rectangle(rec_row_start, rec_col_start, rec_row_limit, rec_col_limit)
+        grid.find_border_nodes()
+        way_points = grid.get_all_lawnmower_waypoints_adjustable()
+
     if activation_type == "rectangle":
 
         rec_row_start = rows // 3 ## Good value 13 
@@ -52,7 +70,6 @@ def main():
         grid.activate_line(x,y,21)
         grid.find_border_nodes()
         way_points = grid.get_all_lawnmower_waypoints_adjustable()
-
 
     for i in range(rows):
         for j in range(cols):
