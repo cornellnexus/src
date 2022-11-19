@@ -279,7 +279,7 @@ class Grid:
         max_col = min(col_limit, col+1)
         max_row = min(row_limit, row+1)
         # If this node is on the very edge of the grid, it is automatically a border node
-        if row == 0 or col == 0 or col == self.get_num_cols or row == self.get_num_rows:
+        if row == 0 or col == 0 or col == self.get_num_cols() - 1 or row == self.get_num_rows() - 1:
             return True
 
         # If the node has a neighboring node that is inactive, it is a border node
@@ -306,7 +306,6 @@ class Grid:
         rightmost_node = None
         leftmost_node_pos = None
         rightmost_node_pos = None
-        
         for row in range(rows):
             for col in range(cols):
                 node = self.nodes[row][col]
@@ -317,12 +316,12 @@ class Grid:
                     if leftmost_node_pos is None or col < leftmost_node_pos[1]:
                         leftmost_node = node
                         leftmost_node_pos = (row, col)
-                if node.is_active and self.is_on_border(row, col, rows , cols):
-                    # check if this is an active node and on the border
-                    self.nodes[row][col].is_border = True
-                    if rightmost_node_pos is None or row > rightmost_node_pos[0]:
-                        rightmost_node = node
-                        rightmost_node_pos = (row, col)
+                # if node.is_active and self.is_on_border(row, col, rows , cols):
+                #     # check if this is an active node and on the border
+                #     self.nodes[row][col].is_border = True
+                #     if rightmost_node_pos is None or row > rightmost_node_pos[0]:
+                #         rightmost_node = node
+                #         rightmost_node_pos = (row, col)
                     
                     
                         
@@ -374,6 +373,14 @@ class Grid:
             node_info = max(candidate_nodes,key=lambda node_info: node_info[1])
             return (node_info[1],node_info[2])
 
+    def is_position_in_grid_bounds(self, pos):
+        """
+        Checks whether pos is within the grid's bounds. Returns True
+        is the point is valid, within the grid's bounds, otherwise returns False.
+        """
+        row = pos[0]
+        col = pos[1]
+        return row >= 0 and col >= 0 and col <= self.get_num_cols() - 1 and row <= self.get_num_rows() - 1
 
     ##Given border and active nodes, compute lawnmower traversal
     def get_all_lawnmower_waypoints_adjustable(self):
@@ -392,6 +399,8 @@ class Grid:
         while (phase != WaypointPhase.TERMINATE):
             if direction == Direction.LEFT:
                 new_pos = (curr_pos[0]-1,curr_pos[1])
+                if not self.is_position_in_grid_bounds(new_pos):
+                    break
                 # next_next_pos = (curr_pos[0]-2,curr_pos[1])
                 if self.nodes[new_pos].is_active:
                     waypoints.append(new_pos)
@@ -406,6 +415,8 @@ class Grid:
                         phase = WaypointPhase.TERMINATE
             if direction == Direction.RIGHT:
                 new_pos = (curr_pos[0]+1,curr_pos[1])
+                if not self.is_position_in_grid_bounds(new_pos):
+                    break
                 if self.nodes[new_pos].is_active:
                     waypoints.append(new_pos)
                     curr_pos = new_pos
