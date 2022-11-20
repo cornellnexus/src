@@ -18,12 +18,12 @@ def main():
     plt.grid()
     
     if activation_type == "rectangle":
-
         rec_row_start = rows // 3 ## Good value 13 
         rec_row_limit = 2 * rows // 3 ## Good value 26
         rec_col_start = cols // 3 ## Good value 11
         rec_col_limit  = 2 * cols // 3## Good value 22
         grid.activate_rectangle(rec_row_start, rec_col_start, rec_row_limit, rec_col_limit)
+        # grid.activate_rectangle(0, 0, rows, cols) # Full Rectangle
         grid.find_border_nodes()
         way_points = grid.get_all_lawnmower_waypoints_adjustable()
 
@@ -31,7 +31,10 @@ def main():
         circle_center_row = rows // 2 ## Good value 19
         circle_center_col = cols // 2 ## Good value 17
         circle_radius = min(rows, cols) // 2 ## Good value 17
-        grid.activate_circle(circle_center_row, circle_center_col, circle_radius)  
+        grid.activate_circle(circle_center_row, circle_center_col, circle_radius) # Reaches top edge
+        # grid.activate_circle(circle_center_row, circle_center_col-1, circle_radius) # Reaches bottom edge
+        # grid.activate_circle(circle_center_row-3, circle_center_col, circle_radius) # Reaches left edge
+        # grid.activate_circle(circle_center_row+3, circle_center_col, circle_radius) # Reaches right edge
         grid.find_border_nodes()
         way_points = grid.get_all_lawnmower_waypoints_adjustable()
 
@@ -43,6 +46,10 @@ def main():
         x3 = 3 * rows // 4## Good value 29
         y3 = cols // 6 ## Good value 5
         grid.activate_triangle(x1,y1,x2,y2,x3,y3) 
+        # grid.activate_triangle(0,0,rows,cols//2,0,cols-1) # Along left edge
+        # grid.activate_triangle(rows-1,0,0,cols//2,rows-1,cols-1) # Along right edge
+        # grid.activate_triangle(0, cols-1, rows//2, 0, rows-1, cols-1) # Along top edge
+        # grid.activate_triangle(0, 0, rows//2, cols-1, rows-1, 0) # Along bottom edge
         grid.find_border_nodes()
         way_points = grid.get_all_lawnmower_waypoints_adjustable()
 
