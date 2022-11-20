@@ -269,7 +269,7 @@ class Grid:
         cols = self.nodes.shape[0]
         for x in range(rows):
             for y in range(cols):
-                if self.isInsideTriangle(x1,y1,x2,y2,x3,y3,x,y):
+                if self.is_inside_triangle(x1,y1,x2,y2,x3,y3,x,y):
                     self.nodes[x,y].is_active = True
 
     ##Checks if node is on border of activated nodes
@@ -399,10 +399,8 @@ class Grid:
         while (phase != WaypointPhase.TERMINATE):
             if direction == Direction.LEFT:
                 new_pos = (curr_pos[0]-1,curr_pos[1])
-                if not self.is_position_in_grid_bounds(new_pos):
-                    break
                 # next_next_pos = (curr_pos[0]-2,curr_pos[1])
-                if self.nodes[new_pos].is_active:
+                if self.is_position_in_grid_bounds(new_pos) and self.nodes[new_pos].is_active:
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
@@ -415,9 +413,7 @@ class Grid:
                         phase = WaypointPhase.TERMINATE
             if direction == Direction.RIGHT:
                 new_pos = (curr_pos[0]+1,curr_pos[1])
-                if not self.is_position_in_grid_bounds(new_pos):
-                    break
-                if self.nodes[new_pos].is_active:
+                if self.is_position_in_grid_bounds(new_pos) and self.nodes[new_pos].is_active:
                     waypoints.append(new_pos)
                     curr_pos = new_pos
                 else:
