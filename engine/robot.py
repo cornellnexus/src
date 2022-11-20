@@ -2,9 +2,13 @@ import threading
 
 import numpy as np
 import math
+from enum import Enum
 from electrical import motor_controller
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from engine.pid_controller import PID
+from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
+import time
+
 from engine.is_raspberrypi import is_raspberrypi
 if is_raspberrypi():
     from electrical.motor_controller import MotorController
@@ -53,8 +57,8 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, width=700, front_ultrasonic=None,
-                 lf_ultrasonic=None, lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None, is_sim=True,
+    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, is_store=False, width=700, front_ultrasonic=None,
+                 lf_ultrasonic=None, lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None,
                  position_kp=1, position_ki=0, position_kd=0, position_noise=0, heading_kp=1, heading_ki=0,
                  heading_kd=0, heading_noise=0, init_phase=1, time_step=1, move_dist=.5, turn_angle=3,
                  plastic_weight=0, use_ekf=False, init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None,
@@ -75,6 +79,7 @@ class Robot:
             rf_ultrasonic: the ultrasonic at the front of the right side of the robot, used for boundary following
             rb_ultrasonic: the ultrasonic at the back of the right side of the robot, used for boundary following
             is_sim: False if the physical robot is being used, True otherwise
+            is_store: False if csv data should not be stored, True otherwise
             position_kp: the proportional factor of the position PID
             position_ki: the integral factor of the position PID
             position_kd: the derivative factor of the position PID
@@ -97,6 +102,7 @@ class Robot:
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
         self.is_sim = not is_raspberrypi()
+        self.is_store = is_store
         self.phase = Phase(init_phase)
         self.epsilon = epsilon
         self.max_velocity = max_v
@@ -172,8 +178,8 @@ class Robot:
 
         # TODO: wrap in try/except (error when calling execute_setup_test.py)
         # write in csv
-        with open(CSV_PATH + '/phases.csv', 'a') as fd:
-            fd.write(str(self.phase) + '\n')
+        if self.is_store:
+            write_phase_to_csv(self.phase)
 
     def update_ekf_step(self):
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
@@ -270,9 +276,11 @@ class Robot:
             # Get state after movement:
             predicted_state = self.state  # this will come from Kalman Filter
 
-            if self.is_sim:
+            if self.is_sim and self.is_store:
+                # TODO: Update to use databse information
                 # FOR GUI: writing robot location and mag heading in CSV
-                self.write_to_csv(predicted_state)
+                write_state_to_csv(predicted_state)
+                time.sleep(0.001) # Delays calculation for GUI map
 
             # FOR DATABASE: updating our database with new predicted state
             # TODO: can the code above be simplified / use the database instead?
@@ -285,8 +293,7 @@ class Robot:
     def write_to_csv(self, predicted_state):
         with open(CSV_PATH + '/datastore.csv', 'a') as fd:
             fd.write(
-                str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[
-                                                                                            1:-1] + '\n')
+                str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[1:-1] + '\n')
         time.sleep(0.001)
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
@@ -455,9 +462,8 @@ class Robot:
 
     def set_phase(self, new_phase):
         self.phase = new_phase
-
-        with open(CSV_PATH + '/phases.csv', 'a') as fd:
-            fd.write(str(self.phase) + '\n')
+        if self.is_store:
+            write_phase_to_csv(self.phase)
 
     def track_obstacle(self):
         """ Continuously checks if there's an obstacle in the way.
@@ -566,11 +572,6 @@ class Robot:
                     has_traversed_boundary = dist_from_init < self.init_threshold
             time.sleep(10)  # don't hog the cpu
 
-    def execute_boundary_following(self, min_dist):
-        pass
-
-    def execute_avoid_obstacle(self, dist_to_goal, prev_phase):
-        pass
 
     def execute_boundary_following(self, min_dist):
         '''
