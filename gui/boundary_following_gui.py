@@ -1,4 +1,3 @@
-import time
 import pygame
 import math
 import numpy as np
@@ -63,7 +62,7 @@ class Robot:
                 self.move_forward()
                 self.kinematics(dt)
             else:
-                #self.heading += -0.001 * left_value + -0.001 * right_value
+                # self.heading += -0.001 * left_value + -0.001 * right_value
                 # while not self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 1.5) == 0:
                 self.heading += -0.005 * parallel
 
@@ -177,13 +176,6 @@ class Graphics:
                 if count % 3 == 0:
                     pygame.draw.circle(self.map, self.purple, point, 3, 0)
                 count = count + 1
-
-    def draw_pt(self, pt):
-        pygame.draw.circle(self.map, self.blue, pt[0], 10, 0)
-
-    def draw_side_pt_clouds(self, side_pt_clouds):
-        for pt_cloud in side_pt_clouds:
-            self.draw_side_sensor_data(pt_cloud)
 
 class Ultrasonic:
     def __init__(self, sensor_range, map, pos, is_side):

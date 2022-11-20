@@ -9,14 +9,18 @@ from constants.definitions import GUI_DIR
 debug = False
 MAP_DIMENSIONS = (600, 1200)
 
+start_positions = [(100, 300), (100, 200), (100, 200), (100, 200)]
+end_positions = [(800, 150), (800, 150), (800, 150), (800, 150)]
+maps = ["blank", "boundary_map", "roundy_maps", "obstacaly_map"]
+
 # Environment graphics
 gfx = Graphics(MAP_DIMENSIONS, GUI_DIR + "/gui_images/Nexus_Robot.png",
                GUI_DIR + "/gui_images/boundary_map.png")
 rbt = Image.open(GUI_DIR + "/gui_images/Nexus_Robot.png")
 
 # start and end positions
-start = (150, 160)
-end = (800, 150)
+start = start_positions[0]
+end = end_positions[0]
 
 # the robot
 robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.01, 100, 5)  # robot is ~ 1.5 meters by 1.5 meters
@@ -50,6 +54,27 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    # Check if robot has reached end
+    counter = 1
+    if (robot.x > end[0] and robot.x < end[0] + 81) and (robot.y > end[1] and robot.y < end[1] + 80):
+        start = start_positions[counter]
+        end = end_positions[counter]
+
+        gfx = Graphics(MAP_DIMENSIONS, GUI_DIR + "/gui_images/Nexus_Robot.png",
+               GUI_DIR + "/gui_images/" + maps[counter] + ".png")
+
+        robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.01, 100, 5)
+
+        ultra_sonic = Ultrasonic(sensor_range, gfx.map)
+        ultra_sonic_left_top = Ultrasonic(sensor_range, gfx.map)
+        ultra_sonic_left_bottom = Ultrasonic(sensor_range, gfx.map)
+        ultra_sonic_right_top = Ultrasonic(sensor_range, gfx.map)
+        ultra_sonic_right_bottom = Ultrasonic(sensor_range, gfx.map)
+
+        dist_to_goal = math.sqrt((end[1] - robot.y)**2 + (end[0] - robot.x)**2)
+
+        counter += 1
 
     # Add map and get change in time between screen refresh
     dt = (pygame.time.get_ticks() - last_time) / 200
