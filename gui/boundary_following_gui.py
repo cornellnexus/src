@@ -1,6 +1,8 @@
 import pygame
 import math
 import numpy as np
+
+
 # Based on https://www.youtube.com/watch?v=pmmUi6DasoM
 
 
@@ -11,7 +13,8 @@ def distance(point1, point2):
 
 
 class Robot:
-    def __init__(self, startpos, endpos, width, velocityLeft, velocityRight, maxSpeed, minSpeed, minimumObstacleDistance, countDown):
+    def __init__(self, startpos, endpos, width, velocityLeft, velocityRight, maxSpeed, minSpeed,
+                 minimumObstacleDistance, countDown):
         self.metersToPixels = 3779.52  # meters to pixels conversion
         # robot dimensions
         self.width = width * self.metersToPixels
@@ -43,18 +46,39 @@ class Robot:
         self.distFromClosestObstacle = np.inf
         return False
 
-    def avoid_obstacles(self, front_point_cloud, left_top_point_cloud, left_bottom_point_cloud, right_top_point_cloud, right_bottom_point_cloud, dt, min_front):
-        margin_to_obs = 75
-        #left_value = self.check_parallel(left_top_point_cloud, left_bottom_point_cloud, 1)
-        parallel = self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 15)
+    def avoid_obstacles(self, pt_rt, pt_rb, dt, min_front, cont):
+        margin_to_obs = 100
+        # left_value = self.check_parallel(left_top_point_cloud, left_bottom_point_cloud, 1)
+        min_sensor_val = 120
+        side_sensor_margin = 3
+        if pt_rt is None:
+            right_front = min_sensor_val
+        else:
+            right_front = min(pt_rt[1], min_sensor_val)
+        if pt_rb is None:
+            right_back = min_sensor_val
+        else:
+            right_back = min(pt_rb[1], min_sensor_val)
+        if abs(right_front - right_back) < side_sensor_margin:
+            parallel = 0
+        elif right_front > right_back:
+            parallel = 1
+        else:
+            parallel = -1
+        # parallel = self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 1)
         # if left_value == 0 and right_value == 0:
-        if min_front == None:
+        if min_front is None:
             condition = False
         else:
             condition = min_front[1] < margin_to_obs
         if condition:
-            self.heading += 0.003
-        else:
+            cont = True
+        if cont and (not parallel == -1):  # assume margin to obs large enough that turning won't hit the side
+            self.heading += 0.02
+            return True
+        elif parallel == -1:
+            cont = False
+        if not cont:
             if parallel == 0:
                 # distance_to_front_obstacle = np.inf
                 # for point in front_point_cloud:
@@ -63,8 +87,8 @@ class Robot:
                 self.kinematics(dt)
             else:
                 # self.heading += -0.001 * left_value + -0.001 * right_value
-                # while not self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 1.5) == 0:
-                self.heading += -0.005 * parallel
+                self.heading += -0.01 * parallel
+            return False
 
     def check_parallel(self, fpc, bpc, margin):
         min_dist_front = np.inf
@@ -87,7 +111,7 @@ class Robot:
 
     def move_backward(self):
         self.velocityRight = - self.minSpeed
-        self.velocityLeft = - self.minSpeed/2
+        self.velocityLeft = - self.minSpeed / 2
 
     def move_forward(self):
         self.velocityRight = self.minSpeed
@@ -106,15 +130,15 @@ class Robot:
     def updateHeading(self):
         angle = self.arctan(self.x, self.y, self.endX + 40, self.endY + 41)
         curr_angle = self.heading
-        while curr_angle > 2*math.pi:
-            curr_angle = curr_angle - 2*math.pi
+        while curr_angle > 2 * math.pi:
+            curr_angle = curr_angle - 2 * math.pi
         while curr_angle < 0:
-            curr_angle = curr_angle + 2*math.pi
+            curr_angle = curr_angle + 2 * math.pi
         finalHeading = -angle
-        while finalHeading > 2*math.pi:
-            finalHeading = finalHeading - 2*math.pi
+        while finalHeading > 2 * math.pi:
+            finalHeading = finalHeading - 2 * math.pi
         while finalHeading < 0:
-            finalHeading = finalHeading + 2*math.pi
+            finalHeading = finalHeading + 2 * math.pi
         if np.abs(finalHeading - curr_angle) > 0.1:
             if finalHeading > curr_angle:
                 return .01
@@ -125,9 +149,9 @@ class Robot:
 
     def kinematics(self, dt):
         self.x += ((self.velocityLeft + self.velocityRight) / 2) * \
-            math.cos(self.heading) * dt
+                  math.cos(self.heading) * dt
         self.y -= ((self.velocityLeft + self.velocityRight) / 2) * \
-            math.sin(self.heading) * dt
+                  math.sin(self.heading) * dt
         self.velocityRight = min(self.maxSpeed, self.velocityRight)
         self.velocityLeft = min(self.maxSpeed, self.velocityLeft)
 
@@ -177,6 +201,14 @@ class Graphics:
                     pygame.draw.circle(self.map, self.purple, point, 3, 0)
                 count = count + 1
 
+    def draw_pt(self, pt):
+        pygame.draw.circle(self.map, self.blue, pt[0], 10, 0)
+
+    def draw_side_pt_clouds(self, side_pt_clouds):
+        for pt_cloud in side_pt_clouds:
+            self.draw_side_sensor_data(pt_cloud)
+
+
 class Ultrasonic:
     def __init__(self, sensor_range, map, pos, is_side):
         self.sensor_range = sensor_range
@@ -205,7 +237,7 @@ class Ultrasonic:
                         obstacles.append([x, y])
                         break
         return obstacles
-    
+
     def side_sense_obstacles(self, pos, heading):
         obstacles = []
         x = pos[0]
@@ -222,7 +254,7 @@ class Ultrasonic:
                 y = int(y2 * u + y1 * (1 - u))
                 if 0 < x < self.map_width and 0 < y < self.map_height:
                     color = self.map.get_at((x, y))
-                    #self.map.set_at((x, y), (75, 0, 130))
+                    # self.map.set_at((x, y), (75, 0, 130))
                     if (color[0], color[1], color[2]) == (0, 0, 0):
                         obstacles.append([x, y])
                         break

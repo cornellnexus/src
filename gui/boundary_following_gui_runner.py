@@ -9,13 +9,13 @@ from constants.definitions import GUI_DIR
 debug = False
 MAP_DIMENSIONS = (600, 1200)
 
-start_positions = [(100, 300), (100, 200), (100, 200), (100, 200)]
+start_positions = [(100, 160), (100, 160), (100, 200), (100, 160)]
 end_positions = [(800, 150), (800, 150), (800, 150), (800, 150)]
 maps = ["blank", "boundary_map", "roundy_maps", "obstacaly_map"]
 
 # Environment graphics
 gfx = Graphics(MAP_DIMENSIONS, GUI_DIR + "/gui_images/Nexus_Robot.png",
-               GUI_DIR + "/gui_images/boundary_map.png")
+               GUI_DIR + "/gui_images/blank.png")
 rbt = Image.open(GUI_DIR + "/gui_images/Nexus_Robot.png")
 
 # start and end positions
@@ -23,7 +23,7 @@ start = start_positions[0]
 end = end_positions[0]
 
 # the robot
-robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.01, 100, 5)  # robot is ~ 1.5 meters by 1.5 meters
+robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.005, 100, 5)  # robot is ~ 1.5 meters by 1.5 meters
 
 # the sensor
 sensor_range = 250, math.radians(40)  # range is 250, angle of detection is 40 radians
@@ -43,11 +43,14 @@ ultra_sonic_right_bottom = Ultrasonic(sensor_range, gfx.map, ultrasonic_rb_loc, 
 dt = 0
 last_time = pygame.time.get_ticks()
 
-dist_to_goal = math.sqrt((end[1] - robot.y) ** 2 + (end[0] - robot.x) ** 2)
+dist_to_goal = math.sqrt((end[1] - robot.y) ** 2 + (end[0] - robot.x) ** 2)+1
 
 running = True
 obstacleDetected = False
+cont = False
 # simulation loop
+counter = 1
+
 while running:
 
     # Exit program when close button is clicked
@@ -56,23 +59,27 @@ while running:
             running = False
 
     # Check if robot has reached end
-    counter = 1
     if (robot.x > end[0] and robot.x < end[0] + 81) and (robot.y > end[1] and robot.y < end[1] + 80):
+        print("end")
+        print("counter")
+        print(maps[counter])
+        print()
         start = start_positions[counter]
         end = end_positions[counter]
 
         gfx = Graphics(MAP_DIMENSIONS, GUI_DIR + "/gui_images/Nexus_Robot.png",
                GUI_DIR + "/gui_images/" + maps[counter] + ".png")
 
-        robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.01, 100, 5)
+        robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.005, 100, 5)
 
-        ultra_sonic = Ultrasonic(sensor_range, gfx.map)
-        ultra_sonic_left_top = Ultrasonic(sensor_range, gfx.map)
-        ultra_sonic_left_bottom = Ultrasonic(sensor_range, gfx.map)
-        ultra_sonic_right_top = Ultrasonic(sensor_range, gfx.map)
-        ultra_sonic_right_bottom = Ultrasonic(sensor_range, gfx.map)
+        # ultra_sonic = Ultrasonic(sensor_range, gfx.map)
+        # ultra_sonic_left_top = Ultrasonic(sensor_range, gfx.map)
+        # ultra_sonic_left_bottom = Ultrasonic(sensor_range, gfx.map)
+        # ultra_sonic_right_top = Ultrasonic(sensor_range, gfx.map)
+        # ultra_sonic_right_bottom = Ultrasonic(sensor_range, gfx.map)
 
-        dist_to_goal = math.sqrt((end[1] - robot.y)**2 + (end[0] - robot.x)**2)
+        dist_to_goal = math.sqrt((end[1] - robot.y) ** 2 + (end[0] - robot.x) ** 2) + 1
+        cont = False
 
         counter += 1
 
@@ -139,7 +146,7 @@ while running:
         dist_to_goal = new_dist
     else:
         # Execute obstacle avoidance behaviors
-        robot.avoid_obstacles(point_cloud, point_cloud_LT, point_cloud_LB, point_cloud_RT, point_cloud_RB, dt, pt)
+        cont = robot.avoid_obstacles(pt_RT, pt_RB, dt, pt, cont)
         obstacleDetected = False
 
     ultrasonics = [ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top,
