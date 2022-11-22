@@ -323,13 +323,13 @@ class Grid:
     def nextrow_sidemost_column(self, pos, dir):
         """
         If the direction is heading 'L', returns the column of the innermost 
-        (closer to the center of the circle) leftmost node that is 
+        (closer to the center of the shape) leftmost node that is 
             1) active  
             2) not border node 
         between the current row in [pos] and the next row above [pos].
 
         If the direction is heading 'R', returns the column of the innermost 
-        (closer to the center of the circle) rightmost node that is 
+        (closer to the center of the shape) rightmost node that is 
             1) active  
             2) not border node 
         between the current row in [pos] and the next row above [pos].
