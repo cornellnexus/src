@@ -374,7 +374,7 @@ class Grid:
                 return max(node_info_next[1], node_info_curr[1])
 
     ##Given border and active nodes, compute lawnmower traversal
-    def get_all_lawnmower_waypoints_adjustable(self):
+    def get_all_guided_lawnmower_waypoints_adjustable(self):
         """
         returns the waypoints being traversed. The algorithm traverses from bottom
         up starting from left to right.
@@ -642,8 +642,8 @@ class Grid:
             waypoints = self.get_spiral_waypoints()
         elif mode == ControlMode.STRAIGHT:
             waypoints = self.get_straight_line_waypoints(y_start_pct=0.5)
-        elif mode == ControlMode.LAWNMOWER_A:
-            waypoints = self.get_all_lawnmower_waypoints_adjustable()
+        elif mode == ControlMode.LAWNMOWER_GUIDED:
+            waypoints = self.get_all_guided_lawnmower_waypoints_adjustable()
         else:
             return []
         return waypoints
