@@ -272,7 +272,7 @@ class Grid:
         max_row = min(row_limit, row + 1)
 
         # If this node is on the very edge of the grid, it is automatically a border node
-        if min_col == 0 or min_row == 0 or max_col == col_limit or max_row == row_limit:
+        if row == 0 or col == 0 or col == self.get_num_cols() - 1 or row == self.get_num_rows() - 1:
             return True
 
         # If the node has a neighboring node that is inactive, it is a border node
