@@ -320,47 +320,58 @@ class Grid:
         self.leftmost_node = leftmost_node
         self.leftmost_node_pos = leftmost_node_pos
 
-    def nextrow_sidemost_node(self, pos, dir):
+    def nextrow_sidemost_column(self, pos, dir):
         """
-        returns the rightmost or leftmost node on the row above the current position. If there
-        is no more nodes in the next row, return None.
+        If the direction is heading 'L', returns the column of the innermost 
+        (closer to the center of the circle) leftmost node that is 
+            1) active  
+            2) not border node 
+        between the current row in [pos] and the next row above [pos].
+
+        If the direction is heading 'R', returns the column of the innermost 
+        (closer to the center of the circle) rightmost node that is 
+            1) active  
+            2) not border node 
+        between the current row in [pos] and the next row above [pos].
+
+        If there are no more nodes in the next row, return None.
 
         pos: the current position (col,row)
-        dir: 'L' returns leftmost node, otherwise function returns rightmost node
+        dir: 'L'/'R' the direction the robot is heading
         """
-        # node_info: (node, row, col)
-        candidate_nodes_next = [node_info for node_info in self.border_nodes if node_info[2] == pos[1] + 1]
+        # Obtain all border nodes in the next and current rows 
+        candidate_nodes_next = [node_info for node_info in self.border_nodes if node_info[2] == pos[1] + 1] # Note: node_info: (node, row, col)
         candidate_nodes_curr = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]]
+        
         if (candidate_nodes_next == [] and candidate_nodes_curr == []):
+            # There are no border nodes in the current row or next row
             return None
         elif (candidate_nodes_next == []):
+            # Since there we have reached the last row that we can traverse, 
+            # let's traverse this last row
             if dir == 'R':
                 node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[1])
             else:
                 node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[1])
-            return (node_info_curr[1], node_info_curr[2])
-        elif (candidate_nodes_curr == []):
-            if dir == 'R':
-                node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[1])
-            else:
-                node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[1])
-            return (node_info_next[1], node_info_next[2])
+            
+            return node_info_curr[1]
+        # Question: can we delete this?
+        # elif (candidate_nodes_curr == []):
+        #     if dir == 'R':
+        #         node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[1])
+        #     else:
+        #         node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[1])
+            
+        #     return (node_info_next[1], node_info_next[2])
         else:
             if dir == 'R':
                 node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[1])
                 node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[1])
-                if node_info_next[1] > node_info_curr[1]:
-                    node_info = node_info_curr
-                else:
-                    node_info = node_info_next
+                return min(node_info_next[1], node_info_curr[1])
             else:
                 node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[1])
                 node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[1])
-                if node_info_next[1] > node_info_curr[1]:
-                    node_info = node_info_next
-                else:
-                    node_info = node_info_curr
-            return (node_info[1], node_info[2])
+                return max(node_info_next[1], node_info_curr[1])
 
     ##Given border and active nodes, compute lawnmower traversal
     def get_all_lawnmower_waypoints_adjustable(self):
@@ -430,55 +441,62 @@ class Grid:
         direction = Direction.RIGHT
         waypoints = []
         waypoints.append(curr_pos)
+
+
+        print("Begin traversal at waypoint ", curr_pos)
         while (phase != WaypointPhase.TERMINATE):
             if curr_pos == None:
+                print("Terminate bc there is no curr_pos")
                 phase = WaypointPhase.TERMINATE
             elif curr_pos[0] > self.num_rows - 1 or curr_pos[0] < 0 or curr_pos[1] > self.num_cols - 1 or curr_pos[1] < 0:
+                print("Terminate bc the position is out of bounds")
                 phase = WaypointPhase.TERMINATE
             elif direction == Direction.LEFT:
-                new_pos = (curr_pos[0] - 1, curr_pos[1])
-                left_pos = self.nextrow_sidemost_node(curr_pos, 'L')
-                if left_pos == None:
+                # The robot is traversing in the left direction, from right to left
+                new_pos = (curr_pos[0] - 1, curr_pos[1]) # The next position in the left direction
+                left_column = self.nextrow_sidemost_column(curr_pos, 'L') # The next leftmost position in row above
+
+                # if left_pos == None:
+                #     phase = WaypointPhase.TERMINATE
+                # elif curr_pos[0] < (left_pos[0] + 1):
+                #     phase = WaypointPhase.TERMINATE
+                # else:
+                while curr_pos[0] > (left_column + 1):
+                    waypoints.append(new_pos)
+                    curr_pos = new_pos
+                    new_pos = (curr_pos[0] - 1, curr_pos[1])
+                if curr_pos[1] + 1 >= self.num_cols:
                     phase = WaypointPhase.TERMINATE
-                elif curr_pos[0] < (left_pos[0] + 1):
+                if not self.nodes[(left_column+1, curr_pos[1] + 1)].is_active:
                     phase = WaypointPhase.TERMINATE
                 else:
-                    while curr_pos[0] > (left_pos[0] + 1):
-                        waypoints.append(new_pos)
-                        curr_pos = new_pos
-                        new_pos = (curr_pos[0] - 1, curr_pos[1])
-                    if curr_pos[1] + 1 >= self.num_cols:
-                        phase = WaypointPhase.TERMINATE
-                    if not self.nodes[(left_pos[0]+1, curr_pos[1] + 1)].is_active:
-                        phase = WaypointPhase.TERMINATE
-                    else:
-                        circle_plt = plot_circle((left_pos[0] + 1, curr_pos[1]), (left_pos[0] + 1, curr_pos[1] + 1),
-                                                 (left_pos[0] + 1, curr_pos[1] + .5), Orientation.CW)
-                        waypoints += circle_plt
-                        direction = Direction.RIGHT
-                        curr_pos = (left_pos[0] + 1, curr_pos[1] + 1)
+                    circle_plt = plot_circle((left_column + 1, curr_pos[1]), (left_column + 1, curr_pos[1] + 1),
+                                                (left_column + 1, curr_pos[1] + .5), Orientation.CW)
+                    waypoints += circle_plt
+                    direction = Direction.RIGHT
+                    curr_pos = (left_column + 1, curr_pos[1] + 1)
             else:
                 new_pos = (curr_pos[0] + 1, curr_pos[1])
-                right_pos = self.nextrow_sidemost_node(curr_pos, 'R')
-                if right_pos == None:
+                right_column = self.nextrow_sidemost_column(curr_pos, 'R')
+                # if right_pos == None:
+                #     phase = WaypointPhase.TERMINATE
+                # elif curr_pos[0] > (right_pos[0] - 1):
+                #     phase = WaypointPhase.TERMINATE
+                # else:
+                while curr_pos[0] < (right_column - 1):
+                    waypoints.append(new_pos)
+                    curr_pos = new_pos
+                    new_pos = (curr_pos[0] + 1, curr_pos[1])
+                if curr_pos[1] + 1 >= self.num_cols:
                     phase = WaypointPhase.TERMINATE
-                elif curr_pos[0] > (right_pos[0] - 1):
+                elif not self.nodes[(right_column-1, curr_pos[1] + 1)].is_active:
                     phase = WaypointPhase.TERMINATE
                 else:
-                    while curr_pos[0] < (right_pos[0] - 1):
-                        waypoints.append(new_pos)
-                        curr_pos = new_pos
-                        new_pos = (curr_pos[0] + 1, curr_pos[1])
-                    if curr_pos[1] + 1 >= self.num_cols:
-                        phase = WaypointPhase.TERMINATE
-                    elif not self.nodes[(right_pos[0]-1, curr_pos[1] + 1)].is_active:
-                        phase = WaypointPhase.TERMINATE
-                    else:
-                        circle_plt = plot_circle((right_pos[0] - 1, curr_pos[1]), (right_pos[0] - 1, curr_pos[1] + 1),
-                                                 (right_pos[0] - 1, curr_pos[1] + .5), Orientation.CCW)
-                        waypoints += circle_plt
-                        direction = Direction.LEFT
-                        curr_pos = (right_pos[0] - 1, curr_pos[1] + 1)
+                    circle_plt = plot_circle((right_column - 1, curr_pos[1]), (right_column - 1, curr_pos[1] + 1),
+                                                (right_column - 1, curr_pos[1] + .5), Orientation.CCW)
+                    waypoints += circle_plt
+                    direction = Direction.LEFT
+                    curr_pos = (right_column - 1, curr_pos[1] + 1)
 
         return waypoints
 
