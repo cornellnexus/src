@@ -249,10 +249,19 @@ class Grid:
         # is same as A
         return A == (A1 + A2 + A3)
 
-    ##Activate a single vertical line of length n with bottom starting at x, y
-    def activate_line(self, x, y, n):
-        for i in range(n):
-            self.nodes[x, y + i].is_active = True
+    def activate_line(self, row, col, n, isHorizontal):
+        """
+        Activate a single horizontal line of length n starting at row, col.
+        If isHorizontal is True, the line is from (row, col) to (row, col + n). 
+        Otherwise, the line is from (row, col) to (row + n, col). 
+        """
+        # Note: rows are y-position and columns are x-position
+        if isHorizontal:
+            for i in range(n):
+                self.nodes[col+i][row].is_active = True
+        else:
+            for i in range(n):
+                self.nodes[col][row+i].is_active = True
 
     ##Activate triangle based on three points
     def activate_triangle(self, x1, y1, x2, y2, x3, y3):

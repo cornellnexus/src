@@ -22,8 +22,8 @@ def main():
     activation_type = input("Activation type: ")
     plt.figure()
     plt.title("Activated Nodes")
-    plt.xlim(-1, rows+1)
-    plt.ylim(-1, cols+1)
+    plt.xlim(-1, grid.get_num_rows()+1)
+    plt.ylim(-1, grid.get_num_cols()+1)
     plt.grid()
     
     if activation_type == "grid":
@@ -65,9 +65,9 @@ def main():
         way_points = grid.get_all_lawnmower_waypoints_adjustable()
 
     if activation_type == "line":
-        x = rows // 2
-        y = 0
-        grid.activate_line(x,y,21)
+        row = 0 # rows are y position
+        col = cols // 2 # cols are x position
+        grid.activate_line(row, col, n=15, isHorizontal=False)
         grid.find_border_nodes()
         way_points = grid.get_all_lawnmower_waypoints_adjustable()
 
@@ -76,8 +76,8 @@ def main():
     #   num rows and cols 3 and circle activation type because num_y_step and num_x_step in int and inversely
     #   proportional to STEP_SIZE_METERS, so num_y_step and num_x_step is 0. Same problem when inputting row and col.
     #   Not sure the formula for determining the max row and col to input tho
-    for i in range(rows):
-        for j in range(cols):
+    for i in range(grid.get_num_rows()):
+        for j in range(grid.get_num_cols()):
             node = grid.nodes[i,j]
             if node.is_border_node():
                 plt.plot(i,j, marker = 'o',color="red") # Color a border
