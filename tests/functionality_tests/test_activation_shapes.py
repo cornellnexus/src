@@ -33,7 +33,7 @@ def main():
         rec_col_limit = cols
         grid.activate_rectangle(rec_row_start, rec_col_start, rec_row_limit, rec_col_limit)
         grid.find_border_nodes()
-        way_points = grid.get_all_lawnmower_waypoints_adjustable()
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable()
 
     if activation_type == "rectangle":
 
@@ -43,7 +43,7 @@ def main():
         rec_col_limit  = 2 * cols // 3## Good value 22
         grid.activate_rectangle(rec_row_start, rec_col_start, rec_row_limit, rec_col_limit)
         grid.find_border_nodes()
-        way_points = grid.get_all_lawnmower_waypoints_adjustable()
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable()
 
     if activation_type== "circle":
         circle_center_row = rows // 2 ## Good value 19
@@ -51,7 +51,7 @@ def main():
         circle_radius = min(rows, cols) // 2 ## Good value 17
         grid.activate_circle(circle_center_row, circle_center_col, circle_radius)  
         grid.find_border_nodes()
-        way_points = grid.get_all_lawnmower_waypoints_adjustable()
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable()
 
     if activation_type== "triangle":
         x1 = rows // 6## Good value 6
@@ -62,14 +62,14 @@ def main():
         y3 = cols // 6 ## Good value 5
         grid.activate_triangle(x1,y1,x2,y2,x3,y3) 
         grid.find_border_nodes()
-        way_points = grid.get_all_lawnmower_waypoints_adjustable()
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable()
 
     if activation_type == "line":
         row = 0 # rows are y position
         col = cols // 2 # cols are x position
         grid.activate_line(row, col, n=15, isHorizontal=False)
         grid.find_border_nodes()
-        way_points = grid.get_all_lawnmower_waypoints_adjustable()
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable()
 
     # Questions: what if we make a new file for visualizing the path? It would also help with catching exceptions.
     #  For example, `node = grid.nodes[i,j]` can throw index out of bound error given STEP_SIZE_METERS of 100,
