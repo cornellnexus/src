@@ -9,6 +9,16 @@ from enum import Enum
 
 
 class Grid:
+    class Direction(Enum):
+        RIGHT = 1
+        LEFT = 2
+        UP = 3
+        DOWN = 4
+
+    # Clockwise or CounterClockwise
+    class Orientation(Enum):
+        CW = 1
+        CCW = 2
     """
     Instances represent the current grid of the robot's traversal.
 
@@ -121,6 +131,13 @@ class Grid:
         self.leftmost_node_pos = None
         self.active_waypoints_list = []
         self.inactive_waypoints_list = []
+
+        # Properties used to determine our adjustable grid traversal pathing
+        self.waypoints_is_finished = False
+        self.curr_pos = None
+        self.direction = self.Direction.RIGHT
+        self.waypoints = []
+
 
     def get_active_waypoints_list(self):
         return self.active_waypoints_list
@@ -320,15 +337,17 @@ class Grid:
         self.leftmost_node = leftmost_node
         self.leftmost_node_pos = leftmost_node_pos
 
-    def nextrow_sidemost_column(self, pos, dir):
+ # --------------------- HELPER FUNCTIONS FOR TRAVERSAL CREATION -------------- #
+
+    def edge_column_of_next_row(self, pos):
         """
-        If the direction is heading 'L', returns the column of the innermost 
+        If the direction we are heading is Left, returns the column of the innermost 
         (closer to the center of the shape) leftmost node that is 
             1) active  
             2) not border node 
         between the current row in [pos] and the next row above [pos].
 
-        If the direction is heading 'R', returns the column of the innermost 
+        If the direction we are heading is Right, returns the column of the innermost 
         (closer to the center of the shape) rightmost node that is 
             1) active  
             2) not border node 
@@ -337,7 +356,6 @@ class Grid:
         If there are no more nodes in the next row, return None.
 
         pos: the current position (col,row)
-        dir: 'L'/'R' the direction the robot is heading
         """
         # Obtain all border nodes in the next and current rows 
         candidate_nodes_next = [node_info for node_info in self.border_nodes if node_info[2] == pos[1] + 1] # Note: node_info: (node, row, col)
@@ -349,9 +367,9 @@ class Grid:
         elif (candidate_nodes_next == []):
             # Since there we have reached the last row that we can traverse, 
             # let's traverse this last row
-            if dir == 'R':
+            if self.direction == self.Direction.RIGHT:
                 node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[1])
-            else:
+            elif self.direction == self.Direction.LEFT:
                 node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[1])
             
             return node_info_curr[1]
@@ -364,19 +382,143 @@ class Grid:
             
         #     return (node_info_next[1], node_info_next[2])
         else:
-            if dir == 'R':
+            if self.direction == self.Direction.RIGHT:
                 node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[1])
                 node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[1])
                 return min(node_info_next[1], node_info_curr[1])
-            else:
+            elif self.direction == self.Direction.LEFT:
                 node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[1])
                 node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[1])
                 return max(node_info_next[1], node_info_curr[1])
 
+    def plot_circle(self, start_pos, end_pos, center, orientation, theta_step=math.pi / 12):
+        """
+        Returns a circle of nodes starting from the [start_pos], going at orientation [orientation], and ending at the
+        [end_pos] with center [center].
+
+        Arguments:
+            start_pos: float tuple representing the starting point of the circle being plotted
+            end_pos: float tuple representing the ending point of the circle being plotted
+            center: float tuple representing the center point of the circle being plotted
+            orientation: orientation that the nodes are being plotted from, starting with the start_pos and ending
+                at the end_pos
+            theta_step: float representing the angle step when plotting the turning arch. The
+            smaller the value, the smoother the curve will be. Default value = math.pi/12.
+        """
+        r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
+        theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
+        theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
+        circle_plt = []
+        if orientation == self.Orientation.CCW:
+            if theta_end < theta_init:
+                theta_end = theta_end + 2 * math.pi
+            theta = theta_init
+            while theta < theta_end:
+                circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
+                theta = theta + theta_step
+        elif orientation == self.Orientation.CW:
+            if theta_init < theta_end:
+                theta_init = theta_init + 2 * math.pi
+            theta = theta_init
+            while theta > theta_end:
+                circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
+                theta = theta - theta_step
+        else:
+            raise Exception("invalid orientation")
+        return circle_plt
+
+    def get_turn_column_buffer(self):
+        if self.direction == self.Direction.LEFT:
+            return 1
+        elif self.direction == self.Direction.RIGHT:
+            return -1
+
+    def is_below_next_column(self, turning_column):
+        if self.direction == self.Direction.LEFT:
+            return self.curr_pos[0] <= (turning_column)
+        elif self.direction == self.Direction.RIGHT:
+            return self.curr_pos[0] >= (turning_column)
+
+    def switch_directions(self):
+        if self.direction == self.Direction.LEFT:
+            self.direction = self.Direction.RIGHT
+        elif self.direction == self.Direction.RIGHT:
+            self.direction = self.Direction.LEFT
+
+    def get_next_traversal_pos(self):
+        if self.direction == self.Direction.LEFT:
+            return (self.curr_pos[0] - 1, self.curr_pos[1])
+        elif self.direction == self.Direction.RIGHT:
+            return (self.curr_pos[0] + 1, self.curr_pos[1])
+
+    def get_turn_orientation(self):
+        if self.direction == self.Direction.LEFT:
+            return self.Orientation.CW
+        elif self.direction == self.Direction.RIGHT:
+            return self.Orientation.CCW
+
+    def add_guided_waypoints(self):
+        """
+        Generates waypoints for a guided lawnmower traversal.
+
+        For this traversal, the robot should traverse row by row until there are
+        no more active nodes that are encaptured by the border nodes.
+        
+        When the robot reaches a the first node in a row of active nodes, it 
+        will traverse down the row and turn to the next row BEFORE the edge node,
+        the last node in the row (so the turn is contained within the bounds of 
+        the selected border).
+
+        Ex:  3 <- 4 <- 5  
+                    ^ 
+             0 -> 1 -> 2
+
+
+        """
+        # The robot is traversing in the left direction, from right to left
+        new_pos = self.get_next_traversal_pos() # The next position in the left direction
+        
+        edge_column = self.edge_column_of_next_row(self.curr_pos) # The next leftmost position in row above
+
+        if edge_column == None: # Problem with initialization
+            self.waypoints_is_finished = True
+            return
+
+        # Column where we want to begin turning, one node closer to the inside of our shape
+        turning_column = edge_column + self.get_turn_column_buffer() 
+        next_row = self.curr_pos[1] + 1
+
+        # Question: Can we delete?
+        # elif curr_pos[0] < (left_pos[0] + 1):
+        #     phase = WaypointPhase.TERMINATE
+        # else:
+
+        # Traverse the row until it is time to turn
+        while not self.is_below_next_column(turning_column):
+            self.waypoints.append(new_pos)
+            self.curr_pos = new_pos
+            new_pos = self.get_next_traversal_pos()
+
+        # Check whether turning to the next row is valid
+        if not next_row < self.num_cols or not self.nodes[turning_column][next_row].is_active:
+            # Next row is out of bounds of the grid OR the node in the row above,
+            # where we are trying to turn to, isn't active for traversal
+            self.waypoints_is_finished = True
+        else:
+            # Turn to next row
+            # Create waypoints needed for a smooth turning trajectory to 
+            # "guide" our robot to the next original waypoint
+            circle_plt = self.plot_circle((turning_column, self.curr_pos[1]), (turning_column, next_row),
+                                        (turning_column, self.curr_pos[1] + .5), self.get_turn_orientation())
+            self.waypoints += circle_plt
+            # Update traversal details
+            self.switch_directions()
+            self.curr_pos = (turning_column, next_row)
+
     ##Given border and active nodes, compute lawnmower traversal
     def get_all_guided_lawnmower_waypoints_adjustable(self):
         """
-        returns the waypoints being traversed. The algorithm traverses from bottom
+        Returns the waypoints being traversed. The algorithm traverses from bottom
         up starting from left to right.
 
         There are two big branches:
@@ -386,119 +528,23 @@ class Grid:
             and turning counter clock wise at the end of the row (or terminating).
         The plot_circle plots the circular waypoints during the turn
         """
+        self.curr_pos = self.leftmost_node_pos
+        self.waypoints.append(self.curr_pos)
+        while not self.waypoints_is_finished:
+            if self.curr_pos == None:
+                self.waypoints_is_finished = True
 
-        class WaypointPhase(Enum):
-            DOWN = 1
-            TERMINATE = 2
+            # Question: can we delete? bounds checked in add guided? change to assert?
+            # elif (self.curr_pos[0] > self.num_rows - 1 or 
+            #     self.curr_pos[0] < 0 or self.curr_pos[1] > self.num_cols - 1 or 
+            #     self.curr_pos[1] < 0):
+            #     self.phase = self.WaypointPhase.TERMINATE
 
-        class Direction(Enum):
-            RIGHT = 1
-            LEFT = 2
+            # Handle traversal from left/right and turning CW/CCW at the end of 
+            # the row (or terminating).
+            self.add_guided_waypoints()
 
-        # Clockwise or CounterClockwise
-        class Orientation(Enum):
-            CW = 1
-            CCW = 2
-
-        def plot_circle(start_pos, end_pos, center, orientation, theta_step=math.pi / 12):
-            """
-            Returns a circle of nodes starting from the start_pos, going at orientation orientation, and ending at the
-            end_pos with center center.
-
-            Arguments:
-                start_pos: float tuple representing the starting point of the circle being plotted
-                end_pos: float tuple representing the ending point of the circle being plotted
-                center: float tuple representing the center point of the circle being plotted
-                orientation: orientation that the nodes are being plotted from, starting with the start_pos and ending
-                    at the end_pos
-                theta_step: float representing the angle step when plotting the turning arch. The
-                smaller the value, the smoother the curve will be. Default value = math.pi/12.
-            """
-            r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
-            theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
-            theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
-            circle_plt = []
-            if orientation == Orientation.CCW:
-                if theta_end < theta_init:
-                    theta_end = theta_end + 2 * math.pi
-                theta = theta_init
-                while theta < theta_end:
-                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
-                    theta = theta + theta_step
-            elif orientation == Orientation.CW:
-                if theta_init < theta_end:
-                    theta_init = theta_init + 2 * math.pi
-                theta = theta_init
-                while theta > theta_end:
-                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
-                    theta = theta - theta_step
-            else:
-                raise Exception("invalid orientation")
-            return circle_plt
-
-        phase = WaypointPhase.DOWN
-        curr_pos = self.leftmost_node_pos
-        direction = Direction.RIGHT
-        waypoints = []
-        waypoints.append(curr_pos)
-
-
-        print("Begin traversal at waypoint ", curr_pos)
-        while (phase != WaypointPhase.TERMINATE):
-            if curr_pos == None:
-                print("Terminate bc there is no curr_pos")
-                phase = WaypointPhase.TERMINATE
-            elif curr_pos[0] > self.num_rows - 1 or curr_pos[0] < 0 or curr_pos[1] > self.num_cols - 1 or curr_pos[1] < 0:
-                print("Terminate bc the position is out of bounds")
-                phase = WaypointPhase.TERMINATE
-            elif direction == Direction.LEFT:
-                # The robot is traversing in the left direction, from right to left
-                new_pos = (curr_pos[0] - 1, curr_pos[1]) # The next position in the left direction
-                left_column = self.nextrow_sidemost_column(curr_pos, 'L') # The next leftmost position in row above
-
-                # if left_pos == None:
-                #     phase = WaypointPhase.TERMINATE
-                # elif curr_pos[0] < (left_pos[0] + 1):
-                #     phase = WaypointPhase.TERMINATE
-                # else:
-                while curr_pos[0] > (left_column + 1):
-                    waypoints.append(new_pos)
-                    curr_pos = new_pos
-                    new_pos = (curr_pos[0] - 1, curr_pos[1])
-                if curr_pos[1] + 1 >= self.num_cols:
-                    phase = WaypointPhase.TERMINATE
-                if not self.nodes[(left_column+1, curr_pos[1] + 1)].is_active:
-                    phase = WaypointPhase.TERMINATE
-                else:
-                    circle_plt = plot_circle((left_column + 1, curr_pos[1]), (left_column + 1, curr_pos[1] + 1),
-                                                (left_column + 1, curr_pos[1] + .5), Orientation.CW)
-                    waypoints += circle_plt
-                    direction = Direction.RIGHT
-                    curr_pos = (left_column + 1, curr_pos[1] + 1)
-            else:
-                new_pos = (curr_pos[0] + 1, curr_pos[1])
-                right_column = self.nextrow_sidemost_column(curr_pos, 'R')
-                # if right_pos == None:
-                #     phase = WaypointPhase.TERMINATE
-                # elif curr_pos[0] > (right_pos[0] - 1):
-                #     phase = WaypointPhase.TERMINATE
-                # else:
-                while curr_pos[0] < (right_column - 1):
-                    waypoints.append(new_pos)
-                    curr_pos = new_pos
-                    new_pos = (curr_pos[0] + 1, curr_pos[1])
-                if curr_pos[1] + 1 >= self.num_cols:
-                    phase = WaypointPhase.TERMINATE
-                elif not self.nodes[(right_column-1, curr_pos[1] + 1)].is_active:
-                    phase = WaypointPhase.TERMINATE
-                else:
-                    circle_plt = plot_circle((right_column - 1, curr_pos[1]), (right_column - 1, curr_pos[1] + 1),
-                                                (right_column - 1, curr_pos[1] + .5), Orientation.CCW)
-                    waypoints += circle_plt
-                    direction = Direction.LEFT
-                    curr_pos = (right_column - 1, curr_pos[1] + 1)
-
-        return waypoints
+        return self.waypoints
 
     # --------------------- STANDARD TRAVERSAL ALGORITHMS -------------- #
 
