@@ -427,31 +427,57 @@ class Grid:
             raise Exception("invalid orientation")
         return circle_plt
 
-    def get_turn_column_buffer(self):
+    def get_turning_column(self, edge_column):
+        """
+        Returns the column where the robot should begin turning in a guided traversal.
+        
+        Arguments:
+            edge_column: int representing the column of the 
+            leftmost/rightmost node in the row above the current row being 
+            traversed.
+        """
         if self.direction == self.Direction.LEFT:
-            return 1
+            return edge_column + 1
         elif self.direction == self.Direction.RIGHT:
-            return -1
+            return edge_column - 1
 
-    def is_below_next_column(self, turning_column):
+    def is_before_turning_column(self, turning_column):
+        """
+        Returns whether the current waypoint creation position is still before
+        the column where it should turn.
+
+        Arguments:
+            turning_column: int representing the column of where it should turn.
+        """
         if self.direction == self.Direction.LEFT:
             return self.curr_pos[0] <= (turning_column)
         elif self.direction == self.Direction.RIGHT:
             return self.curr_pos[0] >= (turning_column)
 
     def switch_directions(self):
+        """
+        Switch the current waypoint creation direction.
+        """
         if self.direction == self.Direction.LEFT:
             self.direction = self.Direction.RIGHT
         elif self.direction == self.Direction.RIGHT:
             self.direction = self.Direction.LEFT
 
     def get_next_traversal_pos(self):
+        """
+        Returns the next position along the row with resepect to the current
+        waypoint creation position.
+        """
         if self.direction == self.Direction.LEFT:
             return (self.curr_pos[0] - 1, self.curr_pos[1])
         elif self.direction == self.Direction.RIGHT:
             return (self.curr_pos[0] + 1, self.curr_pos[1])
 
     def get_turn_orientation(self):
+        """
+        Returns the turning orientation between rows depending on the 
+        incoming traversal direction.
+        """
         if self.direction == self.Direction.LEFT:
             return self.Orientation.CW
         elif self.direction == self.Direction.RIGHT:
@@ -472,8 +498,6 @@ class Grid:
         Ex:  3 <- 4 <- 5  
                     ^ 
              0 -> 1 -> 2
-
-
         """
         # The robot is traversing in the left direction, from right to left
         new_pos = self.get_next_traversal_pos() # The next position in the left direction
@@ -485,7 +509,7 @@ class Grid:
             return
 
         # Column where we want to begin turning, one node closer to the inside of our shape
-        turning_column = edge_column + self.get_turn_column_buffer() 
+        turning_column = self.get_turning_column(edge_column) 
         next_row = self.curr_pos[1] + 1
 
         # Question: Can we delete?
@@ -494,7 +518,7 @@ class Grid:
         # else:
 
         # Traverse the row until it is time to turn
-        while not self.is_below_next_column(turning_column):
+        while not self.is_before_turning_column(turning_column):
             self.waypoints.append(new_pos)
             self.curr_pos = new_pos
             new_pos = self.get_next_traversal_pos()
