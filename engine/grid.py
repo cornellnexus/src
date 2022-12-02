@@ -135,7 +135,7 @@ class Grid:
         # Properties used to determine our adjustable grid traversal pathing
         self.waypoints_is_finished = False
         self.curr_pos = None
-        self.direction = self.Direction.UP
+        self.direction = self.Direction.RIGHT
         self.waypoints = []
 
 
