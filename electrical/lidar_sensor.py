@@ -16,9 +16,6 @@ class Lidar:
             if counter > 8:
                 bytes_serial = self.ser.read(9) # read 9 bytes
                 self.ser.reset_input_buffer() # reset buffer
-            
-                #print('Distance = ', bytes_serial[2]+bytes_serial[3]*256, ' -------- ', end = '')
-
                 if bytes_serial[0] == 0x59 and bytes_serial[1] == 0x59: # check first two bytes
                     distance = bytes_serial[2] + bytes_serial[3]*256 # distance in next two bytes
                     strength = bytes_serial[4] + bytes_serial[5]*256 # signal strength in next two bytes
@@ -50,18 +47,15 @@ class Lidar:
         init_time = time.time()
         counter = 0
         while time.time() < init_time + sample_rate*10:
-                print('reading taken', counter)
-            #try:
-                new_obj_dist = self.get_lidar_data()
-                if counter > 10*sample_rate:
-                    return True #object detected 
-                if new_obj_dist <= bucket_dist:
-                    counter+=1
-                else:
-                    return False #false alarm
-            #except:
-                #print('THE EXCEPT IS HERE')
-                #break
+            print('reading taken', counter)
+            new_obj_dist = self.get_lidar_data()
+            if counter > 10*sample_rate:
+                return True #object detected 
+            if new_obj_dist <= bucket_dist:
+                counter+=1
+            else:
+                return False #false alarm
+
 
     
 ## testing code: 
@@ -70,15 +64,13 @@ if __name__ == "__main__":
     sample_rate = 100 
     lidar.set_samp_rate(sample_rate) #configuring the sensor: sample rate and default baud rate 11000smth
     bucket_dist = 100 #in cm
-    while True:
-        #try:        
-            distance = lidar.get_lidar_data() # read values
-            print("Distance: ", distance)
-            if distance <= bucket_dist:
-                bucket_full = lidar.check_if_full(sample_rate, bucket_dist)
-                print("bucket is full: ", bucket_full)
-                if bucket_full == True:
-                    break
-        #except:
-            #print("error")
-            #break
+    while True:      
+        distance = lidar.get_lidar_data() # read values
+        print("Distance: ", distance)
+        if distance <= bucket_dist:
+            bucket_full = lidar.check_if_full(sample_rate, bucket_dist)
+            print("bucket is full: ", bucket_full)
+            if bucket_full == True:
+                break
+
+ #For Future Use: Remove print statements (used for testing). Only need to return value of check_if_full method.
