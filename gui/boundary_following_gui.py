@@ -33,6 +33,8 @@ class Robot:
         self.countDown = countDown  # in seconds
         self.closestObstacle = None
         self.distFromClosestObstacle = np.inf
+        self.was_parallel = False
+        self.gate = True
 
     def detect_obstacles(self, point_cloud):
         if len(point_cloud) > 0:
@@ -61,10 +63,13 @@ class Robot:
             right_back = min(pt_rb[1], min_sensor_val)
         if abs(right_front - right_back) < side_sensor_margin:
             parallel = 0
+            self.was_parallel = True
         elif right_front > right_back:
             parallel = 1
+            self.was_parallel = False
         else:
             parallel = -1
+            self.was_parallel = False
         # parallel = self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 1)
         # if left_value == 0 and right_value == 0:
         if min_front is None:
@@ -73,11 +78,23 @@ class Robot:
             condition = min_front[1] < margin_to_obs
         if condition:
             cont = True
-        if cont and (not parallel == -1):  # assume margin to obs large enough that turning won't hit the side
+        # if the robot starts from parallel, we expect it to turn until we get back to parallel -> has to exit parallel first
+        print(cont)
+        print(self.gate)
+        print(self.was_parallel)
+        print(parallel)
+        print()
+        if cont and self.gate:  # assume margin to obs large enough that turning won't hit the side
+            self.heading += 0.02
+            if not self.was_parallel:
+                self.gate = False
+            return True
+        elif cont and not self.gate and not parallel == 0:
             self.heading += 0.02
             return True
-        elif parallel == -1:
+        else:
             cont = False
+            self.gate = True
         if not cont:
             if parallel == 0:
                 # distance_to_front_obstacle = np.inf
@@ -124,11 +141,12 @@ class Robot:
 
     def setHeading(self):
         # Angle between robot and line to destination
-        angle = self.arctan(self.startX, self.startY, self.endX + 40, self.endY + 41)
+        angle = math.atan2(self.endY + 41 - self.y, self.endX + 40 - self.startX)
         self.heading = angle * -1
 
     def updateHeading(self):
-        angle = self.arctan(self.x, self.y, self.endX + 40, self.endY + 41)
+        angle = math.atan2(self.endY + 41 - self.y, self.endX + 40 - self.x)
+        print(angle)
         curr_angle = self.heading
         while curr_angle > 2 * math.pi:
             curr_angle = curr_angle - 2 * math.pi

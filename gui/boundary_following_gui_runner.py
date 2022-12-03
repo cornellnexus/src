@@ -9,13 +9,23 @@ from constants.definitions import GUI_DIR
 debug = False
 MAP_DIMENSIONS = (600, 1200)
 
-start_positions = [(100, 160), (100, 160), (100, 200), (100, 160)]
-end_positions = [(800, 150), (800, 150), (800, 150), (800, 150)]
-maps = ["blank", "boundary_map", "roundy_maps", "obstacaly_map"]
+# start_positions = [(100, 160), (100, 160), (100, 200), (100, 160)]
+# end_positions = [(800, 150), (800, 150), (800, 150), (800, 150)]
+# maps = ["blank", "boundary_map", "roundy_maps", "obstacaly_map"]
+start_positions = [(100, 160), (100, 300), (100, 100), (400, 450),
+                   (600, 450), (100, 160), (100, 160), (800, 150)]
+end_positions = [(800, 150), (700, 150), (900, 150), (800, 150),
+                 (800, 150), (400, 450), (100, 160), (100, 160)]
+maps = ["boundary_map", "boundary_map", "boundary_map", "boundary_map", 
+        "boundary_map", "boundary_map", "boundary_map", "boundary_map"]
+# starting position (800, 150) and ending position (100, 160) on boundary_map
+# doesn't work rn
 
 # Environment graphics
+# gfx = Graphics(MAP_DIMENSIONS, GUI_DIR + "/gui_images/Nexus_Robot.png",
+#                GUI_DIR + "/gui_images/blank.png")
 gfx = Graphics(MAP_DIMENSIONS, GUI_DIR + "/gui_images/Nexus_Robot.png",
-               GUI_DIR + "/gui_images/blank.png")
+               GUI_DIR + "/gui_images/" + maps[0] + ".png")
 rbt = Image.open(GUI_DIR + "/gui_images/Nexus_Robot.png")
 
 # start and end positions
@@ -59,11 +69,9 @@ while running:
             running = False
 
     # Check if robot has reached end
-    if (robot.x > end[0] and robot.x < end[0] + 81) and (robot.y > end[1] and robot.y < end[1] + 80):
-        print("end")
-        print("counter")
-        print(maps[counter])
-        print()
+    if (robot.x > end[0] and robot.x < end[0] + rbt.size[0]) and (robot.y > end[1] and robot.y < end[1] + rbt.size[1]):
+        if counter == len(maps)-1:
+            running = False
         start = start_positions[counter]
         end = end_positions[counter]
 
@@ -102,10 +110,6 @@ while running:
     # Adding green following line to the end + half the robot size to get to the middle ending square
     pygame.draw.line(gfx.map, gfx.green, start, (end[0] + rbt.size[0] / 2, end[1] + rbt.size[1] / 2))
 
-    # Check if robot has reached end
-    if (robot.x > end[0] and robot.x < end[0] + rbt.size[0]) and (robot.y > end[1] and robot.y < end[1] + rbt.size[1]):
-        running = False
-
     # Read sensor data and create a point cloud
     point_cloud = ultra_sonic.sense_obstacles(robot.x, robot.y, robot.heading)
     point_cloud_LT = ultra_sonic_left_top.side_sense_obstacles(ultrasonic_lt_loc, robot.heading + math.pi / 2)
@@ -130,11 +134,16 @@ while running:
         obstacleDetected = True
 
     new_dist = math.sqrt((end[1] - robot.y) ** 2 + (end[0] - robot.x) ** 2)
+    print("dist")
+    print(dist_to_goal)
+    print(new_dist)
     if (not obstacleDetected) and new_dist < dist_to_goal:
+        print("138")
         # Move robot
         robot.move_forward()
         robot.kinematics(dt)
         while not robot.updateHeading() == 0:
+            print("143")
             robot.stop_moving()
             robot.heading += robot.updateHeading()
             gfx.map.blit(gfx.map_img, (0, 0))
@@ -145,6 +154,7 @@ while running:
 
         dist_to_goal = new_dist
     else:
+        print("154")
         # Execute obstacle avoidance behaviors
         cont = robot.avoid_obstacles(pt_RT, pt_RB, dt, pt, cont)
         obstacleDetected = False
