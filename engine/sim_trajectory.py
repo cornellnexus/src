@@ -62,7 +62,7 @@ def get_plot_boundaries(nodes, delta):
 if __name__ == "__main__":
     global rpi_comms, is_sim, is_store
     rpi_comms = False # Set to true when the rpi/robot is communicating w/ the GUI
-    is_sim = True # Set to true when simulating the rpi, set to false when running on rpi
+    is_sim = not is_raspberrypi() # Set to true when simulating the rpi, set to false when running on rpi
     is_store = False # Set to true when we want to track/store csv data
     format = "%(asctime)s: %(message)s"
     logging.basicConfig(format=format, level=logging.INFO,
@@ -101,22 +101,6 @@ if __name__ == "__main__":
             rpi_to_gui.close()
 
     '''------------------- MISSION EXECUTION -------------------'''
-<<<<<<< HEAD
-=======
-    global rpi_comms, is_sim
-    rpi_comms = True # Set to true when the rpi/robot is communicating w/ the GUI
-    is_sim = not is_raspberrypi() # Set to true when simulating the rpi, set to false when running on rpi
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(format=format, level=logging.INFO,
-                        datefmt="%H:%M:%S")
-
-    if is_sim:
-        # open csv file of rpi to gui data
-        rpi_to_gui = open(
-            (CSV_PATH + '/rpi_to_gui_simulation.csv'), "a")
-
-
->>>>>>> main
     packet_sender = threading.Thread(target=send_packet_to_gui, args=(
         1,), daemon=True)  # Thread to read and send robot properties
     packet_sender.start()
