@@ -79,11 +79,6 @@ class Robot:
         if condition:
             cont = True
         # if the robot starts from parallel, we expect it to turn until we get back to parallel -> has to exit parallel first
-        print(cont)
-        print(self.gate)
-        print(self.was_parallel)
-        print(parallel)
-        print()
         if cont and self.gate:  # assume margin to obs large enough that turning won't hit the side
             self.heading += 0.02
             if not self.was_parallel:
@@ -134,11 +129,6 @@ class Robot:
         self.velocityRight = self.minSpeed
         self.velocityLeft = self.minSpeed
 
-    def arctan(self, startX, startY, endX, endY):
-        xLength = endX - startX
-        yLength = endY - startY
-        return np.arctan(yLength / xLength)
-
     def setHeading(self):
         # Angle between robot and line to destination
         angle = math.atan2(self.endY + 41 - self.y, self.endX + 40 - self.startX)
@@ -146,7 +136,6 @@ class Robot:
 
     def updateHeading(self):
         angle = math.atan2(self.endY + 41 - self.y, self.endX + 40 - self.x)
-        print(angle)
         curr_angle = self.heading
         while curr_angle > 2 * math.pi:
             curr_angle = curr_angle - 2 * math.pi
