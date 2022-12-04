@@ -7,6 +7,9 @@ from gui.boundary_following_gui import Graphics, Robot, Ultrasonic
 from constants.definitions import GUI_DIR
 
 def draw_constants(gfx, rbt, start, end):
+    # draw blank canvas
+    gfx.map.blit(gfx.map_img, (0, 0))
+
     # Adding start surface (blue box)
     startSurf = pygame.Surface(rbt.size)
     startSurf.fill(gfx.blue)
@@ -20,6 +23,12 @@ def draw_constants(gfx, rbt, start, end):
 
     # Adding green following line to the end + half the robot size to get to the middle ending square
     pygame.draw.line(gfx.map, gfx.green, start, (end[0] + rbt.size[0] / 2, end[1] + rbt.size[1] / 2))
+
+def update_viz(gfx, rbt, start, end, robot):
+    draw_constants(gfx, rbt, start, end)
+    gfx.draw_robot(robot.x, robot.y, robot.heading)
+    pygame.display.update()
+
 
 def draw_sensor_data(debug, gfx, point_cloud, point_clouds, ultrasonics):
     # Draw point cloud and update screen
@@ -37,11 +46,14 @@ def draw_sensor_data(debug, gfx, point_cloud, point_clouds, ultrasonics):
                 pygame.draw.line(gfx.map, line_clr, ultrasonic.pos, point[0])
 
 def update_ultrasonics(robot, ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom):
+    # Get ultrasonic current position
     sensor_directions = robot.side_sensor_angle()
     ultrasonic_lt_loc = (robot.x + sensor_directions[0], robot.y - sensor_directions[1])
     ultrasonic_lb_loc = (robot.x - sensor_directions[0], robot.y + sensor_directions[1])
     ultrasonic_rt_loc = (robot.x + sensor_directions[0], robot.y - sensor_directions[1])
     ultrasonic_rb_loc = (robot.x - sensor_directions[0], robot.y + sensor_directions[1])
+    
+    # Update ultrasonic positions
     ultra_sonic.update_pos((robot.x, robot.y))
     ultra_sonic_left_top.update_pos(ultrasonic_lt_loc)
     ultra_sonic_left_bottom.update_pos(ultrasonic_lb_loc)
@@ -55,12 +67,14 @@ def update_ultrasonics(robot, ultra_sonic, ultra_sonic_left_top, ultra_sonic_lef
     point_cloud_RT = ultra_sonic_right_top.side_sense_obstacles(ultrasonic_lb_loc, robot.heading - math.pi / 2)
     point_cloud_RB = ultra_sonic_right_bottom.side_sense_obstacles(ultrasonic_rb_loc, robot.heading - math.pi / 2)
 
+    # Finds pt with minimum distance to obstacle for each ultrasonnics sensor
     pt = ultra_sonic.min_distance((robot.x, robot.y), point_cloud)
     pt_LT = ultra_sonic_left_top.min_distance(ultrasonic_lt_loc, point_cloud_LT)
     pt_LB = ultra_sonic_left_bottom.min_distance(ultrasonic_lb_loc, point_cloud_LB)
     pt_RT = ultra_sonic_right_top.min_distance(ultrasonic_rt_loc, point_cloud_RT)
     pt_RB = ultra_sonic_right_bottom.min_distance(ultrasonic_rb_loc, point_cloud_RB)
 
+    # Update pt attribute in each ultrasonic obj
     ultra_sonic.update_pt(pt)
     ultra_sonic_left_top.update_pt(pt_LT)
     ultra_sonic_left_bottom.update_pt(pt_LB)
@@ -97,7 +111,7 @@ dt = 0
 last_time = pygame.time.get_ticks()
 
 running = True
-counter = 0
+map_counter = 0
 start_condition = True
 pygame.init()
 
@@ -114,14 +128,14 @@ while running:
 
     # Check if robot has reached end
     if start_condition:
-        if counter == len(maps):
+        if map_counter == len(maps):
             running = False
             break
-        start = start_positions[counter]
-        end = end_positions[counter]
+        start = start_positions[map_counter]
+        end = end_positions[map_counter]
 
         gfx = Graphics(MAP_DIMENSIONS, GUI_DIR + "/gui_images/Nexus_Robot.png",
-               GUI_DIR + "/gui_images/" + maps[counter] + ".png")
+               GUI_DIR + "/gui_images/" + maps[map_counter] + ".png")
 
         robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.005, 100, 5) # robot is ~ 1.5 meters by 1.5 meters
 
@@ -134,36 +148,29 @@ while running:
         dist_to_goal = math.sqrt((end[1] - robot.y) ** 2 + (end[0] - robot.x) ** 2) + 1
         cont = False
 
-        counter += 1
+        map_counter += 1
 
     start_condition = (robot.x > end[0] and robot.x < end[0] + rbt.size[0]) and (robot.y > end[1] and robot.y < end[1] + rbt.size[1])
 
     # Add map and get change in time between screen refresh
     dt = (pygame.time.get_ticks() - last_time) / 200
     last_time = pygame.time.get_ticks()
-    gfx.map.blit(gfx.map_img, (0, 0))
-
-    draw_constants(gfx, rbt, start, end)
 
     ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom, obstacleDetected = update_ultrasonics(robot, ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom)
 
     new_dist = math.sqrt((end[1] - robot.y) ** 2 + (end[0] - robot.x) ** 2)
     # problem is that it calculates dist_to_goal as the new_dist, which is before it moves. so once it moves and ob avoidance moves, its still less than prev dist
     # sol: added min_dist to else branch
+    
     if (not obstacleDetected) and new_dist < dist_to_goal:
         # Move robot
         while not robot.updateHeading() == 0:
             robot.stop_moving()
             robot.heading += robot.updateHeading()
-            gfx.map.blit(gfx.map_img, (0, 0))
-            gfx.draw_robot(robot.x, robot.y, robot.heading)
-            last_time = pygame.time.get_ticks()
-
-            draw_constants(gfx, rbt, start, end)
-
             ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom, obstacleDetected = update_ultrasonics(robot, ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom)
 
-            pygame.display.update()
+            last_time = pygame.time.get_ticks()
+            update_viz(gfx, rbt, start, end, robot)
 
         robot.move_forward()
         robot.kinematics(dt)
@@ -175,10 +182,4 @@ while running:
         obstacleDetected = False
         dist_to_goal = min_dist
 
-
-
-    # Draws the robot
-    gfx.draw_robot(robot.x, robot.y, robot.heading)
-
-
-    pygame.display.update()
+    update_viz(gfx, rbt, start, end, robot)
