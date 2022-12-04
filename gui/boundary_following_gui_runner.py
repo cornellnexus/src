@@ -179,6 +179,10 @@ while running:
         obstacleDetected = False
         dist_to_goal = min_dist
 
+    # TODO: Add Boolean for if you just did boundary traversal. 
+    # If just did boundary traversal, check right side for obstacles in angle to goal
+    # should prevent unnecessary turning to target before realizing obstacle and turning back.
+
     update_viz(gfx, rbt, start, end, robot)
     ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom, obstacleDetected = update_ultrasonics(robot, ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom)
 
