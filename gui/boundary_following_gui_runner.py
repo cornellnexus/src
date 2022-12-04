@@ -27,8 +27,6 @@ def draw_constants(gfx, rbt, start, end):
 def update_viz(gfx, rbt, start, end, robot):
     draw_constants(gfx, rbt, start, end)
     gfx.draw_robot(robot.x, robot.y, robot.heading)
-    pygame.display.update()
-
 
 def draw_sensor_data(debug, gfx, point_cloud, point_clouds, ultrasonics):
     # Draw point cloud and update screen
@@ -116,7 +114,7 @@ start_condition = True
 pygame.init()
 
 obstacleDetected = False
-cont = False
+cont = False  # documented in boundary_folllowing_gui.py in avoid_obstacles()
 
 # simulation loop
 while running:
@@ -149,29 +147,28 @@ while running:
         cont = False
 
         map_counter += 1
-
     start_condition = (robot.x > end[0] and robot.x < end[0] + rbt.size[0]) and (robot.y > end[1] and robot.y < end[1] + rbt.size[1])
 
     # Add map and get change in time between screen refresh
     dt = (pygame.time.get_ticks() - last_time) / 200
     last_time = pygame.time.get_ticks()
 
-    ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom, obstacleDetected = update_ultrasonics(robot, ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom)
-
     new_dist = math.sqrt((end[1] - robot.y) ** 2 + (end[0] - robot.x) ** 2)
     # problem is that it calculates dist_to_goal as the new_dist, which is before it moves. so once it moves and ob avoidance moves, its still less than prev dist
     # sol: added min_dist to else branch
-    
+
     if (not obstacleDetected) and new_dist < dist_to_goal:
         # Move robot
         while not robot.updateHeading() == 0:
+            last_time = pygame.time.get_ticks()
+
             robot.stop_moving()
             robot.heading += robot.updateHeading()
+
+            update_viz(gfx, rbt, start, end, robot)
             ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom, obstacleDetected = update_ultrasonics(robot, ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom)
 
-            last_time = pygame.time.get_ticks()
-            update_viz(gfx, rbt, start, end, robot)
-
+            pygame.display.update()
         robot.move_forward()
         robot.kinematics(dt)
         dist_to_goal = new_dist
@@ -183,3 +180,6 @@ while running:
         dist_to_goal = min_dist
 
     update_viz(gfx, rbt, start, end, robot)
+    ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom, obstacleDetected = update_ultrasonics(robot, ultra_sonic, ultra_sonic_left_top, ultra_sonic_left_bottom, ultra_sonic_right_top, ultra_sonic_right_bottom)
+
+    pygame.display.update()

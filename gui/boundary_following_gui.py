@@ -5,12 +5,21 @@ import numpy as np
 
 # Based on https://www.youtube.com/watch?v=pmmUi6DasoM
 
+# TODO: fix issue where when the robot turns to avoid wall in sharp angle, 
+#        sometimes "bounces back". Issues appears in 
+#        "fixed problem with robot getting stuck" commit. Likely have something 
+#        to do with self.gate. Try not to revert change because it did help with
+#        bug with not catching the robot when it became parallel to obstacle 
+#        after turning to avoid wall/obstacle
+# TODO: more refactoring and renaming would be good
+# TODO: add documentation to actual documentation document
+# TODO: double check updateHeading; I don't think it turns in the shortest 
+#        direction to goal
 
 def distance(point1, point2):
     point1 = np.array(point1)
     point2 = np.array(point2)
     return np.linalg.norm(point1 - point2)
-
 
 class Robot:
     def __init__(self, startpos, endpos, width, velocityLeft, velocityRight, maxSpeed, minSpeed,
@@ -50,9 +59,10 @@ class Robot:
 
     def avoid_obstacles(self, pt_rt, pt_rb, dt, min_front, cont):
         margin_to_obs = 100
-        # left_value = self.check_parallel(left_top_point_cloud, left_bottom_point_cloud, 1)
         min_sensor_val = 120
         side_sensor_margin = 3
+
+        # initializaing values of the ultrasonic sensors
         if pt_rt is None:
             right_front = min_sensor_val
         else:
@@ -61,6 +71,15 @@ class Robot:
             right_back = min_sensor_val
         else:
             right_back = min(pt_rb[1], min_sensor_val)
+        if min_front is None:
+            # obst_detected can be false because this is in reference to a second obstacle, like a sharp turn
+            obst_detected = False  
+        else:
+            obst_detected = min_front[1] < margin_to_obs
+
+        # finds out whether the robot is parallel to obst or not
+        # made was_parallel and gate attributes of robot bc persistent and 
+        # I dont want to the sketchy accumulator thing with cont again
         if abs(right_front - right_back) < side_sensor_margin:
             parallel = 0
             self.was_parallel = True
@@ -70,60 +89,40 @@ class Robot:
         else:
             parallel = -1
             self.was_parallel = False
-        # parallel = self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 1)
-        # if left_value == 0 and right_value == 0:
-        if min_front is None:
-            condition = False
-        else:
-            condition = min_front[1] < margin_to_obs
-        if condition:
+        
+        # cont determines whether to continue turning to finish clearing obstacle. 
+        # This prevents the robot from getting stuck between turning to clear obstacle and maintaining parallel to obst
+        # stops turning to clear obstacle (cont becomes false) when 
+        # the robot becomes parallel to the wall: when the robot turns and fully reset against obs
+        if obst_detected:
             cont = True
-        # if the robot starts from parallel, we expect it to turn until we get back to parallel -> has to exit parallel first
-        if cont and self.gate:  # assume margin to obs large enough that turning won't hit the side
+        # gate is there in case the robot was starting parallel and then turning to avoid obstacle. 
+        # If gate didn't exist, then if the robot was initially parallel,
+        # then cont will immediately become false because the robot is already parallel to obst,
+        # so the program thinks that the robot already finish turning to clear obstacle
+        # this is when the condition is <cont and not parallel == 0> instead of
+        #  <cont and (self.gate or (not self.gate and not parallel == 0))>
+        if cont and (self.gate or (not self.gate and not parallel == 0)): # assume margin to obs large enough that turning won't hit the side
             self.heading += 0.02
             if not self.was_parallel:
                 self.gate = False
             return True
-        elif cont and not self.gate and not parallel == 0:
-            self.heading += 0.02
-            return True
         else:
             cont = False
             self.gate = True
+        
+        # second obstacle not detected
         if not cont:
             if parallel == 0:
-                # distance_to_front_obstacle = np.inf
-                # for point in front_point_cloud:
-                #     distance_to_front_obstacle = min(distance(point, (self.x, self.y)), distance_to_front_obstacle)
                 self.move_forward()
                 self.kinematics(dt)
             else:
-                # self.heading += -0.001 * left_value + -0.001 * right_value
                 self.heading += -0.01 * parallel
             return False
-
-    def check_parallel(self, fpc, bpc, margin):
-        min_dist_front = np.inf
-        min_dist_back = np.inf
-        for point in fpc:
-            local_min_distance = min(distance(point, (self.x, self.y)), self.minimumObstacleDistance)
-            min_dist_front = min(min_dist_front, local_min_distance)
-        for point in bpc:
-            local_min_distance = min(distance(point, (self.x, self.y)), self.minimumObstacleDistance)
-            min_dist_back = min(min_dist_back, local_min_distance)
-        if abs(min_dist_front - min_dist_back) < margin:
-            return 0
-        if min_dist_front > min_dist_back:
-            return 1
-        return -1
 
     def stop_moving(self):
         self.velocityRight = 0
         self.velocityLeft = 0
-
-    def move_backward(self):
-        self.velocityRight = - self.minSpeed
-        self.velocityLeft = - self.minSpeed / 2
 
     def move_forward(self):
         self.velocityRight = self.minSpeed
