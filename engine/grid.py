@@ -661,7 +661,7 @@ class Grid:
             self.curr_pos = (next_row, turning_column)
 
     ##Given border and active nodes, compute lawnmower traversal
-    def get_all_guided_lawnmower_waypoints_adjustable(self):
+    def get_all_guided_lawnmower_waypoints_adjustable(self, is_vertical):
         """
         Returns the waypoints being traversed. The algorithm traverses from bottom
         up starting from left to right.
@@ -689,8 +689,11 @@ class Grid:
 
             # Handle traversal from left/right and turning CW/CCW at the end of 
             # the row (or terminating).
-            self.add_guided_waypoints()
-            # self.add_guided_waypoints_vertical()
+            if is_vertical==True:
+                print(is_vertical)
+                self.add_guided_waypoints_vertical()
+            else:
+                self.add_guided_waypoints()
 
         return self.waypoints
 
@@ -837,7 +840,7 @@ class Grid:
         elif mode == ControlMode.STRAIGHT:
             waypoints = self.get_straight_line_waypoints(y_start_pct=0.5)
         elif mode == ControlMode.LAWNMOWER_GUIDED:
-            waypoints = self.get_all_guided_lawnmower_waypoints_adjustable()
+            waypoints = self.get_all_guided_lawnmower_waypoints_adjustable(True)
         else:
             return []
         return waypoints
