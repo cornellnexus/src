@@ -27,6 +27,8 @@ def main():
    
     activation_type = input("Activation type: ")
     is_vertical = "True" == input("Vertical traversal: ")
+    if is_vertical:
+        grid.direction = grid.Direction.UP
     plt.figure()
     plt.title("Activated Nodes")
     plt.xlim(-1, grid.get_num_rows()+1)
