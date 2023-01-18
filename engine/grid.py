@@ -319,8 +319,6 @@ class Grid:
             'border_nodes' will be initialized.
         """
         if self.direction == self.Direction.LEFT or self.direction == self.Direction.RIGHT:
-            print("on the if branch")
-            print(self.direction)
             border_list = []
             leftmost_node = None
             leftmost_node_pos = None
@@ -340,15 +338,12 @@ class Grid:
             self.leftmost_node = leftmost_node
             self.leftmost_node_pos = leftmost_node_pos
         else:
-            print("on the else Branch")
-            # TODO: find leftmost node for vertical traversal
             border_list = []
             leftmost_node = None
             leftmost_node_pos = None
 
             for row in range(self.num_rows):
                 for col in range(self.num_cols):
-                    print(row,col)
                     node = self.nodes[row][col]
                     if node.is_active and self.is_on_border(row, col, self.num_rows, self.num_cols):
                         # check if this is an active node and on the border
@@ -377,6 +372,18 @@ class Grid:
             2) not border node 
         between the current row in [pos] and the next row above [pos].
 
+        If the direction we are heading is Up, returns the row of the innermost 
+        (closer to the center of the shape) top node that is 
+            1) active  
+            2) not border node 
+        between the current col in [pos] and the next col above [pos].
+
+        If the direction we are heading is Down, returns the row of the innermost 
+        (closer to the center of the shape) bottom node that is 
+            1) active  
+            2) not border node 
+        between the current col in [pos] and the next col above [pos].
+
         If there are no more nodes in the next row, return None.
 
         pos: the current position (col,row)
@@ -384,10 +391,14 @@ class Grid:
         # Obtain all border nodes in the next and current rows 
         if self.direction == self.Direction.RIGHT or self.direction == self.Direction.LEFT:
             # Note: node_info: (node, row, col)
+            #Obtain all border_nodes on the next col
+            
             candidate_nodes_next = [node_info for node_info in self.border_nodes if node_info[2] == pos[1] + 1]
             candidate_nodes_curr = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]]
         else:
+            #Obtain all border_nodes on the next row
             candidate_nodes_next = [node_info for node_info in self.border_nodes if node_info[1] == pos[0] + 1]
+            #all border_nodes on current row
             candidate_nodes_curr = [node_info for node_info in self.border_nodes if node_info[1] == pos[0]]
         
         if (candidate_nodes_next == [] and candidate_nodes_curr == []):
@@ -409,14 +420,6 @@ class Grid:
                 return node_info_curr[1]
             else: 
                 return node_info_curr[2]
-        # Question: can we delete this?
-        # elif (candidate_nodes_curr == []):
-        #     if dir == 'R':
-        #         node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[1])
-        #     else:
-        #         node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[1])
-            
-        #     return (node_info_next[1], node_info_next[2])
         else:
             if self.direction == self.Direction.RIGHT:
                 node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[1])
@@ -429,11 +432,11 @@ class Grid:
             elif self.direction == self.Direction.UP:
                 node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[2])
                 node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[2])
-                return min(node_info_next[2], node_info_curr[2])+1
+                return min(node_info_next[2], node_info_curr[2])
             elif self.direction == self.Direction.DOWN:
                 node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[2])
                 node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[2])
-                return max(node_info_next[2], node_info_curr[2])-1
+                return max(node_info_next[2], node_info_curr[2])
 
     def plot_circle(self, start_pos, end_pos, center, orientation, theta_step=math.pi / 12):
         """
@@ -449,8 +452,8 @@ class Grid:
             theta_step: float representing the angle step when plotting the turning arch. The
             smaller the value, the smoother the curve will be. Default value = math.pi/12.
         """
+        r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
         if self.direction == self.Direction.LEFT or self.direction == self.Direction.RIGHT:
-            r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
             theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
             theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
             circle_plt = []
@@ -472,8 +475,28 @@ class Grid:
                 raise Exception("invalid orientation")
             return circle_plt
         else:
-            # TODO: circular traversal for vertical traversal
-            return []
+            theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
+            theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
+            circle_plt = []
+            if orientation == self.Orientation.CCW:
+                if theta_end < theta_init:
+                    theta_end = theta_end + 2 * math.pi
+                theta = theta_init
+                while theta < theta_end:
+                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
+                    theta = theta + theta_step
+            elif orientation == self.Orientation.CW:
+                if theta_init < theta_end:
+                    theta_init = theta_init + 2 * math.pi
+                theta = theta_init
+                while theta > theta_end:
+                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
+                    theta = theta - theta_step
+            else:
+                raise Exception("invalid orientation")
+            return circle_plt
+            # # TODO: circular traversal for vertical traversal
+            # return []
 
     def get_turning_column(self, edge_column):
         """
@@ -571,7 +594,6 @@ class Grid:
         # Column where we want to begin turning, one node closer to the inside of our shape
         turning_column = self.get_turning_column(edge_column) 
         next_row = self.curr_pos[1] + 1
-        # print("edge_row",edge_column,"turning row", turning_column, "next_column",next_row)
 
         # Question: Can we delete?
         # elif curr_pos[0] < (left_pos[0] + 1):
@@ -652,10 +674,8 @@ class Grid:
             # Turn to next row
             # Create waypoints needed for a smooth turning trajectory to 
             # "guide" our robot to the next original waypoint
-            # circle_plt = self.plot_circle((turning_column, self.curr_pos[1]), (turning_column, next_row),
-            #                             (turning_column, self.curr_pos[1] + .5), self.get_turn_orientation())
-            circle_plt = self.plot_circle((self.curr_pos[1], turning_row), (next_column, turning_row),
-                                        (self.curr_pos[1] + .5, turning_row), self.get_turn_orientation())                                       
+            circle_plt = self.plot_circle((self.curr_pos[0], turning_row), (next_column, turning_row),
+                                        (self.curr_pos[0] + .5, turning_row), self.get_turn_orientation())                                       
             self.waypoints += circle_plt
             # Update traversal details
             self.switch_directions()
