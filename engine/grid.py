@@ -453,50 +453,28 @@ class Grid:
             smaller the value, the smoother the curve will be. Default value = math.pi/12.
         """
         r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
-        if self.direction == self.Direction.LEFT or self.direction == self.Direction.RIGHT:
-            theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
-            theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
-            circle_plt = []
-            if orientation == self.Orientation.CCW:
-                if theta_end < theta_init:
-                    theta_end = theta_end + 2 * math.pi
-                theta = theta_init
-                while theta < theta_end:
-                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
-                    theta = theta + theta_step
-            elif orientation == self.Orientation.CW:
-                if theta_init < theta_end:
-                    theta_init = theta_init + 2 * math.pi
-                theta = theta_init
-                while theta > theta_end:
-                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
-                    theta = theta - theta_step
-            else:
-                raise Exception("invalid orientation")
-            return circle_plt
+    
+        theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
+        theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
+        circle_plt = []
+        if orientation == self.Orientation.CCW:
+            if theta_end < theta_init:
+                theta_end = theta_end + 2 * math.pi
+            theta = theta_init
+            while theta < theta_end:
+                circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
+                theta = theta + theta_step
+        elif orientation == self.Orientation.CW:
+            if theta_init < theta_end:
+                theta_init = theta_init + 2 * math.pi
+            theta = theta_init
+            while theta > theta_end:
+                circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
+                theta = theta - theta_step
         else:
-            theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
-            theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
-            circle_plt = []
-            if orientation == self.Orientation.CCW:
-                if theta_end < theta_init:
-                    theta_end = theta_end + 2 * math.pi
-                theta = theta_init
-                while theta < theta_end:
-                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
-                    theta = theta + theta_step
-            elif orientation == self.Orientation.CW:
-                if theta_init < theta_end:
-                    theta_init = theta_init + 2 * math.pi
-                theta = theta_init
-                while theta > theta_end:
-                    circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
-                    theta = theta - theta_step
-            else:
-                raise Exception("invalid orientation")
-            return circle_plt
-            # # TODO: circular traversal for vertical traversal
-            # return []
+            raise Exception("invalid orientation")
+        return circle_plt
+       
 
     def get_turning_column(self, edge_column):
         """
