@@ -34,7 +34,7 @@ class BasicMotorControllerTest:
 
     def motor_controller_forward(self):
         
-        stop_time = time.time() + 5
+        stop_time = time.time() + 3
         GPIO.add_event_detect(pin,GPIO.RISING,callback=pulse_handler_right)  
 
         while time.time() <	stop_time:
@@ -128,3 +128,4 @@ test.run()
 #         print("check code and setup, something is wrong")
 #     finally:
 #         GPIO.cleanup()
+
