@@ -23,7 +23,7 @@ def distance(point1, point2):
 
 class Robot:
     def __init__(self, startpos, endpos, width, velocityLeft, velocityRight, maxSpeed, minSpeed,
-                 minimumObstacleDistance, countDown):
+                 minimumObstacleDistance, countDown, goalMargin):
         self.metersToPixels = 3779.52  # meters to pixels conversion
         # robot dimensions
         self.width = width * self.metersToPixels
@@ -44,6 +44,8 @@ class Robot:
         self.distFromClosestObstacle = np.inf
         self.was_parallel = False
         self.gate = True
+        self.prev_dist = distance(((endpos[0]+goalMargin[0]),(endpos[1]+goalMargin[1])), startpos)
+        self.goalMargin = goalMargin
 
     def detect_obstacles(self, point_cloud):
         if len(point_cloud) > 0:
@@ -57,7 +59,26 @@ class Robot:
         self.distFromClosestObstacle = np.inf
         return False
 
-    def avoid_obstacles(self, pt_rt, pt_rb, dt, min_front, cont):
+    def is_on_line(self):
+        tolerance = 0.5
+        print("63")
+        print(self.startX)
+        print(1200 - self.startY)
+        print(self.endX)
+        print(1200 - self.endY)
+        print(self.x)
+        print(1200 - self.y)
+        slope = ((1200 - (self.endY + self.goalMargin[1]/2)) - (1200 - self.startY))/(self.endX + self.goalMargin[0]/2 - self.startX)
+        desiredy = slope * (self.x - self.startX) + (1200 - self.startY)
+        difference = (1200 - self.y) - desiredy
+        print(slope)
+        print(desiredy)
+        print(difference)
+        # result = (self.y - self.startY) - slope * (self.x - self.startX) # y2-y1 = m(x2-x1)
+        # print(result)
+        return abs(difference) < tolerance
+
+    def avoid_obstacles(self, pt_rt, pt_rb, min_front, dt, cont, boundary_following):
         margin_to_obs = 100
         min_sensor_val = 120
         side_sensor_margin = 3
@@ -77,6 +98,10 @@ class Robot:
         else:
             obst_detected = min_front[1] < margin_to_obs
 
+        if obst_detected:
+            cont = True
+            boundary_following = True
+
         # finds out whether the robot is parallel to obst or not
         # made was_parallel and gate attributes of robot bc persistent and 
         # I dont want to the sketchy accumulator thing with cont again
@@ -90,35 +115,58 @@ class Robot:
             parallel = -1
             self.was_parallel = False
         
-        # cont determines whether to continue turning to finish clearing obstacle. 
-        # This prevents the robot from getting stuck between turning to clear obstacle and maintaining parallel to obst
-        # stops turning to clear obstacle (cont becomes false) when 
-        # the robot becomes parallel to the wall: when the robot turns and fully reset against obs
-        if obst_detected:
-            cont = True
-        # gate is there in case the robot was starting parallel and then turning to avoid obstacle. 
-        # If gate didn't exist, then if the robot was initially parallel,
-        # then cont will immediately become false because the robot is already parallel to obst,
-        # so the program thinks that the robot already finish turning to clear obstacle
-        # this is when the condition is <cont and not parallel == 0> instead of
-        #  <cont and (self.gate or (not self.gate and not parallel == 0))>
         if cont and (self.gate or (not self.gate and not parallel == 0)): # assume margin to obs large enough that turning won't hit the side
             self.heading += 0.02
+            self.stop_moving()
             if not self.was_parallel:
                 self.gate = False
-            return True
+            return True, True
         else:
             cont = False
             self.gate = True
-        
-        # second obstacle not detected
-        if not cont:
-            if parallel == 0:
+
+        on_line = self.is_on_line()
+        curr_dist = distance((self.x, self.y), (self.endX + self.goalMargin[0]/2, self.endY + self.goalMargin[1]/2))
+        print()
+        print()
+        print()
+        print(self.prev_dist)
+        print(curr_dist)
+        print()
+        print("128")
+
+        if (on_line and (self.prev_dist - curr_dist > 0)):
+            # make this a gate. Currently, if it moves a tiny bit towards goal, this gets triggered
+            print("133")
+            print(self.updateHeading())
+            self.heading += self.updateHeading()
+            if self.updateHeading() == 0:
+                print("135")
+                self.stop_moving()
+                self.prev_dist = curr_dist
+
+            boundary_following = False
+
+        print(cont)
+        print(boundary_following)
+        print(parallel)
+        print(obst_detected)
+        print(min_front)
+        print(margin_to_obs)
+        print()
+        if (not cont) and boundary_following:
+            if (parallel == 0) and (not obst_detected):
                 self.move_forward()
                 self.kinematics(dt)
             else:
                 self.heading += -0.01 * parallel
-            return False
+                self.stop_moving()
+
+            return False, True
+
+        return cont, boundary_following
+        
+        # second obstacle not detected
 
     def stop_moving(self):
         self.velocityRight = 0
@@ -165,6 +213,10 @@ class Robot:
         x = 20 * math.cos(self.heading)
         y = 20 * math.sin(self.heading)
         return [x, y]
+
+    def update_dist(self):
+        curr_dist = distance((self.x, self.y), (self.endX + self.goalMargin[0]/2, self.endY + self.goalMargin[1]/2))
+        self.prev_dist = curr_dist
 
 
 class Graphics:

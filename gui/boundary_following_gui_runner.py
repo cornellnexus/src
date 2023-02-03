@@ -109,12 +109,13 @@ dt = 0
 last_time = pygame.time.get_ticks()
 
 running = True
-map_counter = 0
+map_counter = 1
 start_condition = True
 pygame.init()
 
 obstacleDetected = False
 cont = False  # documented in boundary_folllowing_gui.py in avoid_obstacles()
+boundary_following = False
 
 # simulation loop
 while running:
@@ -135,7 +136,7 @@ while running:
         gfx = Graphics(MAP_DIMENSIONS, GUI_DIR + "/gui_images/Nexus_Robot.png",
                GUI_DIR + "/gui_images/" + maps[map_counter] + ".png")
 
-        robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.005, 100, 5) # robot is ~ 1.5 meters by 1.5 meters
+        robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.005, 100, 5, rbt.size) # robot is ~ 1.5 meters by 1.5 meters
 
         ultra_sonic = Ultrasonic(sensor_range, gfx.map, None, False)
         ultra_sonic_left_top = Ultrasonic(sensor_range, gfx.map, None, True)
@@ -143,8 +144,6 @@ while running:
         ultra_sonic_right_top = Ultrasonic(sensor_range, gfx.map, None, True)
         ultra_sonic_right_bottom = Ultrasonic(sensor_range, gfx.map, None, True)
 
-        dist_to_goal = math.sqrt((end[1] - robot.y) ** 2 + (end[0] - robot.x) ** 2) + 1
-        cont = False
 
         map_counter += 1
     start_condition = (robot.x > end[0] and robot.x < end[0] + rbt.size[0]) and (robot.y > end[1] and robot.y < end[1] + rbt.size[1])
@@ -152,12 +151,15 @@ while running:
     # Add map and get change in time between screen refresh
     dt = (pygame.time.get_ticks() - last_time) / 200
     last_time = pygame.time.get_ticks()
+    
+    margin_to_obs = 100
 
-    new_dist = math.sqrt((end[1] - robot.y) ** 2 + (end[0] - robot.x) ** 2)
-    # problem is that it calculates dist_to_goal as the new_dist, which is before it moves. so once it moves and ob avoidance moves, its still less than prev dist
-    # sol: added min_dist to else branch
-
-    if (not obstacleDetected) and new_dist < dist_to_goal:
+    if ultra_sonic.pt is None:
+        obst_detected = False
+    else:
+        obst_detected = ultra_sonic.pt[1] < margin_to_obs
+    
+    if (not obst_detected) and (not cont) and (not boundary_following):
         # Move robot
         while not robot.updateHeading() == 0:
             last_time = pygame.time.get_ticks()
@@ -171,13 +173,12 @@ while running:
             pygame.display.update()
         robot.move_forward()
         robot.kinematics(dt)
-        dist_to_goal = new_dist
+        robot.update_dist()
     else:
         # Execute obstacle avoidance behaviors
-        min_dist = min(new_dist, dist_to_goal)
-        cont = robot.avoid_obstacles(ultra_sonic_right_top.pt, ultra_sonic_right_bottom.pt, dt, ultra_sonic.pt, cont)
+        cont, boundary_following = robot.avoid_obstacles(ultra_sonic_right_top.pt, ultra_sonic_right_bottom.pt, ultra_sonic.pt, dt, cont, boundary_following)
+
         obstacleDetected = False
-        dist_to_goal = min_dist
 
     # TODO: Add Boolean for if you just did boundary traversal. 
     # If just did boundary traversal, check right side for obstacles in angle to goal
