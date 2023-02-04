@@ -631,12 +631,6 @@ class Grid:
         # Column where we want to begin turning, one node closer to the inside of our shape
         turning_row = self.get_turning_column(edge_row) 
         next_column = self.curr_pos[0] + 1
-
-        # Question: Can we delete?
-        # elif curr_pos[0] < (left_pos[0] + 1):
-        #     phase = WaypointPhase.TERMINATE
-        # else:
-
         # Traverse the row until it is time to turn
         while not self.is_before_turning_column(turning_row):
             self.waypoints.append(new_pos)
