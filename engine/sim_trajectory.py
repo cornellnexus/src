@@ -17,9 +17,8 @@ import logging
 import threading
 import time
 
-import sys
 import os
-import serial
+
 
 # ser = serial.Serial("/dev/ttyS0", 57600) # Uncomment for RPI to GUI test
 

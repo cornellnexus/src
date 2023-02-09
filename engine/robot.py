@@ -21,7 +21,7 @@ from constants.definitions import *
 
 from engine.ekf import LocalizationEKF
 from engine.sensor_module import SensorModule
-from constants.geo_fences import ENGINEERING_QUAD
+from constants.definitions import ENGINEERING_QUAD
 
 from enum import Enum
 import time
