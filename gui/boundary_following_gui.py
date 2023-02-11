@@ -23,7 +23,7 @@ def distance(point1, point2):
 
 class Robot:
     def __init__(self, startpos, endpos, width, velocityLeft, velocityRight, maxSpeed, minSpeed,
-                 minimumObstacleDistance, countDown, goalMargin):
+                 minimumObstacleDistance, countDown, goalMargin, debug):
         self.metersToPixels = 3779.52  # meters to pixels conversion
         # robot dimensions
         self.width = width * self.metersToPixels
@@ -47,6 +47,9 @@ class Robot:
         self.prev_dist = distance(((endpos[0]+goalMargin[0]),(endpos[1]+goalMargin[1])), startpos)
         self.goalMargin = goalMargin
         self.last_pos = (self.x, self.y) # for determining circle where robot has to leave before it can turn towards line
+        self.first_gate = False
+        self.second_gate = False
+        self.debug = debug
 
     def detect_obstacles(self, point_cloud):
         if len(point_cloud) > 0:
@@ -61,16 +64,21 @@ class Robot:
         return False
 
     def is_on_line(self):
-        tolerance = 0.5
+        tolerance = 2
         slope = ((1200 - (self.endY + self.goalMargin[1]/2)) - (1200 - self.startY))/(self.endX + self.goalMargin[0]/2 - self.startX)
         desiredy = slope * (self.x - self.startX) + (1200 - self.startY)
         difference = (1200 - self.y) - desiredy
+        if self.debug:
+            print("isonline")
+            print(desiredy)
+            print(1200 - self.y)
+            print(difference)
         return abs(difference) < tolerance
 
     def avoid_obstacles(self, pt_rt, pt_rb, min_front, dt, cont, boundary_following):
         margin_to_obs = 100
         min_sensor_val = 150
-        side_sensor_margin = 4
+        side_sensor_margin = 3
         threshold_for_following_line = 10
         # initializaing values of the ultrasonic sensors
         if pt_rt is None:
@@ -87,7 +95,15 @@ class Robot:
         else:
             obst_detected = min_front[1] < margin_to_obs
         if obst_detected:
-            cont = True
+            if (not cont) and boundary_following:
+                if self.first_gate and self.second_gate:
+                    cont = True
+                elif self.first_gate:
+                    self.second_gate = True
+                else:
+                    self.first_gate = True
+            else:
+                cont = True
             boundary_following = True
         # finds out whether the robot is parallel to obst or not
         # made was_parallel and gate attributes of robot bc persistent and 
@@ -101,23 +117,39 @@ class Robot:
         else:
             parallel = -1
             self.was_parallel = False
-        
+        if self.debug:
+            print()
+            print("parallel")
+            print(right_front)
+            print(right_back)
         if cont and (self.gate or (not self.gate and not parallel == 0)): # assume margin to obs large enough that turning won't hit the side
             self.heading += 0.02
             self.stop_moving()
+            if self.debug:
+                print("turn 1")
+                print(self.gate)
+                print(parallel)
+                print(self.was_parallel)
             if not self.was_parallel:
                 self.gate = False
             return True, True
         elif cont:
             cont = False
             self.gate = True
-            self.last_pos = (self.x, self.y)
 
         on_line = self.is_on_line()
         curr_dist = distance((self.x, self.y), (self.endX + self.goalMargin[0]/2, self.endY + self.goalMargin[1]/2))
+        if self.debug:
+            print("dist")
+            print(on_line)
+            print(self.prev_dist)
+            print(curr_dist)
         if (on_line and (self.prev_dist - curr_dist > 0)):
             # make this a gate. Currently, if it moves a tiny bit towards goal, this gets triggered
-            if (distance((self.x, self.y), self.last_pos) > 3):  
+            if self.debug:
+                print((self.x, self.y))
+                print(self.last_pos)
+            if (distance((self.x, self.y), self.last_pos) > 3): 
                 self.heading += self.updateHeading()
                 if self.updateHeading() == 0:
                     self.stop_moving()
@@ -129,6 +161,8 @@ class Robot:
                 self.move_forward()
                 self.kinematics(dt)
             else:
+                if self.debug:
+                    print("turn 3")
                 self.heading += -0.01 * parallel
                 self.stop_moving()
 
@@ -165,17 +199,27 @@ class Robot:
             finalHeading = finalHeading + 2 * math.pi
         if np.abs(finalHeading - curr_angle) > 0.1:
             if finalHeading > curr_angle:
-                return .01
+                return .1
             else:
-                return -.01
+                return -.1
         else:
             return 0
 
     def kinematics(self, dt):
-        self.x += ((self.velocityLeft + self.velocityRight) / 2) * \
+        self.heading = self.heading % (2*math.pi)
+        x_step = ((self.velocityLeft + self.velocityRight) / 2) * \
                   math.cos(self.heading) * dt
-        self.y -= ((self.velocityLeft + self.velocityRight) / 2) * \
+        self.x += x_step
+        y_step = ((self.velocityLeft + self.velocityRight) / 2) * \
                   math.sin(self.heading) * dt
+        self.y -= y_step
+        if self.debug:
+            print("kinematics")
+            print(self.heading)
+            print(x_step)
+            print(y_step)
+
+
         self.velocityRight = min(self.maxSpeed, self.velocityRight)
         self.velocityLeft = min(self.maxSpeed, self.velocityLeft)
 
@@ -251,7 +295,7 @@ class Ultrasonic:
         x1, y1 = x, y
         start_angle = heading - self.sensor_range[1]
         finish_angle = heading + self.sensor_range[1]
-        for angle in np.linspace(start_angle, finish_angle, 10, False):
+        for angle in np.linspace(start_angle, finish_angle, 70, False):
             x2 = x1 + self.sensor_range[0] * math.cos(angle)
             y2 = y1 - self.sensor_range[0] * math.sin(angle)
             for i in range(0, 100):
@@ -260,7 +304,8 @@ class Ultrasonic:
                 y = int(y2 * u + y1 * (1 - u))
                 if 0 < x < self.map_width and 0 < y < self.map_height:
                     color = self.map.get_at((x, y))
-                    self.map.set_at((x, y), (0, 208, 255))
+                    # draws the pointclouds of the sensor
+                    # self.map.set_at((x, y), (0, 208, 255))
                     if (color[0], color[1], color[2]) == (0, 0, 0):
                         obstacles.append([x, y])
                         break
@@ -273,7 +318,7 @@ class Ultrasonic:
         x1, y1 = x, y
         start_angle = heading - self.sensor_range[1]
         finish_angle = heading + self.sensor_range[1]
-        for angle in np.linspace(start_angle, finish_angle, 10, False):
+        for angle in np.linspace(start_angle, finish_angle, 70, False):
             x2 = x1 + self.sensor_range[0] * math.cos(angle)
             y2 = y1 - self.sensor_range[0] * math.sin(angle)
             for i in range(0, 100):

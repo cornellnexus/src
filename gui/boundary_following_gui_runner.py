@@ -116,6 +116,9 @@ pygame.init()
 obstacleDetected = False
 cont = False  # documented in boundary_folllowing_gui.py in avoid_obstacles()
 boundary_following = False
+first_encounter = True
+
+print_debug = False
 
 # simulation loop
 while running:
@@ -127,6 +130,9 @@ while running:
 
     # Check if robot has reached end
     if start_condition:
+        if print_debug:
+            print("--------- new map -------------")
+        first_encounter = True
         if map_counter == len(maps):
             running = False
             break
@@ -136,7 +142,7 @@ while running:
         gfx = Graphics(MAP_DIMENSIONS, GUI_DIR + "/gui_images/Nexus_Robot.png",
                GUI_DIR + "/gui_images/" + maps[map_counter] + ".png")
 
-        robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.005, 100, 5, rbt.size) # robot is ~ 1.5 meters by 1.5 meters
+        robot = Robot(start, end, 0.01, 0.01, 0.01, 0.02, 0.005, 100, 5, rbt.size, print_debug) # robot is ~ 1.5 meters by 1.5 meters
 
         ultra_sonic = Ultrasonic(sensor_range, gfx.map, None, False)
         ultra_sonic_left_top = Ultrasonic(sensor_range, gfx.map, None, True)
@@ -160,8 +166,11 @@ while running:
         obst_detected = ultra_sonic.pt[1] < margin_to_obs
     
     if (not obst_detected) and (not cont) and (not boundary_following):
+        first_encounter = True
         # Move robot
         while not robot.updateHeading() == 0:
+            if print_debug:
+                print("turn 4")
             last_time = pygame.time.get_ticks()
 
             robot.stop_moving()
@@ -175,6 +184,9 @@ while running:
         robot.kinematics(dt)
         robot.update_dist()
     else:
+        if first_encounter:
+            robot.last_pos = (robot.x, robot.y)
+            first_encounter = False
         # Execute obstacle avoidance behaviors
         cont, boundary_following = robot.avoid_obstacles(ultra_sonic_right_top.pt, ultra_sonic_right_bottom.pt, ultra_sonic.pt, dt, cont, boundary_following)
 
