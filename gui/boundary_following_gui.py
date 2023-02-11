@@ -46,6 +46,7 @@ class Robot:
         self.gate = True
         self.prev_dist = distance(((endpos[0]+goalMargin[0]),(endpos[1]+goalMargin[1])), startpos)
         self.goalMargin = goalMargin
+        self.last_pos = (self.x, self.y) # for determining circle where robot has to leave before it can turn towards line
 
     def detect_obstacles(self, point_cloud):
         if len(point_cloud) > 0:
@@ -61,28 +62,16 @@ class Robot:
 
     def is_on_line(self):
         tolerance = 0.5
-        print("63")
-        print(self.startX)
-        print(1200 - self.startY)
-        print(self.endX)
-        print(1200 - self.endY)
-        print(self.x)
-        print(1200 - self.y)
         slope = ((1200 - (self.endY + self.goalMargin[1]/2)) - (1200 - self.startY))/(self.endX + self.goalMargin[0]/2 - self.startX)
         desiredy = slope * (self.x - self.startX) + (1200 - self.startY)
         difference = (1200 - self.y) - desiredy
-        print(slope)
-        print(desiredy)
-        print(difference)
-        # result = (self.y - self.startY) - slope * (self.x - self.startX) # y2-y1 = m(x2-x1)
-        # print(result)
         return abs(difference) < tolerance
 
     def avoid_obstacles(self, pt_rt, pt_rb, min_front, dt, cont, boundary_following):
         margin_to_obs = 100
-        min_sensor_val = 120
-        side_sensor_margin = 3
-
+        min_sensor_val = 150
+        side_sensor_margin = 4
+        threshold_for_following_line = 10
         # initializaing values of the ultrasonic sensors
         if pt_rt is None:
             right_front = min_sensor_val
@@ -97,11 +86,9 @@ class Robot:
             obst_detected = False  
         else:
             obst_detected = min_front[1] < margin_to_obs
-
         if obst_detected:
             cont = True
             boundary_following = True
-
         # finds out whether the robot is parallel to obst or not
         # made was_parallel and gate attributes of robot bc persistent and 
         # I dont want to the sketchy accumulator thing with cont again
@@ -121,39 +108,22 @@ class Robot:
             if not self.was_parallel:
                 self.gate = False
             return True, True
-        else:
+        elif cont:
             cont = False
             self.gate = True
+            self.last_pos = (self.x, self.y)
 
         on_line = self.is_on_line()
         curr_dist = distance((self.x, self.y), (self.endX + self.goalMargin[0]/2, self.endY + self.goalMargin[1]/2))
-        print()
-        print()
-        print()
-        print(self.prev_dist)
-        print(curr_dist)
-        print()
-        print("128")
-
         if (on_line and (self.prev_dist - curr_dist > 0)):
             # make this a gate. Currently, if it moves a tiny bit towards goal, this gets triggered
-            print("133")
-            print(self.updateHeading())
-            self.heading += self.updateHeading()
-            if self.updateHeading() == 0:
-                print("135")
-                self.stop_moving()
-                self.prev_dist = curr_dist
+            if (distance((self.x, self.y), self.last_pos) > 3):  
+                self.heading += self.updateHeading()
+                if self.updateHeading() == 0:
+                    self.stop_moving()
+                    self.prev_dist = curr_dist
+                boundary_following = False
 
-            boundary_following = False
-
-        print(cont)
-        print(boundary_following)
-        print(parallel)
-        print(obst_detected)
-        print(min_front)
-        print(margin_to_obs)
-        print()
         if (not cont) and boundary_following:
             if (parallel == 0) and (not obst_detected):
                 self.move_forward()

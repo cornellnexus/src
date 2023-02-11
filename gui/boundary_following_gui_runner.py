@@ -109,7 +109,7 @@ dt = 0
 last_time = pygame.time.get_ticks()
 
 running = True
-map_counter = 1
+map_counter = 0
 start_condition = True
 pygame.init()
 
