@@ -9,7 +9,7 @@ L=15    #dummy variable for distance from one wheel to center of robot
 pin = 26
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(pin,GPIO.IN)
-    
+
 class BasicMotorControllerTest:
 
     def __init__(self): 
@@ -17,35 +17,70 @@ class BasicMotorControllerTest:
         self.mc.setup()
         self.counter_right = 0
 
+    def motor_controller_forward(self):
+        stop_time = time.time() + 3
+        GPIO.add_event_detect(pin,GPIO.RISING,callback=pulse_handler_right)
+        while time.time() <	stop_time:
+            self.mc.go_forward()
+        GPIO.cleanup()
+
+    def motor_controller_reverse(self):
+        stop_time = time.time() + 3
+        GPIO.add_event_detect(pin,GPIO.RISING,callback=pulse_handler_right)  
+        while time.time() <	stop_time:
+            self.mc.reverse()
+        GPIO.cleanup()
+
     def motor_controller_turn_right(self): 
         stop_time = time.time() + 3
+        # GPIO.add_event_detect(pin,GPIO.RISING,callback=pulse_handler_right)?
         while time.time() <	stop_time:
             self.mc.turn_right()
-
-    def motor_controller_test_stop(self): 
-        stop_time = time.time() + 2
-        while time.time() <	stop_time:
-            self.mc.stop()
+        # GPIO.cleanup()?
     
     def motor_controller_turn_left(self): 
         stop_time = time.time() + 3
+        # GPIO.add_event_detect(pin,GPIO.RISING,callback=pulse_handler_right)?
         while time.time() <	stop_time:
             self.mc.turn_left()
+        # GPIO.cleanup()?
 
-    def motor_controller_forward(self):
-        
-        stop_time = time.time() + 3
-        GPIO.add_event_detect(pin,GPIO.RISING,callback=pulse_handler_right)  
-
+    def motor_controller_test_stop(self): 
+        stop_time = time.time() + 2
+        # GPIO.add_event_detect(pin,GPIO.RISING,callback=pulse_handler_right)?
         while time.time() <	stop_time:
-            self.mc.go_forward()
-         
-          
-        GPIO.cleanup()
+            self.mc.stop()
+        # GPIO.cleanup()?
 
     def run(self):
-        self.motor_controller_forward()
+        print("Starting forward test...")
+        try:
+            self.motor_controller_forward()
+        except:
+            print("Forward test failed")
+        print("Forward test successful\nStarting reverse test...")
+        time.sleep(3)
+        try:
+            self.motor_controller_reverse()
+        except:
+            print("Reverse test failed")
+        print("Reverse test successful\nStarting left turn test...")
+        time.sleep(3)
+        try:
+            self.motor_controller_turn_left()
+        except:
+            print("Left turn test failed")
+        print("Left turn test successful\nStarting right turn test...")
+        time.sleep(3)
+        try:
+            self.motor_controller_turn_right()
+        except:
+            print("Right turn test failed")
+        print("Testing completed")
+        # TODO: Test motor_controller_test_stop() somehow
 
+test = BasicMotorControllerTest()
+test.run()
 
 # class MotorControllerTest: 
 # 	"""
@@ -109,8 +144,6 @@ def odometry(r, L):
     print("check5")
     counter_right=0
     #counter_left=0
-test= BasicMotorControllerTest()
-test.run()
 
 # if __name__ == "__main__":
 #     GPIO.setmode(GPIO.BCM) 
