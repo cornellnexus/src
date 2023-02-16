@@ -1,3 +1,4 @@
+import numpy as np
 from engine.phase import Phase
 
 class Robot_State:
@@ -53,6 +54,16 @@ class Robot_State:
         self.move_dist = 0.5
         self.turn_angle = 3
         self.plastic_weight = 0
+
+        self.state = np.array([[Robot_State.x_pos], [Robot_State.y_pos], [Robot_State.heading]])
+        self.truthpose = np.transpose(np.array([[Robot_State.x_pos], [Robot_State.y_pos], [Robot_State.heading]]))
+
+        self.battery = 100
+        self.acceleration = [0, 0, 0]
+        self.magnetic_field = [0, 0, 0]
+        self.gyro_rotation = [0, 0, 0]
+        self.linear_v = 0
+        self.angular_v = 0
 
     # def rpiToGui():
     #     pass
