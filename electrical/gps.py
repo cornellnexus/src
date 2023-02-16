@@ -6,12 +6,13 @@ import pynmea2
 import csv
 if False: 
     from ublox_gps import UbloxGps
+from engine.robot_state import Robot_State
 
 
 class GPS:
     def __init__(self, init_serial, is_sim):
-        self.is_sim = is_sim
-        if not self.is_sim: 
+        Robot_State.is_sim = is_sim
+        if not Robot_State.is_sim: 
             self.ser = init_serial
             self.gps = UbloxGps(self.ser)
 
@@ -27,7 +28,7 @@ class GPS:
         if coord is not None:
             return (coord)
         """
-        if not self.is_sim: 
+        if not Robot_State.is_sim: 
             geo = self.gps.geo_coords()
             return {"long": geo.lon, "lat": geo.lat}
 
@@ -37,7 +38,7 @@ class GPS:
     """
 
     def parse_gps(self, gps_line):
-        if not self.is_sim: 
+        if not Robot_State.is_sim: 
             msg = pynmea2.parse(gps_line)
             data = {"long": msg.longitude, "lat": msg.latitude}
             return (data)
@@ -48,7 +49,7 @@ class GPS:
     def setup(self): 
         gps_data = []
         count = 0 
-        if not self.is_sim: 
+        if not Robot_State.is_sim: 
             while (len(gps_data) < 25): 
                 count += 1 
                 data = self.get_gps()
