@@ -1,5 +1,6 @@
 import numpy as np
 from engine.phase import Phase
+from electrical.imu import IMU
 
 class Robot_State:
 
@@ -59,6 +60,7 @@ class Robot_State:
         self.truthpose = np.transpose(np.array([[Robot_State.x_pos], [Robot_State.y_pos], [Robot_State.heading]]))
 
         self.battery = 100
+        self.imu = IMU()
         self.acceleration = [0, 0, 0]
         self.magnetic_field = [0, 0, 0]
         self.gyro_rotation = [0, 0, 0]

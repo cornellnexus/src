@@ -54,6 +54,9 @@ class Robot:
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
         Robot_State.state = np.round(integrate_odom(Robot_State.state, dist, turn_angle), 3)
+        imu_data = self.imu.get_imu()
+        Robot_State.state[2] = math.degrees(math.atan2(
+            imu_data["mag"][1], imu_data["mag"][0]))
         # if it is a simulation,
         if Robot_State.is_sim:
             Robot_State.truthpose = np.append(
