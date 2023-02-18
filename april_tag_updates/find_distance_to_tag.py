@@ -67,4 +67,8 @@ while True:
 		if key == ord('q'):
 			break
 cap.close()
+<<<<<<< Updated upstream
 cv2.destroyAllWindows()
+=======
+cv2.destroyAllWindows()
+>>>>>>> Stashed changes
