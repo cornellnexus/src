@@ -31,9 +31,9 @@ if __name__ == "__main__":
     # Settings, can be changed as desired
     zone = ENGINEERING_QUAD  # Used for GPS visualization
     zone_photo = "geo_images/engineering_quad.png"
-    imu_data_file = "data/imu_360_sample1.csv"
-    gps_data_file = "data/GPS_13-11-2021_14-18-15.txt"
-    # gps_data_file = "data/GPS_22-11-2021.txt"
+    imu_data_file = "csv/imu_360_sample1.csv"
+    gps_data_file = "csv/GPS_13-11-2021_14-18-15.txt"
+    # gps_data_file = "csv/GPS_22-11-2021.txt"
 
     # Read command-line arguments
     if len(sys.argv) != 4 or "live=" not in sys.argv[1] or "data=" not in sys.argv[2] or "ekf=" not in sys.argv[3]\
@@ -74,7 +74,8 @@ if __name__ == "__main__":
             (0, 0), 3, 100, 80, animated=True, fill=False, width=2, ec="b", hatch="xx")
     if data_type == DataType.GPS_ONLY or data_type == DataType.IMU_AND_GPS:
         eng_quad_img = mpimg.imread(zone_photo)
-        plt.imshow(eng_quad_img, origin="upper", extent=[0, x_range, 0, y_range])
+        plt.imshow(eng_quad_img, origin="upper",
+                   extent=[0, x_range, 0, y_range])
 
     # Sensor data acquisition setup
     if is_live:
@@ -87,18 +88,22 @@ if __name__ == "__main__":
         if data_type == DataType.IMU_ONLY:
             with open(imu_data_file) as file:
                 imu_readings = file.readlines()
-                imu_readings = [ast.literal_eval(line) for line in imu_readings]
+                imu_readings = [ast.literal_eval(
+                    line) for line in imu_readings]
         elif data_type == DataType.GPS_ONLY:
             with open(gps_data_file) as file:
                 gps_readings = file.readlines()
-                gps_readings = [ast.literal_eval(line) for line in gps_readings]
+                gps_readings = [ast.literal_eval(
+                    line) for line in gps_readings]
         else:
             with open(imu_data_file) as file:
                 imu_readings = file.readlines()
-                imu_readings = [ast.literal_eval(line) for line in imu_readings]
+                imu_readings = [ast.literal_eval(
+                    line) for line in imu_readings]
             with open(gps_data_file) as file:
                 gps_readings = file.readlines()
-                gps_readings = [ast.literal_eval(line) for line in gps_readings]
+                gps_readings = [ast.literal_eval(
+                    line) for line in gps_readings]
 
         if not gps_readings:
             frames = len(imu_readings)
@@ -107,13 +112,16 @@ if __name__ == "__main__":
         else:
             frames = min(len(imu_readings) - 1, len(gps_readings) - 1)
 
-
     # EKF setup
     if use_ekf:
         # Get the first GPS coordinate
         first_gps_coord = (gps_readings[0]["lat"], gps_readings[0]["lon"])
-        x_init, y_init = get_vincenty_x(zone[0], first_gps_coord), get_vincenty_y(zone[0], first_gps_coord)
-        heading_init = math.degrees(math.atan2(imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["x"]))
+        x_init, y_init = get_vincenty_x(
+            zone[0], first_gps_coord), get_vincenty_y(zone[0], first_gps_coord)
+        # heading_init = math.degrees(math.atan2(
+        #     imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["x"]))
+        heading_init = math.degrees(math.atan2(
+            -1 * imu_readings[0]["mag"]["x"], imu_readings[0]["mag"]["y"]))
 
         # mu is meters from start position (bottom left position facing up)
         mu = np.array([[x_init], [y_init], [heading_init]])
@@ -122,7 +130,7 @@ if __name__ == "__main__":
         sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
 
         ekf = LocalizationEKF(mu, sigma)
-        
+
     def init():
         circle_patch.center = (0, 0)
         if data_type == DataType.GPS_ONLY:
@@ -133,15 +141,19 @@ if __name__ == "__main__":
             ax.add_patch(wedge_patch)
             return circle_patch, wedge_patch
 
-
     def animate(i):
         if data_type == DataType.IMU_ONLY:
             if is_live:
                 sensor_module.update_imu_data()
+                # new_heading = math.degrees(
+                #     math.atan2(sensor_module.imu_dict["mag"][1], sensor_module.imu_dict["mag"][0]))
                 new_heading = math.degrees(
-                    math.atan2(sensor_module.imu_dict["mag"][1], sensor_module.imu_dict["mag"][0]))
+                    math.atan2(-1 * sensor_module.imu_dict["mag"][0], sensor_module.imu_dict["mag"][1]))
             else:
-                new_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                # new_heading = math.degrees(math.atan2(
+                #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                new_heading = math.degrees(math.atan2(
+                    -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
             wedge_patch.update({"center": (0, 0)})
             wedge_patch.theta1 = new_heading - 10
             wedge_patch.theta2 = new_heading + 10
@@ -153,7 +165,8 @@ if __name__ == "__main__":
                 new_location = sensor_module.get_measurement(zone[0])[:2]
             else:
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
-                new_location = (get_vincenty_x(zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord))
+                new_location = (get_vincenty_x(
+                    zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord))
 
             circle_patch.center = new_location
             return [circle_patch]
@@ -165,26 +178,35 @@ if __name__ == "__main__":
                 measurements = sensor_module.get_measurement(zone[0])
                 new_heading = measurements[2]
                 new_location = (measurements[0], measurements[1])
-           
-            elif not is_live and use_ekf: 
+
+            elif not is_live and use_ekf:
                 mu_bar = ekf.mu  # temporary placeholder
                 sigma_bar = ekf.sigma  # temporary placeholder
 
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
-                x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord)
-                heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(
+                    zone[0], gps_coord)
+                # heading = math.degrees(math.atan2(
+                #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                heading = math.degrees(math.atan2(
+                    -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
 
                 measurements = np.array([[x], [y], [heading]])
 
-                ekf.update_step(mu_bar, sigma_bar, measurements)  # update_step is a procedure, attributes updated in this method.
+                # update_step is a procedure, attributes updated in this method.
+                ekf.update_step(mu_bar, sigma_bar, measurements)
                 new_location = (ekf.mu[0][0], ekf.mu[1][0])
                 new_heading = ekf.mu[2][0]
 
             else:
-                
-                new_heading = math.degrees(math.atan2(imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+
+                # new_heading = math.degrees(math.atan2(
+                #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
+                new_heading = math.degrees(math.atan2(
+                    -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
-                new_location = (get_vincenty_x(zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord))
+                new_location = (get_vincenty_x(
+                    zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord))
 
                 # print(new_heading)
                 # print(new_location)
@@ -195,5 +217,6 @@ if __name__ == "__main__":
             wedge_patch.theta2 = new_heading + 10
             return circle_patch, wedge_patch
 
-    anim = animation.FuncAnimation(fig, animate, init_func=init, frames=frames, interval=20, blit=True)
+    anim = animation.FuncAnimation(
+        fig, animate, init_func=init, frames=frames, interval=20, blit=True)
     plt.show()
