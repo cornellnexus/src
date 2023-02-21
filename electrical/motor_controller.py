@@ -1,7 +1,7 @@
 import time
 #from engine.robot import Robot
 import RPi.GPIO as GPIO
-from engine.robot_state import Robot_State
+from engine.robot_state import robot_state
 
 class BasicMotorController:
     """ 
@@ -17,11 +17,11 @@ class BasicMotorController:
         self.in4 = 26
         self.enA = 13  # PWM pin
         self.enB = 12  # PWM pin
-        Robot_State.is_sim = False
+        robot_state.is_sim = False
 
     # checks all of the robot movements are functioning properly
     def setup(self):
-        if not Robot_State.is_sim:
+        if not robot_state.is_sim:
             GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
             GPIO.setup([self.in1, self.in2], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
@@ -33,7 +33,7 @@ class BasicMotorController:
 
     # stops the robot
     def stop(self):
-        if Robot_State.is_sim:
+        if robot_state.is_sim:
             print('stop')
         else:
             self.e1.stop()
@@ -41,7 +41,7 @@ class BasicMotorController:
 
     # moves the robot forward
     def go_forward(self):
-        if Robot_State.is_sim:
+        if robot_state.is_sim:
             print('go_forward')
         else:
             GPIO.output([self.in1], GPIO.HIGH)
@@ -49,7 +49,7 @@ class BasicMotorController:
 
     # reverses the robot
     def reverse(self):
-        if Robot_State.is_sim:
+        if robot_state.is_sim:
             print('reverse')
         else:
             GPIO.output([self.in2], GPIO.LOW)
@@ -57,7 +57,7 @@ class BasicMotorController:
 
     # turns the robot left for 1 second
     def turn_left(self):
-        if Robot_State.is_sim:
+        if robot_state.is_sim:
             print('turn_left')
         else:
             GPIO.output([self.in1], GPIO.LOW)
@@ -68,7 +68,7 @@ class BasicMotorController:
 
     # turns the robot right for 1 second
     def turn_right(self):
-        if Robot_State.is_sim:
+        if robot_state.is_sim:
             print('turn_right')
         else:
             GPIO.output([self.in1], GPIO.HIGH)
@@ -155,7 +155,7 @@ class MotorController:
         if dc2 > 100:
             dc2 = 100
 
-        if not Robot_State.is_sim:
+        if not robot_state.is_sim:
             self.p1.ChangeDutyCycle(dc1)
             self.p2.ChangeDutyCycle(dc2)
         else:

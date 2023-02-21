@@ -56,8 +56,8 @@ class Robot_State:
         self.turn_angle = 3
         self.plastic_weight = 0
 
-        self.state = np.array([[Robot_State.x_pos], [Robot_State.y_pos], [Robot_State.heading]])
-        self.truthpose = np.transpose(np.array([[Robot_State.x_pos], [Robot_State.y_pos], [Robot_State.heading]]))
+        self.state = np.array([[robot_state.x_pos], [robot_state.y_pos], [robot_state.heading]])
+        self.truthpose = np.transpose(np.array([[robot_state.x_pos], [robot_state.y_pos], [robot_state.heading]]))
 
         self.battery = 100
         self.imu = IMU()
