@@ -3,7 +3,6 @@ from engine.phase import Phase
 from electrical.imu import IMU
 
 class Robot_State:
-
     """
         Variables:
             x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
@@ -35,12 +34,15 @@ class Robot_State:
     """
 
     def __init__(self, x_pos, y_pos, heading, epsilon, max_velocity, radius):
+        # User defined parameters
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.heading = heading
         self.epsilon = epsilon
         self.max_velocity = max_velocity
         self.radius = radius
+
+        # Defaults
         self.is_sim = True
         self.position_kp = 1
         self.position_ki = 0
@@ -56,8 +58,8 @@ class Robot_State:
         self.turn_angle = 3
         self.plastic_weight = 0
 
-        self.state = np.array([[robot_state.x_pos], [robot_state.y_pos], [robot_state.heading]])
-        self.truthpose = np.transpose(np.array([[robot_state.x_pos], [robot_state.y_pos], [robot_state.heading]]))
+        self.state = np.array([[self.x_pos], [self.y_pos], [self.heading]])
+        self.truthpose = np.transpose(np.array([[self.x_pos], [self.y_pos], [self.heading]]))
 
         self.battery = 100
         self.imu = IMU()
