@@ -52,7 +52,7 @@ class Robot_State:
         self.heading_ki = 0
         self.heading_kd = 0
         self.heading_noise = 0
-        self.phase = Phase(1)
+        self.phase = Phase.TRAVERSE
         self.time_step = 1
         self.move_dist = 0.5
         self.turn_angle = 3
@@ -62,7 +62,7 @@ class Robot_State:
         self.truthpose = np.transpose(np.array([[self.x_pos], [self.y_pos], [self.heading]]))
 
         self.battery = 100
-        self.imu = IMU()
+        # self.imu = IMU(init_i2c=None, is_sim=self.is_sim)
         self.acceleration = [0, 0, 0]
         self.magnetic_field = [0, 0, 0]
         self.gyro_rotation = [0, 0, 0]

@@ -1,5 +1,5 @@
 from collections import deque
-from electrical.motor_controller import BasicMotorController, MotorController
+# from electrical.motor_controller import BasicMotorController, MotorController
 from engine.robot import Phase
 from electrical.radio_module import RadioModule
 
@@ -63,7 +63,7 @@ class Mission:
         self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
-        if not robot.is_sim:
+        if not robot.robot_state.is_sim:
             self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
             self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio 
             self.imu_i2c = busio.I2C(board.SCL, board.SDA)
@@ -86,28 +86,28 @@ class Mission:
         Activates the main control loop. Depending on the robot's phase, different motion control algorithms are
         activated.
         """
-        while self.robot.phase != Phase.COMPLETE:
-            if self.robot.phase == Phase.SETUP:
+        while self.robot.robot_state.phase != Phase.COMPLETE:
+            if self.robot.robot_state.phase == Phase.SETUP:
                 self.robot.execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
 
-            elif self.robot.phase == Phase.TRAVERSE:
+            elif self.robot.robot_state.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
                                                                        self.allowed_dist_error, self.base_station_loc,
                                                                        self.control_mode, self.time_limit,
                                                                        self.roomba_radius, database)
 
-            elif self.robot.phase == Phase.AVOID_OBSTACLE:
+            elif self.robot.robot_state.phase == Phase.AVOID_OBSTACLE:
                 self.robot.execute_avoid_obstacle()
 
-            elif self.robot.phase == Phase.RETURN:
+            elif self.robot.robot_state.phase == Phase.RETURN:
                 self.robot.execute_return(self.base_station_loc, self.base_station_angle,
                                           self.allowed_docking_pos_error, self.allowed_heading_error, database)
 
-            elif self.robot.phase == Phase.DOCKING:
+            elif self.robot.robot_state.phase == Phase.DOCKING:
                 self.robot.execute_docking()
             
             #update the database with the most recent state
-            database.update_data("phase", self.robot.phase)
+            database.update_data("phase", self.robot.robot_state.phase)
             
 
 

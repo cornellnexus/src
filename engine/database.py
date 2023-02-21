@@ -19,18 +19,18 @@ class DataBase:
             plastic_weight: the plastic_weight of the trash the robot has collected
         """
         self.core_data = {
-            "phase": robot.phase,
-            "state": robot.state,
-            "is_sim": robot.is_sim,
-            "plastic_weight": robot.plastic_weight,  # not detected by sensors yet
-            "battery": robot.battery,  # not detected by sensors yet
-            "move_dist": robot.move_dist,
-            "acceleration": robot.acceleration,  # not called in main algorithm yet
-            "magnetic_field": robot.magnetic_field,  # not called in main algorithm yet
-            "gyro_rotation": robot.gyro_rotation,  # not called in main algorithm yet
-            "position_pid": [robot.position_kp, robot.position_ki, robot.position_kd],
-            "position_noise": robot.position_noise,
-            "heading_pid": [robot.heading_kp, robot.heading_ki, robot.heading_kd]
+            "phase": robot.robot_state.phase,
+            "state": robot.robot_state.state,
+            "is_sim": robot.robot_state.is_sim,
+            "plastic_weight": robot.robot_state.plastic_weight,  # not detected by sensors yet
+            "battery": robot.robot_state.battery,  # not detected by sensors yet
+            "move_dist": robot.robot_state.move_dist,
+            "acceleration": robot.robot_state.acceleration,  # not called in main algorithm yet
+            "magnetic_field": robot.robot_state.magnetic_field,  # not called in main algorithm yet
+            "gyro_rotation": robot.robot_state.gyro_rotation,  # not called in main algorithm yet
+            "position_pid": [robot.robot_state.position_kp, robot.robot_state.position_ki, robot.robot_state.position_kd],
+            "position_noise": robot.robot_state.position_noise,
+            "heading_pid": [robot.robot_state.heading_kp, robot.robot_state.heading_ki, robot.robot_state.heading_kd]
         }
 
     def __str__(self):

@@ -3,13 +3,12 @@ if False:
     import board
     import busio
     import adafruit_lsm9ds1
-from engine.robot_state import robot_state
 
 """ Module that includes functions for IMU sensor"""
 class IMU:
     def __init__(self, init_i2c, is_sim):
-        robot_state.is_sim = is_sim
-        if not robot_state.is_sim: 
+        self.is_sim = is_sim
+        if not self.is_sim: 
             i2c = init_i2c
             self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
             self.acc = 0
@@ -37,7 +36,7 @@ class IMU:
         """
         Returns acc, mag, gyro data formatted in a dictionary.
         """
-        if not robot_state.is_sim: 
+        if not self.is_sim: 
             self.acc = self.set_num_dec(3, tuple(self.imu.acceleration))
             self.gyro = self.set_num_dec(3, tuple(self.imu.gyro))
             self.mag = self.set_num_dec(3, tuple(self.imu.magnetic))
@@ -86,7 +85,7 @@ class IMU:
         """
         imu_data = []
         count = 0
-        if not robot_state.is_sim: 
+        if not self.is_sim: 
             while (len(imu_data) < 25): 
                 count += 1 
                 data = self.get_imu()

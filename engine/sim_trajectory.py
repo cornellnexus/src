@@ -7,6 +7,7 @@ from matplotlib import patches as patch
 from constants.definitions import CSV_PATH
 
 from engine.robot import Robot
+from engine.robot_state import Robot_State
 from engine.robot import Phase
 from engine.base_station import BaseStation
 from engine.mission import Mission
@@ -61,8 +62,9 @@ def get_plot_boundaries(nodes, delta):
 
 if __name__ == "__main__":
     # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600) # RPI_GUI_TEST
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5,
-                 radius=0.2, init_phase=Phase.TRAVERSE)
+    r2d2_state = Robot_State(x_pos=0, y_pos=0, heading=math.pi / 4, epsilon=0.2, max_velocity=0.5,
+                 radius=0.2,)
+    r2d2 = Robot(robot_state=r2d2_state)
     base_r2d2 = BaseStation((42.444250, -76.483682))
     database = DataBase(r2d2)
     m = Mission(robot=r2d2, base_station=base_r2d2,
@@ -110,8 +112,8 @@ if __name__ == "__main__":
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
 
     plt.style.use('seaborn-whitegrid')
-    x_coords = m.robot.truthpose[:, 0]
-    y_coords = m.robot.truthpose[:, 1]
+    x_coords = m.robot.robot_state.truthpose[:, 0]
+    y_coords = m.robot.robot_state.truthpose[:, 1]
     fig, ax = plt.subplots()
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
@@ -157,16 +159,16 @@ if __name__ == "__main__":
         return circle_patch, wedge_patch
 
     def animate(i):
-        x_coord = m.robot.truthpose[i, 0]
-        y_coord = m.robot.truthpose[i, 1]
+        x_coord = m.robot.robot_state.truthpose[i, 0]
+        y_coord = m.robot.robot_state.truthpose[i, 1]
         circle_patch.center = (x_coord, y_coord)
         wedge_patch.update({"center": [x_coord, y_coord]})
-        wedge_patch.theta1 = np.degrees(m.robot.truthpose[i, 2]) - 10
-        wedge_patch.theta2 = np.degrees(m.robot.truthpose[i, 2]) + 10
+        wedge_patch.theta1 = np.degrees(m.robot.robot_state.truthpose[i, 2]) - 10
+        wedge_patch.theta2 = np.degrees(m.robot.robot_state.truthpose[i, 2]) + 10
         return circle_patch, wedge_patch
 
     anim = animation.FuncAnimation(
-        fig, animate, init_func=init, frames=np.shape(m.robot.truthpose)[0], interval=20, blit=True
+        fig, animate, init_func=init, frames=np.shape(m.robot.robot_state.truthpose)[0], interval=20, blit=True
     )
 
     plt.show()

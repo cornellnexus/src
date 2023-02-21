@@ -2,13 +2,13 @@ import numpy as np
 import math
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds
 from engine.pid_controller import PID
-from electrical.motor_controller import MotorController
 from constants.definitions import CSV_PATH
 from engine.phase import Phase
 
 # import electrical.gps as gps 
 # import electrical.imu as imu 
 # import electrical.radio_module as radio_module
+# from electrical.motor_controller import MotorController
 
 import time
 import sys
@@ -55,13 +55,13 @@ class Robot:
     def travel(self, dist, turn_angle):
         # Moves the robot with both linear and angular velocity
         self.robot_state.state = np.round(integrate_odom(self.robot_state.state, dist, turn_angle), 3)
-        imu_data = self.imu.get_imu()
-        self.robot_state.state[2] = math.degrees(math.atan2(
-            imu_data["mag"][1], imu_data["mag"][0]))
         # if it is a simulation,
         if self.robot_state.is_sim:
             self.robot_state.truthpose = np.append(
                 self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
+        else:
+            imu_data = self.robot_state.imu.get_imu()
+            self.robot_state.state[2] = math.degrees(math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
 
     def move_forward(self, dist):
         # Moves robot forward by distance dist
@@ -285,7 +285,7 @@ class Robot:
 
         # TODO: add obstacle avoidance support
         self.move_to_target_node(
-            target_loc, allowed_docking_pos_error, database, motor_controller)
+            target_loc, allowed_docking_pos_error, database)
 
         # Face robot towards base station
         target_heading = base_angle + math.pi
