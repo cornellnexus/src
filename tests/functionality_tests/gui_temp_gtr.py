@@ -2,7 +2,7 @@ import serial
 import os
 import sys
 
-from electrical.radio_module import RadioSession
+from electrical.radio_module import RadioModule
 import serial
 ser = serial.Serial("/dev/tty.usbserial-017543DC", 57600)
 

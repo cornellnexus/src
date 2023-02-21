@@ -1,7 +1,7 @@
 import time
 #from engine.robot import Robot
-import RPi.GPIO as GPIO
-from engine.robot_state import robot_state
+if False:  # change to True when running code on robot
+    import RPi.GPIO as GPIO
 
 class BasicMotorController:
     """ 
@@ -9,7 +9,7 @@ class BasicMotorController:
     commands to physically move the robot. 
     """
 
-    def __init__(self):
+    def __init__(self, robot):
         # raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
@@ -17,7 +17,7 @@ class BasicMotorController:
         self.in4 = 26
         self.enA = 13  # PWM pin
         self.enB = 12  # PWM pin
-        robot_state.is_sim = False
+        self.robot.robot_state.is_sim = robot.is_sim
 
     # checks all of the robot movements are functioning properly
     def setup(self):
@@ -158,7 +158,7 @@ class MotorController:
         if not robot_state.is_sim:
             self.p1.ChangeDutyCycle(dc1)
             self.p2.ChangeDutyCycle(dc2)
-        else:
+        else: 
             print("dc1: ", dc1, "and dc2: ", dc2)
         
 if __name__=="__main__":

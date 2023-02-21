@@ -60,5 +60,3 @@ class Node:
     def __repr__(self):
         return "".join("(" + str(self.lat) + "," + str(self.long) + ")")
 
-    # def __str__(self):
-    #     return "[(" + str(self.long) + ", " + str(self.lat) + ") --> " + str(self.neighbors) + "]"

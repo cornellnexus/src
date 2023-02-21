@@ -93,7 +93,7 @@ class DataBase:
         
         acc = []
         for i in self.get_data("acceleration"):
-            acc += str(i)
+            acc.append(str(i))
 
         temp_n_dist = "00.0"
         temp_rot = "00.00"

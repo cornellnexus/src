@@ -4,7 +4,7 @@ import serial
 import time
 import pynmea2
 import csv
-if False: 
+if False: # import UbloxGPS if this is not a simulation
     from ublox_gps import UbloxGps
 from engine.robot_state import robot_state
 
