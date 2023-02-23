@@ -95,6 +95,13 @@ class Robot:
         # Moves the robot with both linear and angular velocity
         self.robot_state.state = np.round(integrate_odom(
             self.robot_state.state, velocity, omega), 3)
+        # if it is not using odometry and only using gps and imu        
+        if not self.robot_state.using_odom:
+            imu_data = self.robot_state.imu.get_imu()
+            self.robot_state.state[2] = math.degrees(math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
+            gps_data = self.robot_state.gps().get_gps()
+            self.robot_state.state[0] = get_vincenty_x(gps_data, self.robot_state.start_coor)
+            self.robot_state.state[1] = get_vincenty_y(gps_data, self.robot_state.start_coor)
         # if it is a simulation,
         if self.robot_state.is_sim:
             self.robot_state.truthpose = np.append(

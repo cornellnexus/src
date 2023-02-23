@@ -1,6 +1,7 @@
 import numpy as np
 from engine.phase import Phase
 from electrical.imu import IMU
+from electrical.gps import GPS
 from engine.is_raspberrypi import is_raspberrypi
 import math
 class Robot_State:
@@ -83,9 +84,8 @@ class Robot_State:
         self.gps_data = (0, 0)
         self.imu_data = None  # will be filled by execute_setup
         self.ekf_var = None
-        self.gps = None
-        self.imu = None
         self.mc = None
+        self.using_odom = False
 
         self.width = 700
         self.avoid_obstacle = False  # boolean that determines if we should avoid obstacles
@@ -108,10 +108,15 @@ class Robot_State:
         self.goal_threshold = 1
         self.noise_margin = 1
         if not self.is_sim:
+            from electrical.motor_controller import MotorController
+            from electrical.radio_module import RadioModule
+            import serial
+            import busio
             self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
             self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
             self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
             self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
+            self.start_coor = GPS.get_gps()
 
 
 
