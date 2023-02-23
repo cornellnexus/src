@@ -62,14 +62,6 @@ class Mission:
         self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
-        if not robot.robot_state.is_sim:
-            self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
-            self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio 
-            self.imu_i2c = busio.I2C(board.SCL, board.SDA)
-            self.motor_controller = MotorController(robot, wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
-            self.robot_radio_session = RadioSession(self.robot_radio_serial) 
-            self.gps = GPS(self.gps_serial) 
-            self.imu = IMU(self.imu_i2c) 
         self.allowed_heading_error = allowed_heading_error
         self.base_station_angle = base_station.heading
         self.allowed_docking_pos_error = allowed_docking_pos_error
@@ -109,6 +101,7 @@ class Mission:
             
             #update the database with the most recent state
             database.update_data("phase", self.robot.robot_state.phase)
+        print("complete")
             
 
 

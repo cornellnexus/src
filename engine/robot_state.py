@@ -112,6 +112,7 @@ class Robot_State:
             from electrical.radio_module import RadioModule
             import serial
             import busio
+            import board
             self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
             self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
             self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
