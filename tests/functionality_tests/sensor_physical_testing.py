@@ -6,7 +6,7 @@ from engine. database import DataBase
 import math
 
 if __name__ == "__main__":
-    
+    # make sure to go to imu and gps and set import to true
     test_state = 0 # 0 is no node straight, 1 is node straight, 2 is turn, -1 is sensor
     rb_state = Robot_State(0, 0, 0, .2, .5, .2)
     rb = Robot(rb_state)
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     if test_state == -1:
       print("gps")
       print(rb_state.gps.get_gps())
-      magnetometer = rb_state.imu.get_imu().magnetic
+      magnetometer = rb_state.imu.get_imu().get("mag")
       heading = math.atan2(magnetometer[1], magnetometer[0]) * 180 / math.pi
       print("heading")
       print(heading)
