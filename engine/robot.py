@@ -12,8 +12,8 @@ import time
 from engine.is_raspberrypi import is_raspberrypi
 if is_raspberrypi():
     from electrical.motor_controller import MotorController
-    import electrical.gps as GPS 
-    import electrical.imu as IMU 
+    import electrical.gps as GPS
+    import electrical.imu as IMU
     import electrical.radio_module as RadioModule
     import serial
 
@@ -24,13 +24,14 @@ from engine.phase import Phase
 from engine.ekf import LocalizationEKF
 from engine.sensor_module import SensorModule
 from constants.definitions import ENGINEERING_QUAD
-# import electrical.gps as gps 
-# import electrical.imu as imu 
+# import electrical.gps as gps
+# import electrical.imu as imu
 # import electrical.radio_module as radio_module
 # from electrical.motor_controller import MotorController
 
 import time
 import sys
+
 
 class Robot:
     """
@@ -74,7 +75,8 @@ class Robot:
     def update_ekf_step(self):
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
         # self.robot_state.ekf_var.update_step(self.robot_state.ekf_var.mu, self.robot_state.ekf_var.sigma, sensor_module.get_measurement(self.robot_state.init_gps))
-        self.robot_state.gps_data = (self.robot_state.gps.get_gps()["long"], self.robot_state.gps.get_gps()["lat"])
+        self.robot_state.gps_data = (self.robot_state.gps.get_gps()[
+                                     "long"], self.robot_state.gps.get_gps()["lat"])
         self.robot_state.imu_data = self.robot_state.imu.get_gps()
         x, y = get_vincenty_x(
             self.robot_state.init_gps, self.robot_state.gps_data), get_vincenty_y(self.robot_state.init_gps, self.robot_state.gps_data)
@@ -95,26 +97,32 @@ class Robot:
         # Moves the robot with both linear and angular velocity
         self.robot_state.state = np.round(integrate_odom(
             self.robot_state.state, velocity, omega), 3)
-        # if it is not using odometry and only using gps and imu        
+        # if it is not using odometry and only using gps and imu
         if not self.robot_state.using_odom:
             imu_data = self.robot_state.imu.get_imu()
-            self.robot_state.state[2] = math.degrees(math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
+            self.robot_state.state[2] = math.degrees(
+                math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
             gps_data = self.robot_state.gps().get_gps()
-            self.robot_state.state[0] = get_vincenty_x(gps_data, self.robot_state.start_coor)
-            self.robot_state.state[1] = get_vincenty_y(gps_data, self.robot_state.start_coor)
+            self.robot_state.state[0] = get_vincenty_x(
+                gps_data, self.robot_state.start_coor)
+            self.robot_state.state[1] = get_vincenty_y(
+                gps_data, self.robot_state.start_coor)
         # if it is a simulation,
         if self.robot_state.is_sim:
             self.robot_state.truthpose = np.append(
                 self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
         else:
             imu_data = self.robot_state.imu.get_imu()
-            self.robot_state.state[2] = math.degrees(math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
+            self.robot_state.state[2] = math.degrees(
+                math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
 
     def move_forward(self, dist):
         # Moves robot forward by distance dist
         # dist is in meters
-        new_x = self.robot_state.state[0] + dist * math.cos(self.robot_state.state[2]) * self.robot_state.time_step
-        new_y = self.robot_state.state[1] + dist * math.sin(self.robot_state.state[2]) * self.robot_state.time_step
+        new_x = self.robot_state.state[0] + dist * math.cos(
+            self.robot_state.state[2]) * self.robot_state.time_step
+        new_y = self.robot_state.state[1] + dist * math.sin(
+            self.robot_state.state[2]) * self.robot_state.time_step
         self.robot_state.state[0] = np.round(new_x, 3)
         self.robot_state.state[1] = np.round(new_y, 3)
 
@@ -182,7 +190,7 @@ class Robot:
                 # TODO: Update to use databse information
                 # FOR GUI: writing robot location and mag heading in CSV
                 write_state_to_csv(predicted_state)
-                time.sleep(0.001) # Delays calculation for GUI map
+                time.sleep(0.001)  # Delays calculation for GUI map
 
             # FOR DATABASE: updating our database with new predicted state
             # TODO: can the code above be simplified / use the database instead?
@@ -214,12 +222,14 @@ class Robot:
 
         while abs_heading_error > allowed_heading_error:
             if self.robot_state.is_sim:
-                self.robot_state.state[2] = np.random.normal(self.robot_state.state[2], self.robot_state.heading_noise)
+                self.robot_state.state[2] = np.random.normal(
+                    self.robot_state.state[2], self.robot_state.heading_noise)
             else:
                 self.robot_state.state = self.update_ekf_step()
             theta_error = target_heading - self.robot_state.state[2]
             w = self.head_pid.update(theta_error)  # angular velocity
-            _, limited_cmd_w = limit_cmds(0, w, self.robot_state.max_velocity, self.robot_state.radius)
+            _, limited_cmd_w = limit_cmds(
+                0, w, self.robot_state.max_velocity, self.robot_state.radius)
 
             self.travel(0, self.robot_state.time_step * limited_cmd_w)
             # sleep in real robot
@@ -238,7 +248,7 @@ class Robot:
         """
         # Turns robot, where turn_angle is given in radians
         clamp_angle = (self.robot_state.state[2] + (turn_angle *
-                                        self.robot_state.time_step)) % (2 * math.pi)
+                                                    self.robot_state.time_step)) % (2 * math.pi)
         self.robot_state.state[2] = np.round(clamp_angle, 3)
         if self.robot_state.is_sim:
             self.robot_state.truthpose = np.append(
@@ -259,7 +269,8 @@ class Robot:
         motor_controller.setup(self.robot_state.is_sim)
 
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
-        self.robot_state.init_gps = (gps.get_gps()["long"], gps.get_gps()["lat"])
+        self.robot_state.init_gps = (
+            gps.get_gps()["long"], gps.get_gps()["lat"])
         self.robot_state.imu_data = imu.get_gps()
         x_init, y_init = (0, 0)
         heading_init = math.degrees(math.atan2(
@@ -275,7 +286,8 @@ class Robot:
         self.robot_state.imu = imu
         self.robot_state.motor_controller = motor_controller
         if (radio_session.connected and gps_setup and imu_setup):
-            obstacle_avoidance = threading.Thread(target=self.track_obstacle, daemon=True)
+            obstacle_avoidance = threading.Thread(
+                target=self.track_obstacle, daemon=True)
             obstacle_avoidance.start()  # spawn thread to monitor obstacles
             self.set_phase(Phase.TRAVERSE)
 
@@ -332,10 +344,15 @@ class Robot:
 
             curr_x = self.robot_state.state[0]
             curr_y = self.robot_state.state[1]
-            new_x = curr_x + self.robot_state.move_dist * math.cos(self.robot_state.state[2]) * self.robot_state.time_step
-            new_y = curr_y + self.robot_state.move_dist * math.sin(self.robot_state.state[2]) * self.robot_state.time_step
+            new_x = curr_x + self.robot_state.move_dist * \
+                math.cos(self.robot_state.state[2]
+                         ) * self.robot_state.time_step
+            new_y = curr_y + self.robot_state.move_dist * \
+                math.sin(self.robot_state.state[2]
+                         ) * self.robot_state.time_step
             next_radius = self.calculate_dist(base_station_loc, (new_x, new_y))
-            is_detecting_obstacle = self.robot_state.front_ultrasonic.distance() < self.robot_state.detect_obstacle_range
+            is_detecting_obstacle = self.robot_state.front_ultrasonic.distance(
+            ) < self.robot_state.detect_obstacle_range
             # if moving will cause the robot to move through the obstacle
             is_next_timestep_blocked = next_radius < self.robot_state.detect_obstacle_range
             # sensor should not detect something in the robot
@@ -354,7 +371,8 @@ class Robot:
                 if self.robot_state.is_sim:
                     self.move_forward(self.robot_state.move_dist)
                 else:
-                    self.robot_state.motor_controller.motors(0, 0)  # TODO: determine what vel to run this at
+                    # TODO: determine what vel to run this at
+                    self.robot_state.motor_controller.motors(0, 0)
             dt += 1
             exit_boolean = (dt > time_limit)
         self.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
@@ -382,7 +400,8 @@ class Robot:
                 try:
                     line = content[counter]
                     counter += 1
-                    curr_ultrasonic_value = float((''.join(line.rstrip('\n')).strip('()').split(', '))[0])
+                    curr_ultrasonic_value = float(
+                        (''.join(line.rstrip('\n')).strip('()').split(', '))[0])
                 except IndexError:
                     print("no more sensor data")
                     break
@@ -398,7 +417,8 @@ class Robot:
                     # detection does not detect angle, so obstacle could be calculated to be falsely farther away than
                     # the goal. Not optimal because in cases, robot will execute boundary following when it can reach
                     # goal
-                    self.robot_state.dist_to_goal = self.calculate_dist(self.robot_state.goal_location, self.robot_state.state)
+                    self.robot_state.dist_to_goal = self.calculate_dist(
+                        self.robot_state.goal_location, self.robot_state.state)
                     self.robot_state.avoid_obstacle = True
                     if self.robot_state.is_sim:
                         with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
@@ -409,7 +429,8 @@ class Robot:
                         with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                             fd.write("Not Avoid" + '\n')
             if curr_ultrasonic_value < 0:
-                self.set_phase(Phase.FAULT)  # value should not go below 0; sensor is broken
+                # value should not go below 0; sensor is broken
+                self.set_phase(Phase.FAULT)
                 if self.robot_state.is_sim:
                     with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                         fd.write("Fault" + '\n')
@@ -434,15 +455,18 @@ class Robot:
         has_left_init_thresh = False
         did_dist_to_goal_decreased = False
         has_traversed_boundary = False
-        curr_dist_to_goal = self.calculate_dist(self.robot_state.goal_location, (self.robot_state.x_pos, self.robot_state.y_pos))
+        curr_dist_to_goal = self.calculate_dist(
+            self.robot_state.goal_location, (self.robot_state.x_pos, self.robot_state.y_pos))
         while True:
             if self.robot_state.phase == Phase.fault:  # fault has priority over obstacle avoidance
                 return None
             else:
-                dist_from_init = self.calculate_dist((self.robot_state.x_pos, self.robot_state.y_pos), (init_x, init_y))
+                dist_from_init = self.calculate_dist(
+                    (self.robot_state.x_pos, self.robot_state.y_pos), (init_x, init_y))
                 if dist_from_init > (self.robot_state.init_threshold + self.robot_state.noise_margin):
                     has_left_init_thresh = True
-                if curr_dist_to_goal < self.robot_state.goal_threshold:  # exits obstacle avoidance if robot close to goal
+                # exits obstacle avoidance if robot close to goal
+                if curr_dist_to_goal < self.robot_state.goal_threshold:
                     self.set_phase(self.robot_state.prev_phase)
                     return None
                 elif has_traversed_boundary and has_left_init_thresh:
@@ -453,8 +477,10 @@ class Robot:
                     #  current algorithm will continue traversing current boundary (instead of traversing new obstacle)
                     #  not optimal because frequently will have to go back to obstacle avoidance
                     heading_threshold = 1
-                    target_heading = math.atan2(self.robot_state.goal_location[1] - self.robot_state.y_pos, self.robot_state.goal_location[0] - self.robot_state.x_pos)
-                    self.turn_to_target_heading(target_heading, heading_threshold, database)
+                    target_heading = math.atan2(
+                        self.robot_state.goal_location[1] - self.robot_state.y_pos, self.robot_state.goal_location[0] - self.robot_state.x_pos)
+                    self.turn_to_target_heading(
+                        target_heading, heading_threshold, database)
                     curr_ultrasonic_value = self.robot_state.front_ultrasonic.distance()
                     if curr_ultrasonic_value < self.robot_state.detect_obstacle_range:
                         return self.execute_avoid_obstacle(curr_dist_to_goal, database)
@@ -465,13 +491,15 @@ class Robot:
                     #  boundary following except with new init_x, init_y, gate,
 
                 else:
-                    self.execute_boundary_following(0)  # add code directly here
+                    self.execute_boundary_following(
+                        0)  # add code directly here
                     # update conditions
-                    curr_dist_to_goal = self.calculate_dist(self.robot_state.goal_location, (self.robot_state.x_pos, self.robot_state.y_pos))
-                    did_dist_to_goal_decreased = (curr_dist_to_goal < dist_to_goal)
+                    curr_dist_to_goal = self.calculate_dist(
+                        self.robot_state.goal_location, (self.robot_state.x_pos, self.robot_state.y_pos))
+                    did_dist_to_goal_decreased = (
+                        curr_dist_to_goal < dist_to_goal)
                     has_traversed_boundary = dist_from_init < self.robot_state.init_threshold
             time.sleep(10)  # don't hog the cpu
-
 
     def execute_boundary_following(self, min_dist):
         '''
@@ -493,8 +521,8 @@ class Robot:
         '''
         front_dist = self.robot_state.rf_ultrasonic.distance()
         back_dist = self.robot_state.rb_ultrasonic.distance()
-        margin = 1 
-        # Plus or minus distance value used to calculate if robot is parallel to an non-uniform object 
+        margin = 1
+        # Plus or minus distance value used to calculate if robot is parallel to an non-uniform object
         # (i.e. not a flat surface). forwardRightSensorReading - backRightSensorReading < margin means
         # robot is parallel to object.
         forward_dist = 0.01  # Distance moved forward by robot in one iteration of this method

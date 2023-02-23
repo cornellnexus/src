@@ -80,7 +80,8 @@ class Mission:
         """
         while self.robot.robot_state.phase != Phase.COMPLETE:
             if self.robot.robot_state.phase == Phase.SETUP:
-                self.robot.execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
+                self.robot.execute_setup(
+                    self.robot_radio_session, self.gps, self.imu, self.motor_controller)
 
             elif self.robot.robot_state.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
@@ -89,7 +90,8 @@ class Mission:
                                                                        self.roomba_radius, database)
 
             elif self.robot.robot_state.phase == Phase.AVOID_OBSTACLE:
-                self.robot.execute_avoid_obstacle(self.robot.robot_state.dist_to_goal, database)
+                self.robot.execute_avoid_obstacle(
+                    self.robot.robot_state.dist_to_goal, database)
                 # add goal_loc param if goal_loc becomes dynamic
 
             elif self.robot.robot_state.phase == Phase.RETURN:
@@ -98,10 +100,7 @@ class Mission:
 
             elif self.robot.robot_state.phase == Phase.DOCKING:
                 self.robot.execute_docking()
-            
-            #update the database with the most recent state
+
+            # update the database with the most recent state
             database.update_data("phase", self.robot.robot_state.phase)
         print("complete")
-            
-
-

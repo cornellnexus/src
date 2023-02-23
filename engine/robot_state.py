@@ -4,6 +4,8 @@ from electrical.imu import IMU
 from electrical.gps import GPS
 from engine.is_raspberrypi import is_raspberrypi
 import math
+
+
 class Robot_State:
     """
         Variables:
@@ -70,7 +72,8 @@ class Robot_State:
         self.plastic_weight = 0
 
         self.state = np.array([[self.x_pos], [self.y_pos], [self.heading]])
-        self.truthpose = np.transpose(np.array([[self.x_pos], [self.y_pos], [self.heading]]))
+        self.truthpose = np.transpose(
+            np.array([[self.x_pos], [self.y_pos], [self.heading]]))
 
         self.battery = 100
         # self.imu = IMU(init_i2c=None, is_sim=self.is_sim)
@@ -98,10 +101,12 @@ class Robot_State:
         self.prev_phase = self.phase
         self.goal_location = (0, 0)
         self.max_sensor_range = 600
-        self.front_sensor_offset = 0  # TODO: replace this with how far offset the sensor is to the front of the robot
+        # TODO: replace this with how far offset the sensor is to the front of the robot
+        self.front_sensor_offset = 0
         self.sensor_measuring_angle = 75
         self.width_margin = 1  # TODO: replace this with actual margin
-        self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(math.radians((180 - self.sensor_measuring_angle) / 2))
+        self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
+            math.radians((180 - self.sensor_measuring_angle) / 2))
         self.detect_obstacle_range = min(self.threshold_distance,
                                          self.max_sensor_range)  # set ultrasonic detection range
         self.init_threshold = 1
@@ -113,17 +118,13 @@ class Robot_State:
             import serial
             import busio
             import board
-            self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
-            self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
-            self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
+            self.motor_controller = MotorController(
+                self, wheel_radius=0, vm_load1=1, vm_load2=1, L=0, R=0)
+            self.robot_radio_session = RadioModule(
+                serial.Serial('/dev/ttyS0', 57600))
+            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5))
+            self.imu = IMU(busio.I2C(board.SCL, board.SDA))
             self.start_coor = GPS.get_gps()
-
-
-
-
-
-
 
     # def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, is_store=False, width=700, front_ultrasonic=None,
     #              lf_ultrasonic=None, lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None,
@@ -224,17 +225,9 @@ class Robot_State:
     #     self.noise_margin = noise_margin
     #     if not self.is_sim:
     #         self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
-    #         self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-    #         self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
-    #         self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
-
-
-
-
-
-
-
+    #         self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600))
+    #         self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5))
+    #         self.imu = IMU(busio.I2C(board.SCL, board.SDA))
 
     # def rpiToGui():
     #     pass
-
