@@ -9,7 +9,7 @@ class BasicMotorController:
     commands to physically move the robot. 
     """
 
-    def __init__(self, robot):
+    def __init__(self, is_sim):
         # raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
@@ -17,11 +17,11 @@ class BasicMotorController:
         self.in4 = 26
         self.enA = 13  # PWM pin
         self.enB = 12  # PWM pin
-        self.robot.robot_state.is_sim = robot.is_sim
+        self.is_sim = is_sim
 
     # checks all of the robot movements are functioning properly
     def setup(self):
-        if not robot_state.is_sim:
+        if not is_sim:
             GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
             GPIO.setup([self.in1, self.in2], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
@@ -33,7 +33,7 @@ class BasicMotorController:
 
     # stops the robot
     def stop(self):
-        if robot_state.is_sim:
+        if self.is_sim:
             print('stop')
         else:
             self.e1.stop()
@@ -41,7 +41,7 @@ class BasicMotorController:
 
     # moves the robot forward
     def go_forward(self):
-        if robot_state.is_sim:
+        if self.is_sim:
             print('go_forward')
         else:
             GPIO.output([self.in1], GPIO.HIGH)
@@ -49,7 +49,7 @@ class BasicMotorController:
 
     # reverses the robot
     def reverse(self):
-        if robot_state.is_sim:
+        if self.is_sim:
             print('reverse')
         else:
             GPIO.output([self.in2], GPIO.LOW)
@@ -57,7 +57,7 @@ class BasicMotorController:
 
     # turns the robot left for 1 second
     def turn_left(self):
-        if robot_state.is_sim:
+        if self.is_sim:
             print('turn_left')
         else:
             GPIO.output([self.in1], GPIO.LOW)
@@ -68,7 +68,7 @@ class BasicMotorController:
 
     # turns the robot right for 1 second
     def turn_right(self):
-        if robot_state.is_sim:
+        if self.is_sim:
             print('turn_right')
         else:
             GPIO.output([self.in1], GPIO.HIGH)
@@ -89,7 +89,7 @@ class MotorController:
         L: radius of left motor #TODO: double check this 
         R: radius of right motor #TODO: double check this
     """
-    def __init__(self, wheel_radius, vm_load1, vm_load2, L, R):
+    def __init__(self, wheel_radius, vm_load1, vm_load2, L, R, is_sim):
         self.wheel_radius = wheel_radius
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2
@@ -101,6 +101,7 @@ class MotorController:
         self.in4 = 26
         self.enA = 13
         self.enB = 12
+        self.is_sim
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([self.in1, self.in2, self.in3, self.in4],GPIO.OUT, initial=GPIO.LOW)
@@ -155,7 +156,7 @@ class MotorController:
         if dc2 > 100:
             dc2 = 100
 
-        if not robot_state.is_sim:
+        if not self.is_sim:
             self.p1.ChangeDutyCycle(dc1)
             self.p2.ChangeDutyCycle(dc2)
         else: 
