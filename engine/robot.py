@@ -1,36 +1,14 @@
 import threading
-
+import time
 import numpy as np
 import math
-from enum import Enum
-from electrical import motor_controller
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
-from engine.pid_controller import PID
-from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
-import time
 
-from engine.is_raspberrypi import is_raspberrypi
-if is_raspberrypi():
-    from electrical.motor_controller import MotorController
-    import electrical.gps as GPS 
-    import electrical.imu as IMU 
-    import electrical.radio_module as RadioModule
-    import serial
-
-from constants.definitions import *
-from constants.definitions import CSV_PATH
 from engine.phase import Phase
-
 from engine.ekf import LocalizationEKF
-from engine.sensor_module import SensorModule
-from constants.definitions import ENGINEERING_QUAD
-# import electrical.gps as gps 
-# import electrical.imu as imu 
-# import electrical.radio_module as radio_module
-# from electrical.motor_controller import MotorController
-
-import time
-import sys
+from engine.pid_controller import PID
+from constants.definitions import *
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
+from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
 
 class Robot:
     """
@@ -49,6 +27,10 @@ class Robot:
     """
 
     def __init__(self, robot_state):
+        """
+            Arguments:
+            robot_state: an instance encapsulating conditions, measurements, etc. (i.e. all data) about this robot  
+        """
         self.robot_state = robot_state
 
         self.loc_pid_x = PID(
@@ -73,7 +55,7 @@ class Robot:
 
     def update_ekf_step(self):
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
-        # self.robot_state.ekf_var.update_step(self.robot_state.ekf_var.mu, self.robot_state.ekf_var.sigma, sensor_module.get_measurement(self.robot_state.init_gps))
+        # self.robot_state.ekf.update_step(self.robot_state.ekf.mu, self.robot_state.ekf.sigma, sensor_module.get_measurement(self.robot_state.init_gps))
         self.robot_state.gps_data = (self.robot_state.gps.get_gps()["long"], self.robot_state.gps.get_gps()["lat"])
         self.robot_state.imu_data = self.robot_state.imu.get_gps()
         x, y = get_vincenty_x(
@@ -83,11 +65,11 @@ class Robot:
 
         measurements = np.array([[x], [y], [heading]])
 
-        self.robot_state.ekf_var.update_step(
-            self.robot_state.ekf_var.mu, self.robot_state.ekf_var.sigma, measurements)
-        new_x = self.robot_state.ekf_var.mu[0][0]
-        new_y = self.robot_state.ekf_var.mu[1][0]
-        new_heading = self.robot_state.ekf_var.mu[2][0]
+        self.robot_state.ekf.update_step(
+            self.robot_state.ekf.mu, self.robot_state.ekf.sigma, measurements)
+        new_x = self.robot_state.ekf.mu[0][0]
+        new_y = self.robot_state.ekf.mu[1][0]
+        new_heading = self.robot_state.ekf.mu[2][0]
         new_state = np.array([[new_x], [new_y], [new_heading]])
         return new_state
 
@@ -263,7 +245,7 @@ class Robot:
 
         # confidence of mu, set it to high initially b/c not confident, algo brings it down
         sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
-        self.robot_state.ekf_var = LocalizationEKF(mu, sigma)
+        self.robot_state.ekf = LocalizationEKF(mu, sigma)
         self.robot_state.gps = gps
         self.robot_state.imu = imu
         self.robot_state.motor_controller = motor_controller
