@@ -11,6 +11,8 @@ if __name__ == "__main__":
     rb_state = Robot_State(0, 0, 0, .2, .5, .2)
     rb = Robot(rb_state)
     database = DataBase(rb)
+    rb.execute_setup()
+    rb_state.track_obstacle_thread.stop()
 
     if test_state == -1:
         print("gps")

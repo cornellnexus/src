@@ -23,12 +23,15 @@ class MissionTest():
     def test_setup(self):
         self.rob.execute_setup(self.m.robot_radio_session,
                                self.m.gps, self.m.imu, self.m.motor_controller)
+        self.rb_state.track_obstacle_thread.stop()
 
     def test_traverse(self):
         self.rob.execute_traversal(self.m.waypoints_to_visit, self.m.allowed_dist_error, self.m.base_station_loc,
                                    self.m.control_mode, self.m.time_limit, self.m.roomba_radius, self.database)
 
     def test_avoid_obstacle(self):
+        self.rob.execute_setup(self.m.robot_radio_session,
+                               self.m.gps, self.m.imu, self.m.motor_controller)
         self.rob.execute_avoid_obstacle(
             self.m.robot.robot_state.dist_to_goal, self.database)
 

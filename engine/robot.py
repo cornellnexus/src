@@ -286,9 +286,10 @@ class Robot:
         self.robot_state.imu = imu
         self.robot_state.motor_controller = motor_controller
         if (radio_session.connected and gps_setup and imu_setup):
-            obstacle_avoidance = threading.Thread(
+            self.robot_state.track_obstacle_thread = threading.Thread(
                 target=self.track_obstacle, daemon=True)
-            obstacle_avoidance.start()  # spawn thread to monitor obstacles
+            # spawn thread to monitor obstacles
+            self.robot_state.track_obstacle_thread.start()
             self.set_phase(Phase.TRAVERSE)
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,

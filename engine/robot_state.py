@@ -112,12 +112,14 @@ class Robot_State:
         self.init_threshold = 1
         self.goal_threshold = 1
         self.noise_margin = 1
+        self.track_obstacle_thread = None
         if not self.is_sim:
             from electrical.motor_controller import MotorController
             from electrical.radio_module import RadioModule
             import serial
             import busio
             import board
+            from electrical.ultrasonic_sensor import Ultrasonic
             self.motor_controller = MotorController(
                 self, wheel_radius=0, vm_load1=1, vm_load2=1, L=0, R=0)
             self.robot_radio_session = RadioModule(
@@ -125,6 +127,10 @@ class Robot_State:
             self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5))
             self.imu = IMU(busio.I2C(board.SCL, board.SDA))
             self.start_coor = GPS.get_gps()
+            self.front_ultrasonic = Ultrasonic(0)
+            self.lf_ultrasonic = Ultrasonic(1)
+            self.rb_ultrasonic = Ultrasonic(2)
+            self.rf_ultrasonic = Ultrasonic(3)
 
     # def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, is_store=False, width=700, front_ultrasonic=None,
     #              lf_ultrasonic=None, lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None,
