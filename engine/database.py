@@ -16,13 +16,13 @@ class DataBase:
             heading_pid: heading PID in format of [proportional factor, integral factor, derivative factor]           
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step 
-            plastic_weight: the plastic_weight of the trash the robot has collected
+            plastic_level: the plastic_level of the trash the robot has collected
         """
         self.core_data = {
             "phase": robot.robot_state.phase,
             "state": robot.robot_state.state,
             "is_sim": robot.robot_state.is_sim,
-            "plastic_weight": robot.robot_state.plastic_weight,  # not detected by sensors yet
+            "plastic_level": robot.robot_state.plastic_level,  # not detected by sensors yet
             "battery": robot.robot_state.battery,  # not detected by sensors yet
             "move_dist": robot.robot_state.move_dist,
             "acceleration": robot.robot_state.acceleration,  # not called in main algorithm yet
@@ -39,7 +39,7 @@ class DataBase:
                 ", "+str(self.core_data["state"][1,0]) + ", " +\
                 str(self.core_data["state"][2,0])+ "]" + ",\n" + \
                "is_sim: " + str(self.core_data["is_sim"]) + ",\n" + \
-               "plastic_weight: " + str(self.core_data["plastic_weight"]) + ",\n" + \
+               "plastic_level: " + str(self.core_data["plastic_level"]) + ",\n" + \
                "battery: " + str(self.core_data["battery"]) + ",\n" + \
                "move_dist: " + str(self.core_data["move_dist"]) + ",\n" + \
                "acceleration [x, y, z]: " + str(self.core_data["acceleration"]) + ",\n" + \
@@ -101,7 +101,7 @@ class DataBase:
         temp_vel = "0.00"
         next_n = ["000.00","000.00"]
         temp_ctrl = "1"
-        packet = Packet(self.phase_as_value(), str(self.get_data("plastic_weight")), acc,\
+        packet = Packet(self.phase_as_value(), str(self.get_data("plastic_level")), acc,\
                temp_n_dist, temp_rot, temp_last_n, temp_vel, next_n, coords, str(self.get_data("battery")), temp_ctrl)
 
         return str(packet)

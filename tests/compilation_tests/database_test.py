@@ -19,7 +19,7 @@ class TestDataBase(unittest.TestCase):
 
     # We can't make is_sim false because it fails GitHub merge tests.
     robot_initial = Robot(x_pos=0, y_pos=0, heading=0, epsilon=0, max_v=0,
-                          radius=0, plastic_weight=2, move_dist=.6, position_noise=0.23)
+                          radius=0, plastic_level=2, move_dist=.6, position_noise=0.23)
     robot_initial.position_kp = 0.12
     robot_initial.position_ki = 1.7
     robot_initial.position_kd = 9.2
@@ -37,28 +37,28 @@ class TestDataBase(unittest.TestCase):
     db_initial = DataBase(robot_initial)
 
     robot_one_param = Robot(x_pos=0, y_pos=0, heading=0, epsilon=0,
-                            max_v=0, radius=0, plastic_weight=3)
+                            max_v=0, radius=0, plastic_level=3)
     robot_one_param.battery = 46
     robot_one_param.acceleration = [0.5, 0.2, 0.3]
 
     db_one_param = DataBase(robot_one_param)
 
     def test_str(self):
-        db_str = "phase: 1,\nstate [x, y, heading]: [0, 0, 0],\nis_sim: True,\nplastic_weight: 0,\n" \
+        db_str = "phase: 1,\nstate [x, y, heading]: [0, 0, 0],\nis_sim: True,\nplastic_level: 0,\n" \
                  "battery: 100,\nmove_dist: 0.5,\nacceleration [x, y, z]: [0, 0, 0],\n" \
                  "magnetic_field [x, y, z]: [0, 0, 0],\ngyro_rotation [x, y, z]: [0, 0, 0],\n" \
                  "position_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0],\n" \
                  "position_noise: 0,\n" \
                  "heading_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0]"
 
-        db_initial_str = "phase: 2,\nstate [x, y, heading]: [10, 20, 50],\nis_sim: True,\nplastic_weight: 2,\n" \
+        db_initial_str = "phase: 2,\nstate [x, y, heading]: [10, 20, 50],\nis_sim: True,\nplastic_level: 2,\n" \
                          "battery: 98,\nmove_dist: 0.6,\nacceleration [x, y, z]: [4.25, 3.2, 0.1],\n" \
                          "magnetic_field [x, y, z]: [0.1, 0.2, 0.3],\ngyro_rotation [x, y, z]: [0.5, 0.2, 0.6],\n" \
                          "position_pid [proportional factor, integral factor, derivative factor]: [0.12, 1.7, 9.2],\n" \
                          "position_noise: 0.23,\n" \
                          "heading_pid [proportional factor, integral factor, derivative factor]: [0.2, 0.4, 0.16]"
 
-        db_one_param_str = "phase: 1,\nstate [x, y, heading]: [0, 0, 0],\nis_sim: True,\nplastic_weight: 3,\n" \
+        db_one_param_str = "phase: 1,\nstate [x, y, heading]: [0, 0, 0],\nis_sim: True,\nplastic_level: 3,\n" \
                            "battery: 46,\nmove_dist: 0.5,\nacceleration [x, y, z]: [0.5, 0.2, 0.3],\n" \
                            "magnetic_field [x, y, z]: [0, 0, 0],\ngyro_rotation [x, y, z]: [0, 0, 0],\n" \
                            "position_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0],\n" \
@@ -73,7 +73,7 @@ class TestDataBase(unittest.TestCase):
 
     def test_get_data(self):
 
-        db_params = [(Phase.SETUP, "phase"), ([0, 0, 0], "state"), (True, "is_sim"), (0, "plastic_weight"),
+        db_params = [(Phase.SETUP, "phase"), ([0, 0, 0], "state"), (True, "is_sim"), (0, "plastic_level"),
                      (100, "battery"), (0.5, "move_dist"), ([
                          0, 0, 0], "acceleration"),
                      ([0, 0, 0], "magnetic_field"), ([0, 0, 0], "gyro_rotation"),
@@ -82,7 +82,7 @@ class TestDataBase(unittest.TestCase):
                      ]
 
         db_initial_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (True, "is_sim"),
-                             (2, "plastic_weight"),
+                             (2, "plastic_level"),
                              (98, "battery"), (0.6, "move_dist"), ([
                                  4.25, 3.2, 0.1], "acceleration"),
                              ([0.1, 0.2, 0.3], "magnetic_field"), ([
@@ -92,7 +92,7 @@ class TestDataBase(unittest.TestCase):
                              ([0.2, 0.4, 0.16], "heading_pid")
                              ]
 
-        db_one_params = [(Phase.SETUP, "phase"), ([0, 0, 0], "state"), (True, "is_sim"), (3, "plastic_weight"),
+        db_one_params = [(Phase.SETUP, "phase"), ([0, 0, 0], "state"), (True, "is_sim"), (3, "plastic_level"),
                          (46, "battery"), (0.5, "move_dist"), ([
                              0.5, 0.2, 0.3], "acceleration"),
                          ([0, 0, 0], "magnetic_field"), ([
@@ -133,7 +133,7 @@ class TestDataBase(unittest.TestCase):
         self.db_one_param.update_data("magnetic_field", 0.2, 0.15, 0.3)
         self.db_one_param.update_data("position_pid", y=0.5, z=0.82)
 
-        db_new_params = [(Phase.SETUP, "phase"), ([3, 5, 20], "state"), (False, "is_sim"), (0, "plastic_weight"),
+        db_new_params = [(Phase.SETUP, "phase"), ([3, 5, 20], "state"), (False, "is_sim"), (0, "plastic_level"),
                          (100, "battery"), (0.5, "move_dist"), ([
                              0, 0, 0], "acceleration"),
                          ([0, 0, 0], "magnetic_field"), ([
@@ -143,7 +143,7 @@ class TestDataBase(unittest.TestCase):
                          ]
 
         db_initial_new_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (True, "is_sim"),
-                                 (2, "plastic_weight"),
+                                 (2, "plastic_level"),
                                  (98, "battery"), (0.6, "move_dist"), ([
                                      4.25, 3.2, 0.1], "acceleration"),
                                  ([5, 6, 0.3], "magnetic_field"), ([
@@ -153,7 +153,7 @@ class TestDataBase(unittest.TestCase):
                                  ([9, 0.4, 0.16], "heading_pid")
                                  ]
 
-        db_one_new_params = [(Phase.AVOID_OBSTACLE, "phase"), ([0, 0, 0], "state"), (True, "is_sim"), (3, "plastic_weight"),
+        db_one_new_params = [(Phase.AVOID_OBSTACLE, "phase"), ([0, 0, 0], "state"), (True, "is_sim"), (3, "plastic_level"),
                              (46, "battery"), (0.5, "move_dist"), ([
                                  0.1, 2.3, 0.3], "acceleration"),
                              ([0.2, 0.15, 0.3], "magnetic_field"), ([
