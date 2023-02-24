@@ -7,8 +7,8 @@ if is_raspberrypi():
 
 """ Module that includes functions for IMU sensor"""
 class IMU:
-    def __init__(self, init_i2c, is_sim):
-        self.is_sim = is_sim
+    def __init__(self, init_i2c):
+        self.is_sim = not is_raspberrypi()
         if not self.is_sim: 
             i2c = init_i2c
             self.imu = adafruit_lsm9ds1.LSM9DS1_I2C(i2c)
