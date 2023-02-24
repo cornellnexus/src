@@ -12,7 +12,7 @@ if is_raspberrypi():
 class GPS:
     def __init__(self, init_serial, is_sim):
         self.is_sim = is_sim
-        if not is_sim: 
+        if not self.is_sim: 
             self.ser = init_serial
             self.gps = UbloxGps(self.ser)
 
