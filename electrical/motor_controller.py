@@ -1,6 +1,7 @@
 import time
 #from engine.robot import Robot
-if False:  # change to True when running code on robot
+from engine.is_raspberrypi import is_raspberrypi
+if is_raspberrypi():
     import RPi.GPIO as GPIO
 
 class BasicMotorController:
