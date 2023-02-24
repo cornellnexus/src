@@ -54,12 +54,12 @@ class Robot_State:
             heading_ki: the integral factor of the heading PID
             heading_kd: the derivative factor of the heading PID
             heading_noise: ?
-            init_phase: the phase which the robot begins at
+            phase: the phase of the robot
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
-            plastic_level: the weight of the trash the robot has collected
+            plastic_weight: the weight of the trash the robot has collected
             init_threshold (Double): Radius from initial position that will detect robot is back in initial position
             goal_threshold (Double): Threshold from goal that will be detected as reaching goal in obstacle avoidance
             noise_margin (Double): Margin from init_threshold that the robot has to leave before detecting robot has
@@ -73,7 +73,7 @@ class Robot_State:
         # Flags
         self.is_sim = not is_raspberrypi()
         self.is_store = False
-        self.phase = Phase.TRAVERSE
+        self.phase = Phase.SETUP
         self.avoid_obstacle = False
         
         # Constants
@@ -130,10 +130,10 @@ class Robot_State:
         self.rb_ultrasonic = None
 
         if not self.is_sim:
-            self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = self.is_sim)
+            self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
             self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), self.is_sim) 
-            self.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA), is_sim = self.is_sim) 
+            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
+            self.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA)) 
         
 
     # def rpiToGui():

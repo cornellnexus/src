@@ -75,6 +75,7 @@ if __name__ == "__main__":
 
     # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600) # RPI_GUI_TEST
     r2d2_state = Robot_State(x_pos=0, y_pos=0, heading=math.pi / 4, epsilon=0.2, max_velocity=0.5, radius=0.2)
+    r2d2_state.phase = Phase.TRAVERSE
     r2d2 = Robot(robot_state=r2d2_state)
     base_r2d2 = BaseStation((42.444250, -76.483682))
     database = DataBase(r2d2)
