@@ -21,7 +21,7 @@ class BasicMotorController:
 
     # checks all of the robot movements are functioning properly
     def setup(self):
-        if not is_sim:
+        if not self.is_sim:
             GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
             GPIO.setup([self.in1, self.in2], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
