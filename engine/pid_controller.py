@@ -37,13 +37,20 @@ class PID:
         error: difference between target and current measurement (heading or position)
         """
         self.proportional = self.Kp * error
-        self.integral += self.Ki * error * self.sample_time
+        # self.integral += self.Ki * error * self.sample_time
 
         # Avoid integral windup:
-        if self.output_limits[0] is not None and self.output_limits[1] is not None:
-            self.integral = max(min(self.integral, self.output_limits[1]), self.output_limits[0])
+        integral_threshold = 40
+        if error < integral_threshold:
+            # bottom code already exists, no idea what it means
+            if self.output_limits[0] is not None and self.output_limits[1] is not None:
+                self.integral = max(
+                    min(self.integral, self.output_limits[1]), self.output_limits[0])
+            else:
+                self.integral += self.Ki * error * self.sample_time
 
-        self.derivative = self.Kd * ((error - self.prev_error) / self.sample_time)
+        self.derivative = self.Kd * \
+            ((error - self.prev_error) / self.sample_time)
         value = self.proportional + self.integral + self.derivative
         self.prev_error = error
         return value
