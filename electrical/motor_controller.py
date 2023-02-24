@@ -29,8 +29,8 @@ class BasicMotorController:
             # create object digital to analog conversion for PWM on port 25 at 1KHz
             self.e1 = GPIO.PWM(self.enA, 600)
             self.e2 = GPIO.PWM(self.enB, 600)
-            self.e1.start(50)
-            self.e2.start(50)      
+            self.e1.start(100)
+            self.e2.start(100)      
 
     # stops the robot
     def stop(self):
@@ -46,7 +46,7 @@ class BasicMotorController:
             print('go_forward')
         else:
             GPIO.output([self.in1], GPIO.HIGH)
-            GPIO.output([self.in2], GPIO.LOW)
+            GPIO.output([self.in2], GPIO.HIGH)
 
     # reverses the robot
     def reverse(self):
@@ -102,7 +102,7 @@ class MotorController:
         self.in4 = 26
         self.enA = 13
         self.enB = 12
-        self.is_sim
+        self.is_sim = is_sim
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([self.in1, self.in2, self.in3, self.in4],GPIO.OUT, initial=GPIO.LOW)
@@ -160,13 +160,5 @@ class MotorController:
         if not self.is_sim:
             self.p1.ChangeDutyCycle(dc1)
             self.p2.ChangeDutyCycle(dc2)
-        else: 
+        else:
             print("dc1: ", dc1, "and dc2: ", dc2)
-        
-if __name__=="__main__":
-    mtr_ctrl = BasicMotorController()
-    mtr_ctrl.setup()
-    end_time = time.time() + 5
-    while time.time() < end_time:
-        mtr_ctrl.go_forward()
-
