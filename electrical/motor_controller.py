@@ -10,12 +10,12 @@ class BasicMotorController:
 
     def __init__(self):
         # raspberry pi motor driver pinouts
-        self.in1 = 5
-        self.in2 = 6
+        self.in1 = 5 # GPIO5, pin29, back right motor
+        self.in2 = 6 # GPIO6, pin31, back left motor
         self.in3 = 19
         self.in4 = 26
-        self.enA = 13  # PWM pin
-        self.enB = 12  # PWM pin
+        self.enA = 13  # PWM1, pin 33, back right motor
+        self.enB = 12  # PWM0, pin 32, back left motor
         self.is_sim = False
 
     # checks all of the robot movements are functioning properly
