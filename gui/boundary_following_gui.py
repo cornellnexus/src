@@ -5,21 +5,22 @@ import numpy as np
 
 # Based on https://www.youtube.com/watch?v=pmmUi6DasoM
 
-# TODO: fix issue where when the robot turns to avoid wall in sharp angle, 
-#        sometimes "bounces back". Issues appears in 
-#        "fixed problem with robot getting stuck" commit. Likely have something 
+# TODO: fix issue where when the robot turns to avoid wall in sharp angle,
+#        sometimes "bounces back". Issues appears in
+#        "fixed problem with robot getting stuck" commit. Likely have something
 #        to do with self.gate. Try not to revert change because it did help with
-#        bug with not catching the robot when it became parallel to obstacle 
+#        bug with not catching the robot when it became parallel to obstacle
 #        after turning to avoid wall/obstacle
 # TODO: more refactoring and renaming would be good
 # TODO: add documentation to actual documentation document
-# TODO: double check updateHeading; I don't think it turns in the shortest 
+# TODO: double check updateHeading; I don't think it turns in the shortest
 #        direction to goal
 
 def distance(point1, point2):
     point1 = np.array(point1)
     point2 = np.array(point2)
     return np.linalg.norm(point1 - point2)
+
 
 class Robot:
     def __init__(self, startpos, endpos, width, velocityLeft, velocityRight, maxSpeed, minSpeed,
@@ -44,9 +45,11 @@ class Robot:
         self.distFromClosestObstacle = np.inf
         self.was_parallel = False
         self.gate = True
-        self.prev_dist = distance(((endpos[0]+goalMargin[0]),(endpos[1]+goalMargin[1])), startpos)
+        self.prev_dist = distance(
+            ((endpos[0]+goalMargin[0]), (endpos[1]+goalMargin[1])), startpos)
         self.goalMargin = goalMargin
-        self.last_pos = (self.x, self.y) # for determining circle where robot has to leave before it can turn towards line
+        # for determining circle where robot has to leave before it can turn towards line
+        self.last_pos = (self.x, self.y)
         self.first_gate = False
         self.second_gate = False
         self.debug = debug
@@ -55,7 +58,8 @@ class Robot:
         if len(point_cloud) > 0:
             for point in point_cloud:
                 if self.distFromClosestObstacle > distance([self.x, self.y], point):
-                    self.distFromClosestObstacle = distance([self.x, self.y], point)
+                    self.distFromClosestObstacle = distance(
+                        [self.x, self.y], point)
                     self.closestObstacle = point
             if self.distFromClosestObstacle < self.minimumObstacleDistance:
                 return True
@@ -65,7 +69,8 @@ class Robot:
 
     def is_on_line(self):
         tolerance = 2
-        slope = ((1200 - (self.endY + self.goalMargin[1]/2)) - (1200 - self.startY))/(self.endX + self.goalMargin[0]/2 - self.startX)
+        slope = ((1200 - (self.endY + self.goalMargin[1]/2)) - (1200 - self.startY))/(
+            self.endX + self.goalMargin[0]/2 - self.startX)
         desiredy = slope * (self.x - self.startX) + (1200 - self.startY)
         difference = (1200 - self.y) - desiredy
         if self.debug:
@@ -91,7 +96,7 @@ class Robot:
             right_back = min(pt_rb[1], min_sensor_val)
         if min_front is None:
             # obst_detected can be false because this is in reference to a second obstacle, like a sharp turn
-            obst_detected = False  
+            obst_detected = False
         else:
             obst_detected = min_front[1] < margin_to_obs
         if obst_detected:
@@ -106,7 +111,7 @@ class Robot:
                 cont = True
             boundary_following = True
         # finds out whether the robot is parallel to obst or not
-        # made was_parallel and gate attributes of robot bc persistent and 
+        # made was_parallel and gate attributes of robot bc persistent and
         # I dont want to the sketchy accumulator thing with cont again
         if abs(right_front - right_back) < side_sensor_margin:
             parallel = 0
@@ -122,23 +127,43 @@ class Robot:
             print("parallel")
             print(right_front)
             print(right_back)
-        if cont and (self.gate or (not self.gate and not parallel == 0)): # assume margin to obs large enough that turning won't hit the side
+        # if cont and (self.gate or (not self.gate and not parallel == 0)): # assume margin to obs large enough that turning won't hit the side
+        #     self.heading += 0.02
+        #     self.stop_moving()
+        #     if self.debug:
+        #         print("turn 1")
+        #         print(self.gate)
+        #         print(parallel)
+        #         print(self.was_parallel)
+        #     if not self.was_parallel:
+        #         self.gate = False
+        #     return True, True
+        # elif cont:
+        #     cont = False
+        #     self.gate = True
+        if cont and (not parallel == -1):
             self.heading += 0.02
             self.stop_moving()
-            if self.debug:
-                print("turn 1")
-                print(self.gate)
-                print(parallel)
-                print(self.was_parallel)
-            if not self.was_parallel:
-                self.gate = False
             return True, True
-        elif cont:
+        elif parallel == -1:
             cont = False
-            self.gate = True
+        if not cont:
+            if parallel == 0:
+                # distance_to_front_obstacle = np.inf
+                # for point in front_point_cloud:
+                #     distance_to_front_obstacle = min(distance(point, (self.x, self.y)), distance_to_front_obstacle)
+                self.move_forward()
+                self.kinematics(dt)
+            else:
+                # self.heading += -0.001 * left_value + -0.001 * right_value
+                # while not self.check_parallel(right_top_point_cloud, right_bottom_point_cloud, 1.5) == 0:
+                self.heading += -0.005 * parallel
+                self.heading += -0.01 * parallel
+            return False, True
 
         on_line = self.is_on_line()
-        curr_dist = distance((self.x, self.y), (self.endX + self.goalMargin[0]/2, self.endY + self.goalMargin[1]/2))
+        curr_dist = distance((self.x, self.y), (self.endX +
+                             self.goalMargin[0]/2, self.endY + self.goalMargin[1]/2))
         if self.debug:
             print("dist")
             print(on_line)
@@ -149,7 +174,7 @@ class Robot:
             if self.debug:
                 print((self.x, self.y))
                 print(self.last_pos)
-            if (distance((self.x, self.y), self.last_pos) > 3): 
+            if (distance((self.x, self.y), self.last_pos) > 3):
                 self.heading += self.updateHeading()
                 if self.updateHeading() == 0:
                     self.stop_moving()
@@ -169,7 +194,7 @@ class Robot:
             return False, True
 
         return cont, boundary_following
-        
+
         # second obstacle not detected
 
     def stop_moving(self):
@@ -182,7 +207,8 @@ class Robot:
 
     def setHeading(self):
         # Angle between robot and line to destination
-        angle = math.atan2(self.endY + 41 - self.y, self.endX + 40 - self.startX)
+        angle = math.atan2(self.endY + 41 - self.y,
+                           self.endX + 40 - self.startX)
         self.heading = angle * -1
 
     def updateHeading(self):
@@ -208,17 +234,16 @@ class Robot:
     def kinematics(self, dt):
         self.heading = self.heading % (2*math.pi)
         x_step = ((self.velocityLeft + self.velocityRight) / 2) * \
-                  math.cos(self.heading) * dt
+            math.cos(self.heading) * dt
         self.x += x_step
         y_step = ((self.velocityLeft + self.velocityRight) / 2) * \
-                  math.sin(self.heading) * dt
+            math.sin(self.heading) * dt
         self.y -= y_step
         if self.debug:
             print("kinematics")
             print(self.heading)
             print(x_step)
             print(y_step)
-
 
         self.velocityRight = min(self.maxSpeed, self.velocityRight)
         self.velocityLeft = min(self.maxSpeed, self.velocityLeft)
@@ -229,7 +254,8 @@ class Robot:
         return [x, y]
 
     def update_dist(self):
-        curr_dist = distance((self.x, self.y), (self.endX + self.goalMargin[0]/2, self.endY + self.goalMargin[1]/2))
+        curr_dist = distance((self.x, self.y), (self.endX +
+                             self.goalMargin[0]/2, self.endY + self.goalMargin[1]/2))
         self.prev_dist = curr_dist
 
 
