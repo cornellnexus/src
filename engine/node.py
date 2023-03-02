@@ -58,5 +58,5 @@ class Node:
             return False
 
     def __repr__(self):
-        return "".join("(" + str(self.lat) + "," + str(self.long) + ")")
+        return "".join("(" + str(self.x) + "," + str(self.y) + ")")
 

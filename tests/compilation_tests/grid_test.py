@@ -116,7 +116,8 @@ class TestGrid(unittest.TestCase):
         self.assertTrue(g.is_inside_triangle(2, 2, 3, 3, 1, 3, 2,
                         2), "this point is inside the triangle")
 
-    def test_is_on_border(self):
+    def test_is_on_border_triangle(self):
+        #Triangle Test
         count = 0
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
         g = Grid(lat_min, lat_max, long_min, long_max)
@@ -134,6 +135,94 @@ class TestGrid(unittest.TestCase):
                     count += 1
 
         self.assertEqual(len(g.border_nodes), count)
+
+    def test_is_on_border_rectangle(self):
+        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        g = Grid(lat_min, lat_max, long_min, long_max)
+        
+        rows = g.nodes.shape[0]
+        cols = g.nodes.shape[1]
+
+        g.activate_rectangle(0, 0, rows, cols)
+        g.find_border_nodes()
+
+        count = 0
+        for row in range(rows):
+            for col in range(cols):
+                node = g.nodes[row][col]
+                if node.is_active_node() and g.is_on_border(row, col, rows-1, cols-1):
+                    count += 1
+                    
+        self.assertEqual(len(g.border_nodes), count)
+
+    def test_is_on_border_circle(self):    
+        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        g = Grid(lat_min, lat_max, long_min, long_max)
+        
+        rows = g.nodes.shape[0]
+        cols = g.nodes.shape[1]
+
+        g.activate_circle(0, 0, 5)
+        g.find_border_nodes()
+
+        count = 0
+        for row in range(rows):
+            for col in range(cols):
+                node = g.nodes[row][col]
+                if node.is_active_node() and g.is_on_border(row, col, rows-1, cols-1):
+                    count += 1
+                    
+        self.assertEqual(len(g.border_nodes), count)
+        
+    def test_find_border_nodes(self):
+        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        g = Grid(lat_min, lat_max, long_min, long_max)
+        
+        rows = g.nodes.shape[0]
+        cols = g.nodes.shape[1]
+        
+        g.activate_rectangle(0, 0, rows, cols)
+
+        borderNodes = []
+        for row in range(rows):
+            for col in range(cols):
+                node = g.nodes[row][col]
+                if node.is_active_node() and g.is_on_border(row, col, rows-1, cols-1):
+                    borderNodes.append((node, row, col))
+
+        g.find_border_nodes()
+
+        self.assertEqual(g.border_nodes, borderNodes)
+
+    def test_get_neighbor_nodes_VersionNone(self):
+        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        g = Grid(lat_min, lat_max, long_min, long_max)
+        
+        rows = g.nodes.shape[0]
+        cols = g.nodes.shape[1]
+
+        g.activate_rectangle(0, 0, rows, cols)
+
+        self.assertEqual(g.get_neighbor_node(-1, 0, rows, cols), None)
+
+    def test_get_neighbor_nodes(self):
+        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        g = Grid(lat_min, lat_max, long_min, long_max)
+
+        rows = g.nodes.shape[0]
+        cols = g.nodes.shape[1]
+
+        g.activate_rectangle(0, 0, rows, cols)
+
+        for row in range(rows):
+            for col in range(cols):
+                node = g.nodes[row][col]
+                self.assertEqual(g.get_neighbor_node(row, col, rows, cols), node)
+
+
+        #cd src 
+        # . venv/bin/activate
+        #python -m tests.compilation_tests.grid_test
 
 if __name__ == '__main__':
     unittest.main()
