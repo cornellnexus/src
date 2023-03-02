@@ -140,6 +140,7 @@ class TestGrid(unittest.TestCase):
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
         g = Grid(lat_min, lat_max, long_min, long_max)
         
+        
         rows = g.nodes.shape[0]
         cols = g.nodes.shape[1]
 
