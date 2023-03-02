@@ -174,30 +174,7 @@ class Robot:
             else:
                 self.robot_state.motor_controller.spin_motors(
                     limited_cmd_w[0], limited_cmd_v[0])
-                # once update_ekf done, integrate with update_ekf and delete
-                imu_data = self.robot_state.imu.get_imu()
-                imu_heading = math.degrees(
-                    math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
-                delta_omega = imu_heading - self.robot_state.state[2]
-                gps_data = self.robot_state.gps().get_gps()
-                new_x = get_vincenty_x(
-                    gps_data, self.robot_state.start_coor)
-                new_y = get_vincenty_y(
-                    gps_data, self.robot_state.start_coor)
-                delta_d = math.sqrt(
-                    (new_y - self.robot_state.state[2])**2 + (new_x - self.robot_state.state[1])**2)
-                self.robot_state.state = np.round(integrate_odom(
-                    self.robot_state.state, delta_d, delta_omega), 3)
-                # self.robot_state.state = self.update_ekf_step()
-                if not self.robot_state.using_odom:
-                    imu_data = self.robot_state.imu.get_imu()
-                    self.robot_state.state[2] = math.degrees(
-                        math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
-                    gps_data = self.robot_state.gps().get_gps()
-                    self.robot_state.state[0] = get_vincenty_x(
-                        gps_data, self.robot_state.start_coor)
-                    self.robot_state.state[1] = get_vincenty_y(
-                        gps_data, self.robot_state.start_coor)
+                self.update_state()
                 # TODO: sleep??
 
             # Get state after movement:
@@ -222,6 +199,32 @@ class Robot:
             fd.write(
                 str(predicted_state[0])[1:-1] + ',' + str(predicted_state[1])[1:-1] + ',' + str(predicted_state[2])[1:-1] + '\n')
         time.sleep(0.001)
+
+    def update_state(self):
+        # once update_ekf done, integrate with update_ekf and delete
+        imu_data = self.robot_state.imu.get_imu()
+        imu_heading = math.degrees(
+            math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
+        delta_omega = imu_heading - self.robot_state.state[2]
+        gps_data = self.robot_state.gps().get_gps()
+        new_x = get_vincenty_x(
+            gps_data, self.robot_state.start_coor)
+        new_y = get_vincenty_y(
+            gps_data, self.robot_state.start_coor)
+        delta_d = math.sqrt(
+            (new_y - self.robot_state.state[2])**2 + (new_x - self.robot_state.state[1])**2)
+        self.robot_state.state = np.round(integrate_odom(
+            self.robot_state.state, delta_d, delta_omega), 3)
+        # integrate odom code goes here. Not here bc broken: how is integrate odom using velocity? and integrate odom isn't using motor encoders, which it needs. once update_ekf done, integrate with update_ekf and delete
+        if not self.robot_state.using_odom:
+            imu_data = self.robot_state.imu.get_imu()
+            self.robot_state.state[2] = math.degrees(
+                math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
+            gps_data = self.robot_state.gps().get_gps()
+            self.robot_state.state[0] = get_vincenty_x(
+                gps_data, self.robot_state.start_coor)
+            self.robot_state.state[1] = get_vincenty_y(
+                gps_data, self.robot_state.start_coor)
 
     def turn_to_target_heading(self, target_heading, allowed_heading_error, database):
         """
@@ -253,30 +256,8 @@ class Robot:
             else:
                 self.robot_state.motor_controller.spin_motors(
                     limited_cmd_w[0], 0)
-                # once update_ekf done, integrate with update_ekf and delete
-                imu_data = self.robot_state.imu.get_imu()
-                imu_heading = math.degrees(
-                    math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
-                delta_omega = imu_heading - self.robot_state.state[2]
-                gps_data = self.robot_state.gps().get_gps()
-                new_x = get_vincenty_x(
-                    gps_data, self.robot_state.start_coor)
-                new_y = get_vincenty_y(
-                    gps_data, self.robot_state.start_coor)
-                delta_d = math.sqrt(
-                    (new_y - self.robot_state.state[2])**2 + (new_x - self.robot_state.state[1])**2)
-                self.robot_state.state = np.round(integrate_odom(
-                    self.robot_state.state, delta_d, delta_omega), 3)
-                # integrate odom code goes here. Not here bc broken: how is integrate odom using velocity? and integrate odom isn't using motor encoders, which it needs. once update_ekf done, integrate with update_ekf and delete
-                if not self.robot_state.using_odom:
-                    imu_data = self.robot_state.imu.get_imu()
-                    self.robot_state.state[2] = math.degrees(
-                        math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
-                    gps_data = self.robot_state.gps().get_gps()
-                    self.robot_state.state[0] = get_vincenty_x(
-                        gps_data, self.robot_state.start_coor)
-                    self.robot_state.state[1] = get_vincenty_y(
-                        gps_data, self.robot_state.start_coor)            # sleep in real robot
+                self.update_state()
+                # sleep in real robot
 
             # Get state after movement:
             predicted_state = self.robot_state.state  # this will come from Kalman Filter
