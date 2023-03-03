@@ -1,6 +1,7 @@
 import time
 #from engine.robot import Robot
-import RPi.GPIO as GPIO
+if False: # change to True when running code on robot
+    import RPi.GPIO as GPIO
 
 class BasicMotorController:
     """ 
@@ -16,7 +17,7 @@ class BasicMotorController:
         self.in4 = 26
         self.enA = 13  # PWM1, pin 33, back right motor
         self.enB = 12  # PWM0, pin 32, back left motor
-        self.is_sim = False
+        self.is_sim = True # Change to False when running on robot, same with importing RPi.GPIO
 
     # checks all of the robot movements are functioning properly
     def setup(self):
