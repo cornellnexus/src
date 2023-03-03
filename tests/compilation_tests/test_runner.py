@@ -1,3 +1,4 @@
+import sys
 import unittest
 import tests.compilation_tests.pid_controller_test as pid_controller_test
 import tests.compilation_tests.kinematics_test as kinematics_test
@@ -33,3 +34,5 @@ for test_case in compilation_tests:
 
 runner = unittest.TextTestRunner(verbosity=3)
 result = runner.run(suite)
+ret = not result.wasSuccessful()
+sys.exit(ret)
