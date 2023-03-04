@@ -1,4 +1,4 @@
-from electrical.motor_controller import BasicMotorController
+from motor_controller import BasicMotorController
 import time
 import math
 import RPi.GPIO as GPIO
@@ -36,10 +36,11 @@ class BasicMotorControllerTest:
 
     # Moves forward for 3 seconds
     def motor_controller_forward(self):
-        GPIO.add_event_detect(pin,GPIO.RISING,callback=pulse_handler_right)  
+        GPIO.add_event_detect(pin,GPIO.RISING,callback=count_pulse)  
         stop_time = time.time() + 3
         while time.time() <	stop_time:
             self.mc.go_forward()
+        print("count is "+str(counter_right))
         GPIO.cleanup()
 
     def run(self):
@@ -86,6 +87,10 @@ class BasicMotorControllerTest:
 global counter_right
 counter_right = 0
 
+def count_pulse(pin):
+    global counter_right
+    counter_right+=1
+
 def pulse_handler_right(pin):
     global counter_right
     if (counter_right==10):
@@ -99,14 +104,14 @@ def pulse_handler_right(pin):
 #def pulse_handler_left(pin):
 #    counter_left+=1     
 
-def odometry(r, L):
-    global counter_right
-    dtheta_right=(2*math.pi*counter_right)/ppr  #angular displacement of right wheel
-    print("check4")
+# def odometry(r, L):
+    # global counter_right
+    # dtheta_right=(2*math.pi*counter_right)/ppr  #angular displacement of right wheel
+    # print("check4")
 
-    print("angle is"+str(dtheta_right))		#+"\n"+"angular displacement is"+str(angular_dis)
-    print("check5")
-    counter_right=0
+    # print("angle is"+str(dtheta_right))		#+"\n"+"angular displacement is"+str(angular_dis)
+    # print("check5")
+    # counter_right=0
     #counter_left=0
 test= BasicMotorControllerTest()
 test.run()
