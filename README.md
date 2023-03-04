@@ -28,4 +28,9 @@ For RF Module, must be operating on Raspberry Pi to run these commands.
 
 1. Enable Serial data transmission from RF Module and raspberry pi
    <sudo raspi-config>
-2. Go to "interfacing options" and select the "Serial" option. Make the login shell accessible. 
+2. Go to "interfacing options" and select the "Serial" option. Make the login shell accessible.
+
+For GUI Module
+
+1. install tkinter
+   brew install python-tk@3.10

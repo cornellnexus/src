@@ -24,6 +24,7 @@ from matplotlib import animation as animation
 from matplotlib import patches as patch
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import PySimpleGUI as sg
+from engine.is_raspberrypi import is_raspberrypi
 
 import os
 import math
@@ -38,7 +39,7 @@ import serial
 #################### BEGINNING OF SECTION 1. MATPLOTLIB ROBOT MAPPING ####################
 matplotlib.use('TkAgg')
 # ser = serial.Serial("/dev/tty.usbserial-017543DC", 57600)
-is_sim = True # Change to False when testing RPI to GUI connection
+is_sim = is_raspberrypi() # Change to False when testing RPI to GUI connection
 
 def get_control_mode(window):
     """
@@ -47,7 +48,6 @@ def get_control_mode(window):
     #TODO: replace using telemetry data
 
     if is_sim: 
-        path = get_path('csv')
         file = open(CSV_PATH+"/control_mode_test.csv", "r")
         try:
             last_line = file.readlines()[-1]
@@ -129,12 +129,18 @@ def animate(i):
 
     if is_sim:
         try:
-            sim_packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
-            robot_data.update_data(sim_packet)
+            # TODO: Update to use gui database once it is updated in move_to_target_node
+            # sim_packet = rpi_to_gui.readlines()[-1]  # get last line of csv file
+            # robot_data.update_data(sim_packet)
+            last_line = robot_loc_file.readlines()[-1]
+            x, y, alpha = last_line.strip().split(',')
+            x = float(x)
+            y = float(y)
+            alpha = float(alpha)
         except IndexError:
             return circle_patch, wedge_patch
-    
-    x, y, alpha = robot_data.coord[0], robot_data.coord[1], robot_data.coord[2]
+    else:
+        x, y, alpha = robot_data.coord[0], robot_data.coord[1], robot_data.coord[2]
         
     degrees = math.degrees(alpha)
     circle_patch.center = (x, y)
@@ -183,8 +189,8 @@ def setup_gui():
                 [sg.InputText(size=(30,1), key="-COMMANDLINE-", font=('Courier New', 20))],
                 [sg.Button('Submit', visible=False, bind_return_key=True)],
                 [sg.Multiline(current_output, key = "-OUTPUT-", size=(40,8), disabled=True, font=('Courier New', 20))],
-                [sg.Text("Current Coordinates: ______")],
-                [sg.Text("Current Phase: ______", key = "-PHASE-")],
+                [sg.Text("Current Coordinates: ______", size=(30,))],
+                [sg.Text("Current Phase: ______", key = "-PHASE-", size=(30,))],
                 [sg.Button('Autonomous', key = "-CONTROL_MODE_BUTTON-"), sg.Button('Track Location'), sg.Button('Traversal Phase'), sg.Button('Simulation'), sg.Button("Startup Base Station"), sg.Button('Read RPI Comms')],
                 [sg.Multiline(str(robot_data), key = "-DATA-", size=(40,8), disabled=True, font=('Courier New', 20))]
             ]
@@ -279,6 +285,9 @@ def run_gui():
             pass
 
         if event == sg.WIN_CLOSED or event == 'Cancel':
+            # once gui.gui.py is closed, close any other simulation scripts
+            os.system("pkill -f engine.sim_trajectory &")
+            os.system("pkill -f gui.retrieve_inputs")
             break
         if event == 'Show':
             # Update the "output" text element to be the value of "commandline" 
@@ -347,11 +356,12 @@ if not close_gui:
         fig, ax = setup(bounds)  # Set up matplotlib map figure
         circle_patch, wedge_patch = make_robot_symbol()  # Create a circle and wedge objet for robot location and heading, respectively
         # Begins the constant animation/updates of robot location and heading
-        robot_loc_file = open(CSV_PATH + '/datastore.csv', "r")  # open csv file of robot location
+        
         robot_phase_file = open(CSV_PATH + '/phases.csv', "r")
         if is_sim:
             # open csv file for simulated rpi to gui data
-            rpi_to_gui = open(CSV_PATH+"/rpi_to_gui_simulation.csv", "r")
+            robot_loc_file = open(CSV_PATH + '/datastore.csv', "r")  # open csv file of robot location
+            # rpi_to_gui = open(CSV_PATH+"/rpi_to_gui_simulation.csv", "r")
 
         current_output = "Welcome! If you enter commands in the text field above, \nthe results will appear here. Try typing <print_coords>."
         robot_data = RobotData("phse:1;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00,000.00;bat:000;ctrl:1")
@@ -364,8 +374,8 @@ if not close_gui:
         run_gui() #Start up the main GUI window
         robot_loc_file.close()
         robot_phase_file.close()
-        if is_sim:
-            rpi_to_gui.close()
+        # if is_sim:
+        #     rpi_to_gui.close()
 
 
 #################### END OF SECTION 3. GUI PROGRAM FLOW/SCRIPT ####################

@@ -10,7 +10,7 @@ from enum import IntEnum
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 # from engine.sensor_module import SensorModule
-from constants.geo_fences import ENGINEERING_QUAD
+from constants.definitions import ENGINEERING_QUAD
 from engine.ekf import LocalizationEKF
 
 
