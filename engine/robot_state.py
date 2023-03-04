@@ -136,6 +136,3 @@ class Robot_State:
             self.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA)) 
         
 
-    # def rpiToGui():
-    #     pass
-
