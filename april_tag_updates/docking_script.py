@@ -40,41 +40,47 @@ def distance_to_camera(knownWidth, focalLength, perWidth):
   # compute and return the distance from the maker to the camera
   return (knownWidth * focalLength) / perWidth
 
+def direction_of_tag(corner,image):
+  (topLeft, topRight, bottomRight, bottomLeft) = corner
+  h,w = image.shape[0], image.shape[1]
+  cx, cy = int(960),int(540)
+  if  bottomLeft[0] > cx:
+    return "right"
+  else:
+    return "left"
+
+
 CACHED_PTS = None
 CACHED_IDS = None
 Line_Pts = None
 measure = None
-idDict = {1: "F1", 2: "F2", 3: "F3"}
+idDict = {2: "F1", 13: "F2", 3: "F3"}
 visited = []
-timeout = timeout = time.time() + 3
+timeout =  10
 angle_zero = 10
 step1_done = False
 step2_done = False
 robot = Robot(x_pos = 0, y_pos = 0, heading = 0, epsilon = 0, max_v = 0, radius = 1)
 motor = BasicMotorController(robot)
+start_time = None
 while True:
+    if start_time is None:
+        start_time = time.time()
     ret, image = cap.read()
     (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
-    if len(corners) <= 0:
-      if CACHED_PTS is not None:
-        corners = CACHED_PTS
-      if time.time() > timeout and step1_done is False:
+    if len(corners) == 0:
+      if time.time() - start_time > timeout and step1_done is False:
         # print("Check for april tags rn by rotating in circle for 15 seconds.")
-        start_time = time.time()
-        if time.time() - start_time < timeout: 
-          motor.turn_right
+          motor.turn_right()
+      if step1_done is True and step2_done is False:
+        #print(go back pls until len(corners) = 1)
+        motor.reverse()
+        step2_done = True
     if len(corners) > 0:
-      CACHED_PTS = corners
-      if ids is not None:
-        ids = ids.flatten()
-        CACHED_IDS = ids
-      else:
-        if CACHED_IDS is not None:
-          ids = CACHED_IDS
-      if len(corners) < 2:
-        if len(CACHED_PTS) >= 2:
-          corners = CACHED_PTS
+      start_time = time.time()
       for (corner, markerId) in zip(corners, ids):
+          # print(direction_of_tag(corner[0],image))
+          markerId = float(markerId)
           (topLeft, topRight, bottomRight, bottomLeft) = corner[0]
           pixel_width = np.sqrt((bottomRight[0] - bottomLeft[0])**2 + (bottomRight[1] - bottomLeft[1])**2)
           vert_distance = distance_to_camera(known_width,focal_length,pixel_width)
@@ -103,13 +109,12 @@ while True:
               # print("Step 1 is over. Step 2: move forward until tag out of sight. ")
               motor.go_forward()
               step1_done = True
-              if len(corners) <= 0: 
-                #print(go back pls until len(corners) = 1)
-                motor.reverse()
-              step2_done = True
             else:
               # print("Keep rotating till we reach center of middle tag")
-              motor.turn_left()
+              if direction_of_tag(corner[0],image) == "right":
+                motor.turn_left()
+              else: 
+                motor.turn_right()
           else:
             if idDict.get(markerId) not in visited: 
               if idDict.get(markerId) is not None:
@@ -118,7 +123,7 @@ while True:
                   visited.append(idDict.get(markerId))
                 else:
                   # print("keep rotating to align with center of " + idDict.get(markerId))
-                  if idDict.get(markerId) == "F1":
+                  if direction_of_tag(corner[0],image) == "right":
                     motor.turn_left()
                   else:
                     motor_turn_right()
