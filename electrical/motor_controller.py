@@ -3,7 +3,6 @@ import time
 if False:  # change to True when running code on robot
     import RPi.GPIO as GPIO
 
-
 class BasicMotorController:
     """ 
     BasicMotorController contains pinouts to configure motor controller, as well as 
@@ -23,16 +22,14 @@ class BasicMotorController:
     # checks all of the robot movements are functioning properly
     def setup(self):
         if not self.is_sim:
-            GPIO.setmode(GPIO.BCM)  # raspberry pi pinout reading mode
-            GPIO.setup([self.in1, self.in2, self.in3, self.in4],
-                       GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
-
+            GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
+            GPIO.setup([self.in1, self.in2], GPIO.OUT, initial=GPIO.LOW)  # In1, In2, In3, In4
             GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
             # create object digital to analog conversion for PWM on port 25 at 1KHz
             self.e1 = GPIO.PWM(self.enA, 600)
             self.e2 = GPIO.PWM(self.enB, 600)
             self.e1.start(100)
-            self.e2.start(100)
+            self.e2.start(100)      
 
     # stops the robot
     def stop(self):
@@ -47,41 +44,43 @@ class BasicMotorController:
         if self.is_sim:
             print('go_forward')
         else:
-            GPIO.output([self.in1, self.in4], GPIO.HIGH)
-            GPIO.output([self.in2, self.in3], GPIO.HIGH)
+            GPIO.output([self.in1], GPIO.HIGH)
+            GPIO.output([self.in2], GPIO.HIGH)
 
     # reverses the robot
     def reverse(self):
         if self.is_sim:
             print('reverse')
         else:
-            GPIO.output([self.in2, self.in3], GPIO.LOW)
-            GPIO.output([self.in1, self.in4], GPIO.LOW)
+            GPIO.output([self.in2], GPIO.LOW)
+            GPIO.output([self.in1], GPIO.LOW)
 
     # turns the robot left for 1 second
     def turn_left(self):
         if self.is_sim:
             print('turn_left')
         else:
-            GPIO.output([self.in2, self.in4], GPIO.LOW)
-            GPIO.output([self.in1, self.in3], GPIO.HIGH)
-        time.sleep(1)
+            GPIO.output([self.in1], GPIO.LOW)
+            GPIO.output([self.in2], GPIO.HIGH)
+            self.e1.start(50)
+            self.e2.start(100)
+
 
     # turns the robot right for 1 second
     def turn_right(self):
         if self.is_sim:
             print('turn_right')
         else:
-            GPIO.output([self.in1, self.in3], GPIO.LOW)
-            GPIO.output([self.in2, self.in4], GPIO.HIGH)
-        time.sleep(1)
+            GPIO.output([self.in1], GPIO.HIGH)
+            GPIO.output([self.in2], GPIO.LOW)
+            self.e1.start(100)
+            self.e2.start(50)
 
 
 class MotorController:
     """ 
     MotorController contains pinouts to configure motor controller and can set motor torque 
     according to input angular and linear velocities.
-
     Attributes: 
         robot: robot object 
         wheel_radius: the wheel radius 
@@ -90,7 +89,6 @@ class MotorController:
         L: radius of left motor #TODO: double check this 
         R: radius of right motor #TODO: double check this
     """
-
     def __init__(self, wheel_radius, vm_load1, vm_load2, L, R):
         self.wheel_radius = wheel_radius
         self.vm_load1 = vm_load1
@@ -105,8 +103,7 @@ class MotorController:
         self.enB = 12
 
         GPIO.setmode(GPIO.BCM)
-        GPIO.setup([self.in1, self.in2, self.in3, self.in4],
-                    GPIO.OUT, initial=GPIO.LOW)
+        GPIO.setup([self.in1, self.in2, self.in3, self.in4],GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
         self.p1 = GPIO.PWM(self.enA, 50)
@@ -125,12 +122,6 @@ class MotorController:
 
         self.p1 = GPIO.PWM(self.enA, 50)
         self.p2 = GPIO.PWM(self.enB, 50)
-
-        # Initialize PWM duty cycles as 0
-        self.p1.start(0)
-        self.p2.start(0)
-
-        self.spin_motors(0, 0)
 
     # converts the robot's overall calculated angular velocity and linear velocity
     # into the angular velocities for left and right sides of the robot

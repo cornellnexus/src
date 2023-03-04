@@ -101,7 +101,7 @@ class Grid:
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y)  # , is_border)
+                        node = Node(lat, long, x, y)
                         node_list[j, i] = node
                     elif i % 2 == 1:
                         lat = gps_origin[0] + \
@@ -109,7 +109,7 @@ class Grid:
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
-                        node = Node(lat, long, x, y)  # , is_border)
+                        node = Node(lat, long, x, y)
                         row_index = rows - (j + 1)
                         node_list[row_index, i] = node
 
@@ -225,7 +225,8 @@ class Grid:
     ##Activates rectangle based on row start/end, col start/end
     def activate_rectangle(self, row, col, row_limit, col_limit):
         """
-        Activates all the nodes in a rectangle.
+        Activates all the nodes in a rectangle based on row start/end, col
+        start/end.
         """
         for x in range(row, row_limit):
             for y in range(col, col_limit):
@@ -235,7 +236,7 @@ class Grid:
     ##Activates circle based on center and radius
     def activate_circle(self, circle_center_row, circle_center_col, circle_radius):
         """
-        Activates all the nodes in a circle.
+        Activates all the nodes in a circle based on center and radius.
         """
         for x in range(self.num_rows):
             for y in range(self.num_cols):
@@ -312,6 +313,7 @@ class Grid:
     def find_border_nodes(self):
         """
             Find all activated border nodes on the grid.
+            Based on these activated notes, finds the border nodes. 
 
             This function loops through all the nodes, checks if a particular node has
             been activated, and if so checks to see if that node is a border node. At the

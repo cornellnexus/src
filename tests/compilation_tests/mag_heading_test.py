@@ -46,20 +46,20 @@ with open(CSV_PATH + '/imu_360_sample1.csv') as csv_file:
 
 ekf = EKF()
 ekf = EKF(gyr=gyr_data, acc=acc_data, mag=mag_data)
-# print(ekf.Q)
-# print(np.shape(ekf.Q))
-height = np.shape(ekf.Q)[0]
+# print(ekf.R)
+# print(np.shape(ekf.R))
+height = np.shape(ekf.R)[0]
 for i in range(height):
-    top = 2.0 * (ekf.Q[i, 2] * ekf.Q[i, 3] + ekf.Q[i, 0] * ekf.Q[i, 1])
-    bottom = ekf.Q[i, 0] * ekf.Q[i, 0] - ekf.Q[i, 1] * ekf.Q[i, 1] - ekf.Q[i, 2] * ekf.Q[i, 2] + ekf.Q[i, 3] * ekf.Q[
+    top = 2.0 * (ekf.R[i, 2] * ekf.R[i, 3] + ekf.R[i, 0] * ekf.R[i, 1])
+    bottom = ekf.R[i, 0] * ekf.R[i, 0] - ekf.R[i, 1] * ekf.R[i, 1] - ekf.R[i, 2] * ekf.R[i, 2] + ekf.R[i, 3] * ekf.R[
         i, 3]
 
     heading = np.degrees(math.atan2(top, bottom))
 
-    # ekf.Q[i,1] = 0;
-    # ekf.Q[i,3] = 0;
-    # m = math.sqrt(ekf.Q[i,0]*ekf.Q[i,0] + ekf.Q[i,2]*ekf.Q[i,2]);
-    # ekf.Q[i,0] /= m
-    # ekf.Q[i,2] /= m;
-    # heading = np.degrees(2*math.acos(ekf.Q[i,0]));
+    # ekf.R[i,1] = 0;
+    # ekf.R[i,3] = 0;
+    # m = math.sqrt(ekf.R[i,0]*ekf.R[i,0] + ekf.R[i,2]*ekf.R[i,2]);
+    # ekf.R[i,0] /= m
+    # ekf.R[i,2] /= m;
+    # heading = np.degrees(2*math.acos(ekf.R[i,0]));
     # print(heading)
