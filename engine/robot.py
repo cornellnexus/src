@@ -563,7 +563,7 @@ class Robot:
                 self.goal_location, curr_pos)
 
             dist_from_init = self.calculate_dist(curr_pos, init_pos)
-            is_on_line = self.is_on_line(self.goal_location, init_pos)
+            is_on_line = self.is_on_line(self.goal_location, curr_pos)
             new_dist_to_goal = self.calculate_dist(
                 self.goal_location, curr_pos)
             if dist_from_init > init_threshold:
@@ -571,7 +571,7 @@ class Robot:
             if curr_dist_to_goal < goal_threshold:  # exits obstacle avoidance if robot close to goal
                 self.set_phase(self.prev_phase)
                 return None
-            elif has_traversed_boundary and has_left_init_thresh:
+            elif has_traversed_boundary:
                 self.set_phase(Phase.FAULT)  # cannot reach goal
                 return None
             elif is_on_line and (new_dist_to_goal < init_dist_to_goal):  # bug 2
