@@ -17,6 +17,7 @@ class BasicMotorControllerTest:
         self.mc.setup()
         self.counter_right = 0
 
+    # Turns right for 3 seconds
     def motor_controller_turn_right(self): 
         stop_time = time.time() + 3
         while time.time() <	stop_time:
@@ -27,20 +28,18 @@ class BasicMotorControllerTest:
         while time.time() <	stop_time:
             self.mc.stop()
     
+    # Turns left for 3 seconds
     def motor_controller_turn_left(self): 
         stop_time = time.time() + 3
         while time.time() <	stop_time:
             self.mc.turn_left()
 
+    # Moves forward for 3 seconds
     def motor_controller_forward(self):
-        
-        stop_time = time.time() + 3
         GPIO.add_event_detect(pin,GPIO.RISING,callback=pulse_handler_right)  
-
+        stop_time = time.time() + 3
         while time.time() <	stop_time:
             self.mc.go_forward()
-         
-          
         GPIO.cleanup()
 
     def run(self):
