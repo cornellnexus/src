@@ -152,9 +152,6 @@ class Robot:
             math.radians((180 - self.sensor_measuring_angle) / 2))
         self.detect_obstacle_range = min(self.threshold_distance,
                                          self.max_sensor_range)  # set ultrasonic detection range
-        self.init_threshold = init_threshold
-        self.goal_threshold = goal_threshold
-        self.noise_margin = noise_margin
         if not self.is_sim:
             self.motor_controller = MotorController(
                 self, wheel_radius=0, vm_load1=1, vm_load2=1, L=0, R=0)
@@ -531,9 +528,9 @@ class Robot:
                 p1 (Tuple): An (x, y) point on the line
                 p2 (Tuple): Another (x, y) point on the line
         """
-        tolerance = 2
-        slope = (p2[1] - p1[1])/(p2[0] - p1[0])
-        desiredy = slope * (self.x - p1[0]) + p1[1]
+        tolerance = 2  # threshold from current y position to desired y position on the line where we interpret y position to still be on the line
+        slope = (p2[1] - p1[1])/(p2[0] - p1[0])  # m = (y2 - y1)/(x2 - x1)
+        desiredy = slope * (self.x - p1[0]) + p1[1]  # y - y1 = m(x - x1)
         difference = self.y_pos - desiredy
         return abs(difference) < tolerance
 
@@ -542,49 +539,55 @@ class Robot:
             Returns:
                 prev_phase (Phase)
         """
-        # TODO: ADD NOISE MARGIN: let t0 be the time when the robot first left the init threshold.
-        #  At t0+1, noise can make it such that the robot re-entered the threshold.
-        #  Add margin to threshold initially and disable margin once the robot first left threshold.
-        init_x = self.x_pos
-        init_y = self.y_pos
-        init_pos = (init_x, init_y)
         # Note: init_threshold is arbitrary, set later. sometimes location reading will be inaccurate or not frequent
         #  enough to read that we've arrived back to the init x y pos. make it small enough that robot actually leaves
         #  init_threshold at some time during boundary following or add timeout to branch making gate = True
+        init_threshold = 3
+        # how far robot can be from goal for it to be at goal; goal is where the robot wanted to go when there isn't an obstacle
+        goal_threshold = 3
+        init_x = self.x_pos
+        init_y = self.y_pos
+        init_pos = (init_x, init_y)
+
+        # last position of the robot when it's still on the (line from its initial position to its goal positions)
+        last_pos_on_line = init_pos
         has_left_init_thresh = False
         has_traversed_boundary = False
-        curr_dist_to_goal = self.calculate_dist(self.goal_location, init_pos)
-        last_pos_on_line = init_pos
-        init_dist_to_goal = self.calculate_dist(self.goal_location, init_pos)
+        curr_dist_to_goal = self.calculate_dist(self.goal_location, curr_pos)
+        init_dist_to_goal = curr_dist_to_goal
         while True:
-            if self.phase == Phase.fault:  # fault has priority over obstacle avoidance
+            if self.phase == Phase.FAULT:  # fault has priority over obstacle avoidance
                 return None
-            else:
-                curr_pos = (self.x_pos, self.y_pos)
-                dist_from_init = self.calculate_dist(curr_pos, init_pos)
-                is_on_line = self.is_on_line(self.goal_location, init_pos)
-                new_dist_to_goal = self.calculate_dist(
-                    self.goal_location, curr_pos)
-                if dist_from_init > (self.init_threshold + self.noise_margin):
-                    has_left_init_thresh = True
-                if curr_dist_to_goal < self.goal_threshold:  # exits obstacle avoidance if robot close to goal
+            curr_pos = (self.x_pos, self.y_pos)
+            curr_dist_to_goal = self.calculate_dist(
+                self.goal_location, curr_pos)
+
+            dist_from_init = self.calculate_dist(curr_pos, init_pos)
+            is_on_line = self.is_on_line(self.goal_location, init_pos)
+            new_dist_to_goal = self.calculate_dist(
+                self.goal_location, curr_pos)
+            if dist_from_init > init_threshold:
+                has_left_init_thresh = True
+            if curr_dist_to_goal < goal_threshold:  # exits obstacle avoidance if robot close to goal
+                self.set_phase(self.prev_phase)
+                return None
+            elif has_traversed_boundary and has_left_init_thresh:
+                self.set_phase(Phase.FAULT)  # cannot reach goal
+                return None
+            elif is_on_line and (new_dist_to_goal < init_dist_to_goal):  # bug 2
+                # without this, the robot could move closer to the goal (on a slant, not directly towards the goal)
+                #   but still be on the line, making the robot keep exiting obstacle avoidance when its effectively in the same position as before
+                threshold_to_recalculate_on_line = 3
+                # need to tune. Want to be close to is_on_line threshold beecause that's the reason why we have this
+                if self.calculate_dist(curr_pos, last_pos_on_line) > threshold_to_recalculate_on_line:
                     self.set_phase(self.prev_phase)
                     return None
-                elif has_traversed_boundary and has_left_init_thresh:
-                    self.set_phase(Phase.FAULT)  # cannot reach goal
-                    return None
-                elif is_on_line and (new_dist_to_goal < init_dist_to_goal):
-                    threshold_to_recalculate_on_line = 3
-                    if self.calculate_dist(curr_pos, last_pos_on_line) > threshold_to_recalculate_on_line:
-                        self.set_phase(self.prev_phase)
-                        return None
-                else:
-                    self.execute_boundary_following(
-                        0)  # add code directly here
-                    # update conditions
-                    curr_dist_to_goal = self.calculate_dist(
-                        self.goal_location, (self.x_pos, self.y_pos))
-                    has_traversed_boundary = dist_from_init < self.init_threshold
+            else:
+                self.execute_boundary_following(0)  # boundary following here
+            if has_left_init_thresh:
+                # we dont want the program to think that the boundary is untraversable
+                #   when the robot is still in the threshold from where it started obstacle avoidance
+                has_traversed_boundary = dist_from_init < init_threshold
             time.sleep(10)  # don't hog the cpu
 
     def execute_boundary_following(self, min_dist):
