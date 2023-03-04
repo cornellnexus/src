@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 
+ROBOT_WIDTH = 3
 
 class LocalizationEKF:
     """
@@ -101,14 +102,40 @@ class LocalizationEKF:
         """
         return np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    def predict_step(self, control):
+    def get_controls(self, arc_lengths): 
+        """
+        Returns phi, the angle changed in a timestep and d, the displacement traveled in a timestep.
+
+        Given from electrical: arc_lengths: a tuple such that the first entry is the 
+        left-side arc distance and the second entry is the right-side arc distance
+        
+        Arc distance is calculated from motor_velocity * timestep
+        """
+
+        L_L = arc_lengths[0]
+        L_R = arc_lengths[1]
+
+        r = L_L * ROBOT_WIDTH / (L_R - L_L)
+        
+        phi = (L_R - L_L) / ROBOT_WIDTH
+        d = 2 * ((r + (ROBOT_WIDTH/2)) * math.sin(phi / 2))
+        return [d, phi]
+
+    def predict_step(self, arc_lengths):
         """
         Returns the distribution of the robot's state after the prediction step of the EKF, based
         on the robot's controls.
+
+        Let arc_lengths be a tuple such that it represents
+        (left-side-length-traveled, right-side-length-traveled) 
+
         [mu_bar, sigma_bar]
         """
-        jac_G = LocalizationEKF.get_g_jac(self.mu, control)
-        mu_bar = LocalizationEKF.get_predicted_state(self.mu, control)
+        controls = self.get_controls(arc_lengths) # [d, phi]
+
+        jac_G = self.get_g_jac(self.mu, controls)
+
+        mu_bar = self.get_predicted_state(self.mu, controls)
         sigma_bar = jac_G * self.sigma * np.transpose(jac_G) + self.Q
 
         return mu_bar, sigma_bar
@@ -123,17 +150,12 @@ class LocalizationEKF:
 
         jac_H = self.get_h_jac(mu_bar)
 
-        kalman_gain = \
-            (sigma_bar * np.transpose(jac_H) *
-             inv(jac_H * sigma_bar * np.transpose(jac_H) + self.R))
-        expected_measurement = self.get_expected_measurement(mu_bar)
+        # K = H * sigma_bar * H.T * inv(H * sigma_bar * H.T + R)
+        kalman_gain = (sigma_bar * np.transpose(jac_H) * inv(jac_H * sigma_bar * np.transpose(jac_H) + self.R))
 
-        # print("kalman_gain")
-        # print(kalman_gain)
-        # print("measurement")
-        # print(measurement)
-        # print("expected_measurement")
-        # print(expected_measurement)
+        #JULIE NOTE: I think expected_measurement == mu_bar, since mu_bar represents
+        #our prediction of the robot's state based on the controls. 
+        expected_measurement = self.get_expected_measurement(mu_bar) 
 
         self.mu = mu_bar + (kalman_gain @ (measurement - expected_measurement))
         kh = kalman_gain * jac_H
