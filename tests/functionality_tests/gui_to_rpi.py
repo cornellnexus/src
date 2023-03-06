@@ -16,7 +16,7 @@ updated on the other device's (PC's) GUI window.
 # 3. Begin transmitting data from the raspberry pi’s radio module (read packets from a gui_to_rpi.csv) 
 ser = serial.Serial("/dev/ttyS0", 57600)
 
-while True:
+for i in range(5):
   #packet = "phase:3;p_weight:02.0;acc:3.01,4.01,5.01;n_dist:60.0;rot:07.00;last_n:008.00,008.00;vel:9.00;next_n:010.00,011.00;coord:030.00,015.00;batt:013;ctrl:3" + "\n"
   packet = "phase:4;p_weight:02.0;acc:0.00,4.00,2.00;n_dist:40.0;rot:02.00;last_n:008.00,008.00;vel:9.00;next_n:010.00,011.00;coord:030.00,015.00;batt:013;ctrl:3" + "\n"
   cast_data = bytes(packet, encoding = 'utf-8') 
