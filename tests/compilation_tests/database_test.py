@@ -120,7 +120,7 @@ class TestDataBase(unittest.TestCase):
                     self.assertEqual(ans[1], data[1], name)
                     self.assertEqual(ans[2], data[2], name)
                 else:
-                    self.assertEqual(ans, database.get_data(name), ans)
+                    self.assertEqual(ans, database.get_data(name), name)
 
     def test_update_data(self):
         self.db_default.update_data("phase", Phase.SETUP)
