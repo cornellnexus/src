@@ -27,7 +27,7 @@ class Robot_State:
     Preconditions:
         x_pos is an int within the bounds of the user-defined traversal grid
         y_pos is an int within the bounds of the user-defined traversal grid
-        heading is a float
+        heading is a float in range [0..359]
         epsilon is a float
         max_velocity is a float
         radius is a float
@@ -35,17 +35,21 @@ class Robot_State:
     def __init__(self, x_pos, y_pos, heading, epsilon, max_velocity, radius):
         """
         Instance Attributes:
+            USER DEFINED PARAMETERS
             epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
             max_velocity: the maximum velocity of the robot
             radius: the radius of the robot
-            width: width of the robot in cm
-            front_ultrasonic: the ultrasonic at the front of the robot, used for detecting obstacles
-            lf_ultrasonic: the ultrasonic at the front of the left side of the robot, used for boundary following
-            lb_ultrasonic: the ultrasonic at the back of the left side of the robot, used for boundary following
-            rf_ultrasonic: the ultrasonic at the front of the right side of the robot, used for boundary following
-            rb_ultrasonic: the ultrasonic at the back of the right side of the robot, used for boundary following
+
+            FLAGS
             is_sim: False if the physical robot is being used, True otherwise
             should_store_data: False if csv data should not be stored, True otherwise
+            phase: the phase of the robot
+            avoid_obstacle: True if the robot is currently avoiding an obstacle, False otherwise
+
+            CONSTANTS
+            width: width of the robot in cm
+            time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
+                is True
             position_kp: the proportional factor of the position PID
             position_ki: the integral factor of the position PID
             position_kd: the derivative factor of the position PID
@@ -54,29 +58,63 @@ class Robot_State:
             heading_ki: the integral factor of the heading PID
             heading_kd: the derivative factor of the heading PID
             heading_noise: ?
-            phase: the phase of the robot
-            time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
-                is True
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
-            plastic_weight: the weight of the trash the robot has collected
             init_threshold (Double): Radius from initial position that will detect robot is back in initial position
             goal_threshold (Double): Threshold from goal that will be detected as reaching goal in obstacle avoidance
             noise_margin (Double): Margin from init_threshold that the robot has to leave before detecting robot has
                 left initial position
+            front_sensor_offset:
+            max_sensor_range:
+            sensor_measuring_angle:
+            width_margin:
+            threshold_distance:
+            detect_obstacle_range:
+
+            MEASUREMENTS
+            state: Robot's state, np.array state contains the robot's x position, y position, and heading
+            truthpose:
+            plastic_level: the percentage of the trash the robot has collected (25%, 50%, 75%, 100%)
+            battery:
+            acceleration:
+            magnetic_field:
+            gyro_rotation:
+            init_gps:
+            gps_data:
+            imu_data:
+            linear_v:
+            angular_v:
+            dist_to_goal:
+            prev_phase:
+            goal_location:
+        
+            SENSORS
+            motor_controller:
+            robot_radio_session:
+            gps:
+            imu:
+            ekf:
+            front_ultrasonic: the ultrasonic at the front of the robot, used for detecting obstacles
+            lf_ultrasonic: the ultrasonic at the front of the left side of the robot, used for boundary following
+            lb_ultrasonic: the ultrasonic at the back of the left side of the robot, used for boundary following
+            rf_ultrasonic: the ultrasonic at the front of the right side of the robot, used for boundary following
+            rb_ultrasonic: the ultrasonic at the back of the right side of the robot, used for boundary following
+
         """
-        # User defined parameters
+        # TODO: Fill in missing spec for attributes above
+
+        # USER DEFINED PARAMETERS
         self.epsilon = epsilon
         self.max_velocity = max_velocity
         self.radius = radius
 
-        # Flags
+        # FLAGS
         self.is_sim = not is_raspberrypi()
         self.should_store_data = False
         self.phase = Phase.SETUP
         self.avoid_obstacle = False
         
-        # Constants
+        # CONSTANTS
         self.width = 700
         self.time_step = 1
         self.position_kp = 1
@@ -100,7 +138,7 @@ class Robot_State:
         self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(math.radians((180 - self.sensor_measuring_angle) / 2))
         self.detect_obstacle_range = min(self.threshold_distance, self.max_sensor_range)  # set ultrasonic detection range
 
-        # Measurements
+        # MEASUREMENTS
         self.state = np.array([[x_pos], [y_pos], [heading]])
         self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
         self.plastic_level = 0
@@ -117,7 +155,7 @@ class Robot_State:
         self.prev_phase = self.phase
         self.goal_location = (0, 0)
        
-        # Sensors
+        # SENSORS
         self.motor_controller = None
         self.robot_radio_session = None
         self.gps = None
@@ -129,6 +167,8 @@ class Robot_State:
         self.rf_ultrasonic = None
         self.rb_ultrasonic = None
 
+        # TODO: GPS, IMU, RF module and Motor Controller are also re-initialized in robot.execute_setup
+        # We should pick whether we want to initialize the attributes here or in robot.execute_setup
         if not self.is_sim:
             self.motor_controller = MotorController(wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = self.is_sim)
             self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
