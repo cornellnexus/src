@@ -35,11 +35,6 @@ class Robot_State:
     def __init__(self, x_pos, y_pos, heading, epsilon, max_velocity, radius):
         """
         Instance Attributes:
-            USER DEFINED PARAMETERS
-            epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
-            max_velocity: the maximum velocity of the robot
-            radius: the radius of the robot
-
             FLAGS
             is_sim: False if the physical robot is being used, True otherwise
             should_store_data: False if csv data should not be stored, True otherwise
@@ -59,6 +54,9 @@ class Robot_State:
             heading_kd: the derivative factor of the heading PID
             heading_noise: ?
             move_dist: the distance in meters that the robot moves per time dt
+            epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
+            max_velocity: the maximum velocity of the robot
+            radius: the radius of the robot
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
             init_threshold (Double): Radius from initial position that will detect robot is back in initial position
             goal_threshold (Double): Threshold from goal that will be detected as reaching goal in obstacle avoidance
@@ -103,11 +101,6 @@ class Robot_State:
         """
         # TODO: Fill in missing spec for attributes above
 
-        # USER DEFINED PARAMETERS
-        self.epsilon = epsilon
-        self.max_velocity = max_velocity
-        self.radius = radius
-
         # FLAGS
         self.is_sim = not is_raspberrypi()
         self.should_store_data = False
@@ -125,6 +118,9 @@ class Robot_State:
         self.heading_ki = 0
         self.heading_kd = 0
         self.heading_noise = 0
+        self.epsilon = epsilon # Note: user-defined parameter
+        self.max_velocity = max_velocity # Note: user-defined parameter
+        self.radius = radius # Note: user-defined parameter
         self.move_dist = 0.5
         self.turn_angle = 3
         self.turn_angle = self.turn_angle / self.time_step # dividing by time_step ignores the effect of time_step on absolute
