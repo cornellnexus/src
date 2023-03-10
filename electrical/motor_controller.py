@@ -10,7 +10,7 @@ class BasicMotorController:
     commands to physically move the robot. 
     """
 
-    def __init__(self):
+    def __init__(self, is_sim):
         # raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
@@ -18,7 +18,7 @@ class BasicMotorController:
         self.in4 = 26
         self.enA = 13  # PWM pin
         self.enB = 12  # PWM pin
-        self.is_sim = not is_raspberrypi()
+        self.is_sim = is_sim
 
     # checks all of the robot movements are functioning properly
     def setup(self):

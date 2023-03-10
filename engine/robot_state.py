@@ -130,9 +130,9 @@ class Robot_State:
         self.rb_ultrasonic = None
 
         if not self.is_sim:
-            self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
+            self.motor_controller = MotorController(wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = self.is_sim)
             self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
-            self.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA)) 
+            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), is_sim = self.is_sim) 
+            self.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA), is_sim = self.is_sim) 
         
 
