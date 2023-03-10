@@ -27,7 +27,7 @@ class RobotSetupPhaseTest:
         self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
         self.imu_i2c = busio.I2C(board.SCL, board.SDA)
         self.gps = GPS(self.gps_serial, False) 
-        self.imu = IMU(self.imu_i2c) 
+        self.imu = IMU(self.imu_i2c, False) 
         self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio device
         self.robot_radio_session = RadioModule(self.robot_radio_serial) 
         self.motor_controller = MotorController(wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = False)
