@@ -58,9 +58,9 @@ class Robot_State:
             max_velocity: the maximum velocity of the robot
             radius: the radius of the robot
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
-            init_threshold (Double): Radius from initial position that will detect robot is back in initial position
-            goal_threshold (Double): Threshold from goal that will be detected as reaching goal in obstacle avoidance
-            noise_margin (Double): Margin from init_threshold that the robot has to leave before detecting robot has
+            init_threshold (float): Radius from initial position that will detect robot is back in initial position
+            goal_threshold (float): Threshold from goal that will be detected as reaching goal in obstacle avoidance
+            noise_margin (float): Margin from init_threshold that the robot has to leave before detecting robot has
                 left initial position
             front_sensor_offset:
             max_sensor_range:
