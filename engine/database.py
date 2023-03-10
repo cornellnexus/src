@@ -16,7 +16,7 @@ class DataBase:
             heading_pid: heading PID in format of [proportional factor, integral factor, derivative factor]           
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step 
-            plastic_level: the plastic_level of the trash the robot has collected
+            plastic_level: the plastic_level of the trash the robot has collected (25%, 50%, 75%, 100%)
         """
         self.core_data = {
             "phase": robot.robot_state.phase,
