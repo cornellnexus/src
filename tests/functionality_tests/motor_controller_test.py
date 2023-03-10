@@ -11,7 +11,7 @@ class BasicMotorControllerTest:
 	direction for the next three seconds.
 	"""
 	def __init__(self): 
-		self.mc = BasicMotorController()
+		self.mc = BasicMotorController(is_sim=False)
 		
 	def motor_controller_turn_right(self): 
 		stop_time = time.time() + 3

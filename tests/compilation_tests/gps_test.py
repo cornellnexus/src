@@ -26,9 +26,9 @@ def test_gps():
     node1 = Node(-76.483682, 42.444250)
     node2 = Node(-76.483682, 42.444416)
     gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5))
-    robot_state = Robot_State(x_pos=0, y_pos=0, heading=0, epsilon=0, max_velocity=0, radius=1, is_sim = False)
+    robot_state = Robot_State(x_pos=0, y_pos=0, heading=0, epsilon=0, max_velocity=0, radius=1)
     robot = Robot(robot_state)
-    motor_controller = BasicMotorController(robot)
+    motor_controller = BasicMotorController(robot.robot_state.is_sim)
     queue = [node1, node2]
 
     target_node = queue.pop()  # Next node to visit

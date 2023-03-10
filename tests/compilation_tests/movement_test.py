@@ -26,7 +26,7 @@ from electrical.motor_controller import BasicMotorController, MotorController
 ############################### Testing GPIO #################################
 robot_state = Robot_State(x_pos=0, y_pos=0, heading=0, epsilon=0, max_velocity=0, radius=1)
 robot = Robot(robot_state)
-motor_controller = BasicMotorController(robot)
+motor_controller = BasicMotorController(robot.robot_state.is_sim)
 
 stopTime = time.time() + 10
 while time.time() < stopTime:
