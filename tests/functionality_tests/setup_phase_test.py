@@ -1,4 +1,5 @@
 from engine.robot import Robot, Phase
+from engine.robot_state import Robot_State
 from electrical.radio_module import RadioModule
 from electrical.motor_controller import MotorController
 from electrical.imu import IMU
@@ -20,7 +21,9 @@ class RobotSetupPhaseTest:
     are setup properly on the robot.
     """
     def __init__(self): 
-        self.robot = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=Phase.SETUP)
+        robot_state = Robot_State(0, 0, math.pi / 4, epsilon=0.2, max_velocity=0.5, radius=0.2)
+        robot_state.phase = Phase.SETUP
+        self.robot = Robot(robot_state)
         self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
         self.imu_i2c = busio.I2C(board.SCL, board.SDA)
         self.gps = GPS(self.gps_serial) 
