@@ -196,7 +196,10 @@ class Robot:
             w = self.head_pid.update(theta_error)  # angular velocity
             _, limited_cmd_w = limit_cmds(0, w, self.robot_state.max_velocity, self.robot_state.radius)
 
-            self.travel(0, self.robot_state.time_step * limited_cmd_w)
+            if self.robot_state.is_sim:
+                self.travel(0, self.robot_state.time_step * limited_cmd_w)
+            else:
+                self.robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
             # sleep in real robot
 
             # Get state after movement:

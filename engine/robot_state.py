@@ -171,4 +171,3 @@ class Robot_State:
             self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), is_sim = self.is_sim) 
             self.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA), is_sim = self.is_sim) 
         
-
