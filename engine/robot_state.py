@@ -45,7 +45,7 @@ class Robot_State:
             rf_ultrasonic: the ultrasonic at the front of the right side of the robot, used for boundary following
             rb_ultrasonic: the ultrasonic at the back of the right side of the robot, used for boundary following
             is_sim: False if the physical robot is being used, True otherwise
-            is_store: False if csv data should not be stored, True otherwise
+            should_store_data: False if csv data should not be stored, True otherwise
             position_kp: the proportional factor of the position PID
             position_ki: the integral factor of the position PID
             position_kd: the derivative factor of the position PID
@@ -72,7 +72,7 @@ class Robot_State:
 
         # Flags
         self.is_sim = not is_raspberrypi()
-        self.is_store = False
+        self.should_store_data = False
         self.phase = Phase.SETUP
         self.avoid_obstacle = False
         
