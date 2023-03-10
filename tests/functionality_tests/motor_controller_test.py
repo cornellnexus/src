@@ -44,7 +44,7 @@ class MotorControllerTest:
 	to rotate at omega = 20 and velocity = 30. 
 	"""
 	def __init__(self): 
-		self.motor_controller = MotorController(None, 5,15,15,5,5)
+		self.motor_controller = MotorController(None, 5,15,15,5,5, False)
 	
 	def test_straight(self): 
 		stop_time = time.time() + 5

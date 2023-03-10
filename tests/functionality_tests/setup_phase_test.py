@@ -30,7 +30,7 @@ class RobotSetupPhaseTest:
         self.imu = IMU(self.imu_i2c) 
         self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio device
         self.robot_radio_session = RadioModule(self.robot_radio_serial) 
-        self.motor_controller = MotorController(robot = self.robot, wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
+        self.motor_controller = MotorController(robot = self.robot, wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, False)
     
     def run(self): 
         self.robot.execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
