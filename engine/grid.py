@@ -398,7 +398,7 @@ class Grid:
             # Obtain all border_nodes on the current col
             candidate_nodes_curr = [
                 node_info for node_info in self.border_nodes if node_info[2] == pos[1]]
-        else:
+        else:  # the direction is UP or DOWN
             # Obtain all border_nodes on the next row
             candidate_nodes_next = [
                 node_info for node_info in self.border_nodes if node_info[1] == pos[0] + 1]
@@ -517,9 +517,9 @@ class Grid:
         elif self.direction == self.Direction.RIGHT:
             return self.curr_pos[0] >= (turning_column)
         elif self.direction == self.Direction.UP:
-            return self.curr_pos[1] >= (turning_column) - 1
+            return self.curr_pos[1] >= (turning_column)
         elif self.direction == self.Direction.DOWN:
-            return self.curr_pos[1] <= (turning_column) + 1
+            return self.curr_pos[1] <= (turning_column)
 
     def switch_directions(self):
         """
@@ -599,8 +599,8 @@ class Grid:
             new_pos = self.get_next_traversal_pos()
 
         # Check whether turning to the next row is valid
-        if not next_row < self.num_cols or (is_vertical and not self.nodes[next_row][turning_column].is_active)\
-                or (not is_vertical and not self.nodes[turning_column][next_row].is_active):
+        if (is_vertical and not self.nodes[next_row][turning_column].is_active)\
+                or (not is_vertical and not (next_row < self.num_cols and self.nodes[turning_column][next_row].is_active)):
             # Next row is out of bounds of the grid OR the node in the row/column above,
             # where we are trying to turn to, isn't active for traversal
             self.waypoints_is_finished = True
