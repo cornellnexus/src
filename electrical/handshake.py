@@ -10,7 +10,7 @@ to make a two way connection.
 
 # TODO: Different port path - get from electrical
 # Initializes port and clears any exisiting messages
-port = serial.Serial(port="/dev/tty.usbserial-017543DC", baudrate=57600, timeout=0)
+port = serial.Serial(port="/dev/serial0", baudrate=57600, timeout=0)
 port.flush()
 port.flushInput()
 
