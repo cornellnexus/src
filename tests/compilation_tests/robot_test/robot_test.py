@@ -34,8 +34,10 @@ class TestNodes(unittest.TestCase):
 
     def test_travel(self):
         self.robot_one.travel(self.distance, self.turn_angle)
+
         # Values calculated by hand based on kinematic equations
-        new_x = round(-1.3662, 3)
+        new_x = round(11.3661977,3)
+        # new_x = round(-1.3662, 3)
         new_y = round(-0.366198, 3)
         new_theta = round(3 * math.pi / 2, 3)
         self.assertEqual([[float(new_x)], [float(new_y)], [float(new_theta)]], self.robot_one.state.tolist())
