@@ -109,19 +109,19 @@ class TestGrid(unittest.TestCase):
     def test_inside(self):
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
         g = Grid(lat_min, lat_max, long_min, long_max)
-        self.assertTrue(g.is_inside_triangle(2, 2, 3, 3, 1, 3, 2,
-                        2.5), "this point is inside the triangle")
-        self.assertFalse(g.is_inside_triangle(2, 2, 3, 3, 1, 3,
-                         10, 10), "this point is outside the triangle")
-        self.assertTrue(g.is_inside_triangle(2, 2, 3, 3, 1, 3, 2,
-                        2), "this point is inside the triangle")
+        self.assertTrue(g.isInsideTriangle((2, 2), (3, 3), (1, 3), (2,
+                        2.5)), "this point is inside the triangle")
+        self.assertFalse(g.isInsideTriangle((2, 2), (3, 3), (1, 3),
+                         (10, 10)), "this point is outside the triangle")
+        self.assertTrue(g.isInsideTriangle((2, 2), (3, 3), (1, 3), (2,
+                        2)), "this point is inside the triangle")
 
     def test_is_on_border(self):
         count = 0
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
         g = Grid(lat_min, lat_max, long_min, long_max)
-        
-        g.activate_triangle(1,1,5,5,9,1)
+
+        g.activate_triangle((1, 1), (5, 5), (9, 1))
         g.find_border_nodes()
 
         count = 0
@@ -134,6 +134,7 @@ class TestGrid(unittest.TestCase):
                     count += 1
 
         self.assertEqual(len(g.border_nodes), count)
+
 
 if __name__ == '__main__':
     unittest.main()
