@@ -13,7 +13,7 @@ to make a two way connection.
 port = serial.Serial(port="/dev/serial0", baudrate=57600, timeout=0)
 port.flush()
 port.flushInput()
-
+print("RPI script begins")
 # Waits 5 seconds to see if port recieves any message
 t_end = time.time() + 5
 line = None
