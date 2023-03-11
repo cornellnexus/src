@@ -21,7 +21,7 @@ class RobotSetupPhaseTest:
     are setup properly on the robot.
     """
     def __init__(self): 
-        robot_state = Robot_State(0, 0, math.pi / 4, epsilon=0.2, max_velocity=0.5, radius=0.2)
+        robot_state = Robot_State(xpos=0, ypos=0, heading=math.pi / 4, epsilon=0.2, max_velocity=0.5, radius=0.2)
         robot_state.phase = Phase.SETUP
         self.robot = Robot(robot_state)
         self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 

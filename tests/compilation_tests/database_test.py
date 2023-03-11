@@ -12,39 +12,25 @@ Unit tests for database.py
 
 class TestDataBase(unittest.TestCase):
     # DataBase instances to test on
-    robot_state_default = Robot_State(x_pos=0, y_pos=0, heading=0, epsilon=0, max_velocity=0,
+    robot_state_default = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0,
                           radius=0)
     robot_default = Robot(robot_state=robot_state_default)
 
     db_default = DataBase(robot_default)
-
+    
     # We can't make is_sim false because it fails GitHub merge tests.
-    robot_state_initial = Robot_State(x_pos=0, y_pos=0, heading=0, epsilon=0, max_velocity=0,
-                          radius=0)
-    robot_state_initial.plastic_level = 2
-    robot_state_initial.move_dist = 0.6
-    robot_state_initial.position_noise = 0.23
-    robot_state_initial.position_kp = 0.12
-    robot_state_initial.position_ki = 1.7
-    robot_state_initial.position_kd = 9.2
-    robot_state_initial.heading_kp = 0.2
-    robot_state_initial.heading_ki = 0.4
-    robot_state_initial.heading_kd = 0.16
-    robot_state_initial.phase = Phase.TRAVERSE
-    robot_state_initial.state = np.array([[10], [20], [50]])
-    robot_state_initial.battery = 98
-    robot_state_initial.magnetic_field = [0.1, 0.2, 0.3]
-    robot_state_initial.gyro_rotation = [0.5, 0.2, 0.6]
-    robot_state_initial.acceleration = [4.25, 3.2, 0.1]
-    robot_state_initial.is_sim = False
+    robot_state_initial = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0,
+                          radius=0, plastic_level = 2, move_dist = 0.6, position_noise = 0.23, 
+                          position_kp = 0.12, position_ki = 1.7, position_kd = 9.2, heading_kp = 0.2, 
+                          heading_ki = 0.4, heading_kd = 0.16, phase = Phase.TRAVERSE, 
+                          state = np.array([[10], [20], [50]]), battery = 98, 
+                          magnetic_field = [0.1, 0.2, 0.3], gyro_rotation = [0.5, 0.2, 0.6], 
+                          acceleration = [4.25, 3.2, 0.1], is_sim = True)
     robot_initial = Robot(robot_state=robot_state_initial)
 
     db_initial = DataBase(robot_initial)
 
-    robot_state_one_param = Robot_State(x_pos=0, y_pos=0, heading=0, epsilon=0, max_velocity=0,radius=0)
-    robot_state_one_param.plastic_level = 3
-    robot_state_one_param.battery = 46
-    robot_state_one_param.acceleration = [0.5, 0.2, 0.3]
+    robot_state_one_param = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0, radius=0, plastic_level = 3, battery = 46, acceleration = [0.5, 0.2, 0.3])
     robot_one_param = Robot(robot_state=robot_state_one_param)
 
     db_one_param = DataBase(robot_one_param)
@@ -57,7 +43,7 @@ class TestDataBase(unittest.TestCase):
                  "position_noise: 0,\n" \
                  "heading_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0]"
 
-        db_initial_str = "phase: 2,\nstate [x, y, heading]: [10, 20, 50],\nis_sim: False,\nplastic_level: 2,\n" \
+        db_initial_str = "phase: 2,\nstate [x, y, heading]: [10, 20, 50],\nis_sim: True,\nplastic_level: 2,\n" \
                          "battery: 98,\nmove_dist: 0.6,\nacceleration [x, y, z]: [4.25, 3.2, 0.1],\n" \
                          "magnetic_field [x, y, z]: [0.1, 0.2, 0.3],\ngyro_rotation [x, y, z]: [0.5, 0.2, 0.6],\n" \
                          "position_pid [proportional factor, integral factor, derivative factor]: [0.12, 1.7, 9.2],\n" \
@@ -87,7 +73,7 @@ class TestDataBase(unittest.TestCase):
                                                    "position_noise"), ([1, 0, 0], "heading_pid")
                      ]
 
-        db_initial_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (False, "is_sim"),
+        db_initial_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (True, "is_sim"),
                              (2, "plastic_level"),
                              (98, "battery"), (0.6, "move_dist"), ([
                                  4.25, 3.2, 0.1], "acceleration"),
@@ -126,7 +112,6 @@ class TestDataBase(unittest.TestCase):
         self.db_default.update_data("phase", Phase.SETUP)
         self.db_default.update_data("state", 3, 1, 20)
         self.db_default.update_data("state", y=5)
-        self.db_default.update_data("is_sim", False)
 
         self.db_initial.update_data("time_step", 0.7)
         self.db_initial.update_data("magnetic_field", 5, 6)
@@ -139,7 +124,7 @@ class TestDataBase(unittest.TestCase):
         self.db_one_param.update_data("magnetic_field", 0.2, 0.15, 0.3)
         self.db_one_param.update_data("position_pid", y=0.5, z=0.82)
 
-        db_new_params = [(Phase.SETUP, "phase"), ([3, 5, 20], "state"), (False, "is_sim"), (0, "plastic_level"),
+        db_new_params = [(Phase.SETUP, "phase"), ([3, 5, 20], "state"), (True, "is_sim"), (0, "plastic_level"),
                          (100, "battery"), (0.5, "move_dist"), ([
                              0, 0, 0], "acceleration"),
                          ([0, 0, 0], "magnetic_field"), ([
@@ -148,7 +133,7 @@ class TestDataBase(unittest.TestCase):
                                                        "position_noise"), ([1, 0, 0], "heading_pid")
                          ]
 
-        db_initial_new_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (False, "is_sim"),
+        db_initial_new_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (True, "is_sim"),
                                  (2, "plastic_level"),
                                  (98, "battery"), (0.6, "move_dist"), ([
                                      4.25, 3.2, 0.1], "acceleration"),
@@ -184,7 +169,7 @@ class TestDataBase(unittest.TestCase):
                     self.assertEqual(ans, database.get_data(name), name)
 
     def test_phase_as_value(self):
-        robot_state_phase = Robot_State(x_pos= 0, y_pos =0, heading =0, epsilon =0, max_velocity =0, radius =0)
+        robot_state_phase = Robot_State(xpos= 0, ypos =0, heading =0, epsilon =0, max_velocity =0, radius =0)
         robot_phase = Robot(robot_state=robot_state_phase)
         db_robot_phase = DataBase(robot_phase)
         phases = list(Phase)

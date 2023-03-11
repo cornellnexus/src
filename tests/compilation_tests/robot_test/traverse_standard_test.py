@@ -17,7 +17,7 @@ gps_noise_range = .3
 class TestTraverseStandardFunctions(unittest.TestCase):
 
     def test_init(self):
-        r2d2_state = Robot_State(0, 0, math.pi / 2, epsilon=0.2, max_velocity=0.5, radius=0.2)
+        r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi / 2, epsilon=0.2, max_velocity=0.5, radius=0.2)
         r2d2_state.phase = 2 
         r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
@@ -31,7 +31,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_different_init_robot_pos(self):
-        r2d2_state = Robot_State(42, -76, math.pi / 2, epsilon=0.2, max_velocity=0.5, radius=0.2)
+        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi / 2, epsilon=0.2, max_velocity=0.5, radius=0.2)
         r2d2_state.phase = 2 
         r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
@@ -45,7 +45,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_different_allowed_dist(self):
-        r2d2_state = Robot_State(42, -76, math.pi / 2, epsilon=0.2, max_velocity=0.5, radius=0.2)
+        r2d2_state = Robot_State(xpos=42,ypos=-76, heading=math.pi / 2, epsilon=0.2, max_velocity=0.5, radius=0.2)
         r2d2_state.phase =2
         r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
@@ -59,7 +59,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_different_heading(self):
-        r2d2_state = Robot_State(42, -76, math.pi, epsilon=0.2, max_velocity=0.5, radius=0.2)
+        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi, epsilon=0.2, max_velocity=0.5, radius=0.2)
         r2d2_state.phase = 2
         r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
@@ -73,7 +73,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_with_minimal_noise(self):
-        r2d2_state = Robot_State(42, -76, math.pi, epsilon=0.2, max_velocity=0.5, radius=0.2)
+        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi, epsilon=0.2, max_velocity=0.5, radius=0.2)
         r2d2_state.phase = 2
         r2d2_state.position_noise = 0.05
         r2d2 = Robot(robot_state=r2d2_state)

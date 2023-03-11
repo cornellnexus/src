@@ -24,7 +24,7 @@ from electrical.motor_controller import BasicMotorController, MotorController
 #     print_gps(decoded_line)
 
 ############################### Testing GPIO #################################
-robot_state = Robot_State(x_pos=0, y_pos=0, heading=0, epsilon=0, max_velocity=0, radius=1)
+robot_state = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0, radius=1)
 robot = Robot(robot_state)
 motor_controller = BasicMotorController(robot.robot_state.is_sim)
 

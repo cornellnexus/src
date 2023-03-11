@@ -32,7 +32,7 @@ class Robot_State:
         max_velocity is a float
         radius is a float
     """
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_velocity, radius):
+    def __init__(self, **kwargs):
         """
         Instance Attributes:
             FLAGS
@@ -102,66 +102,66 @@ class Robot_State:
         # TODO: Fill in missing spec for attributes above
 
         # FLAGS
-        self.is_sim = not is_raspberrypi()
-        self.should_store_data = False
-        self.phase = Phase.SETUP
-        self.avoid_obstacle = False
-        
+        self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
+        self.should_store_data = kwargs.get("should_store_data", False)
+        self.phase = kwargs.get("phase", Phase.SETUP)
+        self.avoid_obstacle =  kwargs.get("avoid_obstacle", False)
+
         # CONSTANTS
-        self.width = 700
-        self.time_step = 1
-        self.position_kp = 1
-        self.position_ki = 0
-        self.position_kd = 0
-        self.position_noise = 0
-        self.heading_kp = 1
-        self.heading_ki = 0
-        self.heading_kd = 0
-        self.heading_noise = 0
-        self.epsilon = epsilon # Note: user-defined parameter
-        self.max_velocity = max_velocity # Note: user-defined parameter
-        self.radius = radius # Note: user-defined parameter
-        self.move_dist = 0.5
-        self.turn_angle = 3
+        self.width = kwargs.get("width", 700)
+        self.time_step = kwargs.get("time_step", 1)
+        self.position_kp = kwargs.get("position_kp", 1)
+        self.position_ki = kwargs.get("position_ki", 0)
+        self.position_kd = kwargs.get("position_kd", 0)
+        self.position_noise = kwargs.get("position_noise", 0)
+        self.heading_kp = kwargs.get("heading_kp", 1)
+        self.heading_ki = kwargs.get("heading_ki", 0) 
+        self.heading_kd = kwargs.get("heading_kd", 0)
+        self.heading_noise = kwargs.get("heading_noise", 0)
+        self.epsilon = kwargs.get("epsilon", 0.2) # Note: user-defined parameter; defaulted to most common use case
+        self.max_velocity = kwargs.get("max_velocity", 0.5) # Note: user-defined parameter; defaulted to most common use case
+        self.radius = kwargs.get("radius", 0.2) # Note: user-defined parameter; defaulted to most common use case
+        self.move_dist = kwargs.get("move_dist", 0.5)
+        self.turn_angle = kwargs.get("turn_angle", 3)
         self.turn_angle = self.turn_angle / self.time_step # dividing by time_step ignores the effect of time_step on absolute
-        self.init_threshold = 1
-        self.goal_threshold = 1
-        self.noise_margin = 1
-        self.front_sensor_offset = 0  # TODO: replace this with how far offset the sensor is to the front of the robot
-        self.max_sensor_range = 600
-        self.sensor_measuring_angle = 75
-        self.width_margin = 1  # TODO: replace this with actual margin
-        self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(math.radians((180 - self.sensor_measuring_angle) / 2))
-        self.detect_obstacle_range = min(self.threshold_distance, self.max_sensor_range)  # set ultrasonic detection range
+        self.init_threshold = kwargs.get("init_threshold", 1)
+        self.goal_threshold = kwargs.get("goal_threshold", 1)
+        self.noise_margin = kwargs.get("noise_margin", 1)
+        self.front_sensor_offset = kwargs.get("front_sensor_offset", 0)  # TODO: replace this with how far offset the sensor is to the front of the robot
+        self.max_sensor_range = kwargs.get("max_sensor_range", 600)
+        self.sensor_measuring_angle = kwargs.get("sensor_measuring_angle", 75)
+        self.width_margin = kwargs.get("width_margin", 1)  # TODO: replace this with actual margin
+        self.threshold_distance = kwargs.get("threshold_distance", ((self.width + self.width_margin) / 2) / math.cos(math.radians((180 - self.sensor_measuring_angle) / 2)))
+        self.detect_obstacle_range = kwargs.get("detect_obstacle_range", min(self.threshold_distance, self.max_sensor_range))  # set ultrasonic detection range
 
         # MEASUREMENTS
-        self.state = np.array([[x_pos], [y_pos], [heading]])
-        self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
-        self.plastic_level = 0
-        self.battery = 100
-        self.acceleration = [0, 0, 0]
-        self.magnetic_field = [0, 0, 0]
-        self.gyro_rotation = [0, 0, 0]
-        self.init_gps = (0, 0)
-        self.gps_data = (0, 0)
-        self.imu_data = None  # will be filled by execute_setup
-        self.linear_v = 0
-        self.angular_v = 0
-        self.dist_to_goal = 0
-        self.prev_phase = self.phase
-        self.goal_location = (0, 0)
+        self.state = kwargs.get("state", np.array([[kwargs.get("xpos", 0)], [kwargs.get("ypos", 0)], [kwargs.get("heading", 0)]]))
+        self.truthpose = kwargs.get("truthpose", np.transpose(np.array([[kwargs.get("xpos", 0)], [kwargs.get("ypos", 0)], [kwargs.get("heading", 0)]])))
+        self.plastic_level = kwargs.get("plastic_level", 0)
+        self.battery = kwargs.get("battery", 100)
+        self.acceleration = kwargs.get("acceleration", [0, 0, 0])
+        self.magnetic_field = kwargs.get("magnetic_field", [0, 0, 0])
+        self.gyro_rotation = kwargs.get("gyro_rotation", [0, 0, 0])
+        self.init_gps = kwargs.get("init_gps", (0, 0))
+        self.gps_data = kwargs.get("gps_data",(0, 0) )
+        self.imu_data = kwargs.get("imu_data", None)  # will be filled by execute_setup
+        self.linear_v = kwargs.get("linear_v", 0)
+        self.angular_v = kwargs.get("angular_v", 0)
+        self.dist_to_goal = kwargs.get("dist_to_goal", 0)
+        self.prev_phase = kwargs.get("prev_phase", self.phase)
+        self.goal_location = kwargs.get("goal_location", (0, 0))
        
         # SENSORS
-        self.motor_controller = None
-        self.robot_radio_session = None
-        self.gps = None
-        self.imu = None
-        self.ekf = None
-        self.front_ultrasonic = None
-        self.lf_ultrasonic = None
-        self.lb_ultrasonic = None
-        self.rf_ultrasonic = None
-        self.rb_ultrasonic = None
+        self.motor_controller = kwargs.get("motor_controller", None)
+        self.robot_radio_session = kwargs.get("robot_radio_session", None)
+        self.gps = kwargs.get("gps", None)
+        self.imu = kwargs.get("imu", None)
+        self.ekf = kwargs.get("ekf", None)
+        self.front_ultrasonic = kwargs.get("front_ultrasonic", None)
+        self.lf_ultrasonic = kwargs.get("lf_ultrasonic",None )
+        self.lb_ultrasonic = kwargs.get("lb_ultrasonic", None)
+        self.rf_ultrasonic = kwargs.get("rf_ultrasonic", None)
+        self.rb_ultrasonic = kwargs.get("rb_ultrasonic", None)
 
         # TODO: GPS, IMU, RF module and Motor Controller are also re-initialized in robot.execute_setup
         # We should pick whether we want to initialize the attributes here or in robot.execute_setup

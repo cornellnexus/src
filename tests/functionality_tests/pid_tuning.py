@@ -24,9 +24,7 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
     grid = Grid(lat_min, lat_max, long_min, long_max)
     # Default parameters for the robot initialized at position (0,0)
     # max_v, heading, epsilon will likely be changed as we physically test
-    r2d2_state = Robot_State(0, 0, math.pi / 4, epsilon=0.2, max_velocity=0.5, radius=0.2)
-    r2d2_state.phase = Phase.TRAVERSE
-    r2d2_state.motor_controller = MotorController(10, .016275, .016275, 5, 5, True) # By pass execute_setup
+    r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi / 4, epsilon=0.2, max_velocity=0.5, radius=0.2,phase = Phase.TRAVERSE, motor_controller = MotorController(10, .016275, .016275, 5, 5, True)) # By pass execute_setup
     r2d2 = Robot(r2d2_state)
     r2d2.robot_state.motor_controller.setup() 
     database = DataBase(r2d2)
@@ -82,7 +80,7 @@ def one_node_straight_line(long, lat, err):
     Requires: desired longitude (long) to be target longitude.
     TODO: initialize GPS and IMU for PID to work
     """
-    r2d2_state = Robot_State(0, 0, math.pi / 2, epsilon=0.2, max_velocity=0.2, radius=5)
+    r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi / 2, epsilon=0.2, max_velocity=0.2, radius=5)
     r2d2_state.phase = Phase.TRAVERSE
     r2d2_state.motor_controller = MotorController() # By pass execute_setup
     r2d2 = Robot(r2d2_state)

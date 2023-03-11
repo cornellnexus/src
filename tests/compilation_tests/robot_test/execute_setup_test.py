@@ -74,7 +74,7 @@ class TestSetup(unittest.TestCase):
     #print a series of commands. Make sure they are in the order of: 
     #'go_forward', 'turn_left', 'turn_right', 'reverse', 'stop'
     def test_motor_controller_setup(self): 
-        robot_state = Robot_State(x_pos = 0, y_pos = 0, heading = 0, epsilon = 0, max_velocity = 0, radius = 1)
+        robot_state = Robot_State(xpos = 0, ypos = 0, heading = 0, epsilon = 0, max_velocity = 0, radius = 1)
         robot = Robot(robot_state=robot_state)
         motor_controller = BasicMotorController(robot.robot_state.is_sim)
         self.assertEqual(motor_controller.is_sim, True)

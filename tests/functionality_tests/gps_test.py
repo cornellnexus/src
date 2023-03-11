@@ -25,7 +25,7 @@ def engine():
 
     node1 = Node(-76.483682, 42.444250)
     node2 = Node(-76.483682, 42.444416)
-    robot_state = Robot_State(x_pos=0, y_pos=0, heading=0, epsilon=0, max_velocity=0, radius=1)
+    robot_state = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0, radius=1)
     robot = Robot(robot_state)
     gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), robot.robot_state.is_sim)
     motor_controller = BasicMotorController(robot.robot_state.is_sim)

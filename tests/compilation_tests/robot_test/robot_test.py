@@ -24,7 +24,7 @@ class TestNodes(unittest.TestCase):
 
     # deep copies because each test case changes the robot object,
     # and for some reason the tests are executed from bottom to top
-    robot_state = Robot_State(x_pos, y_pos, heading, epsilon=0.2, max_velocity=0.5, radius=0.2)
+    robot_state = Robot_State(xpos=x_pos, ypos=y_pos, heading=heading, epsilon=0.2, max_velocity=0.5, radius=0.2)
     robot_one = Robot(robot_state=robot_state)
     robot_two = copy.deepcopy(robot_one)
     robot_three = copy.deepcopy(robot_one)
