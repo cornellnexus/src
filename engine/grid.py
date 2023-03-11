@@ -391,10 +391,11 @@ class Grid:
         # Obtain all border nodes in the next and current rows
         if self.direction == self.Direction.RIGHT or self.direction == self.Direction.LEFT:
             # Note: node_info: (node, row, col)
-            # Obtain all border_nodes on the next col
 
+            # Obtain all border_nodes on the next col
             candidate_nodes_next = [
                 node_info for node_info in self.border_nodes if node_info[2] == pos[1] + 1]
+            # Obtain all border_nodes on the current col
             candidate_nodes_curr = [
                 node_info for node_info in self.border_nodes if node_info[2] == pos[1]]
         else:
@@ -408,63 +409,57 @@ class Grid:
         if (candidate_nodes_next == [] and candidate_nodes_curr == []):
             # There are no border nodes in the current row or next row
             return None
-        elif (candidate_nodes_next == []):
+
+        # node_info_curr is the last node we would traverse on the current row
+        if self.direction == self.Direction.RIGHT:
+            node_info_curr = max(candidate_nodes_curr,
+                                 key=lambda node_info: node_info[1])
+        elif self.direction == self.Direction.LEFT:
+            node_info_curr = min(candidate_nodes_curr,
+                                 key=lambda node_info: node_info[1])
+        elif self.direction == self.Direction.UP:
+            node_info_curr = max(candidate_nodes_curr,
+                                 key=lambda node_info: node_info[2])
+        elif self.direction == self.Direction.DOWN:
+            node_info_curr = min(candidate_nodes_curr,
+                                 key=lambda node_info: node_info[2])
+
+        if (candidate_nodes_next == []):
             # Since there we have reached the last row that we can traverse,
             # let's traverse this last row
-            if self.direction == self.Direction.RIGHT:
-                node_info_curr = max(candidate_nodes_curr,
-                                     key=lambda node_info: node_info[1])
-            elif self.direction == self.Direction.LEFT:
-                node_info_curr = min(candidate_nodes_curr,
-                                     key=lambda node_info: node_info[1])
-            elif self.direction == self.Direction.UP:
-                node_info_curr = max(candidate_nodes_curr,
-                                     key=lambda node_info: node_info[2])
-            elif self.direction == self.Direction.DOWN:
-                node_info_curr = min(candidate_nodes_curr,
-                                     key=lambda node_info: node_info[2])
-
             if self.direction == self.Direction.RIGHT or self.direction == self.Direction.LEFT:
+                # return the x-axis of the last node we will traverse in the grid
                 return node_info_curr[1]
             else:
                 return node_info_curr[2]
         else:
             if self.direction == self.Direction.RIGHT:
+                # compare it with the last node in the next row so we don't go overbounds during turning
                 node_info_next = max(candidate_nodes_next,
-                                     key=lambda node_info: node_info[1])
-                node_info_curr = max(candidate_nodes_curr,
                                      key=lambda node_info: node_info[1])
                 return min(node_info_next[1], node_info_curr[1])
             elif self.direction == self.Direction.LEFT:
                 node_info_next = min(candidate_nodes_next,
                                      key=lambda node_info: node_info[1])
-                node_info_curr = min(candidate_nodes_curr,
-                                     key=lambda node_info: node_info[1])
                 return max(node_info_next[1], node_info_curr[1])
             elif self.direction == self.Direction.UP:
                 node_info_next = max(candidate_nodes_next,
                                      key=lambda node_info: node_info[2])
-                node_info_curr = max(candidate_nodes_curr,
-                                     key=lambda node_info: node_info[2])
                 return min(node_info_next[2], node_info_curr[2])
+
             elif self.direction == self.Direction.DOWN:
                 node_info_next = min(candidate_nodes_next,
-                                     key=lambda node_info: node_info[2])
-                node_info_curr = min(candidate_nodes_curr,
                                      key=lambda node_info: node_info[2])
                 return max(node_info_next[2], node_info_curr[2])
 
     def plot_circle(self, start_pos, end_pos, center, orientation, theta_step=math.pi / 12):
         """
-        Returns a circle of nodes starting from the [start_pos], going at orientation [orientation], and ending at the
-        [end_pos] with center [center].
-
+        Returns a circle of nodes starting from the [start_pos], going at orientation [orientation], and ending at the [end_pos] with center [center].
         Arguments:
             start_pos: float tuple representing the starting point of the circle being plotted
             end_pos: float tuple representing the ending point of the circle being plotted
             center: float tuple representing the center point of the circle being plotted
-            orientation: orientation that the nodes are being plotted from, starting with the start_pos and ending
-                at the end_pos
+            orientation: orientation that the nodes are being plotted from, starting with the start_pos and ending at the end_pos
             theta_step: float representing the angle step when plotting the turning arch. The
             smaller the value, the smoother the curve will be. Default value = math.pi/12.
         """
