@@ -31,9 +31,9 @@ if __name__ == "__main__":
     # Settings, can be changed as desired
     zone = ENGINEERING_QUAD  # Used for GPS visualization
     zone_photo = "geo_images/engineering_quad.png"
-    imu_data_file = "csv/imu_360_sample1.csv"
-    gps_data_file = "csv/GPS_13-11-2021_14-18-15.txt"
-    # gps_data_file = "csv/GPS_22-11-2021.txt"
+    imu_data_file = "./csv_files/imu_360_sample1.csv"
+    # gps_data_file = "./csv_files/GPS_13-11-2021_14-18-15.txt"
+    gps_data_file = "./csv_files/GPS_22-11-2021.txt"
 
     # Read command-line arguments
     if len(sys.argv) != 4 or "live=" not in sys.argv[1] or "data=" not in sys.argv[2] or "ekf=" not in sys.argv[3]\
@@ -113,6 +113,11 @@ if __name__ == "__main__":
             frames = min(len(imu_readings) - 1, len(gps_readings) - 1)
 
     # EKF setup
+
+    # First GPS reading -> 0,0 in global frame 
+    # Map GPS coordinates to global 
+    # MAp GPS initial to 0,0
+    # New measurement - initial -> convert to meters 
     if use_ekf:
         # Get the first GPS coordinate
         first_gps_coord = (gps_readings[0]["lat"], gps_readings[0]["lon"])
