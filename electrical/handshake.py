@@ -50,4 +50,4 @@ if (line == "computer_to_robot"):
     else:
         print("Failure")
 else:
-    print("Failure - Line is \"" + line + "\" but should be computer_to_robot")
+    print("Failure - Line is \"" + str(line) + "\" but should be computer_to_robot")
