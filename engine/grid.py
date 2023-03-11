@@ -15,8 +15,10 @@ class Grid:
         UP = 3
         DOWN = 4
 
-    # Clockwise or CounterClockwise
     class Orientation(Enum):
+        """
+        Clockwise or CounterClockwise
+        """
         CW = 1
         CCW = 2
     """
@@ -39,7 +41,7 @@ class Grid:
         #leftmost_node_pos: the (row,col) position of the leftmost node
         #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
         #active_waypoints_list: a list of active waypoints for every traversal algorithm. It is used to implement a color visualizaition of active waypoints.
-        #inactive_waypoints_list: a list of inactive waypoints for every traversal algorithm. It is used to implement a color visualization of inactive waypoints. 
+        #inactive_waypoints_list: a list of inactive waypoints for every traversal algorithm. It is used to implement a color visualization of inactive waypoints.
      INSTANCE METHODS:
         # get_waypoints: Returns the ordered list of Node objects that the robot should travel to. This is
             determined by the desired type of traversal. [Node list]
@@ -105,7 +107,7 @@ class Grid:
                         node_list[j, i] = node
                     elif i % 2 == 1:
                         lat = gps_origin[0] + \
-                              ((rows - 1) * lat_step) - j * lat_step
+                            ((rows - 1) * lat_step) - j * lat_step
                         long = gps_origin[1] + i * long_step
                         x = get_vincenty_x(gps_origin, (lat, long))
                         y = get_vincenty_y(gps_origin, (lat, long))
@@ -137,7 +139,6 @@ class Grid:
         self.curr_pos = None
         self.direction = self.Direction.RIGHT
         self.waypoints = []
-
 
     def get_active_waypoints_list(self):
         return self.active_waypoints_list
@@ -222,7 +223,6 @@ class Grid:
         else:
             return neighbor_node
 
-    ##Activates rectangle based on row start/end, col start/end
     def activate_rectangle(self, row, col, row_limit, col_limit):
         """
         Activates all the nodes in a rectangle based on row start/end, col
@@ -233,7 +233,6 @@ class Grid:
                 self.nodes[x, y].is_active = True
         return self.nodes
 
-    ##Activates circle based on center and radius
     def activate_circle(self, circle_center_row, circle_center_col, circle_radius):
         """
         Activates all the nodes in a circle based on center and radius.
@@ -243,25 +242,24 @@ class Grid:
                 if ((x - circle_center_row) ** 2 + (y - circle_center_col) ** 2 - circle_radius ** 2) < 0:
                     self.nodes[x, y].is_active = True
 
-    # A function to check whether point P(x, y)
-    # lies inside the triangle formed by
-    # A(x1, y1), B(x2, y2) and C(x3, y3)
-    def isInsideTriangle(self, x1, y1, x2, y2, x3, y3, x, y):
-        def area(x1, y1, x2, y2, x3, y3):
-            return abs((x1 * (y2 - y3) + x2 * (y3 - y1)
-                        + x3 * (y1 - y2)) / 2.0)
+    def isInsideTriangle(self, p1, p2, p3, p4):
+        """ A function to check whether point P(x, y) lies inside the triangle formed by
+        A(x1, y1), B(x2, y2) and C(x3, y3)"""
+        def area(p1, p2, p3):
+            return abs((p1[0] * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1])
+                        + p3[0] * (p1[1] - p2[1])) / 2.0)
 
         # Calculate area of triangle ABC
-        A = area(x1, y1, x2, y2, x3, y3)
+        A = area(p1, p2, p3)
 
         # Calculate area of triangle PBC
-        A1 = area(x, y, x2, y2, x3, y3)
+        A1 = area(p4, p2, p3)
 
         # Calculate area of triangle PAC
-        A2 = area(x1, y1, x, y, x3, y3)
+        A2 = area(p1, p4, p3)
 
         # Calculate area of triangle PAB
-        A3 = area(x1, y1, x2, y2, x, y)
+        A3 = area(p1, p2, p4)
 
         # Check if sum of A1, A2 and A3
         # is same as A
@@ -270,8 +268,8 @@ class Grid:
     def activate_line(self, row, col, n, isHorizontal):
         """
         Activate a single horizontal line of length n starting at row, col.
-        If isHorizontal is True, the line is from (row, col) to (row, col + n). 
-        Otherwise, the line is from (row, col) to (row + n, col). 
+        If isHorizontal is True, the line is from (row, col) to (row, col + n).
+        Otherwise, the line is from (row, col) to (row + n, col).
         """
         # Note: rows are y-position and columns are x-position
         if isHorizontal:
@@ -281,18 +279,19 @@ class Grid:
             for i in range(n):
                 self.nodes[col][row+i].is_active = True
 
-    ##Activate triangle based on three points
-    def activate_triangle(self, x1, y1, x2, y2, x3, y3):
+    def activate_triangle(self, p1, p2, p3):
         """
-        Activates all the nodes in a traingle.
+        Activates all the nodes in a traingle based on three points p1, p2, p3.
         """
         for x in range(self.num_rows):
             for y in range(self.num_cols):
-                if self.isInsideTriangle(x1, y1, x2, y2, x3, y3, x, y):
+                if self.isInsideTriangle(p1, p2, p3, (x, y)):
                     self.nodes[x, y].is_active = True
 
-    ##Checks if node is on border of activated nodes
     def is_on_border(self, row, col, row_limit, col_limit):
+        """
+        Checks if node is on border of activated nodes
+        """
         min_col = max(0, col - 1)
         min_row = max(0, row - 1)
         max_col = min(col_limit, col + 1)
@@ -309,11 +308,10 @@ class Grid:
                     return True
         return False
 
-    ##Finds the border nodes given the activated nodes.
     def find_border_nodes(self):
         """
             Find all activated border nodes on the grid.
-            Based on these activated notes, finds the border nodes. 
+            Based on these activated notes, finds the border nodes.
 
             This function loops through all the nodes, checks if a particular node has
             been activated, and if so checks to see if that node is a border node. At the
@@ -362,82 +360,98 @@ class Grid:
  # --------------------- HELPER FUNCTIONS FOR TRAVERSAL CREATION -------------- #
     def edge_column_of_next_row(self, pos):
         """
-        If the direction we are heading is Left, returns the column of the innermost 
-        (closer to the center of the shape) leftmost node that is 
-            1) active  
-            2) not border node 
+        If the direction we are heading is Left, returns the column of the innermost
+        (closer to the center of the shape) leftmost node that is
+            1) active
+            2) not border node
         between the current row in [pos] and the next row above [pos].
 
-        If the direction we are heading is Right, returns the column of the innermost 
-        (closer to the center of the shape) rightmost node that is 
-            1) active  
-            2) not border node 
+        If the direction we are heading is Right, returns the column of the innermost
+        (closer to the center of the shape) rightmost node that is
+            1) active
+            2) not border node
         between the current row in [pos] and the next row above [pos].
 
-        If the direction we are heading is Up, returns the row of the innermost 
-        (closer to the center of the shape) top node that is 
-            1) active  
-            2) not border node 
+        If the direction we are heading is Up, returns the row of the innermost
+        (closer to the center of the shape) top node that is
+            1) active
+            2) not border node
         between the current col in [pos] and the next col above [pos].
 
-        If the direction we are heading is Down, returns the row of the innermost 
-        (closer to the center of the shape) bottom node that is 
-            1) active  
-            2) not border node 
+        If the direction we are heading is Down, returns the row of the innermost
+        (closer to the center of the shape) bottom node that is
+            1) active
+            2) not border node
         between the current col in [pos] and the next col above [pos].
 
         If there are no more nodes in the next row, return None.
 
         pos: the current position (col,row)
         """
-        # Obtain all border nodes in the next and current rows 
+        # Obtain all border nodes in the next and current rows
         if self.direction == self.Direction.RIGHT or self.direction == self.Direction.LEFT:
             # Note: node_info: (node, row, col)
-            #Obtain all border_nodes on the next col
-            
-            candidate_nodes_next = [node_info for node_info in self.border_nodes if node_info[2] == pos[1] + 1]
-            candidate_nodes_curr = [node_info for node_info in self.border_nodes if node_info[2] == pos[1]]
+            # Obtain all border_nodes on the next col
+
+            candidate_nodes_next = [
+                node_info for node_info in self.border_nodes if node_info[2] == pos[1] + 1]
+            candidate_nodes_curr = [
+                node_info for node_info in self.border_nodes if node_info[2] == pos[1]]
         else:
-            #Obtain all border_nodes on the next row
-            candidate_nodes_next = [node_info for node_info in self.border_nodes if node_info[1] == pos[0] + 1]
-            #all border_nodes on current row
-            candidate_nodes_curr = [node_info for node_info in self.border_nodes if node_info[1] == pos[0]]
-        
+            # Obtain all border_nodes on the next row
+            candidate_nodes_next = [
+                node_info for node_info in self.border_nodes if node_info[1] == pos[0] + 1]
+            # all border_nodes on current row
+            candidate_nodes_curr = [
+                node_info for node_info in self.border_nodes if node_info[1] == pos[0]]
+
         if (candidate_nodes_next == [] and candidate_nodes_curr == []):
             # There are no border nodes in the current row or next row
             return None
         elif (candidate_nodes_next == []):
-            # Since there we have reached the last row that we can traverse, 
+            # Since there we have reached the last row that we can traverse,
             # let's traverse this last row
             if self.direction == self.Direction.RIGHT:
-                node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[1])
+                node_info_curr = max(candidate_nodes_curr,
+                                     key=lambda node_info: node_info[1])
             elif self.direction == self.Direction.LEFT:
-                node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[1])
+                node_info_curr = min(candidate_nodes_curr,
+                                     key=lambda node_info: node_info[1])
             elif self.direction == self.Direction.UP:
-                node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[2])
+                node_info_curr = max(candidate_nodes_curr,
+                                     key=lambda node_info: node_info[2])
             elif self.direction == self.Direction.DOWN:
-                node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[2])
-            
+                node_info_curr = min(candidate_nodes_curr,
+                                     key=lambda node_info: node_info[2])
+
             if self.direction == self.Direction.RIGHT or self.direction == self.Direction.LEFT:
                 return node_info_curr[1]
-            else: 
+            else:
                 return node_info_curr[2]
         else:
             if self.direction == self.Direction.RIGHT:
-                node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[1])
-                node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[1])
+                node_info_next = max(candidate_nodes_next,
+                                     key=lambda node_info: node_info[1])
+                node_info_curr = max(candidate_nodes_curr,
+                                     key=lambda node_info: node_info[1])
                 return min(node_info_next[1], node_info_curr[1])
             elif self.direction == self.Direction.LEFT:
-                node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[1])
-                node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[1])
+                node_info_next = min(candidate_nodes_next,
+                                     key=lambda node_info: node_info[1])
+                node_info_curr = min(candidate_nodes_curr,
+                                     key=lambda node_info: node_info[1])
                 return max(node_info_next[1], node_info_curr[1])
             elif self.direction == self.Direction.UP:
-                node_info_next = max(candidate_nodes_next, key=lambda node_info: node_info[2])
-                node_info_curr = max(candidate_nodes_curr, key=lambda node_info: node_info[2])
+                node_info_next = max(candidate_nodes_next,
+                                     key=lambda node_info: node_info[2])
+                node_info_curr = max(candidate_nodes_curr,
+                                     key=lambda node_info: node_info[2])
                 return min(node_info_next[2], node_info_curr[2])
             elif self.direction == self.Direction.DOWN:
-                node_info_next = min(candidate_nodes_next, key=lambda node_info: node_info[2])
-                node_info_curr = min(candidate_nodes_curr, key=lambda node_info: node_info[2])
+                node_info_next = min(candidate_nodes_next,
+                                     key=lambda node_info: node_info[2])
+                node_info_curr = min(candidate_nodes_curr,
+                                     key=lambda node_info: node_info[2])
                 return max(node_info_next[2], node_info_curr[2])
 
     def plot_circle(self, start_pos, end_pos, center, orientation, theta_step=math.pi / 12):
@@ -454,9 +468,11 @@ class Grid:
             theta_step: float representing the angle step when plotting the turning arch. The
             smaller the value, the smoother the curve will be. Default value = math.pi/12.
         """
-        r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
-    
-        theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
+        r = math.hypot(float(start_pos[0]) - center[0],
+                       float(start_pos[1]) - center[1])
+
+        theta_init = math.atan2(
+            start_pos[1] - center[1], start_pos[0] - center[0])
         theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
         circle_plt = []
         if orientation == self.Orientation.CCW:
@@ -464,27 +480,28 @@ class Grid:
                 theta_end = theta_end + 2 * math.pi
             theta = theta_init
             while theta < theta_end:
-                circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
+                circle_plt.append(
+                    (r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
                 theta = theta + theta_step
         elif orientation == self.Orientation.CW:
             if theta_init < theta_end:
                 theta_init = theta_init + 2 * math.pi
             theta = theta_init
             while theta > theta_end:
-                circle_plt.append((r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
+                circle_plt.append(
+                    (r * math.cos(theta) + center[0], r * math.sin(theta) + center[1]))
                 theta = theta - theta_step
         else:
             raise Exception("invalid orientation")
         return circle_plt
-       
 
     def get_turning_column(self, edge_column):
         """
         Returns the column where the robot should begin turning in a guided traversal.
-        
+
         Arguments:
-            edge_column: int representing the column of the 
-            leftmost/rightmost node in the row above the current row being 
+            edge_column: int representing the column of the
+            leftmost/rightmost node in the row above the current row being
             traversed.
         """
         if self.direction == self.Direction.LEFT or self.direction == self.Direction.DOWN:
@@ -538,7 +555,7 @@ class Grid:
 
     def get_turn_orientation(self):
         """
-        Returns the turning orientation between rows depending on the 
+        Returns the turning orientation between rows depending on the
         incoming traversal direction.
         """
         if self.direction == self.Direction.LEFT or self.direction == self.Direction.UP:
@@ -546,39 +563,39 @@ class Grid:
         elif self.direction == self.Direction.RIGHT or self.direction == self.Direction.DOWN:
             return self.Orientation.CCW
 
-    def add_guided_waypoints(self):
+    def add_guided_waypoints(self, is_vertical):
         """
         Generates waypoints for a guided lawnmower traversal.
 
         For this traversal, the robot should traverse row by row until there are
         no more active nodes that are encaptured by the border nodes.
-        
-        When the robot reaches a the first node in a row of active nodes, it 
+
+        When the robot reaches a the first node in a row of active nodes, it
         will traverse down the row and turn to the next row BEFORE the edge node,
-        the last node in the row (so the turn is contained within the bounds of 
+        the last node in the row (so the turn is contained within the bounds of
         the selected border).
 
-        Ex:  3 <- 4 <- 5  
-                    ^ 
+        Ex:  3 <- 4 <- 5
+                    ^
              0 -> 1 -> 2
         """
         # The robot is traversing in the left direction, from right to left
-        new_pos = self.get_next_traversal_pos() # The next position in the left direction
-        
-        edge_column = self.edge_column_of_next_row(self.curr_pos) # The next leftmost position in row above
+        # The next position in the left direction
+        new_pos = self.get_next_traversal_pos()
 
-        if edge_column == None: # Problem with initialization
+        # The next leftmost position in row above
+        edge_column = self.edge_column_of_next_row(self.curr_pos)
+
+        if edge_column == None:  # Problem with initialization
             self.waypoints_is_finished = True
             return
 
         # Column where we want to begin turning, one node closer to the inside of our shape
-        turning_column = self.get_turning_column(edge_column) 
-        next_row = self.curr_pos[1] + 1
-
-        # Question: Can we delete?
-        # elif curr_pos[0] < (left_pos[0] + 1):
-        #     phase = WaypointPhase.TERMINATE
-        # else:
+        turning_column = self.get_turning_column(edge_column)
+        if is_vertical:
+            next_row = self.curr_pos[0] + 1
+        else:
+            next_row = self.curr_pos[1] + 1
 
         # Traverse the row until it is time to turn
         while not self.is_before_turning_column(turning_column):
@@ -587,76 +604,30 @@ class Grid:
             new_pos = self.get_next_traversal_pos()
 
         # Check whether turning to the next row is valid
-        if not next_row < self.num_cols or not self.nodes[turning_column][next_row].is_active:
-            # Next row is out of bounds of the grid OR the node in the row above,
+        if not next_row < self.num_cols or (is_vertical and not self.nodes[next_row][turning_column].is_active)\
+                or (not is_vertical and not self.nodes[turning_column][next_row].is_active):
+            # Next row is out of bounds of the grid OR the node in the row/column above,
             # where we are trying to turn to, isn't active for traversal
             self.waypoints_is_finished = True
+
         else:
             # Turn to next row
-            # Create waypoints needed for a smooth turning trajectory to 
+            # Create waypoints needed for a smooth turning trajectory to
             # "guide" our robot to the next original waypoint
-            circle_plt = self.plot_circle((turning_column, self.curr_pos[1]), (turning_column, next_row),
-                                        (turning_column, self.curr_pos[1] + .5), self.get_turn_orientation())
+            if is_vertical:
+                circle_plt = self.plot_circle((self.curr_pos[0], turning_column), (next_row, turning_column),
+                                              (self.curr_pos[0] + .5, turning_column), self.get_turn_orientation())
+            else:
+                circle_plt = self.plot_circle((turning_column, self.curr_pos[1]), (turning_column, next_row),
+                                              (turning_column, self.curr_pos[1] + .5), self.get_turn_orientation())
             self.waypoints += circle_plt
             # Update traversal details
             self.switch_directions()
-            self.curr_pos = (turning_column, next_row)
+            if is_vertical:
+                self.curr_pos = (next_row, turning_column)
+            else:
+                self.curr_pos = (turning_column, next_row)
 
-
-    def add_guided_waypoints_vertical(self):
-        """
-        Generates waypoints for a guided lawnmower traversal.
-
-        For this traversal, the robot should traverse row by row until there are
-        no more active nodes that are encaptured by the border nodes.
-        
-        When the robot reaches a the first node in a row of active nodes, it 
-        will traverse down the row and turn to the next row BEFORE the edge node,
-        the last node in the row (so the turn is contained within the bounds of 
-        the selected border).
-
-        Ex:  3 <- 4 <- 5  
-                    ^ 
-             0 -> 1 -> 2
-        """
-        # TODO: once this works integrate w/ add_guided_waypoints to make it
-        # generalized between <-> and up/down -- Note below, row/column names are
-        # switched bc not renamed from above function
-        # The robot is traversing in the left direction, from right to left
-        new_pos = self.get_next_traversal_pos() # The next position in the left direction
-        
-        edge_row = self.edge_column_of_next_row(self.curr_pos) # The next leftmost position in row above
-
-        if edge_row == None: # Problem with initialization
-            self.waypoints_is_finished = True
-            return
-        # Column where we want to begin turning, one node closer to the inside of our shape
-        turning_row = self.get_turning_column(edge_row) 
-        next_column = self.curr_pos[0] + 1
-        # Traverse the row until it is time to turn
-        while not self.is_before_turning_column(turning_row):
-            self.waypoints.append(new_pos)
-            self.curr_pos = new_pos
-            new_pos = self.get_next_traversal_pos()
-
-        # Check whether turning to the next row is valid
-        if not next_column < self.num_rows or not self.nodes[next_column][turning_row].is_active:
-            # Next row is out of bounds of the grid OR the node in the row above,
-            # where we are trying to turn to, isn't active for traversal
-            self.waypoints_is_finished = True
-        else:
-            # Turn to next row
-            # Create waypoints needed for a smooth turning trajectory to 
-            # "guide" our robot to the next original waypoint
-            circle_plt = self.plot_circle((self.curr_pos[0], turning_row), (next_column, turning_row),
-                                        (self.curr_pos[0] + .5, turning_row), self.get_turn_orientation())                                       
-            self.waypoints += circle_plt
-            # Update traversal details
-            self.switch_directions()
-            # self.curr_pos = (turning_column, next_row)
-            self.curr_pos = (next_column, turning_row)
-
-    ##Given border and active nodes, compute lawnmower traversal
     def get_all_guided_lawnmower_waypoints_adjustable(self, is_vertical):
         """
         Returns the waypoints being traversed. The algorithm traverses from bottom
@@ -673,24 +644,17 @@ class Grid:
         # everytime before this is called
         self.curr_pos = self.leftmost_node_pos
         self.waypoints.append(self.curr_pos)
+        # TODO: Change to allow choosing down and left directions
         if is_vertical:
             self.direction = self.direction.UP
         while not self.waypoints_is_finished:
             if self.curr_pos == None:
                 self.waypoints_is_finished = True
 
-            # Question: can we delete? bounds checked in add guided? change to assert?
-            # elif (self.curr_pos[0] > self.num_rows - 1 or 
-            #     self.curr_pos[0] < 0 or self.curr_pos[1] > self.num_cols - 1 or 
-            #     self.curr_pos[1] < 0):
-            #     self.phase = self.WaypointPhase.TERMINATE
-
-            # Handle traversal from left/right and turning CW/CCW at the end of 
+            # Handle traversal from left/right and turning CW/CCW at the end of
             # the row (or terminating).
-            if is_vertical:
-                self.add_guided_waypoints_vertical()
-            else:
-                self.add_guided_waypoints()
+
+            self.add_guided_waypoints(is_vertical)
 
         return self.waypoints
 
@@ -719,7 +683,7 @@ class Grid:
             next_col = col + step_col[turn_state]
             next_row = row + step_row[turn_state]
             if 0 <= next_col < self.num_cols and 0 <= next_row < self.num_rows and not node_list[
-                                                                                           next_row, next_col] in waypoints:
+                    next_row, next_col] in waypoints:
                 col = next_col
                 row = next_row
             else:
@@ -745,7 +709,8 @@ class Grid:
                     self.determine_active_waypoints(node)
                     waypoints.append(node)
                 elif i % 2 == 1:
-                    row_index = self.num_rows - (j + 1)  # adds the nodes in reverse order (not zigzag)
+                    # adds the nodes in reverse order (not zigzag)
+                    row_index = self.num_rows - (j + 1)
                     node = node_list[row_index, i]
                     self.determine_active_waypoints(node)
                     waypoints.append(node)
@@ -837,8 +802,8 @@ class Grid:
         elif mode == ControlMode.STRAIGHT:
             waypoints = self.get_straight_line_waypoints(y_start_pct=0.5)
         elif mode == ControlMode.LAWNMOWER_GUIDED:
-            waypoints = self.get_all_guided_lawnmower_waypoints_adjustable(True)
+            waypoints = self.get_all_guided_lawnmower_waypoints_adjustable(
+                True)
         else:
             return []
         return waypoints
-
