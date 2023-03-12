@@ -165,6 +165,7 @@ class Robot_State:
 
         # TODO: GPS, IMU, RF module and Motor Controller are also re-initialized in robot.execute_setup
         # We should pick whether we want to initialize the attributes here or in robot.execute_setup
+        # (which is being passed from Mission, need to whether sensors are part of mission vs robot)
         if not self.is_sim:
             self.motor_controller = MotorController(wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = self.is_sim)
             self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
