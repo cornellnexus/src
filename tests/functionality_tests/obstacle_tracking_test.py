@@ -108,9 +108,7 @@ class TestObstacleTracking(unittest.TestCase):
         result_file = open(result_path, "w")
         result_file.truncate()
         result_file.close()
-        r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2)
-        r2d2_state.phase = 2
-        r2d2_state.width = 785
+        r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2, width = 785)
         r2d2 = Robot(r2d2_state)
         r2d2.track_obstacle()
         result_file = open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', "r")
@@ -136,9 +134,7 @@ class TestObstacleTracking(unittest.TestCase):
         result_file = open(result_path, "w")
         result_file.truncate()
         result_file.close()
-        r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2)
-        r2d2_state.phase = 2
-        r2d2_state.width = 785
+        r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2, width = 785)
         r2d2 = Robot(r2d2_state)
         r2d2.track_obstacle()
         result_file = open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', "r")
@@ -162,9 +158,7 @@ class TestObstacleTracking(unittest.TestCase):
         result_file.truncate()
         result_file.close()
         random_width = random.random() * 700
-        r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2)
-        r2d2_state.phase = 2
-        r2d2_state.width = random_width
+        r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2, width = random_width)
         r2d2 = Robot(r2d2_state)
         r2d2.track_obstacle()
         result_file = open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', "r")
@@ -173,31 +167,27 @@ class TestObstacleTracking(unittest.TestCase):
         expected = []
         for i in range(len(front_sensor)):
             curr_val = front_sensor[i]
-            if curr_val < r2d2.detect_obstacle_range:
+            if curr_val < r2d2.robot_state.detect_obstacle_range:
                 expected.append("Avoid")
             else:
                 expected.append("Not Avoid")
 
         self.assertEqual(expected, result_content)
         self.assertEqual \
-            (r2d2.detect_obstacle_range,
-             min(r2d2.max_sensor_range,
-                 ((r2d2.width + r2d2.width_margin) / 2) /
-                 math.cos(math.radians((180 - r2d2.sensor_measuring_angle) / 2)) + r2d2.front_sensor_offset))
+            (r2d2.robot_state.detect_obstacle_range,
+             min(r2d2.robot_state.max_sensor_range,
+                 ((r2d2.robot_state.width + r2d2.robot_state.width_margin) / 2) /
+                 math.cos(math.radians((180 - r2d2.robot_state.sensor_measuring_angle) / 2)) + r2d2.robot_state.front_sensor_offset))
 
     def test_detection_range(self):
-        wide_robot_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2)
-        wide_robot_state.phase = 2
-        wide_robot_state.width = 800
+        wide_robot_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2, width = 800)
         wide_robot = Robot(wide_robot_state)
-        skinny_robot_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2)
-        skinny_robot_state.phase = 2
-        skinny_robot_state.width = 200
+        skinny_robot_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2,phase = 2, width = 200)
         skinny_robot = Robot(skinny_robot_state)
-        self.assertEqual(self.difference_in_threshold(1, wide_robot.max_sensor_range, wide_robot.detect_obstacle_range), True)
-        self.assertEqual(self.difference_in_threshold(1, 165.1, skinny_robot.detect_obstacle_range), True)
-        self.assertEqual(self.difference_in_threshold(0, 165.1, skinny_robot.detect_obstacle_range), False)
-        self.assertEqual(self.difference_in_threshold(1, 200, skinny_robot.detect_obstacle_range), False)
+        self.assertEqual(self.difference_in_threshold(1, wide_robot.robot_state.max_sensor_range, wide_robot.robot_state.detect_obstacle_range), True)
+        self.assertEqual(self.difference_in_threshold(1, 165.1, skinny_robot.robot_state.detect_obstacle_range), True)
+        self.assertEqual(self.difference_in_threshold(0, 165.1, skinny_robot.robot_state.detect_obstacle_range), False)
+        self.assertEqual(self.difference_in_threshold(1, 200, skinny_robot.robot_state.detect_obstacle_range), False)
 
 
 
