@@ -104,7 +104,7 @@ class Robot_State:
         # FLAGS
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
         self.should_store_data = kwargs.get("should_store_data", False)
-        self.phase = kwargs.get("phase", Phase.SETUP)
+        self.phase = Phase(kwargs.get("phase", Phase.SETUP))
         self.avoid_obstacle =  kwargs.get("avoid_obstacle", False)
 
         # CONSTANTS
