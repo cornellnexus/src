@@ -99,8 +99,8 @@ class Robot:
             noise_margin (Double): Margin from init_threshold that the robot has to leave before detecting robot has
                 left initial position
         """
-        self.state = np.array([[x_pos], [y_pos], [heading]])
-        self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
+        self.state = np.array([x_pos, y_pos, heading])
+        self.truthpose = np.transpose(self.state)
         self.is_sim = not is_raspberrypi()
         self.is_store = is_store
         self.phase = Phase(init_phase)
@@ -522,17 +522,22 @@ class Robot:
 
         # time.sleep(10)  # don't hog the cpu
 
-    def is_on_line(self, p1, p2):
+    def is_on_line(self, p1, p2, tolerance):
         """ Checks if the robot is on the line defined by the two points p1 and p2
             Args:
                 p1 (Tuple): An (x, y) point on the line
                 p2 (Tuple): Another (x, y) point on the line
         """
-        tolerance = 2  # threshold from current y position to desired y position on the line where we interpret y position to still be on the line
-        slope = (p2[1] - p1[1])/(p2[0] - p1[0])  # m = (y2 - y1)/(x2 - x1)
-        desiredy = slope * (self.x - p1[0]) + p1[1]  # y - y1 = m(x - x1)
-        difference = self.y_pos - desiredy
-        return abs(difference) < tolerance
+        # convert to polar coord bc euclidean coord has potentional divide by 0 err when calculating slope of vertical line
+        line_theta = math.atan2((p2[1] - p1[1]), (p2[0] - p1[0]))
+        # cant get multiple thetas given one point without them not being on the same line
+        new_theta = math.atan2(
+            (p2[1] - self.state[1]), (p2[0] - self.state[0]))
+        difference = new_theta - line_theta
+        # want to detect same line even if rotated 180
+        if abs(difference) == math.pi:
+            difference = 0
+        return abs(difference) <= tolerance
 
     def execute_avoid_obstacle(self):
         """ Execute bug 2 (straight line) obstacle avoidance algorithm
@@ -545,8 +550,8 @@ class Robot:
         init_threshold = 3
         # how far robot can be from goal for it to be at goal; goal is where the robot wanted to go when there isn't an obstacle
         goal_threshold = 3
-        init_x = self.x_pos
-        init_y = self.y_pos
+        init_x = self.state[0]
+        init_y = self.state[1]
         init_pos = (init_x, init_y)
 
         # last position of the robot when it's still on the (line from its initial position to its goal positions)
@@ -558,27 +563,32 @@ class Robot:
         while True:
             if self.phase == Phase.FAULT:  # fault has priority over obstacle avoidance
                 return None
-            curr_pos = (self.x_pos, self.y_pos)
+            curr_pos = (self.state[0], self.state[1])
             curr_dist_to_goal = self.calculate_dist(
                 self.goal_location, curr_pos)
 
             dist_from_init = self.calculate_dist(curr_pos, init_pos)
-            is_on_line = self.is_on_line(self.goal_location, curr_pos)
+            # threshold for checking theta matches for the lines
+            on_line_tolerance = 0.1
+            is_on_line = self.is_on_line(
+                self.goal_location, curr_pos, on_line_tolerance)
             new_dist_to_goal = self.calculate_dist(
                 self.goal_location, curr_pos)
             if dist_from_init > init_threshold:
                 has_left_init_thresh = True
-            if curr_dist_to_goal < goal_threshold:  # exits obstacle avoidance if robot close to goal
+            # exits obstacle avoidance if robot close to goal
+            if curr_dist_to_goal < goal_threshold:
                 self.set_phase(self.prev_phase)
                 return None
             elif has_traversed_boundary:
                 self.set_phase(Phase.FAULT)  # cannot reach goal
                 return None
-            elif is_on_line and (new_dist_to_goal < init_dist_to_goal):  # bug 2
-                # without this, the robot could move closer to the goal (on a slant, not directly towards the goal)
-                #   but still be on the line, making the robot keep exiting obstacle avoidance when its effectively in the same position as before
+            # bug 2
+            elif is_on_line and (new_dist_to_goal < init_dist_to_goal):
+                # need to tune
                 threshold_to_recalculate_on_line = 3
-                # need to tune. Want to be close to is_on_line threshold beecause that's the reason why we have this
+                # without this condition, the robot could move closer to the goal (on a slant, not directly towards the goal)
+                #   but still be on the line, making the robot keep exiting obstacle avoidance when its effectively in the same position as before
                 if self.calculate_dist(curr_pos, last_pos_on_line) > threshold_to_recalculate_on_line:
                     self.set_phase(self.prev_phase)
                     return None
