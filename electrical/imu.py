@@ -1,5 +1,6 @@
 import time
-if False:
+from engine.is_raspberrypi import is_raspberrypi
+if is_raspberrypi():
     import board
     import busio
     import adafruit_lsm9ds1
