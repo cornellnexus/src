@@ -97,7 +97,6 @@ class Grid:
             # traversal.
             for i in range(cols):
                 for j in range(rows):
-                    # is_border = (j == 0 or j == rows - 1)
                     if i % 2 == 0:
                         lat = gps_origin[0] + j * lat_step
                         long = gps_origin[1] + i * long_step
@@ -699,14 +698,17 @@ class Grid:
         node_list = self.nodes
         for i in range(self.num_cols):
             for j in range(self.num_rows):
+                is_border = (j == 0 or j == self.num_rows - 1) # leftmost and rightmost nodes are considered border nodes
                 if i % 2 == 0:
                     node = node_list[j, i]
+                    node.is_border = is_border
                     self.determine_active_waypoints(node)
                     waypoints.append(node)
                 elif i % 2 == 1:
                     # adds the nodes in reverse order (not zigzag)
                     row_index = self.num_rows - (j + 1)
                     node = node_list[row_index, i]
+                    node.is_border = is_border
                     self.determine_active_waypoints(node)
                     waypoints.append(node)
         return waypoints
