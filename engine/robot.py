@@ -1,45 +1,14 @@
 import threading
-
+import time
 import numpy as np
 import math
-from enum import Enum
-from electrical import motor_controller
-from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
-from engine.pid_controller import PID
-from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
-import time
 
-from engine.is_raspberrypi import is_raspberrypi
-if is_raspberrypi():
-    from electrical.motor_controller import MotorController
-    import electrical.gps as GPS 
-    import electrical.imu as IMU 
-    import electrical.radio_module as RadioModule
-    import serial
-
-from constants.definitions import *
-
+from engine.phase import Phase
 from engine.ekf import LocalizationEKF
-from engine.sensor_module import SensorModule
-from constants.definitions import ENGINEERING_QUAD
-
-from enum import Enum
-import time
-import sys
-
-
-class Phase(Enum):
-    """
-    An enumeration of different robot phases.
-    """
-    SETUP = 1
-    TRAVERSE = 2
-    AVOID_OBSTACLE = 3
-    RETURN = 4
-    DOCKING = 5
-    COMPLETE = 6
-    FAULT = 7
-
+from engine.pid_controller import PID
+from constants.definitions import *
+from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
+from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
 
 class Robot:
     """
@@ -57,170 +26,76 @@ class Robot:
     heading is in range [0..359]
     """
 
-    def __init__(self, x_pos, y_pos, heading, epsilon, max_v, radius, is_sim=True, is_store=False, width=700, front_ultrasonic=None,
-                 lf_ultrasonic=None, lb_ultrasonic=None, rf_ultrasonic=None, rb_ultrasonic=None,
-                 position_kp=1, position_ki=0, position_kd=0, position_noise=0, heading_kp=1, heading_ki=0,
-                 heading_kd=0, heading_noise=0, init_phase=1, time_step=1, move_dist=.5, turn_angle=3,
-                 plastic_weight=0, use_ekf=False, init_gps=(0, 0), gps_data=(0, 0), imu_data=None, ekf_var=None,
-                 gps=None, imu=None, init_threshold=1, goal_threshold=1, noise_margin=1, motor_controller=None):
+    def __init__(self, robot_state):
         """
-        Arguments:
-            x_pos: the x position of the robot, where (0,0) is the bottom left corner of the grid with which
-                the Robot's related Mission was initialized
-            y_pos: the y position of the robot
-            heading: the theta of the robot in radians, where North on the grid is equal to 0.
-            epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
-            max_v: the maximum velocity of the robot
-            radius: the radius of the robot
-            width: width of the robot in cm
-            front_ultrasonic: the ultrasonic at the front of the robot, used for detecting obstacles
-            lf_ultrasonic: the ultrasonic at the front of the left side of the robot, used for boundary following
-            lb_ultrasonic: the ultrasonic at the back of the left side of the robot, used for boundary following
-            rf_ultrasonic: the ultrasonic at the front of the right side of the robot, used for boundary following
-            rb_ultrasonic: the ultrasonic at the back of the right side of the robot, used for boundary following
-            is_sim: False if the physical robot is being used, True otherwise
-            is_store: False if csv data should not be stored, True otherwise
-            position_kp: the proportional factor of the position PID
-            position_ki: the integral factor of the position PID
-            position_kd: the derivative factor of the position PID
-            position_noise: the flat amount of noise added to the robot's phase on each localization step
-            heading_kp: the proportional factor of the heading PID
-            heading_ki: the integral factor of the heading PID
-            heading_kd: the derivative factor of the heading PID
-            heading_noise: ?
-            init_phase: the phase which the robot begins at
-            time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
-                is True
-            move_dist: the distance in meters that the robot moves per time dt
-            turn_angle: the angle in radians that the robot turns per time dt regardless of time step
-            plastic_weight: the weight of the trash the robot has collected
-            init_threshold (Double): Radius from initial position that will detect robot is back in initial position
-            goal_threshold (Double): Threshold from goal that will be detected as reaching goal in obstacle avoidance
-            noise_margin (Double): Margin from init_threshold that the robot has to leave before detecting robot has
-                left initial position
+            Arguments:
+            robot_state: an instance encapsulating conditions, measurements, etc. (i.e. all data) about this robot  
         """
-        self.state = np.array([[x_pos], [y_pos], [heading]])
-        self.truthpose = np.transpose(np.array([[x_pos], [y_pos], [heading]]))
-        self.is_sim = not is_raspberrypi()
-        self.is_store = is_store
-        self.phase = Phase(init_phase)
-        self.epsilon = epsilon
-        self.max_velocity = max_v
-        self.radius = radius
-        self.time_step = time_step
-        self.position_kp = position_kp
-        self.position_ki = position_ki
-        self.position_kd = position_kd
-        self.position_noise = position_noise
-        self.heading_kp = heading_kp
-        self.heading_ki = heading_ki
-        self.heading_kd = heading_kd
-        self.heading_noise = heading_noise
-        self.move_dist = move_dist
-        # dividing by time_step ignores the effect of time_step on absolute
-        self.turn_angle = turn_angle / time_step
-        self.plastic_weight = plastic_weight
-        self.battery = 100  # TEMPORARY
-        self.acceleration = [0, 0, 0]  # TEMPORARY
-        self.magnetic_field = [0, 0, 0]  # TEMPORARY
-        self.gyro_rotation = [0, 0, 0]  # TEMPORARY
-        self.init_gps = init_gps
-        self.gps_data = gps_data
-        self.imu_data = imu_data  # will be filled by execute_setup
-        self.ekf_var = ekf_var
-        self.gps = gps
-        self.imu = imu
-        self.mc = motor_controller
-        self.linear_v = 0
-        self.angular_v = 0
-        self.width = width
-        self.avoid_obstacle = False  # boolean that determines if we should avoid obstacles
-        self.front_ultrasonic = front_ultrasonic
-        self.lf_ultrasonic = lf_ultrasonic
-        self.lb_ultrasonic = lb_ultrasonic
-        self.rf_ultrasonic = rf_ultrasonic
-        self.rb_ultrasonic = rb_ultrasonic
-        self.dist_to_goal = 0
-        self.prev_phase = self.phase
-        self.goal_location = (0, 0)
-        self.max_sensor_range = 600
-        self.front_sensor_offset = 0  # TODO: replace this with how far offset the sensor is to the front of the robot
-        self.sensor_measuring_angle = 75
-        self.width_margin = 1  # TODO: replace this with actual margin
-        self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
-            math.radians((180 - self.sensor_measuring_angle) / 2))
-        self.detect_obstacle_range = min(self.threshold_distance,
-                                         self.max_sensor_range)  # set ultrasonic detection range
-        self.init_threshold = init_threshold
-        self.goal_threshold = goal_threshold
-        self.noise_margin = noise_margin
-        if not self.is_sim:
-            self.motor_controller = MotorController(self, wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0)
-            self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5)) 
-            self.imu = IMU(busio.I2C(board.SCL, board.SDA)) 
-
+        self.robot_state = robot_state
 
         self.loc_pid_x = PID(
-            Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
+            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, target=0, sample_time=self.robot_state.time_step,
             output_limits=(None, None)
         )
 
         self.loc_pid_y = PID(
-            Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, target=0, sample_time=self.time_step,
+            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, target=0, sample_time=self.robot_state.time_step,
             output_limits=(None, None)
         )
 
         self.head_pid = PID(
-            Kp=self.heading_kp, Ki=self.heading_ki, Kd=self.heading_kd, target=0, sample_time=self.time_step,
+            Kp=self.robot_state.heading_kp, Ki=self.robot_state.heading_ki, Kd=self.robot_state.heading_kd, target=0, sample_time=self.robot_state.time_step,
             output_limits=(None, None)
         )
 
         # TODO: wrap in try/except (error when calling execute_setup_test.py)
         # write in csv
-        if self.is_store:
-            write_phase_to_csv(self.phase)
+        if self.robot_state.should_store_data:
+            write_phase_to_csv(self.robot_state.phase)
 
     def update_ekf_step(self):
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
-        # self.ekf_var.update_step(self.ekf_var.mu, self.ekf_var.sigma, sensor_module.get_measurement(self.init_gps))
-        self.gps_data = (self.gps.get_gps()["long"], self.gps.get_gps()["lat"])
-        self.imu_data = self.imu.get_gps()
+        # self.robot_state.ekf.update_step(self.robot_state.ekf.mu, self.robot_state.ekf.sigma, sensor_module.get_measurement(self.robot_state.init_gps))
+        self.robot_state.gps_data = (self.robot_state.gps.get_gps()["long"], self.robot_state.gps.get_gps()["lat"])
+        self.robot_state.imu_data = self.robot_state.imu.get_gps()
         x, y = get_vincenty_x(
-            self.init_gps, self.gps_data), get_vincenty_y(self.init_gps, self.gps_data)
+            self.robot_state.init_gps, self.robot_state.gps_data), get_vincenty_y(self.robot_state.init_gps, self.robot_state.gps_data)
         heading = math.degrees(math.atan2(
-            self.imu_data["mag"]["y"], self.imu_data["mag"]["x"]))
+            self.robot_state.imu_data["mag"]["y"], self.robot_state.imu_data["mag"]["x"]))
 
         measurements = np.array([[x], [y], [heading]])
 
-        self.ekf_var.update_step(
-            self.ekf_var.mu, self.ekf_var.sigma, measurements)
-        new_x = self.ekf_var.mu[0][0]
-        new_y = self.ekf_var.mu[1][0]
-        new_heading = self.ekf_var.mu[2][0]
+        self.robot_state.ekf.update_step(
+            self.robot_state.ekf.mu, self.robot_state.ekf.sigma, measurements)
+        new_x = self.robot_state.ekf.mu[0][0]
+        new_y = self.robot_state.ekf.mu[1][0]
+        new_heading = self.robot_state.ekf.mu[2][0]
         new_state = np.array([[new_x], [new_y], [new_heading]])
         return new_state
 
     def travel(self, velocity, omega):
         # Moves the robot with both linear and angular velocity
-        self.state = np.round(integrate_odom(
-            self.state, velocity, omega), 3)
+        self.robot_state.state = np.round(integrate_odom(
+            self.robot_state.state, velocity, omega), 3)
         # if it is a simulation,
-        if self.is_sim:
-            self.truthpose = np.append(
-                self.truthpose, np.transpose(self.state), 0)
+        if self.robot_state.is_sim:
+            self.robot_state.truthpose = np.append(
+                self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
+        else:
+            imu_data = self.robot_state.imu.get_imu()
+            self.robot_state.state[2] = math.degrees(math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
 
     def move_forward(self, dist):
         # Moves robot forward by distance dist
         # dist is in meters
-        new_x = self.state[0] + dist * math.cos(self.state[2]) * self.time_step
-        new_y = self.state[1] + dist * math.sin(self.state[2]) * self.time_step
-        self.state[0] = np.round(new_x, 3)
-        self.state[1] = np.round(new_y, 3)
+        new_x = self.robot_state.state[0] + dist * math.cos(self.robot_state.state[2]) * self.robot_state.time_step
+        new_y = self.robot_state.state[1] + dist * math.sin(self.robot_state.state[2]) * self.robot_state.time_step
+        self.robot_state.state[0] = np.round(new_x, 3)
+        self.robot_state.state[1] = np.round(new_y, 3)
 
-        if self.is_sim:
-            self.truthpose = np.append(
-                self.truthpose, np.transpose(self.state), 0)
+        if self.robot_state.is_sim:
+            self.robot_state.truthpose = np.append(
+                self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
 
     def move_to_target_node(self, target, allowed_dist_error, database):
         """
@@ -231,52 +106,54 @@ class Robot:
             can be from a node for the robot to have "visited" that node
             database: 
         """
-        predicted_state = self.state  # this will come from Kalman Filter
+        predicted_state = self.robot_state.state  # this will come from Kalman Filter
 
         # location error (in meters)
         distance_away = self.calculate_dist(target, predicted_state)
 
         while distance_away > allowed_dist_error:
-            if self.is_sim:
+            if self.robot_state.is_sim:
                 # Adding simulated noise to the robot's state based on gaussian distribution
-                self.state[0] = np.random.normal(
-                    self.state[0], self.position_noise)
-                self.state[1] = np.random.normal(
-                    self.state[1], self.position_noise)
+                self.robot_state.state[0] = np.random.normal(
+                    self.robot_state.state[0], self.robot_state.position_noise)
+                self.robot_state.state[1] = np.random.normal(
+                    self.robot_state.state[1], self.robot_state.position_noise)
 
             # Error in terms of latitude and longitude, NOT meters
-            x_coords_error = target[0] - self.state[0]
-            y_coords_error = target[1] - self.state[1]
+            x_coords_error = target[0] - self.robot_state.state[0]
+            y_coords_error = target[1] - self.robot_state.state[1]
 
             x_vel = self.loc_pid_x.update(x_coords_error)
             y_vel = self.loc_pid_y.update(y_coords_error)
 
             cmd_v, cmd_w = feedback_lin(
-                predicted_state, x_vel, y_vel, self.epsilon)
+                predicted_state, x_vel, y_vel, self.robot_state.epsilon)
 
             # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
-                cmd_v, cmd_w, self.max_velocity, self.radius)
+                cmd_v, cmd_w, self.robot_state.max_velocity, self.robot_state.radius)
             # self.linear_v = limited_cmd_v[0]
             # self.angular_v = limited_cmd_w[0]
 
+            self.robot_state.linear_v = limited_cmd_v[0]
+            self.robot_state.angular_v = limited_cmd_w[0]
 
-            if self.is_sim:
+            if self.robot_state.is_sim:
                 # this is just simulating movement:
-                self.travel(self.time_step * limited_cmd_v[0],
-                            self.time_step * limited_cmd_w[0])
+                self.travel(self.robot_state.time_step * limited_cmd_v[0],
+                            self.robot_state.time_step * limited_cmd_w[0])
             else:
-                self.motor_controller.spin_motors(
+                self.robot_state.motor_controller.spin_motors(
                     limited_cmd_w[0], limited_cmd_v[0])
                 # TODO: sleep??
 
-            if not self.is_sim:
-                self.state = self.update_ekf_step()
+            if not self.robot_state.is_sim:
+                self.robot_state.state = self.update_ekf_step()
 
             # Get state after movement:
-            predicted_state = self.state  # this will come from Kalman Filter
+            predicted_state = self.robot_state.state  # this will come from Kalman Filter
 
-            if self.is_sim and self.is_store:
+            if self.robot_state.is_sim and self.robot_state.should_store_data:
                 # TODO: Update to use databse information
                 # FOR GUI: writing robot location and mag heading in CSV
                 write_state_to_csv(predicted_state)
@@ -306,29 +183,30 @@ class Robot:
                 place.
         """
 
-        predicted_state = self.state  # this will come from Kalman Filter
+        predicted_state = self.robot_state.state  # this will come from Kalman Filter
 
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
 
         while abs_heading_error > allowed_heading_error:
-            if self.is_sim:
-                self.state[2] = np.random.normal(self.state[2], self.heading_noise)
+            if self.robot_state.is_sim:
+                self.robot_state.state[2] = np.random.normal(self.robot_state.state[2], self.robot_state.heading_noise)
             else:
-                self.state = self.update_ekf_step()
-            theta_error = target_heading - self.state[2]
+                self.robot_state.state = self.update_ekf_step()
+            theta_error = target_heading - self.robot_state.state[2]
             w = self.head_pid.update(theta_error)  # angular velocity
-            _, limited_cmd_w = limit_cmds(0, w, self.max_velocity, self.radius)
+            _, limited_cmd_w = limit_cmds(0, w, self.robot_state.max_velocity, self.robot_state.radius)
 
-            if self.is_sim:
-                self.travel(0, self.time_step * limited_cmd_w)
+            if self.robot_state.is_sim:
+                self.travel(0, self.robot_state.time_step * limited_cmd_w)
             else:
-                self.motor_controller.spin_motors(limited_cmd_w, 0)
+                self.robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
+            # sleep in real robot
 
             # Get state after movement:
-            predicted_state = self.state  # this will come from Kalman Filter
+            predicted_state = self.robot_state.state  # this will come from Kalman Filter
 
             database.update_data(
-                "state", self.state[0], self.state[1], self.state[2])
+                "state", self.robot_state.state[0], self.robot_state.state[1], self.robot_state.state[2])
 
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
 
@@ -337,43 +215,43 @@ class Robot:
         Hardcoded in-place rotation for testing purposes. Does not use heading PID. Avoid using in physical robot.
         """
         # Turns robot, where turn_angle is given in radians
-        clamp_angle = (self.state[2] + (turn_angle *
-                                        self.time_step)) % (2 * math.pi)
-        self.state[2] = np.round(clamp_angle, 3)
-        if self.is_sim:
-            self.truthpose = np.append(
-                self.truthpose, np.transpose(self.state), 0)
+        clamp_angle = (self.robot_state.state[2] + (turn_angle *
+                                        self.robot_state.time_step)) % (2 * math.pi)
+        self.robot_state.state[2] = np.round(clamp_angle, 3)
+        if self.robot_state.is_sim:
+            self.robot_state.truthpose = np.append(
+                self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
 
     def get_state(self):
-        return self.state
+        return self.robot_state.state
 
     def print_current_state(self):
         # Prints current robot state
-        print('pos: ' + str(self.state[0:2]))
-        print('heading: ' + str(self.state[2]))
+        print('pos: ' + str(self.robot_state.state[0:2]))
+        print('heading: ' + str(self.robot_state.state[2]))
 
     def execute_setup(self, radio_session, gps, imu, motor_controller):
         gps_setup = gps.setup()
         imu_setup = imu.setup()
         radio_session.setup_robot()
-        motor_controller.setup(self.is_sim)
+        motor_controller.setup(self.robot_state.is_sim)
 
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
-        self.init_gps = (gps.get_gps()["long"], gps.get_gps()["lat"])
-        self.imu_data = imu.get_gps()
+        self.robot_state.init_gps = (gps.get_gps()["long"], gps.get_gps()["lat"])
+        self.robot_state.imu_data = imu.get_gps()
         x_init, y_init = (0, 0)
         heading_init = math.degrees(math.atan2(
-            self.imu_data["mag"]["y"], self.imu_data["mag"]["x"]))
+            self.robot_state.imu_data["mag"]["y"], self.robot_state.imu_data["mag"]["x"]))
 
         # mu is meters from start position (bottom left position facing up)
         mu = np.array([[x_init], [y_init], [heading_init]])
 
         # confidence of mu, set it to high initially b/c not confident, algo brings it down
         sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
-        self.ekf_var = LocalizationEKF(mu, sigma)
-        self.gps = gps
-        self.imu = imu
-        self.motor_controller = motor_controller
+        self.robot_state.ekf = LocalizationEKF(mu, sigma)
+        self.robot_state.gps = gps
+        self.robot_state.imu = imu
+        self.robot_state.motor_controller = motor_controller
         if (radio_session.connected and gps_setup and imu_setup):
             obstacle_avoidance = threading.Thread(target=self.track_obstacle, daemon=True)
             obstacle_avoidance.start()  # spawn thread to monitor obstacles
@@ -404,10 +282,10 @@ class Robot:
             self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
-            if self.avoid_obstacle:
+            if self.robot_state.avoid_obstacle:
                 self.set_phase(Phase.AVOID_OBSTACLE)
-                self.goal_location = curr_waypoint
-                self.prev_phase = Phase.TRAVERSE
+                self.robot_state.goal_location = curr_waypoint
+                self.robot_state.prev_phase = Phase.TRAVERSE
                 return unvisited_waypoints
 
         self.set_phase(Phase.RETURN)
@@ -430,40 +308,40 @@ class Robot:
         exit_boolean = False
         while not exit_boolean:
 
-            curr_x = self.state[0]
-            curr_y = self.state[1]
-            new_x = curr_x + self.move_dist * math.cos(self.state[2]) * self.time_step
-            new_y = curr_y + self.move_dist * math.sin(self.state[2]) * self.time_step
+            curr_x = self.robot_state.state[0]
+            curr_y = self.robot_state.state[1]
+            new_x = curr_x + self.robot_state.move_dist * math.cos(self.robot_state.state[2]) * self.robot_state.time_step
+            new_y = curr_y + self.robot_state.move_dist * math.sin(self.robot_state.state[2]) * self.robot_state.time_step
             next_radius = self.calculate_dist(base_station_loc, (new_x, new_y))
-            is_detecting_obstacle = self.front_ultrasonic.distance() < self.detect_obstacle_range
+            is_detecting_obstacle = self.robot_state.front_ultrasonic.distance() < self.robot_state.detect_obstacle_range
             # if moving will cause the robot to move through the obstacle
-            is_next_timestep_blocked = next_radius < self.detect_obstacle_range
+            is_next_timestep_blocked = next_radius < self.robot_state.detect_obstacle_range
             # sensor should not detect something in the robot
-            if is_detecting_obstacle < self.front_sensor_offset:
+            if is_detecting_obstacle < self.robot_state.front_sensor_offset:
                 self.set_phase(Phase.FAULT)
                 return None
             if (next_radius > roomba_radius) or (is_detecting_obstacle and is_next_timestep_blocked):
-                if self.is_sim:
-                    self.move_forward(-self.move_dist)
-                    self.turn(self.turn_angle)
+                if self.robot_state.is_sim:
+                    self.move_forward(-self.robot_state.move_dist)
+                    self.turn(self.robot_state.turn_angle)
                 else:
-                    self.motor_controller.motors(0, 0)
+                    self.robot_state.motor_controller.motors(0, 0)
                     # TODO: change this to pid or time based. NEED TO MAKE SURE ROBOT DOESN'T BREAK WHEN GOING FROM
                     #  POS VEL TO NEG VEL IN A SHORT PERIOD OF TIME -> ramp down prob
             else:
-                if self.is_sim:
-                    self.move_forward(self.move_dist)
+                if self.robot_state.is_sim:
+                    self.move_forward(self.robot_state.move_dist)
                 else:
-                    self.motor_controller.motors(0, 0)  # TODO: determine what vel to run this at
+                    self.robot_state.motor_controller.motors(0, 0)  # TODO: determine what vel to run this at
             dt += 1
             exit_boolean = (dt > time_limit)
         self.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
         return None
 
     def set_phase(self, new_phase):
-        self.phase = new_phase
-        if self.is_store:
-            write_phase_to_csv(self.phase)
+        self.robot_state.phase = new_phase
+        if self.robot_state.should_store_data:
+            write_phase_to_csv(self.robot_state.phase)
 
     def track_obstacle(self):
         """ Continuously checks if there's an obstacle in the way.
@@ -474,7 +352,7 @@ class Robot:
         # assuming front sensor is mounted in the center x position (width/2)
         counter = 0  # added for testing
         while True:
-            if self.is_sim:
+            if self.robot_state.is_sim:
                 ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
                                              "r")  # added for testing
                 content = ultrasonic_value_file.readlines()
@@ -487,30 +365,30 @@ class Robot:
                     print("no more sensor data")
                     break
             else:
-                curr_ultrasonic_value = self.front_ultrasonic.distance()
-                if curr_ultrasonic_value < self.front_sensor_offset:
+                curr_ultrasonic_value = self.robot_state.front_ultrasonic.distance()
+                if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
                     self.set_phase(Phase.FAULT)
                     return None
-            if (self.phase == Phase.TRAVERSE) or (self.phase == Phase.RETURN) or (self.phase == Phase.DOCKING) or (
-                    self.phase == Phase.AVOID_OBSTACLE):
-                if curr_ultrasonic_value < self.detect_obstacle_range:
+            if (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
+                    self.robot_state.phase == Phase.AVOID_OBSTACLE):
+                if curr_ultrasonic_value < self.robot_state.detect_obstacle_range:
                     # Note: didn't check whether we can reach goal before contacting obstacle because obstacle
                     # detection does not detect angle, so obstacle could be calculated to be falsely farther away than
                     # the goal. Not optimal because in cases, robot will execute boundary following when it can reach
                     # goal
-                    self.dist_to_goal = self.calculate_dist(self.goal_location, self.state)
-                    self.avoid_obstacle = True
-                    if self.is_sim:
+                    self.robot_state.dist_to_goal = self.calculate_dist(self.robot_state.goal_location, self.robot_state.state)
+                    self.robot_state.avoid_obstacle = True
+                    if self.robot_state.is_sim:
                         with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                             fd.write("Avoid" + '\n')
                 else:
-                    self.avoid_obstacle = False
-                    if self.is_sim:
+                    self.robot_state.avoid_obstacle = False
+                    if self.robot_state.is_sim:
                         with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                             fd.write("Not Avoid" + '\n')
             if curr_ultrasonic_value < 0:
                 self.set_phase(Phase.FAULT)  # value should not go below 0; sensor is broken
-                if self.is_sim:
+                if self.robot_state.is_sim:
                     with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                         fd.write("Fault" + '\n')
 
@@ -526,24 +404,24 @@ class Robot:
         # TODO: ADD NOISE MARGIN: let t0 be the time when the robot first left the init threshold.
         #  At t0+1, noise can make it such that the robot re-entered the threshold.
         #  Add margin to threshold initially and disable margin once the robot first left threshold.
-        init_x = self.x_pos
-        init_y = self.y_pos
+        init_x = self.robot_state.x_pos
+        init_y = self.robot_state.y_pos
         # Note: init_threshold is arbitrary, set later. sometimes location reading will be inaccurate or not frequent
         #  enough to read that we've arrived back to the init x y pos. make it small enough that robot actually leaves
         #  init_threshold at some time during boundary following or add timeout to branch making gate = True
         has_left_init_thresh = False
         did_dist_to_goal_decreased = False
         has_traversed_boundary = False
-        curr_dist_to_goal = self.calculate_dist(self.goal_location, (self.x_pos, self.y_pos))
+        curr_dist_to_goal = self.calculate_dist(self.robot_state.goal_location, (self.robot_state.x_pos, self.robot_state.y_pos))
         while True:
-            if self.phase == Phase.fault:  # fault has priority over obstacle avoidance
+            if self.robot_state.phase == Phase.fault:  # fault has priority over obstacle avoidance
                 return None
             else:
-                dist_from_init = self.calculate_dist((self.x_pos, self.y_pos), (init_x, init_y))
-                if dist_from_init > (self.init_threshold + self.noise_margin):
+                dist_from_init = self.calculate_dist((self.robot_state.x_pos, self.robot_state.y_pos), (init_x, init_y))
+                if dist_from_init > (self.robot_state.init_threshold + self.robot_state.noise_margin):
                     has_left_init_thresh = True
-                if curr_dist_to_goal < self.goal_threshold:  # exits obstacle avoidance if robot close to goal
-                    self.set_phase(self.prev_phase)
+                if curr_dist_to_goal < self.robot_state.goal_threshold:  # exits obstacle avoidance if robot close to goal
+                    self.set_phase(self.robot_state.prev_phase)
                     return None
                 elif has_traversed_boundary and has_left_init_thresh:
                     self.set_phase(Phase.FAULT)  # cannot reach goal
@@ -553,13 +431,13 @@ class Robot:
                     #  current algorithm will continue traversing current boundary (instead of traversing new obstacle)
                     #  not optimal because frequently will have to go back to obstacle avoidance
                     heading_threshold = 1
-                    target_heading = math.atan2(self.goal_location[1] - self.y_pos, self.goal_location[0] - self.x_pos)
+                    target_heading = math.atan2(self.robot_state.goal_location[1] - self.robot_state.y_pos, self.robot_state.goal_location[0] - self.robot_state.x_pos)
                     self.turn_to_target_heading(target_heading, heading_threshold, database)
-                    curr_ultrasonic_value = self.front_ultrasonic.distance()
-                    if curr_ultrasonic_value < self.detect_obstacle_range:
+                    curr_ultrasonic_value = self.robot_state.front_ultrasonic.distance()
+                    if curr_ultrasonic_value < self.robot_state.detect_obstacle_range:
                         return self.execute_avoid_obstacle(curr_dist_to_goal, database)
                     else:
-                        self.set_phase(self.prev_phase)
+                        self.set_phase(self.robot_state.prev_phase)
                     return None
                     # TODO: check position of goal and if obstacle in way of goal (using side sensors) then keep doing
                     #  boundary following except with new init_x, init_y, gate,
@@ -567,9 +445,9 @@ class Robot:
                 else:
                     self.execute_boundary_following(0)  # add code directly here
                     # update conditions
-                    curr_dist_to_goal = self.calculate_dist(self.goal_location, (self.x_pos, self.y_pos))
+                    curr_dist_to_goal = self.calculate_dist(self.robot_state.goal_location, (self.robot_state.x_pos, self.robot_state.y_pos))
                     did_dist_to_goal_decreased = (curr_dist_to_goal < dist_to_goal)
-                    has_traversed_boundary = dist_from_init < self.init_threshold
+                    has_traversed_boundary = dist_from_init < self.robot_state.init_threshold
             time.sleep(10)  # don't hog the cpu
 
 
@@ -591,8 +469,8 @@ class Robot:
         2. Once both sensors are displaying the same values, move forward (boundary following)
         3. Exits boundary following when conditions met in execute_avoid_obstacle() method
         '''
-        front_dist = self.rf_ultrasonic.distance()
-        back_dist = self.rb_ultrasonic.distance()
+        front_dist = self.robot_state.rf_ultrasonic.distance()
+        back_dist = self.robot_state.rb_ultrasonic.distance()
         margin = 1 
         # Plus or minus distance value used to calculate if robot is parallel to an non-uniform object 
         # (i.e. not a flat surface). forwardRightSensorReading - backRightSensorReading < margin means
