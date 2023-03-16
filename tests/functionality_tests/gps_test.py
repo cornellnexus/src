@@ -3,6 +3,7 @@ from engine.node import *
 from engine.robot import Robot
 from engine.user_utils import get_coord_inputs
 from electrical.motor_controller import BasicMotorController, MotorController
+from engine.robot_state import Robot_State
 from electrical.gps import GPS
 from collections import deque
 import csv
@@ -24,9 +25,10 @@ def engine():
 
     node1 = Node(-76.483682, 42.444250)
     node2 = Node(-76.483682, 42.444416)
-    gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5))
-    robot = Robot(x_pos = 0, y_pos = 0, heading = 0, epsilon = 0, max_v = 0, radius = 1)
-    motor_controller = BasicMotorController(robot)
+    robot_state = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0, radius=1)
+    robot = Robot(robot_state)
+    gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), robot.robot_state.is_sim)
+    motor_controller = BasicMotorController(robot.robot_state.is_sim)
     queue = [node1, node2]
 
     target_node = queue.pop()  # Next node to visit

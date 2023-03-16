@@ -4,6 +4,7 @@ from electrical.motor_controller import MotorController
 from engine.grid import Grid
 from engine.database import DataBase
 from engine.robot import Robot, Phase
+from engine.robot_state import Robot_State
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -23,10 +24,9 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
     grid = Grid(lat_min, lat_max, long_min, long_max)
     # Default parameters for the robot initialized at position (0,0)
     # max_v, heading, epsilon will likely be changed as we physically test
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5,
-                 radius=0.2, init_phase=Phase.TRAVERSE)
-    motor_controller = MotorController(r2d2, 10 .016275, .016275, 5, 5)
-    motor_controller.setup()
+    r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi / 4, epsilon=0.2, max_velocity=0.5, radius=0.2,phase = Phase.TRAVERSE, motor_controller = MotorController(10, .016275, .016275, 5, 5, True)) # By pass execute_setup
+    r2d2 = Robot(r2d2_state)
+    r2d2.robot_state.motor_controller.setup() 
     database = DataBase(r2d2)
     waypoints = grid.get_straight_line_waypoints(y_start_pct=0.5)
 
@@ -62,7 +62,7 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
     while len(waypoints) > 0:
         curr_waypoint = waypoints[0].get_m_coords()
         r2d2.move_to_target_node(
-            curr_waypoint, allowed_dist_error, database, motor_controller)
+            curr_waypoint, allowed_dist_error, database)
 
         with open('csv/velocities.csv', 'a') as f:
             writer = csv.writer(f)
@@ -80,13 +80,12 @@ def one_node_straight_line(long, lat, err):
     Requires: desired longitude (long) to be target longitude.
     TODO: initialize GPS and IMU for PID to work
     """
-    mc = MotorController()
-    gps = None
-    init_gps = None
-    imu = None
-    r2d2 = Robot(0, 0, math.pi / 2, epsilon=.2, max_v=.2, radius=5, init_phase=Phase.TRAVERSE)
+    r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi / 2, epsilon=0.2, max_velocity=0.2, radius=5)
+    r2d2_state.phase = Phase.TRAVERSE
+    r2d2_state.motor_controller = MotorController() # By pass execute_setup
+    r2d2 = Robot(r2d2_state)
     database = DataBase(r2d2)
-    r2d2.move_to_target_node([long, lat], err, database, mc, gps, init_gps, imu)
+    r2d2.move_to_target_node([long, lat], err, database)
 
 
 def no_pid_straight():
