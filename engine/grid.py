@@ -626,6 +626,7 @@ class Grid:
         self.curr_pos = self.leftmost_node_pos
         self.waypoints.append(self.curr_pos)
         # TODO: Change to allow choosing down and left directions
+        # TODO: Implement function to traverse vertical triangle/ slanted shapes
         if is_vertical:
             self.direction = self.direction.UP
         while not self.waypoints_is_finished:
