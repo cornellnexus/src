@@ -134,7 +134,7 @@ if __name__ == "__main__":
         # confidence of mu, set it to high initially b/c not confident, algo brings it down
         sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
 
-        ekf = LocalizationEKF(mu, sigma)
+        ekf = LocalizationEKF(mu, sigma, 3)
 
     def init():
         circle_patch.center = (0, 0)
@@ -185,8 +185,9 @@ if __name__ == "__main__":
                 new_location = (measurements[0], measurements[1])
 
             elif not is_live and use_ekf:
-                mu_bar = ekf.mu  # temporary placeholder
-                sigma_bar = ekf.sigma  # temporary placeholder
+                arc_lengths = ekf.get_arc_lengths(1,1) # temporary placeholder
+                mu_bar = ekf.predict_step(arc_lengths)[0]  
+                sigma_bar = ekf.predict_step(arc_lengths)[1] 
 
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
                 x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(
@@ -197,7 +198,6 @@ if __name__ == "__main__":
                     -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
 
                 measurements = np.array([[x], [y], [heading]])
-
                 # update_step is a procedure, attributes updated in this method.
                 ekf.update_step(mu_bar, sigma_bar, measurements)
                 new_location = (ekf.mu[0][0], ekf.mu[1][0])

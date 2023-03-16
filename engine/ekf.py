@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 
-ROBOT_WIDTH = 3
-
 class LocalizationEKF:
     """
     An implementation of the EKF localization for the robot.
 
     INSTANCE ATTRIBUTES:
+        # robot_width: the width of the robot (meters)
+
         # mu: the mean of the robot state distribution, in the form [[x],[y],[z]]. [3x1 np array]
 
         # sigma: the standard deviation of the robot state distribution. [3x3 np array]
@@ -24,7 +24,8 @@ class LocalizationEKF:
             Note: The dimensions of R are k-by-k, where k is the degrees of freedom of the measurement. (k=3)
     """
 
-    def __init__(self, init_mu, init_sigma):
+    def __init__(self, init_mu, init_sigma, robot_width):
+        self.robot_width = robot_width
         self.mu = init_mu
         self.sigma = init_sigma
         # process noise matrix
@@ -102,6 +103,24 @@ class LocalizationEKF:
         """
         return np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
+    def get_arc_lengths(self, left_side_w, right_side_w):
+        """
+        Returns the arc_lengths of the left side of the robot and the right side of the robot 
+        given the angular velocity of the left side and angular velocity of the right side. 
+
+        left_side_w: angular velocity of the motors on the left side of the robot
+        right_side_w: angular velocity of the motors on the right side of the robot
+        """
+        # TODO: from electrical: from motors, get angular velocity
+        # TODO: from angular velocity, find arc_lengths 
+        # Note: this was put on hold Spring '23 because Professor advised that getting velocity
+        # in this fashion was not that accurate 
+        left_arc_length = left_side_w # TEMP
+        right_arc_length = right_side_w # TEMP
+
+        return [left_arc_length, right_arc_length]
+
+
     def get_controls(self, arc_lengths): 
         """
         Returns phi, the angle changed in a timestep and d, the displacement traveled in a timestep.
@@ -115,10 +134,13 @@ class LocalizationEKF:
         L_L = arc_lengths[0]
         L_R = arc_lengths[1]
 
-        r = L_L * ROBOT_WIDTH / (L_R - L_L)
+        try:
+            r = L_L * self.robot_width / (L_R - L_L)
+        except:
+            r = 0
         
-        phi = (L_R - L_L) / ROBOT_WIDTH
-        d = 2 * ((r + (ROBOT_WIDTH/2)) * math.sin(phi / 2))
+        phi = (L_R - L_L) / self.robot_width
+        d = 2 * ((r + (self.robot_width/2)) * math.sin(phi / 2))
         return [d, phi]
 
     def predict_step(self, arc_lengths):
@@ -151,6 +173,7 @@ class LocalizationEKF:
         jac_H = self.get_h_jac(mu_bar)
 
         # K = H * sigma_bar * H.T * inv(H * sigma_bar * H.T + R)
+
         kalman_gain = (sigma_bar * np.transpose(jac_H) * inv(jac_H * sigma_bar * np.transpose(jac_H) + self.R))
 
         #JULIE NOTE: I think expected_measurement == mu_bar, since mu_bar represents
