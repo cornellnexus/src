@@ -281,7 +281,7 @@ class Grid:
 
     def activate_triangle(self, p1, p2, p3):
         """
-        Activates all the nodes in a traingle based on three points p1, p2, p3.
+        Activates all the nodes in a triangle based on three vertices p1, p2, p3.
         """
         for x in range(self.num_rows):
             for y in range(self.num_cols):
