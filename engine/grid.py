@@ -582,11 +582,14 @@ class Grid:
             new_pos = self.get_next_traversal_pos()
 
         # Check whether turning to the next row is valid
+        # Next row is out of bounds of the grid OR the node in the row/column above,
+        # where we are trying to turn to, isn't active for traversal
         if (is_vertical and not self.nodes[next_row][turning_column].is_active)\
                 or (not is_vertical and not (next_row < self.num_cols and self.nodes[turning_column][next_row].is_active)):
-            # Next row is out of bounds of the grid OR the node in the row/column above,
-            # where we are trying to turn to, isn't active for traversal
             self.waypoints_is_finished = True
+            # if we are finishing traversal, make sure to add the last node
+            if self.get_next_traversal_pos() is not None:
+                self.waypoints.append(self.get_next_traversal_pos())
 
         else:
             # Turn to next row
