@@ -8,15 +8,8 @@ def main():
 
     grid = Grid(42.444250, 42.444599, -76.483682, -76.483276)
 
-    try:
-        rows = int(input("number of rows:"))
-    except:
-        rows = grid.get_num_rows()
-
-    try:
-        cols = int(input("number of cols:"))
-    except:
-        cols = grid.get_num_cols()
+    rows = grid.get_num_rows()
+    cols = grid.get_num_cols()
 
     if rows <= 2 and cols >= 2:
         h = rows
@@ -68,6 +61,7 @@ def main():
             is_vertical)
 
     # TODO: Vertical traversal in triangle
+    # The triangle test is currently specific for horizontal traversal, and does not work for vertical traversal due to its orientation
     if activation_type == "triangle":
         x1 = rows // 6  # Good value 6
         y1 = cols // 6  # Good value 5
@@ -83,7 +77,7 @@ def main():
     if activation_type == "line":
         row = 0  # rows are y position
         col = cols // 2  # cols are x position
-        grid.activate_line(row, col, n=cols//2, isHorizontal=False)
+        grid.activate_line(row, col, n=cols//2, is_horizontal=False)
         grid.find_border_nodes()
         way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(
             is_vertical)

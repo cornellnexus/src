@@ -135,6 +135,7 @@ class Grid:
 
         # Properties used to determine our adjustable grid traversal pathing
         self.waypoints_is_finished = False
+        # if is_vertical, curr_pos is (row, col). Otherwise curr_pos is (col, row)
         self.curr_pos = None
         self.direction = self.Direction.RIGHT
         self.waypoints = []
@@ -241,9 +242,9 @@ class Grid:
                 if ((x - circle_center_row) ** 2 + (y - circle_center_col) ** 2 - circle_radius ** 2) < 0:
                     self.nodes[x, y].is_active = True
 
-    def isInsideTriangle(self, p1, p2, p3, p4):
-        """ A function to check whether point P(x, y) lies inside the triangle formed by
-        A(x1, y1), B(x2, y2) and C(x3, y3)"""
+    def is_inside_triangle(self, p1, p2, p3, p4):
+        """ A function to check whether point p4 lies inside the triangle formed by
+        A(p1), B(p2) and C(p3)"""
         def area(p1, p2, p3):
             return abs((p1[0] * (p2[1] - p3[1]) + p2[0] * (p3[1] - p1[1])
                         + p3[0] * (p1[1] - p2[1])) / 2.0)
@@ -264,14 +265,14 @@ class Grid:
         # is same as A
         return A == (A1 + A2 + A3)
 
-    def activate_line(self, row, col, n, isHorizontal):
+    def activate_line(self, row, col, n, is_horizontal):
         """
         Activate a single horizontal line of length n starting at row, col.
-        If isHorizontal is True, the line is from (row, col) to (row, col + n).
+        If is_horizontal is True, the line is from (row, col) to (row, col + n).
         Otherwise, the line is from (row, col) to (row + n, col).
         """
         # Note: rows are y-position and columns are x-position
-        if isHorizontal:
+        if is_horizontal:
             for i in range(n):
                 self.nodes[col+i][row].is_active = True
         else:
@@ -284,7 +285,7 @@ class Grid:
         """
         for x in range(self.num_rows):
             for y in range(self.num_cols):
-                if self.isInsideTriangle(p1, p2, p3, (x, y)):
+                if self.is_inside_triangle(p1, p2, p3, (x, y)):
                     self.nodes[x, y].is_active = True
 
     def is_on_border(self, row, col, row_limit, col_limit):
@@ -317,44 +318,27 @@ class Grid:
             end of the function call, fields 'leftmost_node', 'leftmost_node_pos', and
             'border_nodes' will be initialized.
         """
+        is_vertical = True
         if self.direction == self.Direction.LEFT or self.direction == self.Direction.RIGHT:
-            border_list = []
-            leftmost_node = None
-            leftmost_node_pos = None
+            is_vertical = False
+        border_list = []
+        leftmost_node = None
+        leftmost_node_pos = None
 
-            for row in range(self.num_rows):
-                for col in range(self.num_cols):
-                    node = self.nodes[row][col]
-                    if node.is_active and self.is_on_border(row, col, self.num_rows, self.num_cols):
-                        # check if this is an active node and on the border
-                        self.nodes[row][col].is_border = True
-                        border_list.append((node, row, col))
-                        if leftmost_node_pos is None or col < leftmost_node_pos[1]:
-                            leftmost_node = node
-                            leftmost_node_pos = (row, col)
+        for row in range(self.num_rows):
+            for col in range(self.num_cols):
+                node = self.nodes[row][col]
+                if node.is_active and self.is_on_border(row, col, self.num_rows, self.num_cols):
+                    # check if this is an active node and on the border
+                    self.nodes[row][col].is_border = True
+                    border_list.append((node, row, col))
+                    if leftmost_node_pos is None or (not is_vertical and col < leftmost_node_pos[1]) or (is_vertical and row < leftmost_node_pos[0]):
+                        leftmost_node = node
+                        leftmost_node_pos = (row, col)
 
-            self.border_nodes = border_list
-            self.leftmost_node = leftmost_node
-            self.leftmost_node_pos = leftmost_node_pos
-        else:
-            border_list = []
-            leftmost_node = None
-            leftmost_node_pos = None
-
-            for row in range(self.num_rows):
-                for col in range(self.num_cols):
-                    node = self.nodes[row][col]
-                    if node.is_active and self.is_on_border(row, col, self.num_rows, self.num_cols):
-                        # check if this is an active node and on the border
-                        self.nodes[row][col].is_border = True
-                        border_list.append((node, row, col))
-                        if leftmost_node_pos is None or row < leftmost_node_pos[0]:
-                            leftmost_node = node
-                            leftmost_node_pos = (row, col)
-
-            self.border_nodes = border_list
-            self.leftmost_node = leftmost_node
-            self.leftmost_node_pos = leftmost_node_pos
+        self.border_nodes = border_list
+        self.leftmost_node = leftmost_node
+        self.leftmost_node_pos = leftmost_node_pos
 
  # --------------------- HELPER FUNCTIONS FOR TRAVERSAL CREATION -------------- #
     def edge_column_of_next_row(self, pos):
@@ -698,7 +682,8 @@ class Grid:
         node_list = self.nodes
         for i in range(self.num_cols):
             for j in range(self.num_rows):
-                is_border = (j == 0 or j == self.num_rows - 1) # leftmost and rightmost nodes are considered border nodes
+                # leftmost and rightmost nodes are considered border nodes
+                is_border = (j == 0 or j == self.num_rows - 1)
                 if i % 2 == 0:
                     node = node_list[j, i]
                     node.is_border = is_border
