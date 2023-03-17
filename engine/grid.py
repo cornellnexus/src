@@ -3,6 +3,7 @@ import math
 import numpy
 
 from engine.node import Node
+from engine.control_mode import ControlMode
 import numpy as np
 from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get_vincenty_y
 from enum import Enum
@@ -778,7 +779,6 @@ class Grid:
                 - starting node is left most node at selected row
                 - ending node right most node at selected row
         """
-        from engine.mission import ControlMode  # import placed here to avoid circular import
         if mode == ControlMode.LAWNMOWER:
             waypoints = self.get_all_lawnmower_waypoints()
         elif mode == ControlMode.LAWNMOWER_B:
