@@ -1,11 +1,4 @@
-from collections import deque
 from engine.robot import Phase
-from engine.control_mode import ControlMode
-from engine.kinematics import get_vincenty_x, get_vincenty_y
-from enum import Enum
-from engine.grid import Grid
-
-
 
 class Mission:
     def __init__(self, mission_state):
