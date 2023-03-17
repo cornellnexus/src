@@ -5,67 +5,16 @@ from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum
 from engine.grid import Grid
 
-'''
-Electrical library imports
-(need these libraries to run mission out of the loop)
-Commented out for simulation testing purposes
-'''
-# from electrical.gps import GPS
-# from electrical.imu import IMU
-# import serial
-# import board
-# import busio
-# import adafruit_lsm9ds1
 
 
 class Mission:
-    def __init__(self, robot, base_station, init_control_mode, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
-                 allowed_dist_error=0.5, allowed_heading_error=0.1, allowed_docking_pos_error=0.1,
-                 time_limit=50000, roomba_radius=20):
+    def __init__(self, mission_state):
         """
         Arguments:
-            robot: the Robot object linked to this Mission
-            base_station: the BaseStation object linked to this Mission.
-            init_control_mode: the traversal mode linked to this Mission.
-            grid: the Grid which the robot should traverse
-            allowed_dist_error: the maximum distance in meters that the robot can be from a node for the robot to
-                have "visited" that node
-            allowed_heading_error: the maximum error in radians a robot can have to target heading while turning
-                in place.
-            allowed_docking_pos_error: the maximum distance in meters the robot can be from "ready to dock" position
-                before it can start docking.
-            time_limit: the maximum time the robot can execute roomba traversal mode
-            roomba_radius: the maximum radius from the base station that the robot in roomba traversal mode can move
-
-        Important: All the ports of the electrical classes (ie. Serial) need to be updated to the respective 
-                    ports they are connected to on the computer running the code.
+            mission_state: an instance encapsulating conditions, measurements, etc. (i.e. all data) about this mission  
         """
-        self.robot = robot
-        self.grid = grid
-        self.control_mode = ControlMode(init_control_mode)
-        self.all_waypoints = self.grid.get_waypoints(self.control_mode)
-        self.active_waypoints = self.grid.get_active_waypoints_list()
-        self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
-        self.waypoints_to_visit = deque(self.all_waypoints)
-        self.allowed_dist_error = allowed_dist_error
-        if not robot.robot_state.is_sim:
-            self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
-            self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio 
-            self.imu_i2c = busio.I2C(board.SCL, board.SDA)
-            self.motor_controller = MotorController(wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = robot.robot_state.is_sim)
-            self.robot_radio_session = RadioSession(self.robot_radio_serial, is_sim = robot.robot_state.is_sim) 
-            self.gps = GPS(self.gps_serial, is_sim = robot.robot_state.is_sim) 
-            self.imu = IMU(self.imu_i2c, is_sim = robot.robot_state.is_sim) 
-        self.allowed_heading_error = allowed_heading_error
-        self.base_station_angle = base_station.heading
-        self.allowed_docking_pos_error = allowed_docking_pos_error
-        x = get_vincenty_x((grid.lat_min, grid.long_min),
-                           base_station.position)
-        y = get_vincenty_y((grid.lat_min, grid.long_min),
-                           base_station.position)
-        self.base_station_loc = (x, y)
-        self.time_limit = time_limit
-        self.roomba_radius = roomba_radius
+        self.mission_state = mission_state
+
 
     def execute_mission(self, database):
         """
@@ -74,20 +23,21 @@ class Mission:
         """
         while self.robot.robot_state.phase != Phase.COMPLETE:
             if self.robot.robot_state.phase == Phase.SETUP:
-                self.robot.execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
+                # TODO: Determine if sensors are part of mission vs robot
+                self.robot.execute_setup(self.mission_state.robot_radio_session, self.mission_state.gps, self.mission_state.imu, self.mission_state.motor_controller)
 
             elif self.robot.robot_state.phase == Phase.TRAVERSE:
-                self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
-                                                                       self.allowed_dist_error, self.base_station_loc,
-                                                                       self.control_mode, self.time_limit,
-                                                                       self.roomba_radius, database)
+                self.waypoints_to_visit = self.robot.execute_traversal(self.mission_state.waypoints_to_visit,
+                                                                       self.mission_state.allowed_dist_error, self.mission_state.base_station.position,
+                                                                       self.mission_state.control_mode, self.mission_state.time_limit,
+                                                                       self.mission_state.roomba_radius, database)
 
             elif self.robot.robot_state.phase == Phase.AVOID_OBSTACLE:
                 self.robot.execute_avoid_obstacle(self.robot.robot_state.dist_to_goal, database)
                 # add goal_loc param if goal_loc becomes dynamic
 
             elif self.robot.robot_state.phase == Phase.RETURN:
-                self.robot.execute_return(self.base_station_loc, self.base_station_angle,
+                self.robot.execute_return(self.mission_state.base_station.position, self.mission_state.base_station.heading,
                                           self.allowed_docking_pos_error, self.allowed_heading_error, database)
 
             elif self.robot.robot_state.phase == Phase.DOCKING:
