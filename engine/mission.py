@@ -21,30 +21,30 @@ class Mission:
         Activates the main control loop. Depending on the robot's phase, different motion control algorithms are
         activated.
         """
-        while self.robot.robot_state.phase != Phase.COMPLETE:
-            if self.robot.robot_state.phase == Phase.SETUP:
+        while self.mission_state.robot.robot_state.phase != Phase.COMPLETE:
+            if self.mission_state.robot.robot_state.phase == Phase.SETUP:
                 # TODO: Determine if sensors are part of mission vs robot
-                self.robot.execute_setup(self.mission_state.robot_radio_session, self.mission_state.gps, self.mission_state.imu, self.mission_state.motor_controller)
+                self.mission_state.robot.execute_setup(self.mission_state.robot_radio_session, self.mission_state.gps, self.mission_state.imu, self.mission_state.motor_controller)
 
-            elif self.robot.robot_state.phase == Phase.TRAVERSE:
-                self.waypoints_to_visit = self.robot.execute_traversal(self.mission_state.waypoints_to_visit,
+            elif self.mission_state.robot.robot_state.phase == Phase.TRAVERSE:
+                self.mission_state.waypoints_to_visit = self.mission_state.robot.execute_traversal(self.mission_state.waypoints_to_visit,
                                                                        self.mission_state.allowed_dist_error, self.mission_state.base_station.position,
                                                                        self.mission_state.control_mode, self.mission_state.time_limit,
                                                                        self.mission_state.roomba_radius, database)
 
-            elif self.robot.robot_state.phase == Phase.AVOID_OBSTACLE:
-                self.robot.execute_avoid_obstacle(self.robot.robot_state.dist_to_goal, database)
+            elif self.mission_state.robot.robot_state.phase == Phase.AVOID_OBSTACLE:
+                self.mission_state.robot.execute_avoid_obstacle(self.mission_state.robot.robot_state.dist_to_goal, database)
                 # add goal_loc param if goal_loc becomes dynamic
 
-            elif self.robot.robot_state.phase == Phase.RETURN:
-                self.robot.execute_return(self.mission_state.base_station.position, self.mission_state.base_station.heading,
-                                          self.allowed_docking_pos_error, self.allowed_heading_error, database)
+            elif self.mission_state.robot.robot_state.phase == Phase.RETURN:
+                self.mission_state.robot.execute_return(self.mission_state.base_station.position, self.mission_state.base_station.heading,
+                                          self.mission_state.allowed_docking_pos_error, self.mission_state.allowed_heading_error, database)
 
-            elif self.robot.robot_state.phase == Phase.DOCKING:
-                self.robot.execute_docking()
+            elif self.mission_state.robot.robot_state.phase == Phase.DOCKING:
+                self.mission_state.robot.execute_docking()
             
             #update the database with the most recent state
-            database.update_data("phase", self.robot.robot_state.phase)
+            database.update_data("phase", self.mission_state.robot.robot_state.phase)
             
 
 
