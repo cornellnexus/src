@@ -3,7 +3,6 @@ import math
 from engine.robot import Robot
 from engine.robot_state import Robot_State
 from engine.mission import Mission
-from engine.base_station import BaseStation
 from engine.control_mode import ControlMode
 from constants.definitions import ROOT_DIR
 import random
