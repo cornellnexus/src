@@ -53,3 +53,9 @@ class PID:
         value = self.proportional + self.integral + self.derivative
         self.prev_error = error
         return value
+
+    def reset_integral(self):
+        """
+        Resets the integral attribute. This is done because integral isn't reset when recalling PID on a separate occasion.
+        """
+        self.integral = 0

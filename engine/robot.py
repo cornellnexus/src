@@ -54,9 +54,16 @@ class Robot:
         if self.robot_state.should_store_data:
             write_phase_to_csv(self.robot_state.phase)
 
-    def update_ekf_step(self, velocity, omega):
+    def update_state(self, velocity, omega):
+        """
+        Updates the state of the robot given the linear velocity (velocity) and angular velocity (omega) of the robot
+        Args:
+            velocity (Float): linear velocity of robot
+            omega (Float): angular velocity of robot
+        Returns:
+            new_state/measurement (Tuple): new x, y, and heading of robot
+        """
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
-        # self.robot_state.ekf.update_step(self.robot_state.ekf.mu, self.robot_state.ekf.sigma, sensor_module.get_measurement(self.robot_state.init_gps))
         self.robot_state.gps_data = (self.robot_state.gps.get_gps()[
                                      "long"], self.robot_state.gps.get_gps()["lat"])
         self.robot_state.imu_data = self.robot_state.imu.get_gps()
@@ -85,7 +92,7 @@ class Robot:
             self.robot_state.truthpose = np.append(
                 self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
         else:
-            self.update_ekf_step(
+            self.update_state(
                 delta_d/self.robot_state.time_step, delta_phi/self.robot_state.time_step)
 
     def move_to_target_node(self, target, allowed_dist_error, database):
@@ -101,7 +108,8 @@ class Robot:
 
         # location error (in meters)
         distance_away = self.calculate_dist(target, predicted_state)
-
+        self.loc_pid_x.reset_integral()
+        self.loc_pid_y.reset_integral()
         while distance_away > allowed_dist_error:
             if self.robot_state.is_sim:
                 # Adding simulated noise to the robot's state based on gaussian distribution
@@ -171,7 +179,7 @@ class Robot:
         predicted_state = self.robot_state.state  # this will come from Kalman Filter
 
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
-
+        self.head_pid.reset_integral()
         while abs_heading_error > allowed_heading_error:
             theta_error = target_heading - self.robot_state.state[2]
             w = self.head_pid.update(theta_error)  # angular velocity

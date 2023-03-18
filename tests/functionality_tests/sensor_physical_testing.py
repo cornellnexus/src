@@ -1,3 +1,5 @@
+# THIS IS A TESTING SCRIPT. USE THIS SCRIPT WHEN PHYSICALLY TESTING THE ROBOT AND CHANGE THE test_state TO THE STATE YOU NEED
+
 from engine.robot_state import Robot_State
 from engine.robot import Robot
 from electrical.gps import GPS
@@ -7,7 +9,8 @@ import math
 
 if __name__ == "__main__":
     # make sure to go to imu and gps and set import to true
-    test_state = 0  # 0 is no node straight, 1 is node straight, 2 is turn, -1 is sensor
+    # 0 is no node straight, 1 is node straight (generating node with grid), 2 is turn, -1 is sensor
+    test_state = 0
     rb_state = Robot_State(0, 0, 0, .2, .5, .2)
     rb = Robot(rb_state)
     database = DataBase(rb)
@@ -15,12 +18,10 @@ if __name__ == "__main__":
     rb_state.track_obstacle_thread.stop()
 
     if test_state == -1:
-        print("gps")
-        print(rb_state.gps.get_gps())
+        print("gps", rb_state.gps.get_gps())
         magnetometer = rb_state.imu.get_imu().get("mag")
         heading = math.atan2(magnetometer[1], magnetometer[0]) * 180 / math.pi
-        print("heading")
-        print(heading)
+        print("heading", heading)
         print()
 
     elif test_state == 0:

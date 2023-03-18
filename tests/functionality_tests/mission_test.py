@@ -1,3 +1,5 @@
+# THIS IS A TESTING SCRIPT. USE THIS SCRIPT WHEN PHYSICALLY TESTING THE ROBOT AND CHANGE THE run() FUNCTION BY ADDING THE MISSION STATE YOU WANT TO TEST
+
 from engine.robot import Robot
 from engine.base_station import BaseStation
 from engine.mission import Mission
