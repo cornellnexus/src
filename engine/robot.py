@@ -268,6 +268,7 @@ class Robot:
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius, database):
+        self.robot_state.control_mode = control_mode
         if control_mode == 4:  # Roomba mode
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
         else:
@@ -326,15 +327,10 @@ class Robot:
                 math.sin(self.robot_state.state[2]
                          ) * self.robot_state.time_step
             next_radius = self.calculate_dist(base_station_loc, (new_x, new_y))
-            is_detecting_obstacle = self.robot_state.front_ultrasonic.distance(
-            ) < self.robot_state.detect_obstacle_range
             # if moving will cause the robot to move through the obstacle
             is_next_timestep_blocked = next_radius < self.robot_state.detect_obstacle_range
             # sensor should not detect something in the robot
-            if is_detecting_obstacle < self.robot_state.front_sensor_offset:
-                self.set_phase(Phase.FAULT)
-                return None
-            if (next_radius > roomba_radius) or (is_detecting_obstacle and is_next_timestep_blocked):
+            if (next_radius > roomba_radius) or (self.robot_state.is_roomba_obstacle and is_next_timestep_blocked):
                 if self.robot_state.is_sim:
                     self.move_forward(-self.robot_state.move_dist)
                     self.turn(self.robot_state.turn_angle)
@@ -365,6 +361,8 @@ class Robot:
                 Front ultrasonic sensor is mounted in the center front/x position of the robot (width/2)
         """
         # assuming front sensor is mounted in the center x position (width/2)
+        # initialize ultrasonics
+        front_ultrasonic = None
         counter = 0  # added for testing
         while True:
             if self.robot_state.is_sim:
@@ -381,25 +379,26 @@ class Robot:
                     print("no more sensor data")
                     break
             else:
-                curr_ultrasonic_value = self.robot_state.front_ultrasonic.distance()
+                from electrical.ultrasonic_sensor import Ultrasonic
+                front_ultrasonic = Ultrasonic(0)
+                curr_ultrasonic_value = front_ultrasonic.distance()
                 if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
                     self.set_phase(Phase.FAULT)
                     return None
-            if (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
+            if self.robot_state.control_mode == 4:  # roomba mode
+                self.robot_state.is_roomba_obstacle = True
+            elif (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
                     self.robot_state.phase == Phase.AVOID_OBSTACLE):
                 if curr_ultrasonic_value < self.robot_state.detect_obstacle_range:
                     # Note: didn't check whether we can reach goal before contacting obstacle because obstacle
                     # detection does not detect angle, so obstacle could be calculated to be falsely farther away than
                     # the goal. Not optimal because in cases, robot will execute boundary following when it can reach
                     # goal
-                    self.robot_state.dist_to_goal = self.calculate_dist(
-                        self.robot_state.goal_location, self.robot_state.state)
-                    self.robot_state.avoid_obstacle = True
+                    self.set_phase(Phase.AVOID_OBSTACLE)
                     if self.robot_state.is_sim:
                         with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                             fd.write("Avoid" + '\n')
                 else:
-                    self.robot_state.avoid_obstacle = False
                     if self.robot_state.is_sim:
                         with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                             fd.write("Not Avoid" + '\n')
@@ -415,9 +414,9 @@ class Robot:
     def is_on_line(self, p1, p2, tolerance):
         """ Checks if the robot is on the line defined by the two points p1 and p2
             Args:
-                dist_to_goal (Double): The distance from the robot to the goal at the start of the phase
                 p1 (Tuple): An (x, y) point on the line
                 p2 (Tuple): Another (x, y) point on the line
+                tolerance (Float): How far two thetas can be (from the x-axis) to be considered on the same line
         """
         # convert to polar coord bc euclidean coord has potentional divide by 0 err when calculating slope of vertical line
         line_theta = math.atan2((p2[1] - p1[1]), (p2[0] - p1[0]))
@@ -487,7 +486,7 @@ class Robot:
                 # without this condition, the robot could move closer to the goal (on a slant, not directly towards the goal)
                 #   but still be on the line, making the robot keep exiting obstacle avoidance when its effectively in the same position as before
                 if self.calculate_dist(curr_pos, last_pos_on_line) > threshold_to_recalculate_on_line:
-                    self.set_phase(self.robot_stateprev_phase)
+                    self.set_phase(self.robot_state.prev_phase)
                     return None
             else:
                 self.execute_boundary_following(0)  # boundary following here
@@ -514,9 +513,14 @@ class Robot:
                     * With a margin of error accounting for not uniform obstacles
         2. Once both sensors are displaying the same values, move forward (boundary following)
         3. Exits boundary following when conditions met in execute_avoid_obstacle() method
+
+        For now, we assume the side ultrasonic sensor values are from the actual sensors, so changes needed for is_sim
         '''
-        front_dist = self.robot_state.rf_ultrasonic.distance()
-        back_dist = self.robot_state.rb_ultrasonic.distance()
+        from electrical.ultrasonic_sensor import Ultrasonic
+        rf_ultrasonic = Ultrasonic(1)
+        rb_ultrasonic = Ultrasonic(2)
+        front_dist = rf_ultrasonic.distance()
+        back_dist = rb_ultrasonic.distance()
         margin = 1
         # Plus or minus distance value used to calculate if robot is parallel to an non-uniform object
         # (i.e. not a flat surface). forwardRightSensorReading - backRightSensorReading < margin means

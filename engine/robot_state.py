@@ -104,6 +104,8 @@ class Robot_State:
         self.should_store_data = kwargs.get("should_store_data", False)
         self.phase = Phase(kwargs.get("phase", Phase.SETUP))
         self.avoid_obstacle = kwargs.get("avoid_obstacle", False)
+        self.is_roomba_obstacle = kwargs.get("roomba_obstacle", False)
+        self.control_mode = kwargs.get("control_mode", None)
 
         # CONSTANTS
         self.width = kwargs.get("width", 700)
@@ -153,7 +155,6 @@ class Robot_State:
         self.imu_data = kwargs.get("imu_data", None)
         self.linear_v = kwargs.get("linear_v", 0)
         self.angular_v = kwargs.get("angular_v", 0)
-        self.dist_to_goal = kwargs.get("dist_to_goal", 0)
         self.prev_phase = kwargs.get("prev_phase", self.phase)
         self.goal_location = kwargs.get("goal_location", (0, 0))
 
@@ -163,11 +164,6 @@ class Robot_State:
         self.gps = kwargs.get("gps", None)
         self.imu = kwargs.get("imu", None)
         self.ekf = kwargs.get("ekf", None)
-        self.front_ultrasonic = kwargs.get("front_ultrasonic", None)
-        self.lf_ultrasonic = kwargs.get("lf_ultrasonic", None)
-        self.lb_ultrasonic = kwargs.get("lb_ultrasonic", None)
-        self.rf_ultrasonic = kwargs.get("rf_ultrasonic", None)
-        self.rb_ultrasonic = kwargs.get("rb_ultrasonic", None)
 
         # TODO: GPS, IMU, RF module and Motor Controller are also re-initialized in robot.execute_setup
         # We should pick whether we want to initialize the attributes here or in robot.execute_setup
