@@ -297,6 +297,7 @@ class Robot:
                 self.robot_state.goal_location = curr_waypoint
                 self.robot_state.prev_phase = Phase.TRAVERSE
                 return unvisited_waypoints
+            # TODO: THIS ISNT CORRECT: NEED TO CHECK IF AVOID_OBSTACLE IN move_to_target_node or can also make PID traversal a separate thread and stop the thread when obstacle detected
 
         self.set_phase(Phase.RETURN)
         return unvisited_waypoints
