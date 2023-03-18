@@ -332,6 +332,7 @@ class Robot:
             is_next_timestep_blocked = next_radius < self.robot_state.detect_obstacle_range
             # sensor should not detect something in the robot
             if (next_radius > roomba_radius) or (self.robot_state.is_roomba_obstacle and is_next_timestep_blocked):
+                # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
                 if self.robot_state.is_sim:
                     self.move_forward(-self.robot_state.move_dist)
                     self.turn(self.robot_state.turn_angle)
