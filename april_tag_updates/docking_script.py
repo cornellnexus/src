@@ -47,11 +47,6 @@ def direction_of_tag(corner,image):
   else:
     return "left"
 
-
-CACHED_PTS = None
-CACHED_IDS = None
-Line_Pts = None
-measure = None
 idDict = {1: "R1", 2: "R2", 3: "R3"}#TODO add all the other tags
 visited = []
 timeout =  10
