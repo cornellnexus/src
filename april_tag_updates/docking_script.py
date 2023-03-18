@@ -28,7 +28,8 @@ def direction_of_tag(corner,image):
 idDict = {1: "R1", 2: "R2", 3: "R3"}#TODO add all the other tags
 visited = []
 timeout =  10
-angle_zero = 10
+angle_min = 10
+depth_min = 8
 step1_done = False
 step2_done = False
 step3_done = False 
@@ -43,16 +44,14 @@ while True:
     ret, image = cap.read()
     (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
     if len(corners) == 0:
-      if angle < angle_zero and depth < 8:
+      if angle < angle_min and depth < depth_min:
         step1_done  = True
       if time.time() - start_time > timeout and step1_done is False:
         #Step 1 - Check for april tags rn by rotating in circle for 15 seconds.
-          # motor.turn_right()
-          print("Step 1 - circle")
+          motor.turn_right()
       if step1_done and not step2_done:
         #Step 2 - go back until len(corners) = 1 or when we see at least 1 april tag
-        # motor.reverse()
-        print("step 2 - reverse")
+        motor.reverse()
     if len(corners) > 0:
       if step1_done:
         step2_done = True
@@ -81,52 +80,43 @@ while True:
           if step1_done is False: 
             if idDict.get(markerId) == "R2": ##TODO: Add B2, L2, F2 in the future
               #Step 1 is over once we aligned with center tag and we go forward.
-              if angle <= angle_zero:
-                # motor.go_forward()
-                print("Step 1 - aligned with the center tag go forward")
+              if angle <= angle_min:
+                motor.go_forward()
               else:
                 # Still in Step 1 - "Keep rotating till we reach center of middle tag"
                 if direction_of_tag(corner[0],image) == "right":
-                  # motor.turn_left()
-                  print("Step 1 - turn left")
+                  motor.turn_left()
                 else: 
-                  # motor.turn_right()
-                  print("Step 1 - turn right")
+                  motor.turn_right()
             else:
               #All of this is Step 1 
               if idDict.get(markerId) not in visited: 
-                if(angle <= angle_zero):
+                if(angle <= angle_min):
                   visited.append(idDict.get(markerId))
                 else:
                   if direction_of_tag(corner[0],image) == "right":
-                    # motor.turn_left()
-                    print("Step 1 - turn left")
+                    motor.turn_left()
                   else:
                     motor.turn_right()
-                    print("Step 1 - turn right")
-          #Step 3 + TODO: test how much turn_right and turn_left turns with our current robot + assume turn_right/left is 10 degrees
+          #Step 3 turns by 'angle' degrees to make a straight line + TODO: test how much turn_right and turn_left turns with our current robot + assume turn_right/left is 3 degrees
           if step2_done and not step3_done: 
             num_calls = max(int(angle//3),1)
             if direction_of_tag(corner[0],image) == "right":
               for i in range(num_calls):
-                # motor.turn_right()
-                print("Step 3 right")
+                motor.turn_right()
             else: 
               for i in range(num_calls):
                 motor.turn_left()
-                print("Step 3 left")
             step3_done = True
           
-          #step 4: reverse by 30 inches 
+          #step 4: reverse by some experimentally determined constant -  15 inches 
           if step3_done and not step4_done: 
             if (depth < 15):
-              # motor.reverse()
-              print("Step 4 - reverse")
+              motor.reverse()
             else:
               step4_done = True
 
     if step4_done == True:
-      print("yolo")
       break
              
     cv2.imshow("Camera", image)
