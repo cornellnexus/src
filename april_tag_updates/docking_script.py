@@ -65,22 +65,20 @@ while True:
     (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
     if len(corners) == 0:
       if time.time() - start_time > timeout and Steps_Done.one is False:
-        #Step 1 - print("Check for april tags rn by rotating in circle for 15 seconds.")
+        #Step 1 - Check for april tags rn by rotating in circle for 15 seconds.
           motor.turn_right()
       if Steps_Done.one and Steps_Done.two is False:
-        #Step 2 - print(go back pls until len(corners) = 1)
+        #Step 2 - go back until len(corners) = 1 or when we see at least 1 april tag
         motor.reverse()
     if len(corners) > 0:
       if Steps_Done.one:
         Steps_Done.two = True
       start_time = time.time()
       for (corner, markerId) in zip(corners, ids):
-          # print(direction_of_tag(corner[0],image))
           markerId = float(markerId)
           (topLeft, topRight, bottomRight, bottomLeft) = corner[0]
           pixel_width = np.sqrt((bottomRight[0] - bottomLeft[0])**2 + (bottomRight[1] - bottomLeft[1])**2)
           depth = distance_to_camera(known_width,focal_length,pixel_width)
-          # print(f"{depth_distance} in")
           cxt,cyt = int((topLeft[0] + bottomRight[0])//2),int((topLeft[1] + bottomRight[1])//2)
           cx, cy = int(960),int(540)
           cv2.circle(image, (cxt, cyt), radius = 20, color = (0, 0, 255), thickness = -1)
