@@ -6,30 +6,8 @@ import numpy as np
 import cv2
 import time 
 from enum import Enum
-ARUCO_DICT = {
-	"DICT_4X4_50": cv2.aruco.DICT_4X4_50,
-	"DICT_4X4_100": cv2.aruco.DICT_4X4_100,
-	"DICT_4X4_250": cv2.aruco.DICT_4X4_250,
-	"DICT_4X4_1000": cv2.aruco.DICT_4X4_1000,
-	"DICT_5X5_50": cv2.aruco.DICT_5X5_50,
-	"DICT_5X5_100": cv2.aruco.DICT_5X5_100,
-	"DICT_5X5_250": cv2.aruco.DICT_5X5_250,
-	"DICT_5X5_1000": cv2.aruco.DICT_5X5_1000,
-	"DICT_6X6_50": cv2.aruco.DICT_6X6_50,
-	"DICT_6X6_100": cv2.aruco.DICT_6X6_100,
-	"DICT_6X6_250": cv2.aruco.DICT_6X6_250,
-	"DICT_6X6_1000": cv2.aruco.DICT_6X6_1000,
-	"DICT_7X7_50": cv2.aruco.DICT_7X7_50,
-	"DICT_7X7_100": cv2.aruco.DICT_7X7_100,
-	"DICT_7X7_250": cv2.aruco.DICT_7X7_250,
-	"DICT_7X7_1000": cv2.aruco.DICT_7X7_1000,
-	"DICT_ARUCO_ORIGINAL": cv2.aruco.DICT_ARUCO_ORIGINAL,
-	"DICT_APRILTAG_16h5": cv2.aruco.DICT_APRILTAG_16h5,
-	"DICT_APRILTAG_25h9": cv2.aruco.DICT_APRILTAG_25h9,
-	"DICT_APRILTAG_36h10": cv2.aruco.DICT_APRILTAG_36h10,
-	"DICT_APRILTAG_36h11": cv2.aruco.DICT_APRILTAG_36h11
-}
-arucoDict = cv2.aruco.Dictionary_get(ARUCO_DICT["DICT_APRILTAG_36h11"])
+
+arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_APRILTAG_36h11)
 arucoParams = cv2.aruco.DetectorParameters_create()
 cap = cv2.VideoCapture(0)
 window = 'Camera'
@@ -51,28 +29,28 @@ idDict = {1: "R1", 2: "R2", 3: "R3"}#TODO add all the other tags
 visited = []
 timeout =  10
 angle_zero = 10
-class Steps_Done(Enum):
-    one = False
-    two = False
-    three = False
-    four = False
+step1_done = False
+step2_done = False
+step3_done = False 
+step4_done = False
 motor = BasicMotorController(True)
 start_time = None
+
 while True:
     if start_time is None:
         start_time = time.time()
     ret, image = cap.read()
     (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
     if len(corners) == 0:
-      if time.time() - start_time > timeout and Steps_Done.one is False:
+      if time.time() - start_time > timeout and step1_done is False:
         #Step 1 - Check for april tags rn by rotating in circle for 15 seconds.
           motor.turn_right()
-      if Steps_Done.one and Steps_Done.two is False:
+      if step1_done and step2_done is False:
         #Step 2 - go back until len(corners) = 1 or when we see at least 1 april tag
         motor.reverse()
     if len(corners) > 0:
-      if Steps_Done.one:
-        Steps_Done.two = True
+      if step1_done:
+        step2_done = True
       start_time = time.time()
       for (corner, markerId) in zip(corners, ids):
           markerId = float(markerId)
@@ -99,7 +77,7 @@ while True:
             #Step 1 is over. Start Step 2: move forward until tag out of sight. "
             if angle <= angle_zero:
               motor.go_forward()
-              Steps_Done.one = True
+              step1_done = True
             else:
               # Step 1 - "Keep rotating till we reach center of middle tag"
               if direction_of_tag(corner[0],image) == "right":
@@ -117,23 +95,23 @@ while True:
                 else:
                   motor.turn_right()
           #Step 3 + TODO: test how much turn_right and turn_left turns with our current robot + assume turn_right/left is 10 degrees
-          if Steps_Done.two: 
-            num_calls = angle // 10
+          if step2_done: 
+            num_calls = int(angle / 10)
             if direction_of_tag(corner[0],image) == "right":
               for i in range(num_calls):
                 motor.turn_right()
             else: 
               for i in range(num_calls):
                 motor.turn_left()
-            Steps_Done.three = True
+            step3_done = True
           
           #step 4: reverse by 30 inches 
-          if Steps_Done.three: 
+          if step3_done: 
             if (depth < 30):
               motor.reverse()
-            Steps_Done.four = True
+            step4_done = True
 
-    if Steps_Done.four == True:
+    if step4_done == True:
       break
              
     cv2.imshow("Camera", image)
