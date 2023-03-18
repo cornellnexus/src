@@ -18,7 +18,7 @@ class Node:
 
     """
 
-    def __init__(self, lat, long, x, y, is_border=0, active=False, status=0):
+    def __init__(self, lat, long, x, y, is_border=False, active=False, status=0):
         self.lat = lat
         self.long = long
         self.x = x
@@ -60,5 +60,3 @@ class Node:
     def __repr__(self):
         return "".join("(" + str(self.lat) + "," + str(self.long) + ")")
 
-    # def __str__(self):
-    #     return "[(" + str(self.long) + ", " + str(self.lat) + ") --> " + str(self.neighbors) + "]"

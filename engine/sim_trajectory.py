@@ -4,22 +4,22 @@ import matplotlib.pyplot as plt
 
 from matplotlib import animation as animation
 from matplotlib import patches as patch
+from constants.definitions import CSV_PATH
 
 from engine.robot import Robot
+from engine.robot_state import Robot_State
 from engine.robot import Phase
-from engine.robot import get_path
 from engine.base_station import BaseStation
 from engine.mission import Mission
 from engine.mission import ControlMode
 from engine.database import DataBase
-
+from engine.is_raspberrypi import is_raspberrypi
 import logging
 import threading
 import time
 
-import sys
 import os
-import serial
+
 
 # ser = serial.Serial("/dev/ttyS0", 57600) # Uncomment for RPI to GUI test
 
@@ -59,18 +59,23 @@ def get_plot_boundaries(nodes, delta):
     ylim = [min_coords[1] - delta, max_coords[1] + delta]
     return xlim, ylim
 
-
-def get_path(folder):
-
-    cwd = os.getcwd()
-    sys.path.append(cwd + "/" + folder)
-    return sys.path
-
-
 if __name__ == "__main__":
+    global rpi_comms, is_sim, should_store_data
+    rpi_comms = False # Set to true when the rpi/robot is communicating w/ the GUI
+    is_sim = not is_raspberrypi() # Set to true when simulating the rpi, set to false when running on rpi
+    should_store_data = False # Set to true when we want to track/store csv data
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
+
+    if is_sim and should_store_data:
+        # open csv file of rpi to gui data
+        rpi_to_gui = open(
+            (CSV_PATH + '/rpi_to_gui_simulation.csv'), "a")
+
     # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600) # RPI_GUI_TEST
-    r2d2 = Robot(0, 0, math.pi / 4, epsilon=0.2, max_v=0.5,
-                 radius=0.2, init_phase=Phase.TRAVERSE)
+    r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi / 4, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = Phase.TRAVERSE)
+    r2d2 = Robot(robot_state=r2d2_state)
     base_r2d2 = BaseStation((42.444250, -76.483682))
     database = DataBase(r2d2)
     m = Mission(robot=r2d2, base_station=base_r2d2,
@@ -80,45 +85,34 @@ if __name__ == "__main__":
         logging.info("Thread %s: starting", name)
         while rpi_comms:
             packet = database.make_packet()
-            if is_sim:
+            if is_sim and should_store_data:
                 # Simulate sending data packet to gui from rpi
                 rpi_to_gui.write(str(packet) + '\n')
-            else:
+            elif not is_sim:
                  # Sending data packet to gui from rpi
                 cast_data = bytes(packet, encoding = 'utf-8') 
                 ser.write(cast_data)
             # logging.info("Sent packet: " + packet)
             time.sleep(0.01)
         logging.info("Thread %s: finishing", name)
-        if is_sim:
+        if is_sim and should_store_data:
             rpi_to_gui.close()
 
     '''------------------- MISSION EXECUTION -------------------'''
-    global rpi_comms, is_sim
-    rpi_comms = True # Set to true when the rpi/robot is communicating w/ the GUI
-    is_sim = True # Set to true when simulating the rpi, set to false when running on rpi
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(format=format, level=logging.INFO,
-                        datefmt="%H:%M:%S")
-
-    if is_sim:
-        # open csv file of rpi to gui data
-        rpi_to_gui = open(
-            (get_path('csv')[-1] + '/rpi_to_gui_simulation.csv'), "a")
-
     packet_sender = threading.Thread(target=send_packet_to_gui, args=(
         1,), daemon=True)  # Thread to read and send robot properties
     packet_sender.start()
+
     m.execute_mission(database)  # Run main mission
-    rpi_comms = False
+
     # once gui.gui.py is closed, also close gui.retrieve_inputs.py
     os.system("pkill -f gui.retrieve_inputs")
 
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
 
     plt.style.use('seaborn-whitegrid')
-    x_coords = m.robot.truthpose[:, 0]
-    y_coords = m.robot.truthpose[:, 1]
+    x_coords = m.robot.robot_state.truthpose[:, 0]
+    y_coords = m.robot.robot_state.truthpose[:, 1]
     fig, ax = plt.subplots()
     ax.plot(x_coords, y_coords, '-b')
     ax.plot(x_coords[0], y_coords[0], 'gx')
@@ -164,16 +158,16 @@ if __name__ == "__main__":
         return circle_patch, wedge_patch
 
     def animate(i):
-        x_coord = m.robot.truthpose[i, 0]
-        y_coord = m.robot.truthpose[i, 1]
+        x_coord = m.robot.robot_state.truthpose[i, 0]
+        y_coord = m.robot.robot_state.truthpose[i, 1]
         circle_patch.center = (x_coord, y_coord)
         wedge_patch.update({"center": [x_coord, y_coord]})
-        wedge_patch.theta1 = np.degrees(m.robot.truthpose[i, 2]) - 10
-        wedge_patch.theta2 = np.degrees(m.robot.truthpose[i, 2]) + 10
+        wedge_patch.theta1 = np.degrees(m.robot.robot_state.truthpose[i, 2]) - 10
+        wedge_patch.theta2 = np.degrees(m.robot.robot_state.truthpose[i, 2]) + 10
         return circle_patch, wedge_patch
 
     anim = animation.FuncAnimation(
-        fig, animate, init_func=init, frames=np.shape(m.robot.truthpose)[0], interval=20, blit=True
+        fig, animate, init_func=init, frames=np.shape(m.robot.robot_state.truthpose)[0], interval=20, blit=True
     )
 
     plt.show()

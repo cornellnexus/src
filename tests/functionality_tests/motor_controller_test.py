@@ -11,7 +11,7 @@ class BasicMotorControllerTest:
 	direction for the next three seconds.
 	"""
 	def __init__(self): 
-		self.mc = BasicMotorController()
+		self.mc = BasicMotorController(is_sim=False)
 		
 	def motor_controller_turn_right(self): 
 		stop_time = time.time() + 3
@@ -44,22 +44,22 @@ class MotorControllerTest:
 	to rotate at omega = 20 and velocity = 30. 
 	"""
 	def __init__(self): 
-		self.motor_controller = MotorController(None, 5,15,15,5,5)
+		self.motor_controller = MotorController(None, 5,15,15,5,5, False)
 	
 	def test_straight(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
-			self.motor_controller.motors(0,30)
+			self.motor_controller.spin_motors(0,30)
 	
 	def test_stop(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
-			self.motor_controller.motors(0,0)
+			self.motor_controller.spin_motors(0,0)
 	
 	def test_turning_and_moving(self): 
 		stop_time = time.time() + 5
 		while time.time() <	stop_time:
-			self.motor_controller.motors(20,30)
+			self.motor_controller.spin_motors(20,30)
 
 	def run(self): 
 		self.test_straight()

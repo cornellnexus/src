@@ -9,6 +9,8 @@ import PIL.Image
 import io
 import base64
 
+from constants.definitions import ROOT_DIR
+
 def convert_to_bytes(file_or_bytes, resize=None):
     '''
     Will convert into bytes and optionally resize an image that is a file or a base64 bytes object.
@@ -45,13 +47,11 @@ def get_images():
 
     Stores desired images to display on the main GUI window into [image_data].
     """
-    cwd = os.getcwd()
-    # sys.path.append(cwd[0:cwd.index('gui')-1]+"/images")
-    sys.path.append(cwd + "/gui/gui_images")
+    image_base_path = ROOT_DIR + '/gui/gui_images'
     images = ['/Progress Bar.png', '/zoomview.png', '/Camera.png', '/final_logo 1.png']
     image_data = []
     for image in images:
         # image_path = os.path.join(cwd,image)
-        image_path = sys.path[-1] + image
+        image_path = image_base_path + image
         image_data.append(convert_to_bytes(image_path))
     return image_data
