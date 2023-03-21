@@ -7,8 +7,6 @@ Establishes a handshake by decoding a message sent by the computer and then send
 to make a two way connection.
 '''
 
-
-# TODO: Different port path - get from electrical
 # Initializes port and clears any exisiting messages
 port = serial.Serial(port="/dev/serial0", baudrate=57600, timeout=0)
 port.flush()
