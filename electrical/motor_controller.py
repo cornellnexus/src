@@ -28,7 +28,7 @@ class BasicMotorController:
             # create object digital to analog conversion for PWM on port 25 at 1KHz
             self.e1 = GPIO.PWM(self.enA, 600)
             self.e2 = GPIO.PWM(self.enB, 600)
-            self.e1.start(100) # duty cycle
+            self.e1.start(50) # duty cycle
             self.e2.start(50)      
 
     # stops the robot
@@ -120,7 +120,7 @@ class MotorController:
                     GPIO.OUT, initial=GPIO.LOW)
         GPIO.setup([self.enA, self.enB], GPIO.OUT)  # EnA, EnB
 
-        self.p1 = GPIO.PWM(self.enA, 50)
+        self.p1 = GPIO.PWM(self.enA, 25)
         self.p2 = GPIO.PWM(self.enB, 50)
 
     # converts the robot's overall calculated angular velocity and linear velocity

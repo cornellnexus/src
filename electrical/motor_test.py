@@ -36,15 +36,21 @@ class BasicMotorControllerTest:
 
     # Moves forward for 3 seconds
     def motor_controller_forward(self):
-        GPIO.add_event_detect(pin,GPIO.RISING,callback=count_pulse)  
+        GPIO.add_event_detect(pin,GPIO.RISING)
         stop_time = time.time() + 3
         while time.time() <	stop_time:
             self.mc.go_forward()
-        print("count is "+str(counter_right))
+            if GPIO.event_detected(pin):
+                self.counter_right+=1
+        print("count is "+str(self.counter_right))
         GPIO.cleanup()
 
     def run(self):
         self.motor_controller_forward()
+        
+    def count_pulse(self,pin):
+#     global counter_right
+        self.counter_right+=1
 
 
 # class MotorControllerTest: 
@@ -84,12 +90,8 @@ class BasicMotorControllerTest:
 
  #encoder pi pinout for back right motor
 	#GPIO.setup(9,GPIO.IN) #encoder pi pinout for back left motor
-global counter_right
-counter_right = 0
-
-def count_pulse(pin):
-    global counter_right
-    counter_right+=1
+# global counter_right
+# counter_right = 0
 
 def pulse_handler_right(pin):
     global counter_right
@@ -113,8 +115,10 @@ def pulse_handler_right(pin):
     # print("check5")
     # counter_right=0
     #counter_left=0
-test= BasicMotorControllerTest()
+    
+test= BasicMotorControllerTest()    
 test.run()
+
 
 # if __name__ == "__main__":
 #     GPIO.setmode(GPIO.BCM) 
