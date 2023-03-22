@@ -10,7 +10,8 @@ def break_beam_callback(channel):
 
     else:
         beam_broken = True
-        print(beam_broken)
+        # print(beam_broken)
+
     return beam_broken
 
 def check_break_beam():
