@@ -6,7 +6,8 @@ beam_broken = False
 def break_beam_callback(channel):
     if GPIO.input(BEAM_PIN):
         beam_broken = False
-        print(beam_broken)
+        # print(beam_broken)
+
     else:
         beam_broken = True
         print(beam_broken)
