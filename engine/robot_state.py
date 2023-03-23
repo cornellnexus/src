@@ -104,7 +104,8 @@ class Robot_State:
         # TODO: Fill in missing spec for attributes above
 
         # FLAGS
-        self.using_odom = False  # If false, only uses GPS and IMU; else, uses EKF
+        # If false, only uses GPS and IMU; else, uses EKF
+        self.using_ekf = False
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
         self.should_store_data = kwargs.get("should_store_data", False)
         self.phase = Phase(kwargs.get("phase", Phase.SETUP))

@@ -73,7 +73,7 @@ class Robot:
             self.robot_state.imu_data["mag"]["y"], self.robot_state.imu_data["mag"]["x"]))
 
         measurements = np.array([[x], [y], [heading]])
-        if self.robot_state.using_odom:
+        if self.robot_state.using_ekf:
             mu, sigma = self.robot_state.ekf.predict_step(velocity, omega)
             self.robot_state.ekf.update_step(mu, sigma, measurements)
             new_x = self.robot_state.ekf.mu[0][0]
@@ -84,13 +84,19 @@ class Robot:
         return measurements
 
     def travel(self, delta_d, delta_phi):
-        # Moves the robot delta_d dist and delta_phi angle
-        # if it is a simulation,
+        """
+        Moves the robot delta_d dist and delta_phi angle
+        Arguments:
+            delta_d (float): target meters to travel 
+            delta_phi (float): target radians to turn
+        """
+        # if it is a simulation, we update the robot state directly
         if self.robot_state.is_sim:
             self.robot_state.state = np.round(integrate_odom(
                 self.robot_state.state, delta_d, delta_phi), 3)
             self.robot_state.truthpose = np.append(
                 self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
+        # otherwise, we update the robot state using EKF
         else:
             self.update_state(
                 delta_d/self.robot_state.time_step, delta_phi/self.robot_state.time_step)
@@ -290,12 +296,9 @@ class Robot:
 
             curr_x = self.robot_state.state[0]
             curr_y = self.robot_state.state[1]
-            new_x = curr_x + self.robot_state.move_dist * \
-                math.cos(self.robot_state.state[2]
-                         ) * self.robot_state.time_step
-            new_y = curr_y + self.robot_state.move_dist * \
-                math.sin(self.robot_state.state[2]
-                         ) * self.robot_state.time_step
+            curr_head = self.robot_state.state[2]
+            [new_x, new_y, new_theta] = self.robot_state.ekf.get_predicted_state(
+                [curr_x, curr_y, curr_head], [self.robot_state.move_dist * self.robot_state.time_step, 0])
             next_radius = self.calculate_dist(base_station_loc, (new_x, new_y))
             is_detecting_obstacle = self.robot_state.front_ultrasonic.distance(
             ) < self.robot_state.detect_obstacle_range
@@ -483,7 +486,7 @@ class Robot:
         elif front_dist > back_dist:
             self.travel(0, turn_angle)
         else:
-            self.travel(0, turn_angle)
+            self.travel(0, -turn_angle)
 
     # to do:
         # determine ccw or cw
