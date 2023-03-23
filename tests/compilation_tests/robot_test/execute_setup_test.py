@@ -1,11 +1,9 @@
+import unittest
+
 from engine.robot import Robot
+from engine.robot_state import Robot_State
 from electrical.radio_module import RadioModule
 from electrical.motor_controller import BasicMotorController, MotorController
-# from electrical.gps import GPS
-# from electrical.imu import IMU
-import copy
-import math
-import unittest
 
 
 '''
@@ -71,6 +69,17 @@ class TestSetup(unittest.TestCase):
     def test_radio_session_setup(self):
         robot_radio_session = RadioModule(None)
         self.assertEqual(robot_radio_session.connected, False)
+
+    #test motor_controller_setup calls the motor controller setup function, which will 
+    #print a series of commands. Make sure they are in the order of: 
+    #'go_forward', 'turn_left', 'turn_right', 'reverse', 'stop'
+    def test_motor_controller_setup(self): 
+        robot_state = Robot_State(xpos = 0, ypos = 0, heading = 0, epsilon = 0, max_velocity = 0, radius = 1)
+        robot = Robot(robot_state=robot_state)
+        motor_controller = BasicMotorController(robot.robot_state.is_sim)
+        self.assertEqual(motor_controller.is_sim, True)
+        motor_controller.setup()
+
 
 if __name__ == '__main__':
     unittest.main()

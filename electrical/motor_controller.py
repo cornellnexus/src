@@ -1,6 +1,7 @@
 import time
 #from engine.robot import Robot
-if False:  # change to True when running code on robot
+from engine.is_raspberrypi import is_raspberrypi
+if is_raspberrypi():
     import RPi.GPIO as GPIO
 
 class BasicMotorController:
@@ -9,7 +10,7 @@ class BasicMotorController:
     commands to physically move the robot. 
     """
 
-    def __init__(self, robot):
+    def __init__(self, is_sim):
         # raspberry pi motor driver pinouts
         self.in1 = 5
         self.in2 = 6
@@ -17,7 +18,7 @@ class BasicMotorController:
         self.in4 = 26
         self.enA = 13  # PWM pin
         self.enB = 12  # PWM pin
-        self.is_sim = robot.is_sim
+        self.is_sim = is_sim
 
     # checks all of the robot movements are functioning properly
     def setup(self):
@@ -89,7 +90,7 @@ class MotorController:
         L: radius of left motor #TODO: double check this 
         R: radius of right motor #TODO: double check this
     """
-    def __init__(self, wheel_radius, vm_load1, vm_load2, L, R):
+    def __init__(self, wheel_radius, vm_load1, vm_load2, L, R, is_sim):
         self.wheel_radius = wheel_radius
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2
@@ -101,6 +102,7 @@ class MotorController:
         self.in4 = 26
         self.enA = 13
         self.enB = 12
+        self.is_sim = is_sim
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([self.in1, self.in2, self.in3, self.in4],GPIO.OUT, initial=GPIO.LOW)

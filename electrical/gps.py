@@ -4,7 +4,8 @@ import serial
 import time
 import pynmea2
 import csv
-if False: # import UbloxGPS if this is not a simulation
+from engine.is_raspberrypi import is_raspberrypi
+if is_raspberrypi():
     from ublox_gps import UbloxGps
 
 

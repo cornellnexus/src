@@ -5,6 +5,7 @@ import unittest
 from engine.database import DataBase
 from engine.grid import *
 from engine.robot import Robot
+from engine.robot_state import Robot_State
 from collections import deque
 
 target = [0, 0]
@@ -16,7 +17,8 @@ gps_noise_range = .3
 class TestTraverseStandardFunctions(unittest.TestCase):
 
     def test_init(self):
-        r2d2 = Robot(0, 0, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2)
+        r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi / 2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2) 
+        r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
         allowed_dist_error = 0.5
@@ -28,7 +30,8 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_different_init_robot_pos(self):
-        r2d2 = Robot(42, -76, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2)
+        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi / 2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2)
+        r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
         allowed_dist_error = 0.5
@@ -40,7 +43,8 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_different_allowed_dist(self):
-        r2d2 = Robot(42, -76, math.pi / 2, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2)
+        r2d2_state = Robot_State(xpos=42,ypos=-76, heading=math.pi / 2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase =2)
+        r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
         allowed_dist_error = 0.65
@@ -52,7 +56,8 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_different_heading(self):
-        r2d2 = Robot(42, -76, math.pi, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2)
+        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2)
+        r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
         allowed_dist_error = 0.5
@@ -64,7 +69,8 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_with_minimal_noise(self):
-        r2d2 = Robot(42, -76, math.pi, epsilon=0.2, max_v=0.5, radius=0.2, init_phase=2, position_noise=0.05)
+        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2, position_noise = 0.05)
+        r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
         allowed_dist_error = 0.5

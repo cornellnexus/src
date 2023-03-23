@@ -12,7 +12,7 @@ class ControlMode(Enum):
     """
     LAWNMOWER = 1
     LAWNMOWER_B = 2
-    LAWNMOWER_A = 3
+    LAWNMOWER_GUIDED = 3
     SPIRAL = 4
     ROOMBA = 5
     MANUAL = 6
@@ -62,6 +62,14 @@ class Mission:
         self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = allowed_dist_error
+        if not robot.robot_state.is_sim:
+            self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
+            self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio 
+            self.imu_i2c = busio.I2C(board.SCL, board.SDA)
+            self.motor_controller = MotorController(wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = robot.robot_state.is_sim)
+            self.robot_radio_session = RadioSession(self.robot_radio_serial, is_sim = robot.robot_state.is_sim) 
+            self.gps = GPS(self.gps_serial, is_sim = robot.robot_state.is_sim) 
+            self.imu = IMU(self.imu_i2c, is_sim = robot.robot_state.is_sim) 
         self.allowed_heading_error = allowed_heading_error
         self.base_station_angle = base_station.heading
         self.allowed_docking_pos_error = allowed_docking_pos_error
@@ -78,26 +86,29 @@ class Mission:
         Activates the main control loop. Depending on the robot's phase, different motion control algorithms are
         activated.
         """
-        while self.robot.phase != Phase.COMPLETE:
-            if self.robot.phase == Phase.SETUP:
-                self.robot.execute_setup(self.robot.robot_radio_session, self.robot.gps, self.robot.imu, self.robot.motor_controller)
+        while self.robot.robot_state.phase != Phase.COMPLETE:
+            if self.robot.robot_state.phase == Phase.SETUP:
+                self.robot.execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
 
-            elif self.robot.phase == Phase.TRAVERSE:
+            elif self.robot.robot_state.phase == Phase.TRAVERSE:
                 self.waypoints_to_visit = self.robot.execute_traversal(self.waypoints_to_visit,
                                                                        self.allowed_dist_error, self.base_station_loc,
                                                                        self.control_mode, self.time_limit,
                                                                        self.roomba_radius, database)
 
-            elif self.robot.phase == Phase.AVOID_OBSTACLE:
-                self.robot.execute_avoid_obstacle(self.robot.dist_to_goal, database)
+            elif self.robot.robot_state.phase == Phase.AVOID_OBSTACLE:
+                self.robot.execute_avoid_obstacle(self.robot.robot_state.dist_to_goal, database)
                 # add goal_loc param if goal_loc becomes dynamic
 
-            elif self.robot.phase == Phase.RETURN:
+            elif self.robot.robot_state.phase == Phase.RETURN:
                 self.robot.execute_return(self.base_station_loc, self.base_station_angle,
                                           self.allowed_docking_pos_error, self.allowed_heading_error, database)
 
-            elif self.robot.phase == Phase.DOCKING:
+            elif self.robot.robot_state.phase == Phase.DOCKING:
                 self.robot.execute_docking()
+            
+            #update the database with the most recent state
+            database.update_data("phase", self.robot.robot_state.phase)
+            
 
-            # update the database with the most recent state
-            database.update_data("phase", self.robot.phase)
+
