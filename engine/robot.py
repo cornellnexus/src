@@ -439,13 +439,12 @@ class Robot:
         # Note: init_threshold is arbitrary, set later. sometimes location reading will be inaccurate or not frequent
         #  enough to read that we've arrived back to the init x y pos. make it small enough that robot actually leaves
         #  init_threshold at some time during boundary following or add timeout to branch making gate = True
-        init_threshold = 3
-        # how far robot can be from goal for it to be at goal; goal is where the robot wanted to go when there isn't an obstacle
 
         # init_threshold (float): Radius from initial position that will detect robot is back in initial position
-        # goal_threshold (float): Threshold from goal that will be detected as reaching goal in obstacle avoidance
-        # noise_margin (float): Margin from init_threshold that the robot has to leave before detecting robot has left initial position
+        init_threshold = 3
 
+        # how far robot can be from goal for it to be at goal; goal is where the robot wanted to go when there isn't an obstacle
+        # goal_threshold (float): Threshold from goal that will be detected as reaching goal in obstacle avoidance
         goal_threshold = 3
         init_x = self.robot_state.state[0]
         init_y = self.robot_state.state[1]
@@ -458,8 +457,10 @@ class Robot:
         curr_dist_to_goal = self.calculate_dist(
             self.robot_state.goal_location, curr_pos)
         init_dist_to_goal = curr_dist_to_goal
+        turn_to_avoid_obstacle = False
         while True:
-            if self.robot_state.phase == Phase.FAULT:  # fault has priority over obstacle avoidance
+            # fault has priority over obstacle avoidance
+            if self.robot_state.phase == Phase.FAULT:
                 return None
             curr_pos = (self.robot_state.state[0], self.robot_state.state[1])
             curr_dist_to_goal = self.calculate_dist(
@@ -483,22 +484,22 @@ class Robot:
                 return None
             # bug 2
             elif is_on_line and (new_dist_to_goal < init_dist_to_goal):
-                # need to tune
-                threshold_to_recalculate_on_line = 3
+                # need to tune, in meters or whatever the unit x and y are
                 # without this condition, the robot could move closer to the goal (on a slant, not directly towards the goal)
                 #   but still be on the line, making the robot keep exiting obstacle avoidance when its effectively in the same position as before
+                threshold_to_recalculate_on_line = 3
                 if self.calculate_dist(curr_pos, last_pos_on_line) > threshold_to_recalculate_on_line:
                     self.set_phase(self.robot_state.prev_phase)
                     return None
             else:
-                self.execute_boundary_following(0)  # boundary following here
+                self.execute_boundary_following(turn_to_avoid_obstacle)
             if has_left_init_thresh:
                 # we dont want the program to think that the boundary is untraversable
                 #   when the robot is still in the threshold from where it started obstacle avoidance
                 has_traversed_boundary = dist_from_init < init_threshold
             time.sleep(10)  # don't hog the cpu
 
-    def execute_boundary_following(self, min_dist):
+    def execute_boundary_following(self):
         '''
         Currently, algorithm only supports using the right side sensors of the robot for boundary following.
         When encountering an obstacle, robot will begin boundary following by going clockwise around the object.
@@ -519,39 +520,44 @@ class Robot:
         For now, we assume the side ultrasonic sensor values are from the actual sensors, so changes needed for is_sim
         '''
         from electrical.ultrasonic_sensor import Ultrasonic
+        front_ultrasonic = Ultrasonic(0)
         rf_ultrasonic = Ultrasonic(1)
         rb_ultrasonic = Ultrasonic(2)
-        front_dist = rf_ultrasonic.distance()
-        back_dist = rb_ultrasonic.distance()
-        margin = 1
-        # Plus or minus distance value used to calculate if robot is parallel to an non-uniform object
-        # (i.e. not a flat surface). forwardRightSensorReading - backRightSensorReading < margin means
-        # robot is parallel to object.
-        forward_dist = 0.01  # Distance moved forward by robot in one iteration of this method
-        turn_angle = math.pi / 90
-        # Turn angle of robot in one iteration of this method. Robot turns turn_angle if
-        # forwardRightSensorReading > backRightSensorReading and -turn_angle if
-        # forwardRightSensorReading < backRightSensorReading
-
-        if math.abs(front_dist - back_dist) < margin:
-            self.move_forward(forward_dist)
-        elif front_dist > back_dist:
-            self.turn(turn_angle)
+        # length of the robot in meters, placeholder
+        length = 10
+        # robot should be side_margin_sensor meters away from side obstacle, placeholder
+        side_margin_sensor = 1
+        # robot should be margin_to_front_obstacle meters away from front obstacle, placeholder. Want space to turn
+        margin_to_front_obstacle = 5 + \
+            max(self.robot_state.width, length)
+        # TODO: add condition for when boundary following gap in wall but robot cannot fit (check both side and turn 180 and do boundary following again) here, will need left sensor, tbd
+        # if there is an obstacle in front of the robot, turn until there isn't
+        if front_ultrasonic.distance < margin_to_front_obstacle:
+            self.robot_state.motor_controller.spin_motors(
+                0, self.robot_state.turn_angle)
+        # if there is no obstacle in front of the robot but it's still in avoid obstacle because it's following the boundary
         else:
-            self.turn(-1 * turn_angle)
-
-    # to do:
-        # determine ccw or cw
-        # implement main algorithm to make sure robot is parallel
-        # test main algorithm
-        # add cases for smooth turning
-            # make sure to take into account width and length of robot and ultrasonic sensor value on both sides
-            # make sure to take into account situation when the gap you are turning into is smaller than the robot width
-        # add cases for obstacles when boundary following
-            # gap in wall but robot cannot fit
-        # add cases for sharp turns
-    # future to do:
-        # add dp to quit when following boundary
+            rf_dist = rf_ultrasonic.distance()
+            rb_dist = rb_ultrasonic.distance()
+            # if the robot is approximately parallel to the robot, go forward
+            if abs(rf_dist - rb_dist) < side_margin_sensor:
+                self.robot_state.motor_controller.spin_motors(
+                    self.robot_state.move_dist, 0)
+            # otherwise, turn until the robot is parallel
+            else:
+                direction = (rf_dist - rb_dist)/abs(rf_dist - rb_dist)
+                self.robot_state.motor_controller.spin_motors(
+                    0, direction * self.robot_state.turn_angle)
+            # NOTE: TEST WHETHER THIS ACTUALLY WORKS WHEN TURNING:
+            # IF NOT, MIGHT HAVE TO ADD LOCKS TO FORCE THE ROBOT TO TURN UNTIL IT IS PARALLEL TO ROBOT
+            # THIS INVOLVES A LOT OF SEQUENCE OF MOVES, SO IT MIGHT INVOLVE A LOT OF SEQUENTIAL UNLOCKING
+            # for example, if robot starts off parallel and it turns until parallel again,
+            # lock1 unlocks when robot no longer detects obstacle in front,
+            # then lock2 unlocks if lock1 unlocked and rb ultrasonic < rf ultrasonic.
+            # This is assuming rb ultrasonic > rf ultrasonic when turning ccw.
+            # otherwise, might have to have a condition where robot not moving and just turning
+            # and gets back to the same heading to keep turning
+    # TODO: add dp to not traverse to node already traversed/in obstacle
 
     def execute_return(self, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """
