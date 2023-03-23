@@ -37,7 +37,6 @@ class TestNodes(unittest.TestCase):
 
     def test_travel(self):
         self.robot_one.travel(self.distance, self.turn_angle)
-
         # Values calculated by hand based on kinematic equations
         new_x = round(-1.3662, 3)
         new_y = round(-0.366198, 3)
