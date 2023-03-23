@@ -26,6 +26,12 @@ live - 0 if using data from file, 1 if using data from active sensor
 data - 0 if heading visualization desired (IMU), 1 if position visualization desired (GPS), 
        2 if both heading and location visualization ddesired (IMU and GPS)
 ekf -  0 if raw measurements should be visualized, 1 if EKF should be used
+
+To run the file: python -m tests.functionality_tests.localization_visualizer live=0 data=2 ekf=1
+
+This file does not use a robot object but is dealing with the state directly. In other words, 
+we're only focusing on "Does the EKF change x, y, and pos?" This design choice was made a few years ago, 
+so it honestly could be updated but I kept it as is for now.
 """
 if __name__ == "__main__":
     # Settings, can be changed as desired
@@ -113,24 +119,24 @@ if __name__ == "__main__":
             frames = min(len(imu_readings) - 1, len(gps_readings) - 1)
 
     # EKF setup
-
+    
     # First GPS reading -> 0,0 in global frame 
     # Map GPS coordinates to global 
     # MAp GPS initial to 0,0
     # New measurement - initial -> convert to meters 
+
+    # If we are using the EKF, need to initialize the EKF object, which takes
+    # in an initial mu (initial robot state) and initial sigma (initial confidence matrix)
+    # This is documented more in the complete EKF documentation 
     if use_ekf:
         # Get the first GPS coordinate
         first_gps_coord = (gps_readings[0]["lat"], gps_readings[0]["lon"])
-        x_init, y_init = get_vincenty_x(
-            zone[0], first_gps_coord), get_vincenty_y(zone[0], first_gps_coord)
-        # heading_init = math.degrees(math.atan2(
-        #     imu_readings[0]["mag"]["y"], imu_readings[0]["mag"]["x"]))
-        heading_init = math.degrees(math.atan2(
-            -1 * imu_readings[0]["mag"]["x"], imu_readings[0]["mag"]["y"]))
+        
+        x_init, y_init = get_vincenty_x(zone[0], first_gps_coord), get_vincenty_y(zone[0], first_gps_coord)
+        heading_init = math.degrees(math.atan2(-1 * imu_readings[0]["mag"]["x"], imu_readings[0]["mag"]["y"]))
 
         # mu is meters from start position (bottom left position facing up)
         mu = np.array([[x_init], [y_init], [heading_init]])
-
         # confidence of mu, set it to high initially b/c not confident, algo brings it down
         sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
 
@@ -185,9 +191,14 @@ if __name__ == "__main__":
                 new_location = (measurements[0], measurements[1])
 
             elif not is_live and use_ekf:
+
+                # Potential future testing note from Allen: 
+                # I think as long as we have a theta, r, and width, we have a valid arclength 
+                # (arclength = theta*R, where R = r or r + width. Then we can randomize theta, r, 
+                # and width to see if the property holds
+                
                 arc_lengths = ekf.get_arc_lengths(1,1) # temporary placeholder
-                mu_bar = ekf.predict_step(arc_lengths)[0]  
-                sigma_bar = ekf.predict_step(arc_lengths)[1] 
+                mu_bar, sigma_bar = ekf.predict_step(arc_lengths) 
 
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
                 x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(

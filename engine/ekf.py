@@ -103,7 +103,7 @@ class LocalizationEKF:
         """
         return np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    def get_arc_lengths(self, left_side_w, right_side_w):
+    def get_arc_lengths(self, left_motor_revolutions, right_motor_revolutions):
         """
         Returns the arc_lengths of the left side of the robot and the right side of the robot 
         given the angular velocity of the left side and angular velocity of the right side. 
@@ -111,12 +111,12 @@ class LocalizationEKF:
         left_side_w: angular velocity of the motors on the left side of the robot
         right_side_w: angular velocity of the motors on the right side of the robot
         """
-        # TODO: from electrical: from motors, get angular velocity
-        # TODO: from angular velocity, find arc_lengths 
+        # TODO: from electrical: from motors, number of revolutions
+        # TODO: from number of revolutions, using the circumference of the wheels, figure out the distance traveled 
         # Note: this was put on hold Spring '23 because Professor advised that getting velocity
         # in this fashion was not that accurate 
-        left_arc_length = left_side_w # TEMP
-        right_arc_length = right_side_w # TEMP
+        left_arc_length = left_motor_revolutions # this will be some sort of relation with the wheel circumference
+        right_arc_length = right_motor_revolutions # this will be some sort of relation with the wheel circumference
 
         return [left_arc_length, right_arc_length]
 
@@ -127,20 +127,18 @@ class LocalizationEKF:
 
         Given from electrical: arc_lengths: a tuple such that the first entry is the 
         left-side arc distance and the second entry is the right-side arc distance
-        
-        Arc distance is calculated from motor_velocity * timestep
         """
 
-        L_L = arc_lengths[0]
-        L_R = arc_lengths[1]
+        left_side_arc_length = arc_lengths[0]
+        right_side_arc_length = arc_lengths[1]
 
         try:
-            r = L_L * self.robot_width / (L_R - L_L)
+            turn_radius = left_side_arc_length * self.robot_width / (right_side_arc_length - left_side_arc_length)
         except:
-            r = 0
+            turn_radius = 0
         
-        phi = (L_R - L_L) / self.robot_width
-        d = 2 * ((r + (self.robot_width/2)) * math.sin(phi / 2))
+        phi = (right_side_arc_length - left_side_arc_length) / self.robot_width
+        d = 2 * ((turn_radius + (self.robot_width/2)) * math.sin(phi / 2))
         return [d, phi]
 
     def predict_step(self, arc_lengths):
@@ -171,8 +169,6 @@ class LocalizationEKF:
         """
 
         jac_H = self.get_h_jac(mu_bar)
-
-        # K = H * sigma_bar * H.T * inv(H * sigma_bar * H.T + R)
 
         kalman_gain = (sigma_bar * np.transpose(jac_H) * inv(jac_H * sigma_bar * np.transpose(jac_H) + self.R))
 
