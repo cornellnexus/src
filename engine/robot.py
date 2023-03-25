@@ -195,7 +195,7 @@ class Robot:
             self.travel(0, self.robot_state.time_step * limited_cmd_w)
             if not self.robot_state.is_sim:
                 self.robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
-            # sleep in real robot
+                time.sleep(10)
 
             # Get state after movement:
             predicted_state = self.robot_state.state  # this will come from Kalman Filter
