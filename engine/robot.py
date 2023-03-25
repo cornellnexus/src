@@ -323,7 +323,8 @@ class Robot:
                 else:
                     # TODO: determine what vel to run this at
                     self.robot_state.motor_controller.motors(0, 0)
-            dt += 1
+                    time.sleep(10)
+            dt += 10 # accumulation in time in ms
             exit_boolean = (dt > time_limit)
         self.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
         return None
