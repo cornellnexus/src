@@ -9,7 +9,7 @@ class PID:
         # Ki: Constant for integral controller
         # Kd: Constant for derivative controller
         # target: Target value we want to reach
-        # sample_time: Frequency the PID controller is correcting values (same frequency as control loop)
+        # sample_time: Frequency the PID controller is correcting values (same frequency as control loop, which is given by time_step)
         # output_limits: Limits that the PID controller can correct within
         # prev_error: Value of the error calculated in the previous loop
         # proportional: Proportional controller command

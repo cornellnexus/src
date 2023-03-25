@@ -1,4 +1,5 @@
 # THIS IS A TESTING SCRIPT. USE THIS SCRIPT WHEN PHYSICALLY TESTING THE ROBOT AND CHANGE THE run() FUNCTION BY ADDING THE MISSION STATE YOU WANT TO TEST
+# Obstacle Avoidance thread disabled in setup() so we dont accidentally test obstacle avoidance when we just want to test traversal, etc in isolation
 
 from engine.robot import Robot
 from engine.base_station import BaseStation
@@ -25,6 +26,8 @@ class MissionTest():
     def test_setup(self):
         self.r2d2.execute_setup(self.mission.robot_radio_session,
                                 self.mission.gps, self.mission.imu, self.mission.motor_controller)
+        # disabled obstacle avoidance thread because if there is an obstacle,
+        # the phase would go into obstacle avoidance despite wanting to solely test another phase (like traversal).
         self.rb_state.track_obstacle_thread.stop()
 
     def test_traverse(self):
