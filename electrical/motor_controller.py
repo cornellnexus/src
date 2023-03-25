@@ -18,7 +18,7 @@ class BasicMotorController:
         self.in4 = 26
         self.enA = 13  # PWM1, pin 33, back right motor
         self.enB = 12  # PWM0, pin 32, back left motor
-        self.is_sim = False # Change to False when running on robot, same with importing RPi.GPIO
+        self.is_sim = is_sim # Change to False when running on robot, same with importing RPi.GPIO
 
     # checks all of the robot movements are functioning properly
     def setup(self):
