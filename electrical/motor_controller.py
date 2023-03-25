@@ -1,6 +1,7 @@
 import time
 #from engine.robot import Robot
-if True: # change to True when running code on robot
+from engine.is_raspberrypi import is_raspberrypi
+if is_raspberrypi():
     import RPi.GPIO as GPIO
 
 class BasicMotorController:
@@ -9,7 +10,7 @@ class BasicMotorController:
     commands to physically move the robot. 
     """
 
-    def __init__(self):
+    def __init__(self, is_sim):
         # raspberry pi motor driver pinouts
         self.in1 = 5 # GPIO5, pin29, back right motor
         self.in2 = 6 # GPIO6, pin31, back left motor
@@ -45,7 +46,7 @@ class BasicMotorController:
             print('go_forward')
         else:
             GPIO.output([self.in1], GPIO.HIGH)
-            GPIO.output([self.in2], GPIO.LOW)
+            GPIO.output([self.in2], GPIO.HIGH)
 
     # reverses the robot
     def reverse(self):
@@ -89,7 +90,7 @@ class MotorController:
         L: radius of left motor #TODO: double check this 
         R: radius of right motor #TODO: double check this
     """
-    def __init__(self, wheel_radius, vm_load1, vm_load2, L, R):
+    def __init__(self, wheel_radius, vm_load1, vm_load2, L, R, is_sim):
         self.wheel_radius = wheel_radius
         self.vm_load1 = vm_load1
         self.vm_load2 = vm_load2
@@ -101,6 +102,7 @@ class MotorController:
         self.in4 = 26
         self.enA = 13
         self.enB = 12
+        self.is_sim = is_sim
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([self.in1, self.in2, self.in3, self.in4],GPIO.OUT, initial=GPIO.LOW)
@@ -160,11 +162,3 @@ class MotorController:
             self.p2.ChangeDutyCycle(dc2)
         else:
             print("dc1: ", dc1, "and dc2: ", dc2)
-        
-if __name__=="__main__":
-    mtr_ctrl = BasicMotorController()
-    mtr_ctrl.setup()
-    end_time = time.time() + 5
-    while time.time() < end_time:
-        mtr_ctrl.go_forward()
-
