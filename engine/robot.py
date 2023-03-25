@@ -523,6 +523,7 @@ class Robot:
         front_ultrasonic = Ultrasonic(0)
         rf_ultrasonic = Ultrasonic(1)
         rb_ultrasonic = Ultrasonic(2)
+        lf_ultrasonic = Ultrasonic(3)
         # length of the robot in meters, placeholder
         length = 10
         # robot should be side_margin_sensor meters away from side obstacle, placeholder
@@ -530,9 +531,18 @@ class Robot:
         # robot should be margin_to_front_obstacle meters away from front obstacle, placeholder. Want space to turn
         margin_to_front_obstacle = 5 + \
             max(self.robot_state.width, length)
-        # TODO: add condition for when boundary following gap in wall but robot cannot fit (check both side and turn 180 and do boundary following again) here, will need left sensor, tbd
+        # When boundary following gap in wall but robot cannot fit (check both side and turn 180 and do boundary following again)
+        if lf_ultrasonic.distance < side_margin_sensor:
+            curr_heading = self.robot_state.state[2]
+            if curr_heading > math.pi:
+                desired_heading = curr_heading - math.pi
+            else:
+                desired_heading = curr_heading + math.pi
+            # error is arbitrary
+            heading_err = 10
+            self.turn_to_target_heading(desired_heading, heading_err)
         # if there is an obstacle in front of the robot, turn until there isn't
-        if front_ultrasonic.distance < margin_to_front_obstacle:
+        elif front_ultrasonic.distance < margin_to_front_obstacle:
             self.robot_state.motor_controller.spin_motors(
                 0, self.robot_state.turn_angle)
         # if there is no obstacle in front of the robot but it's still in avoid obstacle because it's following the boundary
