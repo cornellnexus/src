@@ -445,7 +445,7 @@ class Robot:
 
         # how far robot can be from goal for it to be at goal; goal is where the robot wanted to go when there isn't an obstacle
         # goal_threshold (float): Threshold from goal that will be detected as reaching goal in obstacle avoidance
-        goal_threshold = 3
+        goal_threshold = 3.
         init_x = self.robot_state.state[0]
         init_y = self.robot_state.state[1]
         init_pos = (init_x, init_y)
