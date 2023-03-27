@@ -441,7 +441,7 @@ class Robot:
         #  init_threshold at some time during boundary following or add timeout to branch making gate = True
 
         # init_threshold (float): Radius from initial position that will detect robot is back in initial position
-        init_threshold = 3
+        init_threshold = 3.
 
         # how far robot can be from goal for it to be at goal; goal is where the robot wanted to go when there isn't an obstacle
         # goal_threshold (float): Threshold from goal that will be detected as reaching goal in obstacle avoidance
