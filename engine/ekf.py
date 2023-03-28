@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 
-
 class LocalizationEKF:
     """
     An implementation of the EKF localization for the robot.
 
     INSTANCE ATTRIBUTES:
+        # robot_width: the width of the robot (meters)
+
         # mu: the mean of the robot state distribution, in the form [[x],[y],[z]]. [3x1 np array]
 
         # sigma: the standard deviation of the robot state distribution. [3x3 np array]
@@ -23,7 +24,8 @@ class LocalizationEKF:
             Note: The dimensions of R are k-by-k, where k is the degrees of freedom of the measurement. (k=3)
     """
 
-    def __init__(self, init_mu, init_sigma):
+    def __init__(self, init_mu, init_sigma, robot_width):
+        self.robot_width = robot_width
         self.mu = init_mu
         self.sigma = init_sigma
         # process noise matrix
@@ -101,14 +103,62 @@ class LocalizationEKF:
         """
         return np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 
-    def predict_step(self, control):
+    def get_arc_lengths(self, left_motor_revolutions, right_motor_revolutions):
+        """
+        Returns the arc_lengths of the left side of the robot and the right side of the robot 
+        given the angular velocity of the left side and angular velocity of the right side. 
+
+        left_side_w: angular velocity of the motors on the left side of the robot
+        right_side_w: angular velocity of the motors on the right side of the robot
+        """
+        # TODO: from electrical: from motors, number of revolutions
+        # TODO: from number of revolutions, using the circumference of the wheels, figure out the distance traveled 
+        # Note: this was put on hold Spring '23 because Professor advised that getting velocity
+        # in this fashion was not that accurate 
+
+        # THESE ARE TEMPORARILY PLACE HOLDERS. 
+        # We will get these values from an electrical function
+        left_arc_length = left_motor_revolutions # this will be some sort of relation with the wheel circumference
+        right_arc_length = right_motor_revolutions # this will be some sort of relation with the wheel circumference
+
+        return [left_arc_length, right_arc_length]
+
+
+    def get_controls(self, arc_lengths): 
+        """
+        Returns phi, the angle changed in a timestep and d, the displacement traveled in a timestep.
+
+        Given from electrical: arc_lengths: a tuple such that the first entry is the 
+        left-side arc distance and the second entry is the right-side arc distance
+        """
+
+        left_side_arc_length = arc_lengths[0]
+        right_side_arc_length = arc_lengths[1]
+
+        try:
+            turn_radius = left_side_arc_length * self.robot_width / (right_side_arc_length - left_side_arc_length)
+        except:
+            turn_radius = 0
+        
+        phi = (right_side_arc_length - left_side_arc_length) / self.robot_width
+        d = 2 * ((turn_radius + (self.robot_width/2)) * math.sin(phi / 2))
+        return [d, phi]
+
+    def predict_step(self, arc_lengths):
         """
         Returns the distribution of the robot's state after the prediction step of the EKF, based
         on the robot's controls.
+
+        Let arc_lengths be a tuple such that it represents
+        (left-side-length-traveled, right-side-length-traveled) 
+
         [mu_bar, sigma_bar]
         """
-        jac_G = LocalizationEKF.get_g_jac(self.mu, control)
-        mu_bar = LocalizationEKF.get_predicted_state(self.mu, control)
+        controls = self.get_controls(arc_lengths) # [d, phi]
+
+        jac_G = self.get_g_jac(self.mu, controls)
+
+        mu_bar = self.get_predicted_state(self.mu, controls)
         sigma_bar = jac_G * self.sigma * np.transpose(jac_G) + self.Q
 
         return mu_bar, sigma_bar
@@ -123,17 +173,11 @@ class LocalizationEKF:
 
         jac_H = self.get_h_jac(mu_bar)
 
-        kalman_gain = \
-            (sigma_bar * np.transpose(jac_H) *
-             inv(jac_H * sigma_bar * np.transpose(jac_H) + self.R))
-        expected_measurement = self.get_expected_measurement(mu_bar)
+        kalman_gain = (sigma_bar * np.transpose(jac_H) * inv(jac_H * sigma_bar * np.transpose(jac_H) + self.R))
 
-        # print("kalman_gain")
-        # print(kalman_gain)
-        # print("measurement")
-        # print(measurement)
-        # print("expected_measurement")
-        # print(expected_measurement)
+        #JULIE NOTE: I think expected_measurement == mu_bar, since mu_bar represents
+        #our prediction of the robot's state based on the controls. 
+        expected_measurement = self.get_expected_measurement(mu_bar) 
 
         self.mu = mu_bar + (kalman_gain @ (measurement - expected_measurement))
         kh = kalman_gain * jac_H
