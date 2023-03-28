@@ -9,7 +9,6 @@ from engine.pid_controller import PID
 from constants.definitions import *
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
-from electrical.ultrasonic_sensor import Ultrasonic
 
 
 class Robot:
@@ -318,8 +317,9 @@ class Robot:
         dt = 0
         # TODO: battery_limit, time_limit, tank_capacity is full
         exit_boolean = False
+        from electrical.ultrasonic_sensor import Ultrasonic
+        front_ultrasonic = Ultrasonic(0)
         while not exit_boolean:
-            front_ultrasonic = Ultrasonic(0)
             # sensor should not detect something in the robot
             if front_ultrasonic.distance < self.robot_state.front_sensor_offset:
                 self.set_phase(Phase.FAULT)
@@ -386,6 +386,7 @@ class Robot:
                     print("no more sensor data")
                     break
             else:
+                from electrical.ultrasonic_sensor import Ultrasonic
                 front_ultrasonic = Ultrasonic(0)
                 curr_ultrasonic_value = front_ultrasonic.distance()
                 if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
@@ -519,6 +520,7 @@ class Robot:
 
         For now, we assume the side ultrasonic sensor values are from the actual sensors, so changes needed for is_sim
         '''
+        from electrical.ultrasonic_sensor import Ultrasonic
         front_ultrasonic = Ultrasonic(0)
         rf_ultrasonic = Ultrasonic(1)
         rb_ultrasonic = Ultrasonic(2)
