@@ -23,9 +23,7 @@ class Mission_State:
     """
     Contains Mission-specific information.
     """
-    def __init__(self, robot, base_station_coord, init_control_mode, grid=Grid(42.444250, 42.444599, -76.483682, -76.483276),
-                 allowed_dist_error=0.5, allowed_heading_error=0.1, allowed_docking_pos_error=0.1,
-                 time_limit=50000, roomba_radius=20,  **kwargs):
+    def __init__(self, robot, base_station_coord, init_control_mode, **kwargs):
         """
         Arguments:
             robot: the Robot object linked to this Mission
