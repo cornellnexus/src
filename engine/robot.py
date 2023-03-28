@@ -249,9 +249,11 @@ class Robot:
         self.robot_state.control_mode = control_mode
         if control_mode == 4:  # Roomba mode
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
+            self.robot_state.is_roomba_traversal = True
         else:
             self.traverse_standard(unvisited_waypoints,
                                    allowed_dist_error, database)
+            self.robot_state.is_roomba_traversal = False
 
     def traverse_standard(self, unvisited_waypoints, allowed_dist_error, database):
         """ Move the robot by following the traversal path given by [unvisited_waypoints].
@@ -369,7 +371,7 @@ class Robot:
                 if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
                     self.set_phase(Phase.FAULT)
                     return None
-            if self.robot_state.control_mode == 4:  # roomba mode
+            if self.robot_state.is_roomba_traversal:  # roomba mode
                 self.robot_state.is_roomba_obstacle = True
             elif (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
                     self.robot_state.phase == Phase.AVOID_OBSTACLE):

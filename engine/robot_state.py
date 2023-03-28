@@ -38,13 +38,16 @@ class Robot_State:
         """
         Instance Attributes:
             FLAGS
+            using_ekf: False if are only using GPS/IMU, True if we are using EKF
             is_sim: False if the physical robot is being used, True otherwise
             should_store_data: False if csv data should not be stored, True otherwise
             phase: the phase of the robot
-            avoid_obstacle: True if the robot is currently avoiding an obstacle, False otherwise
+            is_roomba_obstacle: True if there's an obstacle detected during roomba traversal
+            is_roomba_traversal: True if we are using roomba traversal
 
             CONSTANTS
             width: width of the robot in cm
+            length: length of the robot in cm
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
             position_kp: the proportional factor of the position PID
@@ -90,12 +93,9 @@ class Robot_State:
             gps:
             imu:
             ekf:
-            front_ultrasonic: the ultrasonic at the front of the robot, used for detecting obstacles
-            lf_ultrasonic: the ultrasonic at the front of the left side of the robot, used for boundary following
-            lb_ultrasonic: the ultrasonic at the back of the left side of the robot, used for boundary following
-            rf_ultrasonic: the ultrasonic at the front of the right side of the robot, used for boundary following
-            rb_ultrasonic: the ultrasonic at the back of the right side of the robot, used for boundary following
 
+            THREADS
+            track_obstacle_thread
         """
         # TODO: Fill in missing spec for attributes above
 
@@ -105,12 +105,12 @@ class Robot_State:
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
         self.should_store_data = kwargs.get("should_store_data", False)
         self.phase = Phase(kwargs.get("phase", Phase.SETUP))
-        self.avoid_obstacle = kwargs.get("avoid_obstacle", False)
-        self.is_roomba_obstacle = kwargs.get("roomba_obstacle", False)
+        self.is_roomba_obstacle = kwargs.get("is_roomba_obstacle", False)
+        self.is_roomba_traversal = kwargs.get("is_roomba_traversal", False)
 
         # CONSTANTS
         self.width = kwargs.get("width", 700)
-        self.length = kwargs.get("length", 700)  # placeholder, in meters
+        self.length = kwargs.get("length", 700)
         self.time_step = kwargs.get("time_step", 1)
         self.position_kp = kwargs.get("position_kp", 1)
         self.position_ki = kwargs.get("position_ki", 0)
