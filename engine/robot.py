@@ -9,6 +9,7 @@ from engine.pid_controller import PID
 from constants.definitions import *
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
+from electrical.ultrasonic_sensor import Ultrasonic
 
 
 class Robot:
@@ -318,7 +319,11 @@ class Robot:
         # TODO: battery_limit, time_limit, tank_capacity is full
         exit_boolean = False
         while not exit_boolean:
-
+            front_ultrasonic = Ultrasonic(0)
+            # sensor should not detect something in the robot
+            if front_ultrasonic.distance < self.robot_state.front_sensor_offset:
+                self.set_phase(Phase.FAULT)
+                return None
             curr_x = self.robot_state.state[0]
             curr_y = self.robot_state.state[1]
             new_x = curr_x + self.robot_state.move_dist * \
@@ -381,7 +386,6 @@ class Robot:
                     print("no more sensor data")
                     break
             else:
-                from electrical.ultrasonic_sensor import Ultrasonic
                 front_ultrasonic = Ultrasonic(0)
                 curr_ultrasonic_value = front_ultrasonic.distance()
                 if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
@@ -431,33 +435,38 @@ class Robot:
             difference = 0
         return abs(difference) <= tolerance
 
-    def execute_avoid_obstacle(self):
+    def execute_avoid_obstacle(self, on_line_tolerance, init_threshold=3., goal_threshold=3., threshold_to_recalculate_on_line=3.):
         """ Execute bug 2 (straight line) obstacle avoidance algorithm
+            Args:
+                on_line_tolerance (float): threshold in meters for checking theta matches for the lines
+                init_threshold (float): Radius in meters from initial position that will detect robot is back in initial position
+                    This parameter needs to be tuned.
+                    The reasoning behind this parameter is that sometimes location reading will be inaccurate or not frequent read
+                    so the sensor thinks we're still at the init x y pos. We should make this small enough that robot actually leaves
+                    init_threshold at some time during boundary following or add a timeout
+                goal_threshold (float): Threshold in meters from goal that will be detected as reaching goal in obstacle avoidance.
+                    Goal is where the robot wanted to go when there isn't an obstacle
+                threshold_to_recalculate_on_line (float): threshold in meters that we dont want to recalculate whether the robot is on the line to the goal
+                    This parameter needs to be tuned
+                    Reasoning for this: without this condition, the robot could move closer to the goal (on a slant, not directly towards the goal)
+                    but still be on the line, making the robot keep exiting obstacle avoidance when its effectively in the same position as before
+
             Returns:
                 prev_phase (Phase)
         """
-        # Note: init_threshold is arbitrary, set later. sometimes location reading will be inaccurate or not frequent
-        #  enough to read that we've arrived back to the init x y pos. make it small enough that robot actually leaves
-        #  init_threshold at some time during boundary following or add timeout to branch making gate = True
-
-        # init_threshold (float): Radius from initial position that will detect robot is back in initial position
-        init_threshold = 3
-
-        # how far robot can be from goal for it to be at goal; goal is where the robot wanted to go when there isn't an obstacle
-        # goal_threshold (float): Threshold from goal that will be detected as reaching goal in obstacle avoidance
-        goal_threshold = 3
         init_x = self.robot_state.state[0]
         init_y = self.robot_state.state[1]
         init_pos = (init_x, init_y)
 
         # last position of the robot when it's still on the (line from its initial position to its goal positions)
         last_pos_on_line = init_pos
+        # the robot's initial location is x,y and the init_threshold is d.
+        # If the robot's new location x',y' is more than d distance from init_threshold,
+        # we set has_left_init_threshold to true. Used to determine if the robot has left its initial location
         has_left_init_thresh = False
         has_traversed_boundary = False
-        curr_dist_to_goal = self.calculate_dist(
+        init_dist_to_goal = self.calculate_dist(
             self.robot_state.goal_location, curr_pos)
-        init_dist_to_goal = curr_dist_to_goal
-        turn_to_avoid_obstacle = False
         while True:
             # fault has priority over obstacle avoidance
             if self.robot_state.phase == Phase.FAULT:
@@ -465,14 +474,9 @@ class Robot:
             curr_pos = (self.robot_state.state[0], self.robot_state.state[1])
             curr_dist_to_goal = self.calculate_dist(
                 self.robot_state.goal_location, curr_pos)
-
             dist_from_init = self.calculate_dist(curr_pos, init_pos)
-            # threshold for checking theta matches for the lines
-            on_line_tolerance = 0.1
             is_on_line = self.is_on_line(
                 self.robot_state.goal_location, curr_pos, on_line_tolerance)
-            new_dist_to_goal = self.calculate_dist(
-                self.robot_state.goal_location, curr_pos)
             if dist_from_init > init_threshold:
                 has_left_init_thresh = True
             # exits obstacle avoidance if robot close to goal
@@ -483,16 +487,12 @@ class Robot:
                 self.set_phase(Phase.FAULT)  # cannot reach goal
                 return None
             # bug 2
-            elif is_on_line and (new_dist_to_goal < init_dist_to_goal):
-                # need to tune, in meters or whatever the unit x and y are
-                # without this condition, the robot could move closer to the goal (on a slant, not directly towards the goal)
-                #   but still be on the line, making the robot keep exiting obstacle avoidance when its effectively in the same position as before
-                threshold_to_recalculate_on_line = 3
+            elif is_on_line and (curr_dist_to_goal < init_dist_to_goal):
                 if self.calculate_dist(curr_pos, last_pos_on_line) > threshold_to_recalculate_on_line:
                     self.set_phase(self.robot_state.prev_phase)
                     return None
             else:
-                self.execute_boundary_following(turn_to_avoid_obstacle)
+                self.execute_boundary_following()
             if has_left_init_thresh:
                 # we dont want the program to think that the boundary is untraversable
                 #   when the robot is still in the threshold from where it started obstacle avoidance
@@ -519,18 +519,15 @@ class Robot:
 
         For now, we assume the side ultrasonic sensor values are from the actual sensors, so changes needed for is_sim
         '''
-        from electrical.ultrasonic_sensor import Ultrasonic
         front_ultrasonic = Ultrasonic(0)
         rf_ultrasonic = Ultrasonic(1)
         rb_ultrasonic = Ultrasonic(2)
         lf_ultrasonic = Ultrasonic(3)
-        # length of the robot in meters, placeholder
-        length = 10
         # robot should be side_margin_sensor meters away from side obstacle, placeholder
         side_margin_sensor = 1
         # robot should be margin_to_front_obstacle meters away from front obstacle, placeholder. Want space to turn
         margin_to_front_obstacle = 5 + \
-            max(self.robot_state.width, length)
+            max(self.robot_state.width, self.robot_state.length)
         # When boundary following gap in wall but robot cannot fit (check both side and turn 180 and do boundary following again)
         if lf_ultrasonic.distance < side_margin_sensor:
             curr_heading = self.robot_state.state[2]

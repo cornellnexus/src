@@ -109,6 +109,7 @@ class Robot_State:
 
         # CONSTANTS
         self.width = kwargs.get("width", 700)
+        self.length = kwargs.get("length", 700)  # placeholder, in meters
         self.time_step = kwargs.get("time_step", 1)
         self.position_kp = kwargs.get("position_kp", 1)
         self.position_ki = kwargs.get("position_ki", 0)
