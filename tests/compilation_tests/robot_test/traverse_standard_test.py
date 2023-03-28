@@ -6,6 +6,7 @@ from engine.database import DataBase
 from engine.grid import *
 from engine.robot import Robot
 from engine.robot_state import Robot_State
+from engine.control_mode import ControlMode
 from collections import deque
 
 target = [0, 0]
@@ -23,7 +24,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
 
         allowed_dist_error = 0.5
         grid = Grid(42.444250, 42.444599, -76.483682, -76.483276)
-        grid_mode = "lawn_border"
+        grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
         unvisited_waypoints = r2d2.traverse_standard(waypoints_to_visit, allowed_dist_error, database)
@@ -36,7 +37,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
 
         allowed_dist_error = 0.5
         grid = Grid(42.444250, 42.444599, -76.483682, -76.483276)
-        grid_mode = "lawn_border"
+        grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
         unvisited_waypoints = r2d2.traverse_standard(waypoints_to_visit, allowed_dist_error, database)
@@ -49,7 +50,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
 
         allowed_dist_error = 0.65
         grid = Grid(42.444250, 42.444599, -76.483682, -76.483276)
-        grid_mode = "lawn_border"
+        grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
         unvisited_waypoints = r2d2.traverse_standard(waypoints_to_visit, allowed_dist_error, database)
@@ -62,7 +63,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
 
         allowed_dist_error = 0.5
         grid = Grid(42.444250, 42.444599, -76.483682, -76.483276)
-        grid_mode = "lawn_border"
+        grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
         unvisited_waypoints = r2d2.traverse_standard(waypoints_to_visit, allowed_dist_error, database)
@@ -75,7 +76,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
 
         allowed_dist_error = 0.5
         grid = Grid(42.444250, 42.444599, -76.483682, -76.483276)
-        grid_mode = "lawn_border"
+        grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
         unvisited_waypoints = r2d2.traverse_standard(waypoints_to_visit, allowed_dist_error, database)
