@@ -115,6 +115,9 @@ class LocalizationEKF:
         # TODO: from number of revolutions, using the circumference of the wheels, figure out the distance traveled 
         # Note: this was put on hold Spring '23 because Professor advised that getting velocity
         # in this fashion was not that accurate 
+
+        # THESE ARE TEMPORARILY PLACE HOLDERS. 
+        # We will get these values from an electrical function
         left_arc_length = left_motor_revolutions # this will be some sort of relation with the wheel circumference
         right_arc_length = right_motor_revolutions # this will be some sort of relation with the wheel circumference
 
