@@ -17,7 +17,7 @@ class Mission:
         while self.mission_state.robot.robot_state.phase != Phase.COMPLETE:
             if self.mission_state.robot.robot_state.phase == Phase.SETUP:
                 # TODO: Determine if sensors are part of mission vs robot
-                self.mission_state.robot.execute_setup(self.mission_state.robot_radio_session, self.mission_state.gps, self.mission_state.imu, self.mission_state.motor_controller)
+                self.mission_state.robot.execute_setup()
 
             elif self.mission_state.robot.robot_state.phase == Phase.TRAVERSE:
                 self.mission_state.waypoints_to_visit = self.mission_state.robot.execute_traversal(self.mission_state.waypoints_to_visit,

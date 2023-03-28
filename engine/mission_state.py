@@ -4,20 +4,6 @@ from engine.control_mode import ControlMode
 from engine.grid import Grid
 from engine.base_station import BaseStation
 
-# TODO: GPS, IMU, RF module and Motor Controller are also re-initialized in robot_state 
-# We should pick whether we want to initialize the attributes here or in robot_state
-# (which is being passed from Mission into robot.execute_setup; sensors are part of mission vs robot)
-'''
-Electrical library imports
-(need these libraries to run mission out of the loop)
-Commented out for simulation testing purposes
-'''
-# from electrical.gps import GPS
-# from electrical.imu import IMU
-# import serial
-# import board
-# import busio
-# import adafruit_lsm9ds1
 
 class Mission_State:
     """
@@ -59,15 +45,6 @@ class Mission_State:
         self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
         self.waypoints_to_visit = deque(self.all_waypoints)
         self.allowed_dist_error = kwargs.get("allowed_dist_error", 0.5)
-        # TODO: Determine if sensors are part of mission vs robot
-        # if not robot.robot_state.is_sim:
-        #     self.gps_serial = serial.Serial('/dev/ttyACM0', 19200, timeout=5) 
-        #     self.robot_radio_serial = serial.Serial('/dev/ttyS0', 57600) #robot radio 
-        #     self.imu_i2c = busio.I2C(board.SCL, board.SDA)
-        #     self.motor_controller = MotorController(wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = robot.robot_state.is_sim)
-        #     self.robot_radio_session = RadioSession(self.robot_radio_serial, is_sim = robot.robot_state.is_sim) 
-        #     self.gps = GPS(self.gps_serial, is_sim = robot.robot_state.is_sim) 
-        #     self.imu = IMU(self.imu_i2c, is_sim = robot.robot_state.is_sim) 
         self.allowed_heading_error = kwargs.get("allowed_heading_error", 0.1)
         self.allowed_docking_pos_error = kwargs.get("allowed_docking_pos_error", 0.1)
         self.time_limit = kwargs.get("time_limit",50000)

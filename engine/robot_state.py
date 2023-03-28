@@ -1,16 +1,7 @@
 import math
 import numpy as np
 from engine.phase import Phase
-
-# Sensor dependent packages
 from engine.is_raspberrypi import is_raspberrypi
-if is_raspberrypi():
-    from electrical.motor_controller import MotorController
-    import electrical.gps as GPS 
-    import electrical.imu as IMU 
-    import electrical.radio_module as RadioModule
-    import serial
-    # from engine.sensor_module import SensorModule # IMU + GPS testing
 
 class Robot_State:
     """
@@ -162,13 +153,3 @@ class Robot_State:
         self.lb_ultrasonic = kwargs.get("lb_ultrasonic", None)
         self.rf_ultrasonic = kwargs.get("rf_ultrasonic", None)
         self.rb_ultrasonic = kwargs.get("rb_ultrasonic", None)
-
-        # TODO: GPS, IMU, RF module and Motor Controller are also re-initialized in robot.execute_setup
-        # We should pick whether we want to initialize the attributes here or in robot.execute_setup
-        # (which is being passed from Mission, need to whether sensors are part of mission vs robot)
-        if not self.is_sim:
-            self.motor_controller = MotorController(wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = self.is_sim)
-            self.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-            self.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), is_sim = self.is_sim) 
-            self.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA), is_sim = self.is_sim) 
-        
