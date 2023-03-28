@@ -12,7 +12,7 @@ class ControlMode(Enum):
     """
     LAWNMOWER = 1
     LAWNMOWER_B = 2
-    LAWNMOWER_A = 3
+    LAWNMOWER_GUIDED = 3
     SPIRAL = 4
     ROOMBA = 5
     MANUAL = 6

@@ -100,12 +100,13 @@ class Robot_State:
         # TODO: Fill in missing spec for attributes above
 
         # FLAGS
+        # If false, only uses GPS and IMU; else, uses EKF
+        self.using_ekf = False
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
         self.should_store_data = kwargs.get("should_store_data", False)
         self.phase = Phase(kwargs.get("phase", Phase.SETUP))
         self.avoid_obstacle = kwargs.get("avoid_obstacle", False)
         self.is_roomba_obstacle = kwargs.get("roomba_obstacle", False)
-        self.control_mode = kwargs.get("control_mode", None)
 
         # CONSTANTS
         self.width = kwargs.get("width", 700)
@@ -165,6 +166,9 @@ class Robot_State:
         self.gps = kwargs.get("gps", None)
         self.imu = kwargs.get("imu", None)
         self.ekf = kwargs.get("ekf", None)
+
+        # THREADS
+        self.track_obstacle_thread = None
 
         # TODO: GPS, IMU, RF module and Motor Controller are also re-initialized in robot.execute_setup
         # We should pick whether we want to initialize the attributes here or in robot.execute_setup

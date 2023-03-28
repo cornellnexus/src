@@ -54,7 +54,15 @@ class Robot:
         if self.robot_state.should_store_data:
             write_phase_to_csv(self.robot_state.phase)
 
-    def update_ekf_step(self):
+    def update_state(self, velocity, omega):
+        """
+        Updates the state of the robot given the linear velocity (velocity) and angular velocity (omega) of the robot
+        Args:
+            velocity (Float): linear velocity of robot
+            omega (Float): angular velocity of robot
+        Returns:
+            new_state/measurement (Tuple): new x, y, and heading of robot
+        """
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make this not hard-coded
         # self.robot_state.ekf.update_step(self.robot_state.ekf.mu, self.robot_state.ekf.sigma, sensor_module.get_measurement(self.robot_state.init_gps))
         self.robot_state.gps_data = (self.robot_state.gps.get_gps()[
@@ -66,41 +74,33 @@ class Robot:
             self.robot_state.imu_data["mag"]["y"], self.robot_state.imu_data["mag"]["x"]))
 
         measurements = np.array([[x], [y], [heading]])
+        if self.robot_state.using_ekf:
+            mu, sigma = self.robot_state.ekf.predict_step(velocity, omega)
+            self.robot_state.ekf.update_step(mu, sigma, measurements)
+            new_x = self.robot_state.ekf.mu[0][0]
+            new_y = self.robot_state.ekf.mu[1][0]
+            new_heading = self.robot_state.ekf.mu[2][0]
+            new_state = np.array([[new_x], [new_y], [new_heading]])
+            return new_state
+        return measurements
 
-        self.robot_state.ekf.update_step(
-            self.robot_state.ekf.mu, self.robot_state.ekf.sigma, measurements)
-        new_x = self.robot_state.ekf.mu[0][0]
-        new_y = self.robot_state.ekf.mu[1][0]
-        new_heading = self.robot_state.ekf.mu[2][0]
-        new_state = np.array([[new_x], [new_y], [new_heading]])
-        return new_state
-
-    def travel(self, velocity, omega):
-        # Moves the robot with both linear and angular velocity
-        self.robot_state.state = np.round(integrate_odom(
-            self.robot_state.state, velocity, omega), 3)
-        # if it is a simulation,
+    def travel(self, delta_d, delta_phi):
+        """
+        Moves the robot delta_d dist and delta_phi angle
+        Arguments:
+            delta_d (float): target meters to travel 
+            delta_phi (float): target radians to turn
+        """
+        # if it is a simulation, we update the robot state directly
         if self.robot_state.is_sim:
+            self.robot_state.state = np.round(integrate_odom(
+                self.robot_state.state, delta_d, delta_phi), 3)
             self.robot_state.truthpose = np.append(
                 self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
+        # otherwise, we update the robot state using EKF
         else:
-            imu_data = self.robot_state.imu.get_imu()
-            self.robot_state.state[2] = math.degrees(
-                math.atan2(imu_data["mag"][1], imu_data["mag"][0]))
-
-    def move_forward(self, dist):
-        # Moves robot forward by distance dist
-        # dist is in meters
-        new_x = self.robot_state.state[0] + dist * math.cos(
-            self.robot_state.state[2]) * self.robot_state.time_step
-        new_y = self.robot_state.state[1] + dist * math.sin(
-            self.robot_state.state[2]) * self.robot_state.time_step
-        self.robot_state.state[0] = np.round(new_x, 3)
-        self.robot_state.state[1] = np.round(new_y, 3)
-
-        if self.robot_state.is_sim:
-            self.robot_state.truthpose = np.append(
-                self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
+            self.update_state(
+                delta_d/self.robot_state.time_step, delta_phi/self.robot_state.time_step)
 
     def move_to_target_node(self, target, allowed_dist_error, database):
         """
@@ -115,7 +115,8 @@ class Robot:
 
         # location error (in meters)
         distance_away = self.calculate_dist(target, predicted_state)
-
+        self.loc_pid_x.reset_integral()
+        self.loc_pid_y.reset_integral()
         while distance_away > allowed_dist_error:
             if self.robot_state.is_sim:
                 # Adding simulated noise to the robot's state based on gaussian distribution
@@ -142,18 +143,12 @@ class Robot:
 
             self.robot_state.linear_v = limited_cmd_v[0]
             self.robot_state.angular_v = limited_cmd_w[0]
-
-            if self.robot_state.is_sim:
-                # this is just simulating movement:
-                self.travel(self.robot_state.time_step * limited_cmd_v[0],
-                            self.robot_state.time_step * limited_cmd_w[0])
-            else:
+            self.travel(self.robot_state.time_step * limited_cmd_v[0],
+                        self.robot_state.time_step * limited_cmd_w[0])
+            if not self.robot_state.is_sim:
                 self.robot_state.motor_controller.spin_motors(
                     limited_cmd_w[0], limited_cmd_v[0])
-                # TODO: sleep??
-
-            if not self.robot_state.is_sim:
-                self.robot_state.state = self.update_ekf_step()
+                time.sleep(10)
 
             # Get state after movement:
             predicted_state = self.robot_state.state  # this will come from Kalman Filter
@@ -191,23 +186,17 @@ class Robot:
         predicted_state = self.robot_state.state  # this will come from Kalman Filter
 
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
-
+        self.head_pid.reset_integral()
         while abs_heading_error > allowed_heading_error:
-            if self.robot_state.is_sim:
-                self.robot_state.state[2] = np.random.normal(
-                    self.robot_state.state[2], self.robot_state.heading_noise)
-            else:
-                self.robot_state.state = self.update_ekf_step()
             theta_error = target_heading - self.robot_state.state[2]
             w = self.head_pid.update(theta_error)  # angular velocity
             _, limited_cmd_w = limit_cmds(
                 0, w, self.robot_state.max_velocity, self.robot_state.radius)
 
-            if self.robot_state.is_sim:
-                self.travel(0, self.robot_state.time_step * limited_cmd_w)
-            else:
+            self.travel(0, self.robot_state.time_step * limited_cmd_w)
+            if not self.robot_state.is_sim:
                 self.robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
-            # sleep in real robot
+                time.sleep(10)
 
             # Get state after movement:
             predicted_state = self.robot_state.state  # this will come from Kalman Filter
@@ -216,18 +205,6 @@ class Robot:
                 "state", self.robot_state.state[0], self.robot_state.state[1], self.robot_state.state[2])
 
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
-
-    def turn(self, turn_angle):
-        """
-        Hardcoded in-place rotation for testing purposes. Does not use heading PID. Avoid using in physical robot.
-        """
-        # Turns robot, where turn_angle is given in radians
-        clamp_angle = (self.robot_state.state[2] + (turn_angle *
-                                                    self.robot_state.time_step)) % (2 * math.pi)
-        self.robot_state.state[2] = np.round(clamp_angle, 3)
-        if self.robot_state.is_sim:
-            self.robot_state.truthpose = np.append(
-                self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
 
     def get_state(self):
         return self.robot_state.state
@@ -261,9 +238,10 @@ class Robot:
         self.robot_state.imu = imu
         self.robot_state.motor_controller = motor_controller
         if (radio_session.connected and gps_setup and imu_setup):
-            obstacle_avoidance = threading.Thread(
+            self.robot_state.track_obstacle_thread = threading.Thread(
                 target=self.track_obstacle, daemon=True)
-            obstacle_avoidance.start()  # spawn thread to monitor obstacles
+            # spawn thread to monitor obstacles
+            self.robot_state.track_obstacle_thread.start()
             self.set_phase(Phase.TRAVERSE)
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
@@ -321,17 +299,14 @@ class Robot:
         front_ultrasonic = Ultrasonic(0)
         while not exit_boolean:
             # sensor should not detect something in the robot
-            if front_ultrasonic.distance < self.robot_state.front_sensor_offset:
+            if front_ultrasonic.distance() < self.robot_state.front_sensor_offset:
                 self.set_phase(Phase.FAULT)
                 return None
             curr_x = self.robot_state.state[0]
             curr_y = self.robot_state.state[1]
-            new_x = curr_x + self.robot_state.move_dist * \
-                math.cos(self.robot_state.state[2]
-                         ) * self.robot_state.time_step
-            new_y = curr_y + self.robot_state.move_dist * \
-                math.sin(self.robot_state.state[2]
-                         ) * self.robot_state.time_step
+            curr_head = self.robot_state.state[2]
+            [new_x, new_y, new_theta] = self.robot_state.ekf.get_predicted_state(
+                [curr_x, curr_y, curr_head], [self.robot_state.move_dist * self.robot_state.time_step, 0])
             next_radius = self.calculate_dist(base_station_loc, (new_x, new_y))
             # if moving will cause the robot to move through the obstacle
             is_next_timestep_blocked = next_radius < self.robot_state.detect_obstacle_range
@@ -339,19 +314,21 @@ class Robot:
             if (next_radius > roomba_radius) or (self.robot_state.is_roomba_obstacle and is_next_timestep_blocked):
                 # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
                 if self.robot_state.is_sim:
-                    self.move_forward(-self.robot_state.move_dist)
-                    self.turn(self.robot_state.turn_angle)
+                    # for some reason I don't think this should work. This needs to be blocking: wait for the robot to finish going backward before turning
+                    self.travel(-self.robot_state.move_dist, 0)
+                    self.travel(0, self.robot_state.turn_angle)
                 else:
                     self.robot_state.motor_controller.motors(0, 0)
                     # TODO: change this to pid or time based. NEED TO MAKE SURE ROBOT DOESN'T BREAK WHEN GOING FROM
                     #  POS VEL TO NEG VEL IN A SHORT PERIOD OF TIME -> ramp down prob
             else:
                 if self.robot_state.is_sim:
-                    self.move_forward(self.robot_state.move_dist)
+                    self.travel(self.robot_state.move_dist, 0)
                 else:
                     # TODO: determine what vel to run this at
                     self.robot_state.motor_controller.motors(0, 0)
-            dt += 1
+                    time.sleep(10)
+            dt += 10  # accumulation in time in ms
             exit_boolean = (dt > time_limit)
         self.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
         return None
@@ -531,7 +508,7 @@ class Robot:
         margin_to_front_obstacle = 5 + \
             max(self.robot_state.width, self.robot_state.length)
         # When boundary following gap in wall but robot cannot fit (check both side and turn 180 and do boundary following again)
-        if lf_ultrasonic.distance < side_margin_sensor:
+        if lf_ultrasonic.distance() < side_margin_sensor:
             curr_heading = self.robot_state.state[2]
             if curr_heading > math.pi:
                 desired_heading = curr_heading - math.pi
@@ -541,7 +518,7 @@ class Robot:
             heading_err = 10
             self.turn_to_target_heading(desired_heading, heading_err)
         # if there is an obstacle in front of the robot, turn until there isn't
-        elif front_ultrasonic.distance < margin_to_front_obstacle:
+        elif front_ultrasonic.distance() < margin_to_front_obstacle:
             self.robot_state.motor_controller.spin_motors(
                 0, self.robot_state.turn_angle)
         # if there is no obstacle in front of the robot but it's still in avoid obstacle because it's following the boundary
