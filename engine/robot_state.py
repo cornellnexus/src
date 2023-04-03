@@ -38,13 +38,16 @@ class Robot_State:
         """
         Instance Attributes:
             FLAGS
+            using_ekf: False if are only using GPS/IMU, True if we are using EKF
             is_sim: False if the physical robot is being used, True otherwise
             should_store_data: False if csv data should not be stored, True otherwise
             phase: the phase of the robot
-            avoid_obstacle: True if the robot is currently avoiding an obstacle, False otherwise
+            is_roomba_obstacle: True if there's an obstacle detected during roomba traversal
+            is_roomba_traversal: True if we are using roomba traversal
 
             CONSTANTS
             width: width of the robot in cm
+            length: length of the robot in cm
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
             position_kp: the proportional factor of the position PID
@@ -60,10 +63,6 @@ class Robot_State:
             max_velocity: the maximum velocity of the robot
             radius: the radius of the robot
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step
-            init_threshold (float): Radius from initial position that will detect robot is back in initial position
-            goal_threshold (float): Threshold from goal that will be detected as reaching goal in obstacle avoidance
-            noise_margin (float): Margin from init_threshold that the robot has to leave before detecting robot has
-                left initial position
             front_sensor_offset:
             max_sensor_range:
             sensor_measuring_angle:
@@ -94,12 +93,9 @@ class Robot_State:
             gps:
             imu:
             ekf:
-            front_ultrasonic: the ultrasonic at the front of the robot, used for detecting obstacles
-            lf_ultrasonic: the ultrasonic at the front of the left side of the robot, used for boundary following
-            lb_ultrasonic: the ultrasonic at the back of the left side of the robot, used for boundary following
-            rf_ultrasonic: the ultrasonic at the front of the right side of the robot, used for boundary following
-            rb_ultrasonic: the ultrasonic at the back of the right side of the robot, used for boundary following
 
+            THREADS
+            track_obstacle_thread
         """
         # TODO: Fill in missing spec for attributes above
 
@@ -109,10 +105,12 @@ class Robot_State:
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
         self.should_store_data = kwargs.get("should_store_data", False)
         self.phase = Phase(kwargs.get("phase", Phase.SETUP))
-        self.avoid_obstacle = kwargs.get("avoid_obstacle", False)
+        self.is_roomba_obstacle = kwargs.get("is_roomba_obstacle", False)
+        self.is_roomba_traversal = kwargs.get("is_roomba_traversal", False)
 
         # CONSTANTS
         self.width = kwargs.get("width", 700)
+        self.length = kwargs.get("length", 700)
         self.time_step = kwargs.get("time_step", 1)
         self.position_kp = kwargs.get("position_kp", 1)
         self.position_ki = kwargs.get("position_ki", 0)
@@ -132,9 +130,6 @@ class Robot_State:
         self.turn_angle = kwargs.get("turn_angle", 3)
         # dividing by time_step ignores the effect of time_step on absolute
         self.turn_angle = self.turn_angle / self.time_step
-        self.init_threshold = kwargs.get("init_threshold", 1)
-        self.goal_threshold = kwargs.get("goal_threshold", 1)
-        self.noise_margin = kwargs.get("noise_margin", 1)
         # TODO: replace this with how far offset the sensor is to the front of the robot
         self.front_sensor_offset = kwargs.get("front_sensor_offset", 0)
         self.max_sensor_range = kwargs.get("max_sensor_range", 600)
@@ -158,13 +153,10 @@ class Robot_State:
         self.gyro_rotation = kwargs.get("gyro_rotation", [0, 0, 0])
         self.init_gps = kwargs.get("init_gps", (0, 0))
         self.gps_data = kwargs.get("gps_data", (0, 0))
-        # starting coord given by GPS
-        self.start_coor = kwargs.get("start_coor", (0, 0))
         # will be filled by execute_setup
         self.imu_data = kwargs.get("imu_data", None)
         self.linear_v = kwargs.get("linear_v", 0)
         self.angular_v = kwargs.get("angular_v", 0)
-        self.dist_to_goal = kwargs.get("dist_to_goal", 0)
         self.prev_phase = kwargs.get("prev_phase", self.phase)
         self.goal_location = kwargs.get("goal_location", (0, 0))
 
@@ -174,11 +166,6 @@ class Robot_State:
         self.gps = kwargs.get("gps", None)
         self.imu = kwargs.get("imu", None)
         self.ekf = kwargs.get("ekf", None)
-        self.front_ultrasonic = kwargs.get("front_ultrasonic", None)
-        self.lf_ultrasonic = kwargs.get("lf_ultrasonic", None)
-        self.lb_ultrasonic = kwargs.get("lb_ultrasonic", None)
-        self.rf_ultrasonic = kwargs.get("rf_ultrasonic", None)
-        self.rb_ultrasonic = kwargs.get("rb_ultrasonic", None)
 
         # THREADS
         self.track_obstacle_thread = None
