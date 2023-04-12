@@ -107,6 +107,7 @@ class Robot_State:
         self.phase = Phase(kwargs.get("phase", Phase.SETUP))
         self.is_roomba_obstacle = kwargs.get("is_roomba_obstacle", False)
         self.is_roomba_traversal = kwargs.get("is_roomba_traversal", False)
+        self.avoid_obstacle = False
 
         # CONSTANTS
         self.width = kwargs.get("width", 700)

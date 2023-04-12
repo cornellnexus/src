@@ -2,6 +2,7 @@ import threading
 import time
 import numpy as np
 import math
+import matplotlib.pyplot as plt
 
 from engine.phase import Phase
 from engine.ekf import LocalizationEKF
@@ -117,7 +118,11 @@ class Robot:
         distance_away = self.calculate_dist(target, predicted_state)
         self.loc_pid_x.reset_integral()
         self.loc_pid_y.reset_integral()
+        i = 0
         while distance_away > allowed_dist_error:
+            i += 1
+            if i == 20:
+                break
             if self.robot_state.is_sim:
                 # Adding simulated noise to the robot's state based on gaussian distribution
                 self.robot_state.state[0] = np.random.normal(
@@ -166,6 +171,18 @@ class Robot:
 
             # location error (in meters)
             distance_away = self.calculate_dist(target, predicted_state)
+            x = self.robot_state.truthpose[:, 0]
+            y = self.robot_state.truthpose[:, 1]
+            np.append(x, target[0])
+            np.append(y, target[1])
+
+            for index in range(i):
+                plt.scatter(
+                    self.robot_state.truthpose[:, 0], self.robot_state.truthpose[:, 1])
+                plt.text(x[index], y[index], index)
+            plt.show()
+            print("truthpose", self.robot_state.truthpose)
+        return i
 
     def write_to_csv(self, predicted_state):
         with open(CSV_PATH + '/datastore.csv', 'a') as fd:
@@ -269,7 +286,7 @@ class Robot:
             # TODO: add obstacle avoidance support
             # TODO: add return when tank is full, etc
             # TODO: add turn_to_target_heading
-            self.move_to_target_node(
+            i = self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
             if self.robot_state.avoid_obstacle:
@@ -278,6 +295,14 @@ class Robot:
                 self.robot_state.prev_phase = Phase.TRAVERSE
                 return unvisited_waypoints
             # TODO: THIS ISNT CORRECT: NEED TO CHECK IF AVOID_OBSTACLE IN move_to_target_node or can also make PID traversal a separate thread and stop the thread when obstacle detected
+
+        x = self.robot_state.truthpose[:, 0]
+        y = self.robot_state.truthpose[:, 1]
+        plt.scatter(
+            self.robot_state.truthpose[:, 0], self.robot_state.truthpose[:, 1])
+        for index in range(i):
+            plt.text(x[index], y[index], index)
+        plt.show()
 
         self.set_phase(Phase.RETURN)
         return unvisited_waypoints
