@@ -1,9 +1,23 @@
 from collections import deque
 from engine.robot import Phase
-from engine.control_mode import ControlMode
+
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from enum import Enum
 from engine.grid import Grid
+
+
+class ControlMode(Enum):
+    """
+    An enumeration of different control modes
+    """
+    LAWNMOWER = 1
+    LAWNMOWER_B = 2
+    LAWNMOWER_GUIDED = 3
+    SPIRAL = 4
+    ROOMBA = 5
+    MANUAL = 6
+    STRAIGHT = 7
+
 
 '''
 Electrical library imports

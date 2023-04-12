@@ -15,7 +15,7 @@ from gui.gui_popup import *
 from gui.images import get_images
 from gui.robot_data import RobotData
 import gui.retrieve_inputs as retrieve_inputs
-from engine.control_mode import ControlMode
+from engine.mission import ControlMode
 from electrical.radio_module import RadioModule
 
 import matplotlib

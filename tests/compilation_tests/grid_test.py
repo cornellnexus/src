@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from engine.grid import Grid
 from engine.kinematics import get_vincenty_x, get_vincenty_y
-from engine.control_mode import ControlMode
+from engine.mission import ControlMode
 
 '''
 Visualization and unit tests for grid.py

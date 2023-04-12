@@ -11,7 +11,7 @@ from engine.robot_state import Robot_State
 from engine.robot import Phase
 from engine.base_station import BaseStation
 from engine.mission import Mission
-from engine.control_mode import ControlMode
+from engine.mission import ControlMode
 from engine.database import DataBase
 from engine.is_raspberrypi import is_raspberrypi
 import logging
