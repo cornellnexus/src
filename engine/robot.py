@@ -10,6 +10,21 @@ from constants.definitions import *
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
 
+<<<<<<< HEAD
+=======
+from engine.is_raspberrypi import is_raspberrypi
+if is_raspberrypi():
+    # Electrical library imports
+    from electrical.motor_controller import MotorController
+    import electrical.gps as GPS 
+    import electrical.imu as IMU 
+    import electrical.radio_module as RadioModule
+    import serial
+    import board
+    import busio
+    # import adafruit_lsm9ds1
+    # from engine.sensor_module import SensorModule # IMU + GPS testing
+>>>>>>> refactor_sensor_init
 
 class Robot:
     """
@@ -214,12 +229,19 @@ class Robot:
         print('pos: ' + str(self.robot_state.state[0:2]))
         print('heading: ' + str(self.robot_state.state[2]))
 
-    def execute_setup(self, radio_session, gps, imu, motor_controller):
-        gps_setup = gps.setup()
-        imu_setup = imu.setup()
-        radio_session.setup_robot()
-        motor_controller.setup(self.robot_state.is_sim)
+    def execute_setup(self):
+        if not self.is_sim:
+            self.robot_state.motor_controller = MotorController(wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = self.is_sim)
+            self.robot_state.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
+            self.robot_state.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), is_sim = self.is_sim) 
+            self.robot_state.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA), is_sim = self.is_sim) 
+        
+            gps_setup = self.robot_state.gps.setup()
+            imu_setup = self.robot_state.imu.setup()
+            self.robot_state.radio_session.setup_robot()
+            self.robot_state.motor_controller.setup(self.robot_state.is_sim)
 
+<<<<<<< HEAD
         zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
         self.robot_state.init_gps = (
             gps.get_gps()["long"], gps.get_gps()["lat"])
@@ -227,10 +249,19 @@ class Robot:
         x_init, y_init = (0, 0)
         heading_init = math.degrees(math.atan2(
             self.robot_state.imu_data["mag"]["y"], self.robot_state.imu_data["mag"]["x"]))
+=======
+            zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
+            self.robot_state.init_gps = (self.robot_state.gps.get_gps()["long"], self.robot_state.gps.get_gps()["lat"])
+            self.robot_state.imu_data = self.robot_state.imu.get_gps()
+            x_init, y_init = (0, 0)
+            heading_init = math.degrees(math.atan2(
+                self.robot_state.imu_data["mag"]["y"], self.robot_state.imu_data["mag"]["x"]))
+>>>>>>> refactor_sensor_init
 
-        # mu is meters from start position (bottom left position facing up)
-        mu = np.array([[x_init], [y_init], [heading_init]])
+            # mu is meters from start position (bottom left position facing up)
+            mu = np.array([[x_init], [y_init], [heading_init]])
 
+<<<<<<< HEAD
         # confidence of mu, set it to high initially b/c not confident, algo brings it down
         sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
         self.robot_state.ekf = LocalizationEKF(mu, sigma)
@@ -242,6 +273,17 @@ class Robot:
                 target=self.track_obstacle, daemon=True)
             # spawn thread to monitor obstacles
             self.robot_state.track_obstacle_thread.start()
+=======
+            # confidence of mu, set it to high initially b/c not confident, algo brings it down
+            sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
+            self.robot_state.ekf = LocalizationEKF(mu, sigma)
+
+            if (self.robot_state.radio_session.connected and gps_setup and imu_setup):
+                obstacle_avoidance = threading.Thread(target=self.track_obstacle, daemon=True)
+                obstacle_avoidance.start()  # spawn thread to monitor obstacles
+                self.set_phase(Phase.TRAVERSE)
+        else:
+>>>>>>> refactor_sensor_init
             self.set_phase(Phase.TRAVERSE)
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,

@@ -1,9 +1,8 @@
 import math
 import numpy as np
 from engine.phase import Phase
-
-# Sensor dependent packages
 from engine.is_raspberrypi import is_raspberrypi
+<<<<<<< HEAD
 if is_raspberrypi():
     from electrical.motor_controller import MotorController
     import electrical.gps as GPS
@@ -11,6 +10,8 @@ if is_raspberrypi():
     import electrical.radio_module as RadioModule
     import serial
     # from engine.sensor_module import SensorModule # IMU + GPS testing
+=======
+>>>>>>> refactor_sensor_init
 
 
 class Robot_State:
@@ -166,6 +167,7 @@ class Robot_State:
         self.gps = kwargs.get("gps", None)
         self.imu = kwargs.get("imu", None)
         self.ekf = kwargs.get("ekf", None)
+<<<<<<< HEAD
 
         # THREADS
         self.track_obstacle_thread = None
@@ -182,3 +184,10 @@ class Robot_State:
                            timeout=5), is_sim=self.is_sim)
             self.imu = IMU(init_i2c=busio.I2C(
                 board.SCL, board.SDA), is_sim=self.is_sim)
+=======
+        self.front_ultrasonic = kwargs.get("front_ultrasonic", None)
+        self.lf_ultrasonic = kwargs.get("lf_ultrasonic",None )
+        self.lb_ultrasonic = kwargs.get("lb_ultrasonic", None)
+        self.rf_ultrasonic = kwargs.get("rf_ultrasonic", None)
+        self.rb_ultrasonic = kwargs.get("rb_ultrasonic", None)
+>>>>>>> refactor_sensor_init
