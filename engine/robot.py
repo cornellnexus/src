@@ -10,8 +10,6 @@ from constants.definitions import *
 from engine.kinematics import integrate_odom, feedback_lin, limit_cmds, get_vincenty_x, get_vincenty_y
 from csv_files.csv_util import write_state_to_csv, write_phase_to_csv
 
-<<<<<<< HEAD
-=======
 from engine.is_raspberrypi import is_raspberrypi
 if is_raspberrypi():
     # Electrical library imports
@@ -24,7 +22,6 @@ if is_raspberrypi():
     import busio
     # import adafruit_lsm9ds1
     # from engine.sensor_module import SensorModule # IMU + GPS testing
->>>>>>> refactor_sensor_init
 
 class Robot:
     """
