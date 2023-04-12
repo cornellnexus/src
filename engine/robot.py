@@ -241,39 +241,16 @@ class Robot:
             self.robot_state.radio_session.setup_robot()
             self.robot_state.motor_controller.setup(self.robot_state.is_sim)
 
-<<<<<<< HEAD
-        zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
-        self.robot_state.init_gps = (
-            gps.get_gps()["long"], gps.get_gps()["lat"])
-        self.robot_state.imu_data = imu.get_gps()
-        x_init, y_init = (0, 0)
-        heading_init = math.degrees(math.atan2(
-            self.robot_state.imu_data["mag"]["y"], self.robot_state.imu_data["mag"]["x"]))
-=======
             zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
             self.robot_state.init_gps = (self.robot_state.gps.get_gps()["long"], self.robot_state.gps.get_gps()["lat"])
             self.robot_state.imu_data = self.robot_state.imu.get_gps()
             x_init, y_init = (0, 0)
             heading_init = math.degrees(math.atan2(
                 self.robot_state.imu_data["mag"]["y"], self.robot_state.imu_data["mag"]["x"]))
->>>>>>> refactor_sensor_init
 
             # mu is meters from start position (bottom left position facing up)
             mu = np.array([[x_init], [y_init], [heading_init]])
 
-<<<<<<< HEAD
-        # confidence of mu, set it to high initially b/c not confident, algo brings it down
-        sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
-        self.robot_state.ekf = LocalizationEKF(mu, sigma)
-        self.robot_state.gps = gps
-        self.robot_state.imu = imu
-        self.robot_state.motor_controller = motor_controller
-        if (radio_session.connected and gps_setup and imu_setup):
-            self.robot_state.track_obstacle_thread = threading.Thread(
-                target=self.track_obstacle, daemon=True)
-            # spawn thread to monitor obstacles
-            self.robot_state.track_obstacle_thread.start()
-=======
             # confidence of mu, set it to high initially b/c not confident, algo brings it down
             sigma = np.array([[10, 0, 0], [0, 10, 0], [0, 0, 10]])
             self.robot_state.ekf = LocalizationEKF(mu, sigma)
@@ -283,7 +260,6 @@ class Robot:
                 obstacle_avoidance.start()  # spawn thread to monitor obstacles
                 self.set_phase(Phase.TRAVERSE)
         else:
->>>>>>> refactor_sensor_init
             self.set_phase(Phase.TRAVERSE)
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
