@@ -577,8 +577,9 @@ class Grid:
             next_row = self.curr_pos[1] + 1
 
         # Traverse the row until it is time to turn
+
         while not self.is_before_turning_column(turning_column):
-            self.waypoints.append(new_pos)
+            # self.waypoints.append(new_pos)
             self.curr_pos = new_pos
             new_pos = self.get_next_traversal_pos()
 
@@ -638,7 +639,7 @@ class Grid:
             # the row (or terminating).
 
             self.add_guided_waypoints(is_vertical)
-
+        print(self.waypoints)
         return self.waypoints
 
     # --------------------- STANDARD TRAVERSAL ALGORITHMS -------------- #
