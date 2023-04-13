@@ -287,7 +287,7 @@ class Robot:
             self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
-            if self.robot_state.avoid_obstacle:
+            if self.robot_state.phase == Phase.AVOID_OBSTACLE: # TODO: Temp fix until goal loc reset
                 self.set_phase(Phase.AVOID_OBSTACLE)
                 self.robot_state.goal_location = curr_waypoint
                 self.robot_state.prev_phase = Phase.TRAVERSE
