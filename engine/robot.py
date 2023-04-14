@@ -302,7 +302,6 @@ class Robot:
             self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
-            return unvisited_waypoints
             # TODO: THIS ISNT CORRECT: NEED TO CHECK IF AVOID_OBSTACLE IN move_to_target_node or can also make PID traversal a separate thread and stop the thread when obstacle detected
 
         self.set_phase(Phase.RETURN)
