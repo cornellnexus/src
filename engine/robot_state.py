@@ -33,8 +33,6 @@ class Robot_State:
             is_sim: False if the physical robot is being used, True otherwise
             should_store_data: False if csv data should not be stored, True otherwise
             phase: the phase of the robot
-            is_roomba_obstacle: True if there's an obstacle detected during roomba traversal
-            is_roomba_traversal: True if we are using roomba traversal
             enable_obstacle_avoidance: False if we want to pause obstacle avoidance
 
             CONSTANTS
@@ -94,8 +92,6 @@ class Robot_State:
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
         self.should_store_data = kwargs.get("should_store_data", False)
         self.phase = Phase(kwargs.get("phase", Phase.SETUP))
-        self.is_roomba_obstacle = kwargs.get("is_roomba_obstacle", False)
-        self.is_roomba_traversal = kwargs.get("is_roomba_traversal", False)
         self.enable_obstacle_avoidance = kwargs.get(
             "enable_obstacle_avoidance", True)
 

@@ -276,12 +276,13 @@ class Robot:
         self.robot_state.prev_phase = Phase.TRAVERSE
         self.robot_state.control_mode = control_mode
         if control_mode == 4:  # Roomba mode
+            # roomba mode uses its own obstacle avoidance
+            self.robot_state.enable_obstacle_avoidance = False
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
-            self.robot_state.is_roomba_traversal = True
+            self.robot_state.enable_obstacle_avoidance = True
         else:
             self.traverse_standard(unvisited_waypoints,
                                    allowed_dist_error, database)
-            self.robot_state.is_roomba_traversal = False
 
     def traverse_standard(self, unvisited_waypoints, allowed_dist_error, database):
         """ Move the robot by following the traversal path given by [unvisited_waypoints].
@@ -339,7 +340,7 @@ class Robot:
             # if moving will cause the robot to move through the obstacle
             is_next_timestep_blocked = next_radius < self.robot_state.detect_obstacle_range
             # sensor should not detect something in the robot
-            if (next_radius > roomba_radius) or (self.robot_state.is_roomba_obstacle and is_next_timestep_blocked):
+            if (next_radius > roomba_radius) or is_next_timestep_blocked:
                 # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
                 if self.robot_state.is_sim:
                     # for some reason I don't think this should work. This needs to be blocking: wait for the robot to finish going backward before turning
@@ -398,9 +399,7 @@ class Robot:
                     if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
                         self.set_phase(Phase.FAULT)
                         return None
-                if self.robot_state.is_roomba_traversal:  # roomba mode
-                    self.robot_state.is_roomba_obstacle = True
-                elif (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
+                if (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
                         self.robot_state.phase == Phase.AVOID_OBSTACLE):
                     if curr_ultrasonic_value < self.robot_state.detect_obstacle_range:
                         # Note: didn't check whether we can reach goal before contacting obstacle because obstacle
