@@ -14,14 +14,15 @@ from engine.is_raspberrypi import is_raspberrypi
 if is_raspberrypi():
     # Electrical library imports
     from electrical.motor_controller import MotorController
-    import electrical.gps as GPS 
-    import electrical.imu as IMU 
+    import electrical.gps as GPS
+    import electrical.imu as IMU
     import electrical.radio_module as RadioModule
     import serial
     import board
     import busio
     # import adafruit_lsm9ds1
     # from engine.sensor_module import SensorModule # IMU + GPS testing
+
 
 class Robot:
     """
@@ -127,6 +128,7 @@ class Robot:
 
         # location error (in meters)
         distance_away = self.calculate_dist(target, predicted_state)
+        self.robot_state.goal_location = target
         self.loc_pid_x.reset_integral()
         self.loc_pid_y.reset_integral()
         while distance_away > allowed_dist_error:
@@ -194,7 +196,7 @@ class Robot:
             allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
                 place.
         """
-
+        self.robot_state.enable_obstacle_avoidance = False  # we dont want the robot to avoid obstacle here
         predicted_state = self.robot_state.state  # this will come from Kalman Filter
 
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
@@ -217,6 +219,8 @@ class Robot:
                 "state", self.robot_state.state[0], self.robot_state.state[1], self.robot_state.state[2])
 
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
+        # re-enable after finishing turning
+        self.robot_state.enable_obstacle_avoidance = True
 
     def get_state(self):
         return self.robot_state.state
@@ -227,19 +231,26 @@ class Robot:
         print('heading: ' + str(self.robot_state.state[2]))
 
     def execute_setup(self):
+        self.robot_state.goal_location = None
+        self.robot_state.prev_phase = Phase.SETUP
         if not self.is_sim:
-            self.robot_state.motor_controller = MotorController(wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = self.is_sim)
-            self.robot_state.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-            self.robot_state.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), is_sim = self.is_sim) 
-            self.robot_state.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA), is_sim = self.is_sim) 
-        
+            self.robot_state.motor_controller = MotorController(
+                wheel_radius=0, vm_load1=1, vm_load2=1, L=0, R=0, is_sim=self.is_sim)
+            self.robot_state.robot_radio_session = RadioModule(
+                serial.Serial('/dev/ttyS0', 57600))
+            self.robot_state.gps = GPS(serial.Serial(
+                '/dev/ttyACM0', 19200, timeout=5), is_sim=self.is_sim)
+            self.robot_state.imu = IMU(init_i2c=busio.I2C(
+                board.SCL, board.SDA), is_sim=self.is_sim)
+
             gps_setup = self.robot_state.gps.setup()
             imu_setup = self.robot_state.imu.setup()
             self.robot_state.radio_session.setup_robot()
             self.robot_state.motor_controller.setup(self.robot_state.is_sim)
 
             zone = ENGINEERING_QUAD  # Used for GPS visualization, make it a parameter
-            self.robot_state.init_gps = (self.robot_state.gps.get_gps()["long"], self.robot_state.gps.get_gps()["lat"])
+            self.robot_state.init_gps = (self.robot_state.gps.get_gps()[
+                                         "long"], self.robot_state.gps.get_gps()["lat"])
             self.robot_state.imu_data = self.robot_state.imu.get_gps()
             x_init, y_init = (0, 0)
             heading_init = math.degrees(math.atan2(
@@ -253,7 +264,8 @@ class Robot:
             self.robot_state.ekf = LocalizationEKF(mu, sigma)
 
             if (self.robot_state.radio_session.connected and gps_setup and imu_setup):
-                obstacle_avoidance = threading.Thread(target=self.track_obstacle, daemon=True)
+                obstacle_avoidance = threading.Thread(
+                    target=self.track_obstacle, daemon=True)
                 obstacle_avoidance.start()  # spawn thread to monitor obstacles
                 self.set_phase(Phase.TRAVERSE)
         else:
@@ -261,6 +273,7 @@ class Robot:
 
     def execute_traversal(self, unvisited_waypoints, allowed_dist_error, base_station_loc, control_mode, time_limit,
                           roomba_radius, database):
+        self.robot_state.prev_phase = Phase.TRAVERSE
         self.robot_state.control_mode = control_mode
         if control_mode == 4:  # Roomba mode
             self.traverse_roomba(base_station_loc, time_limit, roomba_radius)
@@ -284,14 +297,11 @@ class Robot:
             # TODO: add obstacle avoidance support
             # TODO: add return when tank is full, etc
             # TODO: add turn_to_target_heading
+            self.robot_state.goal_location = curr_waypoint
             self.move_to_target_node(
                 curr_waypoint, allowed_dist_error, database)
             unvisited_waypoints.popleft()
-            if self.robot_state.phase == Phase.AVOID_OBSTACLE: # TODO: Temp fix until goal loc reset
-                self.set_phase(Phase.AVOID_OBSTACLE)
-                self.robot_state.goal_location = curr_waypoint
-                self.robot_state.prev_phase = Phase.TRAVERSE
-                return unvisited_waypoints
+            return unvisited_waypoints
             # TODO: THIS ISNT CORRECT: NEED TO CHECK IF AVOID_OBSTACLE IN move_to_target_node or can also make PID traversal a separate thread and stop the thread when obstacle detected
 
         self.set_phase(Phase.RETURN)
@@ -325,6 +335,7 @@ class Robot:
             [new_x, new_y, new_theta] = self.robot_state.ekf.get_predicted_state(
                 [curr_x, curr_y, curr_head], [self.robot_state.move_dist * self.robot_state.time_step, 0])
             next_radius = self.calculate_dist(base_station_loc, (new_x, new_y))
+            self.robot_state.goal_location = (new_x, new_y)
             # if moving will cause the robot to move through the obstacle
             is_next_timestep_blocked = next_radius < self.robot_state.detect_obstacle_range
             # sensor should not detect something in the robot
@@ -366,49 +377,50 @@ class Robot:
         front_ultrasonic = None
         counter = 0  # added for testing
         while True:
-            if self.robot_state.is_sim:
-                ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
-                                             "r")  # added for testing
-                content = ultrasonic_value_file.readlines()
-                ultrasonic_value_file.close()
-                try:
-                    line = content[counter]
-                    counter += 1
-                    curr_ultrasonic_value = float(
-                        (''.join(line.rstrip('\n')).strip('()').split(', '))[0])
-                except IndexError:
-                    print("no more sensor data")
-                    break
-            else:
-                from electrical.ultrasonic_sensor import Ultrasonic
-                front_ultrasonic = Ultrasonic(0)
-                curr_ultrasonic_value = front_ultrasonic.distance()
-                if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
-                    self.set_phase(Phase.FAULT)
-                    return None
-            if self.robot_state.is_roomba_traversal:  # roomba mode
-                self.robot_state.is_roomba_obstacle = True
-            elif (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
-                    self.robot_state.phase == Phase.AVOID_OBSTACLE):
-                if curr_ultrasonic_value < self.robot_state.detect_obstacle_range:
-                    # Note: didn't check whether we can reach goal before contacting obstacle because obstacle
-                    # detection does not detect angle, so obstacle could be calculated to be falsely farther away than
-                    # the goal. Not optimal because in cases, robot will execute boundary following when it can reach
-                    # goal
-                    self.set_phase(Phase.AVOID_OBSTACLE)
-                    if self.robot_state.is_sim:
-                        with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                            fd.write("Avoid" + '\n')
-                else:
-                    if self.robot_state.is_sim:
-                        with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                            fd.write("Not Avoid" + '\n')
-            if curr_ultrasonic_value < 0:
-                # value should not go below 0; sensor is broken
-                self.set_phase(Phase.FAULT)
+            if self.robot_state.enable_obstacle_avoidance:
                 if self.robot_state.is_sim:
-                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                        fd.write("Fault" + '\n')
+                    ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
+                                                 "r")  # added for testing
+                    content = ultrasonic_value_file.readlines()
+                    ultrasonic_value_file.close()
+                    try:
+                        line = content[counter]
+                        counter += 1
+                        curr_ultrasonic_value = float(
+                            (''.join(line.rstrip('\n')).strip('()').split(', '))[0])
+                    except IndexError:
+                        print("no more sensor data")
+                        break
+                else:
+                    from electrical.ultrasonic_sensor import Ultrasonic
+                    front_ultrasonic = Ultrasonic(0)
+                    curr_ultrasonic_value = front_ultrasonic.distance()
+                    if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
+                        self.set_phase(Phase.FAULT)
+                        return None
+                if self.robot_state.is_roomba_traversal:  # roomba mode
+                    self.robot_state.is_roomba_obstacle = True
+                elif (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
+                        self.robot_state.phase == Phase.AVOID_OBSTACLE):
+                    if curr_ultrasonic_value < self.robot_state.detect_obstacle_range:
+                        # Note: didn't check whether we can reach goal before contacting obstacle because obstacle
+                        # detection does not detect angle, so obstacle could be calculated to be falsely farther away than
+                        # the goal. Not optimal because in cases, robot will execute boundary following when it can reach
+                        # goal
+                        self.set_phase(Phase.AVOID_OBSTACLE)
+                        if self.robot_state.is_sim:
+                            with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                                fd.write("Avoid" + '\n')
+                    else:
+                        if self.robot_state.is_sim:
+                            with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                                fd.write("Not Avoid" + '\n')
+                if curr_ultrasonic_value < 0:
+                    # value should not go below 0; sensor is broken
+                    self.set_phase(Phase.FAULT)
+                    if self.robot_state.is_sim:
+                        with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                            fd.write("Fault" + '\n')
             if not self.robot_state.is_sim:
                 time.sleep(10)  # don't hog the cpu
 
@@ -574,12 +586,13 @@ class Robot:
             allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
                 place.
         """
-        docking_dist_to_base = 1.0  # how close the robot should come to base before starting DOCKING
+        self.robot_state.prev_phase = Phase.RETURN
+        # how close the robot should come to base before starting DOCKING
+        docking_dist_to_base = 1.0
         dx = docking_dist_to_base * math.cos(base_angle)
         dy = docking_dist_to_base * math.sin(base_angle)
         target_loc = (base_loc[0] + dx, base_loc[1] + dy)
-
-        # TODO: add obstacle avoidance support
+        self.robot_state.goal_location = target_loc
         self.move_to_target_node(
             target_loc, allowed_docking_pos_error, database)
 
@@ -592,6 +605,8 @@ class Robot:
         self.set_phase(Phase.DOCKING)
 
     def execute_docking(self):
+        self.robot_state.goal_location = None
+        self.robot_state.prev_phase = Phase.DOCKING
         # TODO: add traverse to doc at base station in case mission didnt finish
         self.set_phase(Phase.COMPLETE)  # temporary for simulation purposes
 
