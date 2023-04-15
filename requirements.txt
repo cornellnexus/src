@@ -8,7 +8,7 @@ vincenty==0.1.4
 statistics==1.0.3.5
 PySimpleGui == 4.59.0 #comment this out when running on rpi
 coverage
-numpy==1.21.6
+numpy==1.24.2
 CMake
 wmm2020
 ahrs
