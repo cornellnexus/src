@@ -10,7 +10,7 @@ from engine.kinematics import limit_cmds, feedback_lin, integrate_odom, get_vinc
 from engine.node import *
 from engine.pid_controller import PID
 from engine.robot import Robot
-from engine.sim_trajectory import *
+from engine.main import *
 from engine.user_utils import *
 
 """
