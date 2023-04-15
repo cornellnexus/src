@@ -1,5 +1,5 @@
 {
-  "rpi_comms": false,
+  "is_transmit": true,
   "is_sim": true,
   "store_data": false
 }

@@ -63,7 +63,7 @@ class Robot:
 
         # TODO: wrap in try/except (error when calling execute_setup_test.py)
         # write in csv
-        if self.robot_state.should_store_data:
+        if self.robot_state.store_data:
             write_phase_to_csv(self.robot_state.phase)
 
     def update_state(self, velocity, omega):
@@ -165,7 +165,7 @@ class Robot:
             # Get state after movement:
             predicted_state = self.robot_state.state  # this will come from Kalman Filter
 
-            if self.robot_state.is_sim and self.robot_state.should_store_data:
+            if self.robot_state.is_sim and self.robot_state.store_data:
                 # TODO: Update to use databse information
                 # FOR GUI: writing robot location and mag heading in CSV
                 write_state_to_csv(predicted_state)
@@ -352,7 +352,7 @@ class Robot:
 
     def set_phase(self, new_phase):
         self.robot_state.phase = new_phase
-        if self.robot_state.should_store_data:
+        if self.robot_state.store_data:
             write_phase_to_csv(self.robot_state.phase)
 
     def track_obstacle(self):
