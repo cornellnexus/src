@@ -47,19 +47,16 @@ class Robot:
         self.robot_state = robot_state
 
         self.loc_pid_x = PID(
-            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, target=0, sample_time=self.robot_state.time_step,
-            output_limits=(None, None)
-        )
+            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, 
+            target=0, sample_time=self.robot_state.time_step, output_limits=(None, None))
 
         self.loc_pid_y = PID(
-            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, target=0, sample_time=self.robot_state.time_step,
-            output_limits=(None, None)
-        )
+            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, 
+            target=0, sample_time=self.robot_state.time_step, output_limits=(None, None))
 
         self.head_pid = PID(
-            Kp=self.robot_state.heading_kp, Ki=self.robot_state.heading_ki, Kd=self.robot_state.heading_kd, target=0, sample_time=self.robot_state.time_step,
-            output_limits=(None, None)
-        )
+            Kp=self.robot_state.heading_kp, Ki=self.robot_state.heading_ki, Kd=self.robot_state.heading_kd, 
+            target=0, sample_time=self.robot_state.time_step, output_limits=(None, None))
 
         # TODO: wrap in try/except (error when calling execute_setup_test.py)
         # write in csv
