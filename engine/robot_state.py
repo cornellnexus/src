@@ -129,8 +129,9 @@ class Robot_State:
         self.width_margin = kwargs.get("width_margin", 1)
         self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
             math.radians((180 - self.sensor_measuring_angle) / 2))
-        self.detect_obstacle_range = "detect_obstacle_range", min(
-            self.threshold_distance, self.max_sensor_range)  # set ultrasonic detection range
+        # set ultrasonic detection range
+        self.detect_obstacle_range = min(
+            self.threshold_distance, self.max_sensor_range)
 
         # MEASUREMENTS
         self.state = kwargs.get("state", np.array(
