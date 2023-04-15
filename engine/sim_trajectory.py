@@ -57,10 +57,8 @@ if __name__ == "__main__":
     # once gui.gui.py is closed, also close gui.retrieve_inputs.py
     os.system("pkill -f gui.retrieve_inputs")
 
-    plot_sim_traj(m=m)
-    
-
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
+    plot_sim_traj(m=m) #  Plot the trajectory of the completed mission
 
     # def waypoints_to_array(waypoints):
     #     """
