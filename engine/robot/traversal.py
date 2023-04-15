@@ -16,10 +16,10 @@ def execute_traversal(robot, unvisited_waypoints, allowed_dist_error, base_stati
         """
         robot.robot_state.control_mode = control_mode
         if control_mode == 4:  # Roomba mode
-            robot.traverse_roomba(base_station_loc, time_limit, roomba_radius)
+            traverse_roomba(robot, base_station_loc, time_limit, roomba_radius)
             robot.robot_state.is_roomba_traversal = True
         else:
-            robot.traverse_standard(unvisited_waypoints, allowed_dist_error, database)
+            traverse_standard(robot, unvisited_waypoints, allowed_dist_error, database)
             robot.robot_state.is_roomba_traversal = False
 
 def traverse_standard(robot, unvisited_waypoints, allowed_dist_error, database):
@@ -36,7 +36,7 @@ def traverse_standard(robot, unvisited_waypoints, allowed_dist_error, database):
         # TODO: add obstacle avoidance support
         # TODO: add return when tank is full, etc
         # Removed function move to target heading since it doesn't really make sense
-        robot.move_to_target_node(curr_waypoint, allowed_dist_error, database)
+        move_to_target_node(robot, curr_waypoint, allowed_dist_error, database)
         unvisited_waypoints.popleft()
         if robot.robot_state.phase == Phase.AVOID_OBSTACLE: # TODO: Temp fix until goal loc reset
             robot.set_phase(Phase.AVOID_OBSTACLE)
@@ -89,7 +89,7 @@ def move_to_target_node(robot, target, allowed_dist_error, database):
 
         robot.robot_state.linear_v = limited_cmd_v[0]
         robot.robot_state.angular_v = limited_cmd_w[0]
-        robot.travel(robot.robot_state.time_step * limited_cmd_v[0],
+        travel(robot, robot.robot_state.time_step * limited_cmd_v[0],
                     robot.robot_state.time_step * limited_cmd_w[0])
         if not robot.robot_state.is_sim:
             robot.robot_state.motor_controller.spin_motors(
@@ -128,8 +128,7 @@ def travel(robot, delta_d, delta_phi):
             robot.robot_state.truthpose, np.transpose(robot.robot_state.state), 0)
     # otherwise, we update the robot state using EKF
     else:
-        robot.update_state(
-            delta_d/robot.robot_state.time_step, delta_phi/robot.robot_state.time_step)
+        update_state(robot, delta_d/robot.robot_state.time_step, delta_phi/robot.robot_state.time_step)
         
 def update_state(robot, velocity, omega):
     """
@@ -197,15 +196,15 @@ def traverse_roomba(robot, base_station_loc, time_limit, roomba_radius):
             # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
             if robot.robot_state.is_sim:
                 # for some reason I don't think this should work. This needs to be blocking: wait for the robot to finish going backward before turning
-                robot.travel(-robot.robot_state.move_dist, 0)
-                robot.travel(0, robot.robot_state.turn_angle)
+                travel(robot, -robot.robot_state.move_dist, 0)
+                travel(robot, 0, robot.robot_state.turn_angle)
             else:
                 robot.robot_state.motor_controller.motors(0, 0)
                 # TODO: change this to pid or time based. NEED TO MAKE SURE ROBOT DOESN'T BREAK WHEN GOING FROM
                 #  POS VEL TO NEG VEL IN A SHORT PERIOD OF TIME -> ramp down prob
         else:
             if robot.robot_state.is_sim:
-                robot.travel(robot.robot_state.move_dist, 0)
+                travel(robot, robot.robot_state.move_dist, 0)
             else:
                 # TODO: determine what vel to run this at
                 robot.robot_state.motor_controller.motors(0, 0)
@@ -214,4 +213,39 @@ def traverse_roomba(robot, base_station_loc, time_limit, roomba_radius):
         exit_boolean = (dt > time_limit)
     robot.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
     return None
+
+
+# JULIE NOTE: I DONT THINK THIS FUNCTION WILL WORK. WE CAN'T TURN IN PLACE. 
+# I am leaving this here because the obstacle avoidance code currently uses it
+def turn_to_target_heading(robot, target_heading, allowed_heading_error, database):
+        """
+        Turns robot in-place to target heading + or - allowed_heading_error, utilizing heading PID.
+        Arguments:
+            target_heading: the heading in radians the robot should approach at the end of in-place rotation.
+            allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
+                place.
+        """
+
+        predicted_state = robot.robot_state.state  # this will come from Kalman Filter
+
+        abs_heading_error = abs(target_heading - float(predicted_state[2]))
+        robot.head_pid.reset_integral()
+        while abs_heading_error > allowed_heading_error:
+            theta_error = target_heading - robot.robot_state.state[2]
+            w = robot.head_pid.update(theta_error)  # angular velocity
+            _, limited_cmd_w = limit_cmds(
+                0, w, robot.robot_state.max_velocity, robot.robot_state.radius)
+
+            travel(0, robot.robot_state.time_step * limited_cmd_w)
+            if not robot.robot_state.is_sim:
+                robot.robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
+                time.sleep(10)
+
+            # Get state after movement:
+            predicted_state = robot.robot_state.state  # this will come from Kalman Filter
+
+            database.update_data(
+                "state", robot.robot_state.state[0], robot.robot_state.state[1], robot.robot_state.state[2])
+
+            abs_heading_error = abs(target_heading - float(predicted_state[2]))
 

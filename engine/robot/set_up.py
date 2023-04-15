@@ -6,6 +6,7 @@ from engine.phase import Phase
 from engine.ekf import LocalizationEKF
 from constants.definitions import *
 
+from engine.robot.obstacle_avoidance import track_obstacle
 from engine.is_raspberrypi import is_raspberrypi
 if is_raspberrypi():
     # Electrical library imports
@@ -43,7 +44,7 @@ def execute_setup(robot):
         robot.robot_state.ekf = LocalizationEKF(mu, sigma)
 
         if (robot.robot_state.radio_session.connected and gps_setup and imu_setup):
-            obstacle_avoidance = threading.Thread(target=robot.track_obstacle, daemon=True)
+            obstacle_avoidance = threading.Thread(target=track_obstacle, daemon=True)
             obstacle_avoidance.start()  # spawn thread to monitor obstacles
             robot.set_phase(Phase.TRAVERSE)
     else:
