@@ -6,29 +6,27 @@ import cv2
 import time 
 from enum import Enum
 
+class Steps(Enum):
+    """
+    An enumeration of the different steps in the April  Tag Docking ALgorithm
+    """
+    Step1 = 1
+    Step2 = 2
+    Step3 = 3
+    Step4 = 4
+    Done = 5
+
 cx, cy = int(960),int(540)
 idDict = {1: "R1", 2: "R2", 3: "R3"}#TODO add all the other tags
 visited = []
 timeout =  10##seconds
 angle_min = 10##degrees
 depth_min = 8
-step1_done = False
-step2_done = False
-step3_done = False 
-step4_done = False
+step = Steps.Step1
 motor = BasicMotorController(True)
 start_time = None
 angle = float("inf")
 depth = float("inf")
-
-class StepsDone(Enum):
-    """
-    An enumeration of the different steps in the April  Tag Docking ALgorithm
-    """
-    Step1 = True
-    Step2 = True
-    Step3 = True
-    Step4 = True
 
 arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_APRILTAG_36h11)
 arucoParams = cv2.aruco.DetectorParameters_create()
@@ -77,21 +75,21 @@ while True:
     is_april_tag_in_view = len(corner) > 0
     if not is_april_tag_in_view:
       if angle < angle_min and depth < depth_min:
-        step1_done  = True
+        step == Steps.Step2
       if time.time() - start_time > timeout and step1_done is False:
         #Step 1 - Check for april tags rn by rotating in circle for 15 seconds.
           motor.turn_right()##TODO make time a parameter of this function
-      if step1_done and not step2_done:
+      if step == Steps.Step2:
         #Step 2 - go back until len(corners) = 1 or when we see at least 1 april tag
         motor.reverse()
     else:
-      if step1_done:
-        step2_done = True
+      if step == Steps.Step2:
+        step == Steps.Step3
       start_time = time.time()
       for (corner, markerId) in zip(corners, ids):
         visualization(corner,markerId)
           #Step 1 starts here
-        if step1_done is False: 
+        if step == Steps.Step1: 
           if idDict.get(markerId) == "R2": ##TODO: Add B2, L2, F2 in the future
             #Step 1 is over once we aligned with center tag and we go forward.
             if angle <= angle_min:
@@ -113,7 +111,7 @@ while True:
                 else:
                   motor.turn_right()
           #Step 3 turns by 'angle' degrees to make a straight line + TODO: test how much turn_right and turn_left turns with our current robot + assume turn_right/left is 3 degrees
-          if step2_done and not step3_done: 
+          if step == Steps.Step3: 
             num_calls = max(int(angle//3),1)
             if direction_of_tag(corner[0]) == "right":
               for i in range(num_calls):
@@ -121,16 +119,16 @@ while True:
             else: 
               for i in range(num_calls):
                 motor.turn_left()
-            step3_done = True
+            step == Steps.Step4
           
           #step 4: reverse by some experimentally determined constant -  15 inches 
-          if step3_done and not step4_done: 
+          if step == Steps.Step4: 
             if (depth < 15):
               motor.reverse()
             else:
-              step4_done = True
+              step == Steps.Done
 
-    if step4_done == True:
+    if step == Steps.Done:
       break
              
     cv2.imshow("Camera", image)
