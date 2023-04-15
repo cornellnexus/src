@@ -97,10 +97,6 @@ def plot_sim_traj(m):
       plt.xlim(xbounds)
       plt.ylim(ybounds)
 
-  
- 
-
-  
   # Plot base station:
   circle_patch_base = plt.Circle((5, 5), 1, fc="red")
   # The heading of base station in degrees

@@ -16,7 +16,7 @@ from engine.database import DataBase
 from engine.transmission import send_packet_to_gui
 from engine.is_raspberrypi import is_raspberrypi
 
-from engine.plot_test import plot_sim_traj
+from engine.plot_trajectory import plot_sim_traj
 
 
 import threading
