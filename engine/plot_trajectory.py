@@ -44,6 +44,12 @@ def get_plot_boundaries(nodes, delta):
     return xlim, ylim
 
 def init():
+    """
+    A function used to draw a clear frame, called once before the first frame
+
+    Note: Parameter to Matplotlib's FuncAnimation class.
+    This function is called before the first frame.
+    """
     circle_patch.center = (0, 0)
     circle_patch_base.center = mission.mission_state.base_station.position
     ax.add_patch(circle_patch)
@@ -56,21 +62,19 @@ def animate(i, m):
     """
     Plot elements that animated in every frame.
 
-    Note: Parameter to Matplotlib's FuncAnimation animation class.
+    Note: Parameter to Matplotlib's FuncAnimation class.
     This function is called at each frame.
 
     Arguments:
         i: integer representing frame number (next value in FuncAnimation frames attribute)
         m: a Mission object 
     """
-    print(i)
     x_coord = m.mission_state.robot.robot_state.truthpose[i, 0]
     y_coord = m.mission_state.robot.robot_state.truthpose[i, 1]
     circle_patch.center = (x_coord, y_coord)
     wedge_patch.update({"center": [x_coord, y_coord]})
     wedge_patch.theta1 = np.degrees(m.mission_state.robot.robot_state.truthpose[i, 2]) - 10
     wedge_patch.theta2 = np.degrees(m.mission_state.robot.robot_state.truthpose[i, 2]) + 10
-    
     return circle_patch, wedge_patch
 
 def plot_sim_traj(m):
