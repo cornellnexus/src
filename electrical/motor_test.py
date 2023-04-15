@@ -14,7 +14,7 @@ class BasicMotorControllerTest:
 
     def __init__(self): 
         self.mc = BasicMotorController()
-        self.mc.setup()
+        self.mc.setup('slow') # CHANGE SPEED HERE
         self.counter_right = 0
 
     # Turns right for 3 seconds
@@ -34,10 +34,10 @@ class BasicMotorControllerTest:
         while time.time() <	stop_time:
             self.mc.turn_left()
 
-    # Moves forward for 3 seconds
+    # Moves forward for 5 seconds
     def motor_controller_forward(self):
         GPIO.add_event_detect(pin,GPIO.RISING)
-        stop_time = time.time() + 3
+        stop_time = time.time() + 5 # CHANGE DURATION HERE
         while time.time() <	stop_time:
             self.mc.go_forward()
             if GPIO.event_detected(pin):
