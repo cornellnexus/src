@@ -1,11 +1,7 @@
-import numpy as np
 import math
-import matplotlib.pyplot as plt
+import threading
 
-from matplotlib import animation as animation
-from matplotlib import patches as patch
 from constants.definitions import CSV_PATH
-
 from engine.robot import Robot
 from engine.robot_state import Robot_State
 from engine.robot import Phase
@@ -15,12 +11,7 @@ from engine.control_mode import ControlMode
 from engine.database import DataBase
 from engine.transmission import send_packet_to_gui
 from engine.is_raspberrypi import is_raspberrypi
-
 from engine.plot_trajectory import plot_sim_traj
-
-
-import threading
-import os
 
 class Flags:
     def __init__(self):
