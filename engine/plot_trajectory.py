@@ -53,12 +53,24 @@ def init():
     return circle_patch, wedge_patch
 
 def animate(i, m):
+    """
+    Plot elements that animated in every frame.
+
+    Note: Parameter to Matplotlib's FuncAnimation animation class.
+    This function is called at each frame.
+
+    Arguments:
+        i: integer representing frame number (next value in FuncAnimation frames attribute)
+        m: a Mission object 
+    """
+    print(i)
     x_coord = m.mission_state.robot.robot_state.truthpose[i, 0]
     y_coord = m.mission_state.robot.robot_state.truthpose[i, 1]
     circle_patch.center = (x_coord, y_coord)
     wedge_patch.update({"center": [x_coord, y_coord]})
     wedge_patch.theta1 = np.degrees(m.mission_state.robot.robot_state.truthpose[i, 2]) - 10
     wedge_patch.theta2 = np.degrees(m.mission_state.robot.robot_state.truthpose[i, 2]) + 10
+    
     return circle_patch, wedge_patch
 
 def plot_sim_traj(m):
