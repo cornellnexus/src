@@ -131,7 +131,7 @@ class Robot:
         self.robot_state.goal_location = target
         self.loc_pid_x.reset_integral()
         self.loc_pid_y.reset_integral()
-        while distance_away > allowed_dist_error:
+        while (distance_away > allowed_dist_error) and not (self.robot_state.phase == Phase.AVOID_OBSTACLE):
             if self.robot_state.is_sim:
                 # Adding simulated noise to the robot's state based on gaussian distribution
                 self.robot_state.state[0] = np.random.normal(
