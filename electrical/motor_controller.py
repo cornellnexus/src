@@ -74,18 +74,18 @@ class BasicMotorController:
         else:
             GPIO.output([self.gpio_br], GPIO.HIGH)
             GPIO.output([self.gpio_bl], GPIO.LOW)
-           # GPIO.output([self.gpio_fr], GPIO.HIGH)
-           # GPIO.output([self.gpio_fl], GPIO.LOW)
+            GPIO.output([self.gpio_fr], GPIO.HIGH)
+            GPIO.output([self.gpio_fl], GPIO.LOW)
 
     # reverses the robot
     def reverse(self):
         if self.is_sim:
             print('reverse')
         else:
-            GPIO.output([self.gpio_bl], GPIO.LOW)
-            GPIO.output([self.gpio_br], GPIO.HIGH)
-            #GPIO.output([self.gpio_fl], GPIO.LOW)
-            #GPIO.output([self.gpio_fr], GPIO.HIGH)
+            GPIO.output([self.gpio_br], GPIO.LOW)
+            GPIO.output([self.gpio_bl], GPIO.HIGH)
+            GPIO.output([self.gpio_fr], GPIO.LOW)
+            GPIO.output([self.gpio_fl], GPIO.HIGH)
 
     # turns the robot left for 1 second
     def turn_left(self):
