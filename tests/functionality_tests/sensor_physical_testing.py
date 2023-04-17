@@ -1,7 +1,9 @@
 # THIS IS A TESTING SCRIPT. USE THIS SCRIPT WHEN PHYSICALLY TESTING THE ROBOT AND CHANGE THE test_state TO THE STATE YOU NEED
 
 from engine.robot_state import Robot_State
-from engine.robot import Robot
+from engine.robot_logic.robot_initialization import Robot
+from engine.robot_logic.set_up import execute_setup
+from engine.robot_logic.traversal import move_to_target_node, turn_to_target_heading
 from electrical.gps import GPS
 from engine.grid import Grid
 from engine. database import DataBase
@@ -14,7 +16,7 @@ if __name__ == "__main__":
     rb_state = Robot_State(0, 0, 0, .2, .5, .2)
     r2d2 = Robot(rb_state)
     database = DataBase(r2d2)
-    r2d2.execute_setup()
+    execute_setup()
     rb_state.track_obstacle_thread.stop()
 
     if test_state == -1:
@@ -25,7 +27,7 @@ if __name__ == "__main__":
         print()
 
     elif test_state == 0:
-        r2d2.move_to_target_node([10, 10], 2, database)
+        move_to_target_node([10, 10], 2, database)
 
     elif test_state == 1:
         # min lat and long is origin (0,0)
@@ -33,11 +35,11 @@ if __name__ == "__main__":
         waypoints = grid.get_straight_line_waypoints(y_start_pct=2)
         while len(waypoints) > 0:
             curr_waypoint = waypoints[0].get_m_coords()
-            r2d2.move_to_target_node(curr_waypoint, 2, database)
+            move_to_target_node(curr_waypoint, 2, database)
             waypoints.popleft()
 
     elif test_state == 2:
-        r2d2.turn_to_target_heading(math.pi, 2, database)
+        turn_to_target_heading(math.pi, 2, database)
 
 # next test mission
 # next tune PID

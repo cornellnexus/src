@@ -4,7 +4,7 @@ import math
 from engine.phase import Phase
 from constants.definitions import *
 
-from robot.traversal import turn_to_target_heading
+from robot_logic.traversal import turn_to_target_heading
 from engine.is_raspberrypi import is_raspberrypi
 if is_raspberrypi():
     # Electrical library imports

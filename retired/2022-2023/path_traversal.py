@@ -5,7 +5,7 @@ from collections import deque
 from engine.grid import Grid
 from engine.kinematics import limit_cmds, feedback_lin, integrate_odom
 from engine.pid_controller import PID
-from engine.robot import Robot
+from engine.robot_logic.robot_initialization import Robot
 
 
 # TODO: documentation

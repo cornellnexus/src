@@ -1,9 +1,9 @@
-from engine.robot import Phase
-from engine.robot.set_up import execute_setup
-from engine.robot.traversal import execute_traversal
-from engine.robot.obstacle_avoidance import execute_avoid_obstacle
-from engine.robot.returning import execute_return
-from engine.robot.docking import execute_docking
+from engine.phase import Phase
+from engine.robot_logic.set_up import execute_setup
+from engine.robot_logic.traversal import execute_traversal
+from engine.robot_logic.obstacle_avoidance import execute_avoid_obstacle
+from engine.robot_logic.returning import execute_return
+from engine.robot_logic.docking import execute_docking
 
 class Mission:
     def __init__(self, mission_state):

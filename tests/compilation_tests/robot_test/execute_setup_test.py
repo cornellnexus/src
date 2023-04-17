@@ -1,13 +1,13 @@
 import unittest
 
-from engine.robot import Robot
+from engine.robot_logic.robot_initialization import Robot
 from engine.robot_state import Robot_State
 from electrical.radio_module import RadioModule
 from electrical.motor_controller import BasicMotorController, MotorController
 
 
 '''
-Unit tests for robot.py execute_setup function
+Unit tests for robot_logic/setup.py execute_setup function
 '''
 
 class TestSetup(unittest.TestCase):

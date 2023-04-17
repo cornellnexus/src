@@ -9,7 +9,7 @@ from engine.grid import *
 from engine.kinematics import limit_cmds, feedback_lin, integrate_odom, get_vincenty_x, get_vincenty_y
 from engine.node import *
 from engine.pid_controller import PID
-from engine.robot import Robot
+from engine.robot_logic.robot_initialization import Robot
 from engine.sim_trajectory import *
 from engine.user_utils import *
 

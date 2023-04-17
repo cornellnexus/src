@@ -1,6 +1,6 @@
 import math
 from engine.phase import Phase
-from robot.traversal import move_to_target_node, turn_to_target_heading
+from robot_logic.traversal import move_to_target_node, turn_to_target_heading
 
 def execute_return(robot, base_loc, base_angle, allowed_docking_pos_error, allowed_heading_error, database):
         """

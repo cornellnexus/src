@@ -6,7 +6,7 @@ from engine.phase import Phase
 from engine.ekf import LocalizationEKF
 from constants.definitions import *
 
-from engine.robot.obstacle_avoidance import track_obstacle
+from engine.robot_logic.obstacle_avoidance import track_obstacle
 from engine.is_raspberrypi import is_raspberrypi
 if is_raspberrypi():
     # Electrical library imports
