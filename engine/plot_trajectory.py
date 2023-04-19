@@ -134,6 +134,5 @@ def plot_sim_traj(m):
     anim = animation.FuncAnimation(
         fig, animate, init_func=init, fargs = (m,), frames=np.shape(m.mission_state.robot.robot_state.truthpose)[0], interval=20, blit=True
     )
-
+    
     plt.show()
-    return
