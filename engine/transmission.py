@@ -19,7 +19,7 @@ def send_packet_to_gui(name, is_sim, robot_state, database):
         name: int identifier for the thread
         is_sim: boolean flag on whether this is a simulation
         robot_state: Robot State object 
-        database: Database object # TODO replace
+        database: Database object # TODO replace`
     """
     logging.info("Thread %s: starting", name)
     while robot_state.phase != Phase.COMPLETE:
