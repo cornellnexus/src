@@ -94,7 +94,7 @@ class Robot_State:
         self.using_ekf = False
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
         self.store_data = kwargs.get("store_data", False)
-        self.phase = Phase(kwargs.get("phase", Phase.SETUP))
+        self.phase = Phase(kwargs.get("phase", Phase.TRAVERSE if self.is_sim else Phase.SETUP))
         self.is_roomba_obstacle = kwargs.get("is_roomba_obstacle", False)
         self.is_roomba_traversal = kwargs.get("is_roomba_traversal", False)
 
