@@ -16,11 +16,12 @@ def execute_traversal(robot, unvisited_waypoints, allowed_dist_error, base_stati
         """
         robot.robot_state.control_mode = control_mode
         if control_mode == 4:  # Roomba mode
-            traverse_roomba(robot, base_station_loc, time_limit, roomba_radius)
             robot.robot_state.is_roomba_traversal = True
+            return traverse_roomba(robot, base_station_loc, time_limit, roomba_radius)
         else:
-            traverse_standard(robot, unvisited_waypoints, allowed_dist_error, database)
             robot.robot_state.is_roomba_traversal = False
+            return traverse_standard(robot, unvisited_waypoints, allowed_dist_error, database)
+            
 
 def traverse_standard(robot, unvisited_waypoints, allowed_dist_error, database):
     """ Move the robot by following the traversal path given by [unvisited_waypoints].

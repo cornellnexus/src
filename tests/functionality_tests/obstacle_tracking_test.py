@@ -1,7 +1,7 @@
 import unittest
 import math
 from engine.robot_logic.robot_initialization import Robot
-from engine.robot_logic.obstacle_avoidance import track_obstacle
+from engine.robot_logic.set_up import track_obstacle
 from engine.robot_state import Robot_State
 from engine.mission import Mission
 from engine.control_mode import ControlMode
