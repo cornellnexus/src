@@ -12,7 +12,6 @@ class DataBase:
                 y_pos: the y position of the robot
                 heading: the theta of the robot in radians, where North on the grid is equal to 0.
             position_pid: position PID in format of [proportional factor, integral factor, derivative factor]
-            position_noise: the flat amount of noise added to the robot's phase on each localization step
             heading_pid: heading PID in format of [proportional factor, integral factor, derivative factor]           
             move_dist: the distance in meters that the robot moves per time dt
             turn_angle: the angle in radians that the robot turns per time dt regardless of time step 
@@ -28,9 +27,8 @@ class DataBase:
             "acceleration": robot.robot_state.acceleration,  # not called in main algorithm yet
             "magnetic_field": robot.robot_state.magnetic_field,  # not called in main algorithm yet
             "gyro_rotation": robot.robot_state.gyro_rotation,  # not called in main algorithm yet
-            "position_pid": [robot.robot_state.position_kp, robot.robot_state.position_ki, robot.robot_state.position_kd],
-            "position_noise": robot.robot_state.position_noise,
-            "heading_pid": [robot.robot_state.heading_kp, robot.robot_state.heading_ki, robot.robot_state.heading_kd]
+            "position_pid": robot.robot_state.position_pid_consts,
+            "heading_pid": robot.robot_state.heading_pid_consts
         }
 
     def __str__(self):
@@ -47,11 +45,10 @@ class DataBase:
                "gyro_rotation [x, y, z]: " + str(self.core_data["gyro_rotation"]) + ",\n" + \
                "position_pid [proportional factor, integral factor, derivative factor]: " + \
                 str(self.core_data["position_pid"]) + ",\n" + \
-               "position_noise: " + str(self.core_data["position_noise"]) + ",\n" + \
                "heading_pid [proportional factor, integral factor, derivative factor]: " + \
                str(self.core_data["heading_pid"])
 
-    # position pid, position noise, heading pid
+    # position pid, heading pid
 
     def get_data(self, name):
         return self.core_data[name]

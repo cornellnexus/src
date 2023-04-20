@@ -27,17 +27,17 @@ class Robot:
         """
         self.robot_state = robot_state
 
-        self.loc_pid_x = PID(
-            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, 
-            target=0, sample_time=self.robot_state.time_step, output_limits=(None, None))
+        pos_kp, pos_ki, pos_kd = self.robot_state.position_pid_consts
+        head_kp, head_ki, head_kd = self.robot_state.heading_pid_consts
+        
+        self.loc_pid_x = PID(Kp=pos_kp, Ki=pos_ki, Kd=pos_kd, target=0, 
+                            sample_time=self.robot_state.time_step, output_limits=(None, None))
 
-        self.loc_pid_y = PID(
-            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, 
-            target=0, sample_time=self.robot_state.time_step, output_limits=(None, None))
+        self.loc_pid_y = PID(Kp=pos_kp, Ki=pos_ki, Kd=pos_kd, target=0,
+                            sample_time=self.robot_state.time_step, output_limits=(None, None))
 
-        self.head_pid = PID(
-            Kp=self.robot_state.heading_kp, Ki=self.robot_state.heading_ki, Kd=self.robot_state.heading_kd, 
-            target=0, sample_time=self.robot_state.time_step, output_limits=(None, None))
+        self.head_pid = PID(Kp=head_kp, Ki=head_ki, Kd=head_kd, target=0,
+                            sample_time=self.robot_state.time_step, output_limits=(None, None))
 
         # Write robot's phase to CSV file
         try:

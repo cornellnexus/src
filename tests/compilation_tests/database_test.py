@@ -21,9 +21,8 @@ class TestDataBase(unittest.TestCase):
     
     # We can't make is_sim false because it fails GitHub merge tests.
     robot_state_initial = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0,
-                          radius=0, plastic_level = 2, move_dist = 0.6, position_noise = 0.23, 
-                          position_kp = 0.12, position_ki = 1.7, position_kd = 9.2, heading_kp = 0.2, 
-                          heading_ki = 0.4, heading_kd = 0.16, phase = Phase.TRAVERSE, 
+                          radius=0, plastic_level = 2, move_dist = 0.6, position_pid_consts = [0.12, 1.7, 9.2],
+                          heading_pid_consts = [0.2, 0.4, 0.16], phase = Phase.TRAVERSE, 
                           state = np.array([[10], [20], [50]]), battery = 98, 
                           magnetic_field = [0.1, 0.2, 0.3], gyro_rotation = [0.5, 0.2, 0.6], 
                           acceleration = [4.25, 3.2, 0.1], is_sim = True)
@@ -41,21 +40,18 @@ class TestDataBase(unittest.TestCase):
                  "battery: 100,\nmove_dist: 0.5,\nacceleration [x, y, z]: [0, 0, 0],\n" \
                  "magnetic_field [x, y, z]: [0, 0, 0],\ngyro_rotation [x, y, z]: [0, 0, 0],\n" \
                  "position_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0],\n" \
-                 "position_noise: 0,\n" \
                  "heading_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0]"
 
         db_initial_str = "phase: 2,\nstate [x, y, heading]: [10, 20, 50],\nis_sim: True,\nplastic_level: 2,\n" \
                          "battery: 98,\nmove_dist: 0.6,\nacceleration [x, y, z]: [4.25, 3.2, 0.1],\n" \
                          "magnetic_field [x, y, z]: [0.1, 0.2, 0.3],\ngyro_rotation [x, y, z]: [0.5, 0.2, 0.6],\n" \
                          "position_pid [proportional factor, integral factor, derivative factor]: [0.12, 1.7, 9.2],\n" \
-                         "position_noise: 0.23,\n" \
                          "heading_pid [proportional factor, integral factor, derivative factor]: [0.2, 0.4, 0.16]"
 
         db_one_param_str = "phase: 1,\nstate [x, y, heading]: [0, 0, 0],\nis_sim: True,\nplastic_level: 3,\n" \
                            "battery: 46,\nmove_dist: 0.5,\nacceleration [x, y, z]: [0.5, 0.2, 0.3],\n" \
                            "magnetic_field [x, y, z]: [0, 0, 0],\ngyro_rotation [x, y, z]: [0, 0, 0],\n" \
                            "position_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0],\n" \
-                           "position_noise: 0,\n" \
                            "heading_pid [proportional factor, integral factor, derivative factor]: [1, 0, 0]"
 
         testcases = [(db_str, self.db_default), (db_initial_str,
@@ -70,8 +66,7 @@ class TestDataBase(unittest.TestCase):
                      (100, "battery"), (0.5, "move_dist"), ([
                          0, 0, 0], "acceleration"),
                      ([0, 0, 0], "magnetic_field"), ([0, 0, 0], "gyro_rotation"),
-                     ([1, 0, 0], "position_pid"), (0,
-                                                   "position_noise"), ([1, 0, 0], "heading_pid")
+                     ([1, 0, 0], "position_pid"), ([1, 0, 0], "heading_pid")
                      ]
 
         db_initial_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (True, "is_sim"),
@@ -80,8 +75,7 @@ class TestDataBase(unittest.TestCase):
                                  4.25, 3.2, 0.1], "acceleration"),
                              ([0.1, 0.2, 0.3], "magnetic_field"), ([
                                  0.5, 0.2, 0.6], "gyro_rotation"),
-                             ([0.12, 1.7, 9.2], "position_pid"), (0.23,
-                                                                  "position_noise"),
+                             ([0.12, 1.7, 9.2], "position_pid"), 
                              ([0.2, 0.4, 0.16], "heading_pid")
                              ]
 
@@ -90,8 +84,7 @@ class TestDataBase(unittest.TestCase):
                              0.5, 0.2, 0.3], "acceleration"),
                          ([0, 0, 0], "magnetic_field"), ([
                              0, 0, 0], "gyro_rotation"),
-                         ([1, 0, 0], "position_pid"), (0,
-                                                       "position_noise"), ([1, 0, 0], "heading_pid")
+                         ([1, 0, 0], "position_pid"), ([1, 0, 0], "heading_pid")
                          ]
 
         testcases = [(db_params, self.db_default), (db_initial_params,
@@ -130,8 +123,7 @@ class TestDataBase(unittest.TestCase):
                              0, 0, 0], "acceleration"),
                          ([0, 0, 0], "magnetic_field"), ([
                              0, 0, 0], "gyro_rotation"),
-                         ([1, 0, 0], "position_pid"), (0,
-                                                       "position_noise"), ([1, 0, 0], "heading_pid")
+                         ([1, 0, 0], "position_pid"), ([1, 0, 0], "heading_pid")
                          ]
 
         db_initial_new_params = [(Phase.TRAVERSE, "phase"), ([10, 20, 50], "state"), (True, "is_sim"),
@@ -140,8 +132,7 @@ class TestDataBase(unittest.TestCase):
                                      4.25, 3.2, 0.1], "acceleration"),
                                  ([5, 6, 0.3], "magnetic_field"), ([
                                      0.5, 0.2, 0.4], "gyro_rotation"),
-                                 ([0.12, 1.7, 9.2], "position_pid"), (0.23,
-                                                                      "position_noise"),
+                                 ([0.12, 1.7, 9.2], "position_pid"),
                                  ([9, 0.4, 0.16], "heading_pid")
                                  ]
 
@@ -150,8 +141,7 @@ class TestDataBase(unittest.TestCase):
                                  0.1, 2.3, 0.3], "acceleration"),
                              ([0.2, 0.15, 0.3], "magnetic_field"), ([
                                  0, 0, 0], "gyro_rotation"),
-                             ([1, 0.5, 0.82], "position_pid"), (0,
-                                                                "position_noise"), ([1, 0, 0], "heading_pid")
+                             ([1, 0.5, 0.82], "position_pid"), ([1, 0, 0], "heading_pid")
                              ]
 
         testcases = [(db_new_params, self.db_default), (db_initial_new_params, self.db_initial),

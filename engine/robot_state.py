@@ -41,14 +41,9 @@ class Robot_State:
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
             control_mode: parameter to designate if we want to do lawnmower traversal or roomba traversal
-            position_kp: the proportional factor of the position PID
-            position_ki: the integral factor of the position PID
-            position_kd: the derivative factor of the position PID
-            position_noise: the flat amount of noise added to the robot's phase on each localization step
-            heading_kp: the proportional factor of the heading PID
-            heading_ki: the integral factor of the heading PID
-            heading_kd: the derivative factor of the heading PID
-            heading_noise: ?
+            position_pid_consts: a list representing the [proportional, integral, derivative] factors of position PID
+            heading_pid_consts: a list representing the [proportional, integral, derivative] factors of heading PID
+
             move_dist: the distance in meters that the robot moves per time dt
             epsilon: dictates the turning radius of the robot. Lower epsilon results in tighter turning radius.
             max_velocity: the maximum velocity of the robot
@@ -106,16 +101,8 @@ class Robot_State:
         # Based on our current code, 4 = Roomba mode, anything else is regular traversal 
         # Probably should update this in the future
         self.control_mode = kwargs.get("control_mode", 2) 
-        # self.heading_pid_consts = kwargs.get("heading_pid_consts", [1,0,0])
-
-        self.position_kp = kwargs.get("position_kp", 1)
-        self.position_ki = kwargs.get("position_ki", 0)
-        self.position_kd = kwargs.get("position_kd", 0)
-        self.position_noise = kwargs.get("position_noise", 0)
-        self.heading_kp = kwargs.get("heading_kp", 1)
-        self.heading_ki = kwargs.get("heading_ki", 0)
-        self.heading_kd = kwargs.get("heading_kd", 0)
-        self.heading_noise = kwargs.get("heading_noise", 0)
+        self.position_pid_consts = kwargs.get("position_pid_consts", [1,0,0])
+        self.heading_pid_consts = kwargs.get("heading_pid_consts", [1,0,0])
         # Note: user-defined parameter; defaulted to most common use case
         self.epsilon = kwargs.get("epsilon", 0.2)
         # Note: user-defined parameter; defaulted to most common use case
