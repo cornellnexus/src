@@ -27,7 +27,7 @@ if __name__ == "__main__":
     is_sim = config_args.get("is_sim") if is_raspberrypi() else not is_raspberrypi() # Set to true when simulating the rpi, set to false when running on rpi
     store_data = config_args.get("store_data") # Set to true when we want to track/store csv data
 
-    r2d2_state = Robot_State(xpos=user_args.get("xpos", 0), ypos=user_args.get("ypos", 0), heading=user_args.get("heading", math.pi/4))
+    r2d2_state = Robot_State(xpos=user_args.get("xpos", 0), ypos=user_args.get("ypos", 0), heading=user_args.get("heading", math.pi/4), store_data=store_data)
     r2d2 = Robot(robot_state=r2d2_state)
     database = DataBase(r2d2) # TODO: Replace w new packet transmission impl
     mission_state = Mission_State(robot=r2d2, base_station_coord=(user_args.get("base_lat", 42.444250), user_args.get("base_long", -76.483682)),
