@@ -19,7 +19,6 @@ def parse_main():
 
    Return a dictionary of the user inputted arguments above.
    """
-   #   xpos, ypos, heading, epsilon, max_velocity, radius, phase, base_station_coord, init_control_mode
    parser = argparse.ArgumentParser(description='Process Mission information.')
    parser.add_argument("xpos", type=float, nargs='?', const=1, default=0,
                     help="a float for the robot's initial x position in coordinate space")
