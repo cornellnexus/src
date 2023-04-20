@@ -23,9 +23,9 @@ if __name__ == "__main__":
     user_args = parse_main()
 
     # Development config flags
-    is_transmit = config_args["is_transmit"] # Set to true when the rpi/robot is communicating w/ the GUI
-    is_sim = config_args["is_sim"] if is_raspberrypi() else not is_raspberrypi() # Set to true when simulating the rpi, set to false when running on rpi
-    store_data = config_args["store_data"] # Set to true when we want to track/store csv data
+    is_transmit = config_args.get("is_transmit") # Set to true when the rpi/robot is communicating w/ the GUI
+    is_sim = config_args.get("is_sim") if is_raspberrypi() else not is_raspberrypi() # Set to true when simulating the rpi, set to false when running on rpi
+    store_data = config_args.get("store_data") # Set to true when we want to track/store csv data
 
     r2d2_state = Robot_State(xpos=user_args.get("xpos", 0), ypos=user_args.get("ypos", 0), heading=user_args.get("heading", math.pi/4))
     r2d2 = Robot(robot_state=r2d2_state)
@@ -43,4 +43,5 @@ if __name__ == "__main__":
     m.execute_mission(database)  # Run main mission
 
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
-    plot_sim_traj(m=m) #  Plot the trajectory of the completed mission
+    if config_args.get("simulate_trajectory"):
+        plot_sim_traj(m=m) #  Plot the trajectory of the completed mission
