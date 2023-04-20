@@ -99,7 +99,7 @@ def execute_setup(robot):
         robot.robot_state.ekf = LocalizationEKF(mu, sigma)
 
         if (robot.robot_state.radio_session.connected and gps_setup and imu_setup):
-            obstacle_avoidance = threading.Thread(target=track_obstacle(robot), daemon=True)
+            obstacle_avoidance = threading.Thread(target=track_obstacle, args=robot, daemon=True)
             obstacle_avoidance.start()  # spawn thread to monitor obstacles
             robot.set_phase(Phase.TRAVERSE)
     else:
