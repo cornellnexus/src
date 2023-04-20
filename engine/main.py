@@ -5,7 +5,6 @@ import json
 from constants.definitions import ENGINE_PATH
 from engine.robot import Robot
 from engine.robot_state import Robot_State
-from engine.robot import Phase
 from engine.mission import Mission
 from engine.mission_state import Mission_State
 from engine.control_mode import ControlMode
