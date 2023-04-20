@@ -28,20 +28,12 @@ class Mission:
             elif phase == Phase.TRAVERSE:
                 # TODO: clean up parameters for this function
                 # allowed_dist_error, roomba_radius, and time_limit should be constants?
-                self.mission_state.waypoints_to_visit = execute_traversal(
-                                self.mission_state.robot,
-                                self.mission_state.waypoints_to_visit,
-                                self.mission_state.allowed_dist_error, self.mission_state.base_station.position,
-                                self.mission_state.control_mode, self.mission_state.time_limit,
-                                self.mission_state.roomba_radius, database)
+                self.mission_state.waypoints_to_visit = execute_traversal(self.mission_state, database)
             elif phase == Phase.AVOID_OBSTACLE: 
                 execute_avoid_obstacle(self.mission_state.robot, 
                                        self.mission_state.robot.robot_state.dist_to_goal, database)
             elif phase == Phase.RETURN:
-                execute_return(self.mission_state.robot, self.mission_state.base_station.position,
-                            self.mission_state.base_station.heading,
-                            self.mission_state.allowed_docking_pos_error, 
-                            self.mission_state.allowed_heading_error, database)
+                execute_return(self.mission_state, database)
             elif phase == Phase.DOCKING:
                 execute_docking(self.mission_state.robot)
 

@@ -7,20 +7,22 @@ from constants.definitions import *
 from engine.kinematics import *
 from csv_files.csv_util import write_state_to_csv
 
-def execute_traversal(robot, unvisited_waypoints, allowed_dist_error, base_station_loc, 
-                      time_limit, roomba_radius, database):
+def execute_traversal(mission_state, database):
         """
         Function called by our Mission to start the traversal phase. 
         Currently we have two different traversal modes, our standard lawn-mower 
         traversal and our roomba-mode traversal. 
         """
+        robot = mission_state.robot
         control_mode = robot.robot_state.control_mode
         if control_mode == ControlMode.LAWNMOWER:  
             robot.robot_state.is_roomba_traversal = False
-            return traverse_standard(robot, unvisited_waypoints, allowed_dist_error, database)
+            return traverse_standard(robot, mission_state.unvisited_waypoints,
+                                     mission_state.allowed_dist_error, database)
         elif control_mode == ControlMode.ROOMBA:
             robot.robot_state.is_roomba_traversal = True
-            return traverse_roomba(robot, base_station_loc, time_limit, roomba_radius)
+            return traverse_roomba(robot, mission_state.base_station_loc,
+                                   mission_state.time_limit, mission_state.roomba_radius)
 
 def traverse_standard(robot, unvisited_waypoints, allowed_dist_error, database):
     """ Move the robot by following the traversal path given by [unvisited_waypoints].
