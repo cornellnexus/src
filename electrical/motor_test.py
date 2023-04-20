@@ -13,7 +13,7 @@ GPIO.setup(pin,GPIO.IN)
 class BasicMotorControllerTest:
 
     def __init__(self): 
-        self.mc = BasicMotorController()
+        self.mc = BasicMotorController(False, 1)
         self.mc.setup('slow') # CHANGE SPEED HERE
         self.counter_right = 0
 
