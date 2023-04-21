@@ -34,5 +34,3 @@ def parse_main():
                     help="Set intial control mode to lawnmower") # TODO: add for additional control modes, after centralizing the different lawnmowers
    args = parser.parse_args()
    return(vars(args))
-
-parse_main()
