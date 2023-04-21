@@ -114,7 +114,6 @@ def plot_sim_traj(m):
         ax.add_patch(circle)
 
     elif m.mission_state.control_mode != ControlMode.MANUAL:
-        goals = waypoints_to_array(m.mission_state.all_waypoints)
         active_nodes = waypoints_to_array(m.mission_state.active_waypoints)
         inactive_nodes = waypoints_to_array(m.mission_state.inactive_waypoints)
         ax.plot(active_nodes[:, 0], active_nodes[:, 1], 'bx')
