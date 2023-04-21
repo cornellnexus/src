@@ -21,13 +21,8 @@ if __name__ == "__main__":
     
     # Load user-defined arguments
     user_args = parse_main()
-
-    # Development config flags
-    is_transmit = config_args.get("is_transmit") # Set to true when the rpi/robot is communicating w/ the GUI
-    is_sim = config_args.get("is_sim") if is_raspberrypi() else not is_raspberrypi() # Set to true when simulating the rpi, set to false when running on rpi
-    store_data = config_args.get("store_data") # Set to true when we want to track/store csv data
-
-    r2d2_state = Robot_State(xpos=user_args.get("xpos", 0), ypos=user_args.get("ypos", 0), heading=user_args.get("heading", math.pi/4), store_data=store_data)
+    
+    r2d2_state = Robot_State(xpos=user_args.get("xpos", 0), ypos=user_args.get("ypos", 0), heading=user_args.get("heading", math.pi/4), store_data = config_args.get("store_data"), is_sim=config_args.get("is_sim") if is_raspberrypi() else not is_raspberrypi()) # Let user define if on the pi, otherwise set to True
     r2d2 = Robot(robot_state=r2d2_state)
     database = DataBase(r2d2) # TODO: Replace w new packet transmission impl
     mission_state = Mission_State(robot=r2d2, base_station_coord=(user_args.get("base_lat", 42.444250), user_args.get("base_long", -76.483682)),
@@ -35,9 +30,9 @@ if __name__ == "__main__":
     m = Mission(mission_state=mission_state)
     
     '''------------------- MISSION EXECUTION -------------------'''
-    if is_transmit:
+    if config_args.get("is_transmit"): # Set to true when the rpi/robot is communicating w/ the GUI
         packet_sender = threading.Thread(target=send_packet_to_gui, args=(
-            1, is_sim, r2d2_state, database), daemon=True)  # Thread to read and send robot properties
+            1, r2d2_state, database), daemon=True)  # Thread to read and send robot properties
         packet_sender.start()
 
     m.execute_mission(database)  # Run main mission
