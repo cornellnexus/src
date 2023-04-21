@@ -231,8 +231,6 @@ class Robot:
         print('heading: ' + str(self.robot_state.state[2]))
 
     def execute_setup(self):
-        self.robot_state.goal_location = None
-        self.robot_state.prev_phase = Phase.SETUP
         if not self.is_sim:
             self.robot_state.motor_controller = MotorController(
                 wheel_radius=0, vm_load1=1, vm_load2=1, L=0, R=0, is_sim=self.is_sim)
@@ -377,48 +375,49 @@ class Robot:
         front_ultrasonic = None
         counter = 0  # added for testing
         while True:
-            if self.robot_state.enable_obstacle_avoidance:
-                if self.robot_state.is_sim:
-                    ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
-                                                 "r")  # added for testing
-                    content = ultrasonic_value_file.readlines()
-                    ultrasonic_value_file.close()
-                    try:
-                        line = content[counter]
-                        counter += 1
-                        curr_ultrasonic_value = float(
-                            (''.join(line.rstrip('\n')).strip('()').split(', '))[0])
-                    except IndexError:
-                        print("no more sensor data")
-                        break
-                else:
-                    from electrical.ultrasonic_sensor import Ultrasonic
-                    front_ultrasonic = Ultrasonic(0)
-                    curr_ultrasonic_value = front_ultrasonic.distance()
-                    if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
-                        self.set_phase(Phase.FAULT)
-                        return None
-                if (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
-                        self.robot_state.phase == Phase.AVOID_OBSTACLE):
-                    if curr_ultrasonic_value < self.robot_state.detect_obstacle_range:
-                        # Note: didn't check whether we can reach goal before contacting obstacle because obstacle
-                        # detection does not detect angle, so obstacle could be calculated to be falsely farther away than
-                        # the goal. Not optimal because in cases, robot will execute boundary following when it can reach
-                        # goal
-                        self.set_phase(Phase.AVOID_OBSTACLE)
-                        if self.robot_state.is_sim:
-                            with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                                fd.write("Avoid" + '\n')
-                    else:
-                        if self.robot_state.is_sim:
-                            with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                                fd.write("Not Avoid" + '\n')
-                if curr_ultrasonic_value < 0:
-                    # value should not go below 0; sensor is broken
+            if not self.robot_state.enable_obstacle_avoidance:
+                continue
+            if self.robot_state.is_sim:
+                ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
+                                             "r")  # added for testing
+                content = ultrasonic_value_file.readlines()
+                ultrasonic_value_file.close()
+                try:
+                    line = content[counter]
+                    counter += 1
+                    curr_ultrasonic_value = float(
+                        (''.join(line.rstrip('\n')).strip('()').split(', '))[0])
+                except IndexError:
+                    print("no more sensor data")
+                    break
+            else:
+                from electrical.ultrasonic_sensor import Ultrasonic
+                front_ultrasonic = Ultrasonic(0)
+                curr_ultrasonic_value = front_ultrasonic.distance()
+                if curr_ultrasonic_value < self.robot_state.front_sensor_offset:
                     self.set_phase(Phase.FAULT)
+                    return None
+            if (self.robot_state.phase == Phase.TRAVERSE) or (self.robot_state.phase == Phase.RETURN) or (self.robot_state.phase == Phase.DOCKING) or (
+                    self.robot_state.phase == Phase.AVOID_OBSTACLE):
+                if curr_ultrasonic_value < self.robot_state.detect_obstacle_range:
+                    # Note: didn't check whether we can reach goal before contacting obstacle because obstacle
+                    # detection does not detect angle, so obstacle could be calculated to be falsely farther away than
+                    # the goal. Not optimal because in cases, robot will execute boundary following when it can reach
+                    # goal
+                    self.set_phase(Phase.AVOID_OBSTACLE)
                     if self.robot_state.is_sim:
                         with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
-                            fd.write("Fault" + '\n')
+                            fd.write("Avoid" + '\n')
+                else:
+                    if self.robot_state.is_sim:
+                        with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                            fd.write("Not Avoid" + '\n')
+            if curr_ultrasonic_value < 0:
+                # value should not go below 0; sensor is broken
+                self.set_phase(Phase.FAULT)
+                if self.robot_state.is_sim:
+                    with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
+                        fd.write("Fault" + '\n')
             if not self.robot_state.is_sim:
                 time.sleep(10)  # don't hog the cpu
 
