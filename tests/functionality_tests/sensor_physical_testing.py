@@ -1,7 +1,7 @@
 # THIS IS A TESTING SCRIPT. USE THIS SCRIPT WHEN PHYSICALLY TESTING THE ROBOT AND CHANGE THE test_state TO THE STATE YOU NEED
 
 from engine.robot_state import Robot_State
-from engine.robot_logic.robot_initialization import Robot
+from engine.robot_logic.robot import Robot
 from engine.robot_logic.set_up import execute_setup
 from engine.robot_logic.traversal import move_to_target_node, turn_to_target_heading
 from electrical.gps import GPS

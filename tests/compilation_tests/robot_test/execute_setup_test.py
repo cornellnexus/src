@@ -1,6 +1,6 @@
 import unittest
 
-from engine.robot_logic.robot_initialization import Robot
+from engine.robot_logic.robot import Robot
 from engine.robot_state import Robot_State
 from electrical.radio_module import RadioModule
 from electrical.motor_controller import BasicMotorController, MotorController

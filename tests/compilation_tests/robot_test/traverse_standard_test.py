@@ -4,7 +4,7 @@ import unittest
 
 from engine.database import DataBase
 from engine.grid import *
-from engine.robot_logic.robot_initialization import Robot
+from engine.robot_logic.robot import Robot
 from engine.robot_logic.traversal import traverse_standard
 from engine.robot_state import Robot_State
 from engine.control_mode import ControlMode

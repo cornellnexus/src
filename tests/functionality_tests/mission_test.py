@@ -1,7 +1,7 @@
 # THIS IS A TESTING SCRIPT. USE THIS SCRIPT WHEN PHYSICALLY TESTING THE ROBOT AND CHANGE THE run() FUNCTION BY ADDING THE MISSION STATE YOU WANT TO TEST
 # Obstacle Avoidance thread disabled in setup() so we dont accidentally test obstacle avoidance when we just want to test traversal, etc in isolation
 
-from engine.robot_logic.robot_initialization import Robot
+from engine.robot_logic.robot import Robot
 
 from engine.robot_logic.set_up import execute_setup
 from engine.robot_logic.traversal import execute_traversal
