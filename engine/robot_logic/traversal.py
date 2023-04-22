@@ -5,6 +5,7 @@ from engine.control_mode import ControlMode
 from engine.phase import Phase
 from constants.definitions import *
 from engine.kinematics import *
+from engine.robot_logic.robot_helpers import set_phase, calculate_dist
 from csv_files.csv_util import write_state_to_csv
 
 def execute_traversal(mission_state, database):
@@ -17,7 +18,7 @@ def execute_traversal(mission_state, database):
         control_mode = robot.robot_state.control_mode
         if control_mode == ControlMode.LAWNMOWER:  
             robot.robot_state.is_roomba_traversal = False
-            return traverse_standard(robot, mission_state.unvisited_waypoints,
+            return traverse_standard(robot, mission_state.waypoints_to_visit,
                                      mission_state.allowed_dist_error, database)
         elif control_mode == ControlMode.ROOMBA:
             robot.robot_state.is_roomba_traversal = True
@@ -41,14 +42,14 @@ def traverse_standard(robot, unvisited_waypoints, allowed_dist_error, database):
         move_to_target_node(robot, curr_waypoint, allowed_dist_error, database)
         unvisited_waypoints.popleft()
         if robot.robot_state.phase == Phase.AVOID_OBSTACLE: # TODO: Temp fix until goal loc reset
-            robot.set_phase(Phase.AVOID_OBSTACLE)
+            robot = set_phase(robot, Phase.AVOID_OBSTACLE)
             robot.robot_state.goal_location = curr_waypoint
             robot.robot_state.prev_phase = Phase.TRAVERSE
             return unvisited_waypoints
         # TODO: THIS ISNT CORRECT: NEED TO CHECK IF AVOID_OBSTACLE IN move_to_target_node or can also make PID traversal a separate thread and stop the thread when obstacle detected
 
-    robot.set_phase(Phase.RETURN)
-    return unvisited_waypoints
+    robot = set_phase(robot, Phase.RETURN)
+    return robot, unvisited_waypoints
 
 def move_to_target_node(robot, target, allowed_dist_error, database):
     """
@@ -62,7 +63,7 @@ def move_to_target_node(robot, target, allowed_dist_error, database):
     predicted_state = robot.robot_state.state  # this will come from Kalman Filter
 
     # location error (in meters)
-    distance_away = robot.calculate_dist(target, predicted_state)
+    distance_away = calculate_dist(target, predicted_state)
     robot.loc_pid_x.reset_integral()
     robot.loc_pid_y.reset_integral()
     while distance_away > allowed_dist_error:
@@ -113,7 +114,7 @@ def move_to_target_node(robot, target, allowed_dist_error, database):
             "state", predicted_state[0], predicted_state[1], predicted_state[2])
 
         # location error (in meters)
-        distance_away = robot.calculate_dist(target, predicted_state)
+        distance_away = calculate_dist(target, predicted_state)
 
 def travel(robot, delta_d, delta_phi):
     """
@@ -183,14 +184,14 @@ def traverse_roomba(robot, base_station_loc, time_limit, roomba_radius):
     while not exit_boolean:
         # sensor should not detect something in the robot
         if front_ultrasonic.distance() < robot.robot_state.front_sensor_offset:
-            robot.set_phase(Phase.FAULT)
+            robot = set_phase(robot, Phase.FAULT)
             return None
         curr_x = robot.robot_state.state[0]
         curr_y = robot.robot_state.state[1]
         curr_head = robot.robot_state.state[2]
         [new_x, new_y, new_theta] = robot.robot_state.ekf.get_predicted_state(
             [curr_x, curr_y, curr_head], [robot.robot_state.move_dist * robot.robot_state.time_step, 0])
-        next_radius = robot.calculate_dist(base_station_loc, (new_x, new_y))
+        next_radius = calculate_dist(base_station_loc, (new_x, new_y))
         # if moving will cause the robot to move through the obstacle
         is_next_timestep_blocked = next_radius < robot.robot_state.detect_obstacle_range
         # sensor should not detect something in the robot
@@ -213,7 +214,7 @@ def traverse_roomba(robot, base_station_loc, time_limit, roomba_radius):
                 time.sleep(10)
         dt += 10  # accumulation in time in ms
         exit_boolean = (dt > time_limit)
-    robot.set_phase(Phase.COMPLETE)  # TODO: CHANGE the next phase to return
+    robot = set_phase(robot, Phase.COMPLETE)  # TODO: CHANGE the next phase to return
     return None
 
 
@@ -238,7 +239,7 @@ def turn_to_target_heading(robot, target_heading, allowed_heading_error, databas
             _, limited_cmd_w = limit_cmds(
                 0, w, robot.robot_state.max_velocity, robot.robot_state.radius)
 
-            travel(0, robot.robot_state.time_step * limited_cmd_w)
+            travel(robot, 0, robot.robot_state.time_step * limited_cmd_w)
             if not robot.robot_state.is_sim:
                 robot.robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
                 time.sleep(10)

@@ -1,7 +1,6 @@
 from engine.pid_controller import PID
 from constants.definitions import *
 from csv_files.csv_util import write_phase_to_csv
-import math 
 
 class Robot:
     """
@@ -45,12 +44,5 @@ class Robot:
         finally:
             pass
 
-    def set_phase(self, new_phase):
-        self.robot_state.phase = new_phase
-        if self.robot_state.should_store_data:
-            write_phase_to_csv(self.robot_state.phase)
-    
-    def calculate_dist(self, init_pos, final_pos):
-        return math.sqrt((final_pos[0] - init_pos[0]) ** 2 + (final_pos[1] - init_pos[1]) ** 2)
 
 

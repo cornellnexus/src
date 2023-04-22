@@ -1,6 +1,7 @@
 import math
 from engine.phase import Phase
-from robot_logic.traversal import move_to_target_node, turn_to_target_heading
+from engine.robot_logic.robot_helpers import set_phase
+from engine.robot_logic.traversal import move_to_target_node, turn_to_target_heading
 
 def execute_return(mission_state, database):
         """
@@ -21,15 +22,15 @@ def execute_return(mission_state, database):
         target_loc = (mission_state.base_station.position[0] + dx, mission_state.base_station.position[1] + dy)
 
         # TODO: add obstacle avoidance support
-        move_to_target_node(target_loc, mission_state.allowed_docking_pos_error, database)
+        move_to_target_node(robot, target_loc, mission_state.allowed_docking_pos_error, database)
 
         # Face robot towards base station
         # TODO: probably will get rid of this
         target_heading = mission_state.base_station.heading + math.pi
-        turn_to_target_heading(target_heading, mission_state.allowed_heading_error, database)
+        turn_to_target_heading(robot, target_heading, mission_state.allowed_heading_error, database)
 
         # RETURN phase complete:
-        robot.set_phase(Phase.DOCKING)
+        robot = set_phase(robot, Phase.DOCKING)
 
 
 

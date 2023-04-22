@@ -3,6 +3,7 @@ import math
 import time
 import numpy as np
 
+from engine.robot_logic.robot_helpers import set_phase
 from engine.phase import Phase
 from engine.ekf import LocalizationEKF
 from constants.definitions import *
@@ -46,7 +47,7 @@ def track_obstacle(robot):
             front_ultrasonic = Ultrasonic(0)
             curr_ultrasonic_value = front_ultrasonic.distance()
             if curr_ultrasonic_value < robot.robot_state.front_sensor_offset:
-                robot.set_phase(Phase.FAULT)
+                robot = set_phase(robot, Phase.FAULT)
                 return None
         if robot.robot_state.is_roomba_traversal:  # roomba mode
             robot.robot_state.is_roomba_obstacle = True
@@ -56,7 +57,7 @@ def track_obstacle(robot):
                 # detection does not detect angle, so obstacle could be calculated to be falsely farther away than
                 # the goal. Not optimal because in cases, robot will execute boundary following when it can reach
                 # goal
-                robot.set_phase(Phase.AVOID_OBSTACLE)
+                robot = set_phase(robot, Phase.AVOID_OBSTACLE)
                 if robot.robot_state.is_sim:
                     with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                         fd.write("Avoid" + '\n')
@@ -66,7 +67,7 @@ def track_obstacle(robot):
                         fd.write("Not Avoid" + '\n')
         if curr_ultrasonic_value < 0:
             # value should not go below 0; sensor is broken
-            robot.set_phase(Phase.FAULT)
+            robot = set_phase(robot, Phase.FAULT)
             if robot.robot_state.is_sim:
                 with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                     fd.write("Fault" + '\n')
@@ -101,7 +102,7 @@ def execute_setup(robot):
         if (robot.robot_state.radio_session.connected and gps_setup and imu_setup):
             obstacle_avoidance = threading.Thread(target=track_obstacle, args=robot, daemon=True)
             obstacle_avoidance.start()  # spawn thread to monitor obstacles
-            robot.set_phase(Phase.TRAVERSE)
+            robot = set_phase(robot, Phase.TRAVERSE)
     else:
-        robot.set_phase(Phase.TRAVERSE)
+        robot = set_phase(robot, Phase.TRAVERSE)
     

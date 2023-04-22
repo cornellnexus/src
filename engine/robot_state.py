@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from engine.phase import Phase
+from engine.control_mode import ControlMode
 from engine.is_raspberrypi import is_raspberrypi
 
 class Robot_State:
@@ -103,11 +104,7 @@ class Robot_State:
         self.width = kwargs.get("width", 700)
         self.length = kwargs.get("length", 700)
         self.time_step = kwargs.get("time_step", 1)
-        # Based on our current code, 4 = Roomba mode, anything else is regular traversal 
-        # Probably should update this in the future
-        self.control_mode = kwargs.get("control_mode", 2) 
-        # self.heading_pid_consts = kwargs.get("heading_pid_consts", [1,0,0])
-
+        self.control_mode = kwargs.get("control_mode", ControlMode.LAWNMOWER) 
         self.position_kp = kwargs.get("position_kp", 1)
         self.position_ki = kwargs.get("position_ki", 0)
         self.position_kd = kwargs.get("position_kd", 0)

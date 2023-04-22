@@ -28,7 +28,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
-        unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
+        r2d2, unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_different_init_robot_pos(self):
@@ -41,7 +41,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
-        unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
+        r2d2, unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_different_allowed_dist(self):
@@ -54,7 +54,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
-        unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
+        r2d2, unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_different_heading(self):
@@ -67,7 +67,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
-        unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
+        r2d2, unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
         self.assertEqual(deque([]), unvisited_waypoints)
 
     def test_with_minimal_noise(self):
@@ -80,7 +80,7 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
-        unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
+        r2d2, unvisited_waypoints = traverse_standard(r2d2, waypoints_to_visit, allowed_dist_error, database)
         self.assertEqual(deque([]), unvisited_waypoints)
 
 

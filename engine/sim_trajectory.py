@@ -8,7 +8,7 @@ from constants.definitions import CSV_PATH
 
 from engine.robot_logic.robot_initialization import Robot
 from engine.robot_state import Robot_State
-from engine.robot import Phase
+from engine.phase import Phase
 from engine.mission import Mission
 from engine.mission_state import Mission_State
 from engine.control_mode import ControlMode

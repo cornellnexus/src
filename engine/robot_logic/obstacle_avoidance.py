@@ -4,7 +4,8 @@ import math
 from engine.phase import Phase
 from constants.definitions import *
 
-from robot_logic.traversal import turn_to_target_heading
+from engine.robot_logic.robot_helpers import set_phase, calculate_dist
+from engine.robot_logic.traversal import turn_to_target_heading
 from engine.is_raspberrypi import is_raspberrypi
 if is_raspberrypi():
     # Electrical library imports
@@ -45,30 +46,30 @@ def execute_avoid_obstacle(robot, on_line_tolerance, init_threshold=3., goal_thr
         # we set has_left_init_threshold to true. Used to determine if the robot has left its initial location
         has_left_init_thresh = False
         has_traversed_boundary = False
-        init_dist_to_goal = robot.calculate_dist(robot.robot_state.goal_location, curr_pos)
+        init_dist_to_goal = calculate_dist(robot.robot_state.goal_location, curr_pos)
         while True:
             # fault has priority over obstacle avoidance
             if robot.robot_state.phase == Phase.FAULT:
                 return None
             
             curr_pos = (robot.robot_state.state[0], robot.robot_state.state[1])
-            curr_dist_to_goal = robot.calculate_dist(robot.robot_state.goal_location, curr_pos)
-            dist_from_init = robot.calculate_dist(curr_pos, init_pos)
+            curr_dist_to_goal = calculate_dist(robot.robot_state.goal_location, curr_pos)
+            dist_from_init = calculate_dist(curr_pos, init_pos)
             is_on_line = is_on_line(robot, robot.robot_state.goal_location, curr_pos, on_line_tolerance)
             
             if dist_from_init > init_threshold:
                 has_left_init_thresh = True
             # exits obstacle avoidance if robot close to goal
             if curr_dist_to_goal < goal_threshold:
-                robot.set_phase(robot.robot_state.prev_phase)
+                robot = set_phase(robot, robot.robot_state.prev_phase)
                 return None
             elif has_traversed_boundary:
-                robot.set_phase(Phase.FAULT)  # cannot reach goal
+                robot = set_phase(robot, Phase.FAULT)  # cannot reach goal
                 return None
             # bug 2
             elif is_on_line and (curr_dist_to_goal < init_dist_to_goal):
-                if robot.calculate_dist(curr_pos, last_pos_on_line) > threshold_to_recalculate_on_line:
-                    robot.set_phase(robot.robot_state.prev_phase)
+                if calculate_dist(curr_pos, last_pos_on_line) > threshold_to_recalculate_on_line:
+                    robot = set_phase(robot, robot.robot_state.prev_phase)
                     return None
             else:
                 execute_boundary_following(robot)
