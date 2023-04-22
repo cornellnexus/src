@@ -3,6 +3,7 @@ import numpy as np
 from engine.phase import Phase
 from engine.is_raspberrypi import is_raspberrypi
 
+
 class Robot_State:
     """
     A class containing robot-specific information about the current state of a robot.
@@ -126,10 +127,11 @@ class Robot_State:
         self.sensor_measuring_angle = kwargs.get("sensor_measuring_angle", 75)
         # TODO: replace this with actual margin
         self.width_margin = kwargs.get("width_margin", 1)
-        self.threshold_distance = kwargs.get("threshold_distance", ((
-            self.width + self.width_margin) / 2) / math.cos(math.radians((180 - self.sensor_measuring_angle) / 2)))
-        self.detect_obstacle_range = kwargs.get("detect_obstacle_range", min(
-            self.threshold_distance, self.max_sensor_range))  # set ultrasonic detection range
+        self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
+            math.radians((180 - self.sensor_measuring_angle) / 2))
+        # set ultrasonic detection range
+        self.detect_obstacle_range = min(
+            self.threshold_distance, self.max_sensor_range)
 
         # MEASUREMENTS
         self.state = kwargs.get("state", np.array(
@@ -156,9 +158,3 @@ class Robot_State:
         self.gps = kwargs.get("gps", None)
         self.imu = kwargs.get("imu", None)
         self.ekf = kwargs.get("ekf", None)
-
-        self.front_ultrasonic = kwargs.get("front_ultrasonic", None)
-        self.lf_ultrasonic = kwargs.get("lf_ultrasonic",None )
-        self.lb_ultrasonic = kwargs.get("lb_ultrasonic", None)
-        self.rf_ultrasonic = kwargs.get("rf_ultrasonic", None)
-        self.rb_ultrasonic = kwargs.get("rb_ultrasonic", None)
