@@ -15,6 +15,7 @@ class Breakbeam:
         """
         Initializes each sensor to detect changes. Initializes beam_broken to False.
         Creates an empty list for the beams that are broken.
+        Attribute blocked_sensors: set of sensors that have been fully blocked.
         """
         for BEAM_PIN in Breakbeam.BEAM_PINS:
             GPIO.setmode(GPIO.BCM)
@@ -31,8 +32,8 @@ class Breakbeam:
             self.timer(channel)
             self.check_half()
             self.check_full()
-        # print(self.check_half())
-        # print(self.check_full())
+        # print("50% full: " + str(self.check_half()))
+        # print("100% full: " + str(self.check_full()))
     
     def timer(self, channel):
         """
@@ -51,10 +52,15 @@ class Breakbeam:
         else:
             self.blocked_sensors.add(Breakbeam.BEAM_PINS(channel).name)
             self.blocked_sensors_check()
-            print(self.blocked_sensors)
+            # print(self.blocked_sensors)
         
     def blocked_sensors_check(self):
-        TO_BE_REMOVED = []
+        """
+        Checks whether the sensors in the set blocked_sensors are still blocked.
+        Uses list TO_BE_REMOVED to store the sensors that have been unblocked and
+        then remove them from the set of blocked sensors.
+        """
+        TO_BE_REMOVED = [] # sensors to remove due to being unbroken
         for sensor in self.blocked_sensors:
             if(GPIO.input(Breakbeam.BEAM_PINS[sensor].value)):
                 TO_BE_REMOVED.append(sensor)
@@ -67,21 +73,13 @@ class Breakbeam:
         """
         Returns whether the 50% sensors are in the set of fully blocked sensors
         """
-        if len(self.blocked_sensors) < 4 and Breakbeam.BEAM_PINS(17).name in self.blocked_sensors and Breakbeam.BEAM_PINS(22).name in self.blocked_sensors:
-            # bucket has been 50% filled
-            return True
-        else:
-            return False
+        return len(self.blocked_sensors) < 4 and Breakbeam.BEAM_PINS(17).name in self.blocked_sensors and Breakbeam.BEAM_PINS(22).name in self.blocked_sensors
         
     def check_full(self):
         """
         Returns whether the 100% sensors are in the set of fully blocked sensors.
         """
-        if len(self.blocked_sensors) == 4:
-            # bucket has been 100% filled
-            return True
-        else:
-            return False
+        return len(self.blocked_sensors) == 4
         
 
 # Allows to exit program and clean up Pi for testing
