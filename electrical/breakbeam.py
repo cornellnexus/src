@@ -83,6 +83,6 @@ class Breakbeam:
         
 
 # Allows to exit program and clean up Pi for testing
-breakbeam = Breakbeam()
-message = input("Press enter to quit\n\n")
+# breakbeam = Breakbeam()
+# message = input("Press enter to quit\n\n")
 GPIO.cleanup()
