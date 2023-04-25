@@ -37,11 +37,11 @@ class Breakbeam:
     
     def timer(self, channel):
         """
-        Returns the pin number of this sensor.
         Gets the current time and calculates the time that has passed, then compares
         this to the ACCEPTABLE_TIME to determine whether the broken beam was just
         tripped once or if it is fully broken. If fully broken, add it to the set
-        blocked_sensors.
+        blocked_sensors. If the sensor becomes unblocked during tis ACCEPTABLE_TIME,
+        break out of the while-else loop.
         Parameters: channel - the pin used by this sensor
         """
         start = time.time()
@@ -85,4 +85,4 @@ class Breakbeam:
 # Allows to exit program and clean up Pi for testing
 # breakbeam = Breakbeam()
 # message = input("Press enter to quit\n\n")
-GPIO.cleanup()
+# GPIO.cleanup()
