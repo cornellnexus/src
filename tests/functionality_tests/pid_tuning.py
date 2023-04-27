@@ -3,7 +3,7 @@ import math
 from electrical.motor_controller import MotorController
 from engine.grid import Grid
 from engine.database import DataBase
-from engine.robot_logic.robot import Robot
+from engine.robot import Robot
 from engine.robot_logic.traversal import move_to_target_node
 from engine.phase import Phase
 from engine.robot_state import Robot_State

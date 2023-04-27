@@ -2,7 +2,7 @@ import copy
 import math
 import unittest
 
-from engine.robot_logic.robot import Robot
+from engine.robot import Robot
 from engine.robot_logic.traversal import travel
 from engine.robot_state import Robot_State
 
@@ -39,7 +39,7 @@ class TestNodes(unittest.TestCase):
     turn_angle = math.pi / 2
 
     def test_travel(self):
-        travel(self.robot_one, self.distance, self.turn_angle)
+        travel(self.robot_one.robot_state, self.distance, self.turn_angle)
         # Values calculated by hand based on kinematic equations
         new_x = round(-1.3662, 3)
         new_y = round(-0.366198, 3)
@@ -47,22 +47,22 @@ class TestNodes(unittest.TestCase):
         self.assertEqual([[float(new_x)], [float(new_y)], [float(
             new_theta)]], self.robot_one.robot_state.state.tolist())
         # was move_forward_default
-        travel(self.robot_two, self.distance, 0)
+        travel(self.robot_two.robot_state, self.distance, 0)
         new_x = self.robot_two.robot_state.state[0]
         new_y = self.robot_two.robot_state.state[1]
         new_theta = float(self.robot_two.robot_state.state[2])
         self.assertEqual([[float(new_x)], [float(new_y)], [float(
             new_theta)]], self.robot_two.robot_state.state.tolist())
         # was test_turn
-        travel(self.robot_four, 0, math.pi / 2)
+        travel(self.robot_four.robot_state, 0, math.pi / 2)
         self.assertEqual([4.712], self.robot_four.robot_state.state[2])
         # was test_circle_turn
         original_angle = self.robot_five.robot_state.state[2]
-        travel(self.robot_five, 0, math.pi * 2)
+        travel(self.robot_five.robot_state, 0, math.pi * 2)
         self.assertEqual([round(original_angle[0], 3)],
                          self.robot_five.robot_state.state[2])  # added round because travel clamps heading
         # was test_turn_with_time
-        travel(self.robot_six, 0, math.pi / 2)
+        travel(self.robot_six.robot_state, 0, math.pi / 2)
         self.assertEqual([4.712], self.robot_six.robot_state.state[2])
 
     # TODO: double check the calculations + test doesn't use time

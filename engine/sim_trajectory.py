@@ -6,7 +6,7 @@ from matplotlib import animation as animation
 from matplotlib import patches as patch
 from constants.definitions import CSV_PATH
 
-from engine.robot_logic.robot import Robot
+from engine.robot import Robot
 from engine.robot_state import Robot_State
 from engine.phase import Phase
 from engine.mission import Mission

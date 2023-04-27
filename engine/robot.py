@@ -2,6 +2,12 @@ from engine.pid_controller import PID
 from constants.definitions import *
 from csv_files.csv_util import write_phase_to_csv
 
+from engine.robot_logic.set_up import setup_logic
+from engine.robot_logic.traversal import traversal_logic
+from engine.robot_logic.obstacle_avoidance import avoid_obstacle_logic
+from engine.robot_logic.returning import return_logic
+from engine.robot_logic.docking import docking_logic
+
 class Robot:
     """
     A class whose objects contain robot-specific information, and methods to execute individual phases.
@@ -26,23 +32,27 @@ class Robot:
         """
         self.robot_state = robot_state
 
-        self.loc_pid_x = PID(
-            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, 
-            target=0, sample_time=self.robot_state.time_step, output_limits=(None, None))
-
-        self.loc_pid_y = PID(
-            Kp=self.robot_state.position_kp, Ki=self.robot_state.position_ki, Kd=self.robot_state.position_kd, 
-            target=0, sample_time=self.robot_state.time_step, output_limits=(None, None))
-
-        self.head_pid = PID(
-            Kp=self.robot_state.heading_kp, Ki=self.robot_state.heading_ki, Kd=self.robot_state.heading_kd, 
-            target=0, sample_time=self.robot_state.time_step, output_limits=(None, None))
-
         # Write robot's phase to CSV file
         try:
             write_phase_to_csv(self.robot_state.phase)
         finally:
             pass
+
+    def execute_setup(self):
+        setup_logic(self.robot_state)
+
+    def execute_traversal(self, mission_state, database):
+        return traversal_logic(self.robot_state, mission_state, database)
+
+
+    def execute_obstacle_avoidance(self, ):
+        avoid_obstacle_logic(self.robot_state)
+
+    def execute_return(self, mission_state, database):
+        return_logic(self.robot_state, mission_state, database)
+
+    def execute_docking(self):
+        docking_logic(self.robot_state)
 
 
 

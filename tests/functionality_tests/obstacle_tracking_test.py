@@ -1,6 +1,6 @@
 import unittest
 import math
-from engine.robot_logic.robot import Robot
+from engine.robot import Robot
 from engine.robot_logic.set_up import track_obstacle
 from engine.robot_state import Robot_State
 from engine.mission import Mission
@@ -110,7 +110,7 @@ class TestObstacleTracking(unittest.TestCase):
         result_file.close()
         r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2, width = 785)
         r2d2 = Robot(r2d2_state)
-        track_obstacle(r2d2)
+        track_obstacle(r2d2_state)
         result_file = open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', "r")
         result_content = list(map(lambda string: string.rstrip('\n'), result_file.readlines()))
         result_file.close()
@@ -136,7 +136,7 @@ class TestObstacleTracking(unittest.TestCase):
         result_file.close()
         r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2, width = 785)
         r2d2 = Robot(r2d2_state)
-        track_obstacle(r2d2)
+        track_obstacle(r2d2_state)
         result_file = open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', "r")
         result_content = list(map(lambda string: string.rstrip('\n'), result_file.readlines()))
         result_file.close()
@@ -160,7 +160,7 @@ class TestObstacleTracking(unittest.TestCase):
         random_width = random.random() * 700
         r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi/2, epsilon=0.2, max_velocity=0.5, radius=0.2, phase = 2, width = random_width)
         r2d2 = Robot(r2d2_state)
-        track_obstacle(r2d2)
+        track_obstacle(r2d2_state)
         result_file = open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', "r")
         result_content = list(map(lambda string: string.rstrip('\n'), result_file.readlines()))
         result_file.close()

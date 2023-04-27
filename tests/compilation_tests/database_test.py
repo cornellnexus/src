@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 
 from engine.database import DataBase
-from engine.robot_logic.robot import Robot
+from engine.robot import Robot
 from engine.phase import Phase
 from engine.robot_state import Robot_State
 

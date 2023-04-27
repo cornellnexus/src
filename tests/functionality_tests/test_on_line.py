@@ -1,5 +1,5 @@
 import unittest
-from engine.robot_logic.robot import Robot
+from engine.robot import Robot
 from engine.robot_state import Robot_State
 import numpy as np
 

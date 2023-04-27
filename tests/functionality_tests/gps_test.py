@@ -1,6 +1,6 @@
 from engine.grid import *
 from engine.node import *
-from engine.robot_logic.robot import Robot
+from engine.robot import Robot
 from engine.user_utils import get_coord_inputs
 from electrical.motor_controller import BasicMotorController, MotorController
 from engine.robot_state import Robot_State

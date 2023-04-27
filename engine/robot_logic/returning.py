@@ -1,9 +1,9 @@
 import math
 from engine.phase import Phase
-from engine.robot_logic.robot_helpers import set_phase
+from engine.robot_logic.robot_helpers import phase_change
 from engine.robot_logic.traversal import move_to_target_node, turn_to_target_heading
 
-def execute_return(mission_state, database):
+def return_logic(robot_state, mission_state, database):
         """
         Returns robot to base station when robot is in RETURN phase and switches to DOCKING.
 
@@ -15,22 +15,22 @@ def execute_return(mission_state, database):
             allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
                 place.
         """
-        robot = mission_state.robot
         docking_dist_to_base = 1.0  # how close the robot should come to base before starting DOCKING
         dx = docking_dist_to_base * math.cos(mission_state.base_station.heading)
         dy = docking_dist_to_base * math.sin(mission_state.base_station.heading)
         target_loc = (mission_state.base_station.position[0] + dx, mission_state.base_station.position[1] + dy)
 
         # TODO: add obstacle avoidance support
-        move_to_target_node(robot, target_loc, mission_state.allowed_docking_pos_error, database)
+        move_to_target_node(robot_state, target_loc, mission_state.allowed_docking_pos_error, database)
 
         # Face robot towards base station
         # TODO: probably will get rid of this
         target_heading = mission_state.base_station.heading + math.pi
-        turn_to_target_heading(robot, target_heading, mission_state.allowed_heading_error, database)
+        turn_to_target_heading(robot_state, target_heading, mission_state.allowed_heading_error, database)
 
         # RETURN phase complete:
-        robot = set_phase(robot, Phase.DOCKING)
+        robot_state.phase = Phase.DOCKING
+        phase_change(robot_state)
 
 
 

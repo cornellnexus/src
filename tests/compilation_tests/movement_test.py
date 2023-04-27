@@ -1,6 +1,6 @@
 # file for testing gps data
 import RPi.GPIO as GPIO
-from engine.robot_logic.robot import Robot
+from engine.robot import Robot
 from engine.robot_state import Robot_State
 import time
 

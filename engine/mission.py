@@ -1,9 +1,5 @@
 from engine.phase import Phase
-from engine.robot_logic.set_up import execute_setup
-from engine.robot_logic.traversal import execute_traversal
-from engine.robot_logic.obstacle_avoidance import execute_avoid_obstacle
-from engine.robot_logic.returning import execute_return
-from engine.robot_logic.docking import execute_docking
+from engine.robot import Robot
 
 class Mission:
     def __init__(self, mission_state):
@@ -24,18 +20,17 @@ class Mission:
         while self.mission_state.robot.robot_state.phase != Phase.COMPLETE: 
             phase = self.mission_state.robot.robot_state.phase
             if phase == Phase.SETUP: 
-                execute_setup(self.mission_state.robot)
+                self.mission_state.robot.execute_setup()
             elif phase == Phase.TRAVERSE:
                 # TODO: clean up parameters for this function
                 # allowed_dist_error, roomba_radius, and time_limit should be constants?
-                self.mission_state.robot, self.mission_state.waypoints_to_visit = execute_traversal(self.mission_state, database)
+                self.mission_state.robot.robot_state, self.mission_state.waypoints_to_visit = self.mission_state.robot.execute_traversal(self.mission_state, database)
             elif phase == Phase.AVOID_OBSTACLE: 
-                execute_avoid_obstacle(self.mission_state.robot, 
-                                       self.mission_state.robot.robot_state.dist_to_goal, database)
+                self.mission_state.robot.execute_avoid_obstacle(self.mission_state.robot.robot_state, database)
             elif phase == Phase.RETURN:
-                execute_return(self.mission_state, database)
+                self.mission_state.robot.execute_return(self.mission_state, database)
             elif phase == Phase.DOCKING:
-                execute_docking(self.mission_state.robot)
+                self.mission_state.robot.execute_docking()
 
              #update the database with the most recent state
             database.update_data("phase", self.mission_state.robot.robot_state.phase)
