@@ -37,28 +37,58 @@
         }
     },
     "break_beams" {
-      half1_connected: Boolean,
-      half2_connected: Boolean,
-      full1_connected: Boolean,
-      full2_connected: Boolean,
-      half_full: Boolean,
-      max_full: Boolean,
+      "half1": {
+        "connected": Boolean,
+        "blocked": Boolean
+      },
+      "half2": {
+        "connected": Boolean,
+        "blocked": Boolean
+      },
+      "full1": {
+        "connected": Boolean,
+        "blocked": Boolean
+      },
+      "full2": {
+        "connected": Boolean,
+        "blocked": Boolean
+      }
+      "half_full": Boolean,
+      "max_full": Boolean,
     },
     "wheel_motors": {
-      // TODO: connected x 4??? doc list still relevant?
+      "duty_cycle": Float,
+      "linear_velocity": Float,
+      "left_wheel_velocity": Float,
+      "right_wheel_velocity": Float
     }
     "cams" {
       "front_cam": {
         "connected": Boolean,
-        "tag_id_detected": Integer/String or null  // TODO: integer or string
+        "tag_id_detected": String or null
       },
       "back_cam": {
         "connected": Boolean,
-        "tag_id_detected": Integer/String or null  // TODO
+        "tag_id_detected": String or null
       }
     },
     "ultrasonic": { 
-      // TODO: doc list still relevant? how many connected
+      "front_uls": {
+        "connected": Boolean,
+        "distance_to_object": Float or null
+      },
+      "left1_uls": {
+        "connected": Boolean,
+        "distance_to_object": Float or null
+      },
+      "left2_uls": {
+        "connected": Boolean,
+        "distance_to_object": Float or null
+      },
+      "right_uls": {
+        "connected": Boolean,
+        "distance_to_object": Float or null
+      }
     } 
   },
   "battery": {
