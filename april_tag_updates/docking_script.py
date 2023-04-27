@@ -8,7 +8,7 @@ from enum import Enum
 
 class Steps(Enum):
     """
-    An enumeration of the different steps in the April  Tag Docking ALgorithm
+    An enumeration of the different steps in the April  Tag Docking Algorithm
     """
     Step1 = 1
     Step2 = 2
@@ -48,6 +48,9 @@ def direction_of_tag(corner):
     return "left"
 
 def visualization(corner, markerId):
+  """Our camera is 1080p resolution
+  Inputs:corner and id of tag
+  Outputs image of tag(s) with distance and angle from center of camera to tag"""
   markerId = float(markerId)
   (topLeft, _, bottomRight, bottomLeft) = corner[0]
   pixel_width = np.sqrt((bottomRight[0] - bottomLeft[0])**2 + (bottomRight[1] - bottomLeft[1])**2)
@@ -72,11 +75,11 @@ while True:
         start_time = time.time()
     ret, image = cap.read()
     (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
-    is_april_tag_in_view = len(corner) > 0
+    is_april_tag_in_view = len(corners) > 0
     if not is_april_tag_in_view:
       if angle < angle_min and depth < depth_min:
         step == Steps.Step2
-      if time.time() - start_time > timeout and step1_done is False:
+      if time.time() - start_time > timeout and step == Steps.Step1:
         #Step 1 - Check for april tags rn by rotating in circle for 15 seconds.
           motor.turn_right()##TODO make time a parameter of this function
       if step == Steps.Step2:
