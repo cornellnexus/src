@@ -16,30 +16,30 @@ gps_noise_range = .3
 
 # Takes approx. 9 seconds for 5 tests
 class TestTraverseStandardFunctions(unittest.TestCase):
-    # def test1(self):
-    #     r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=0,
-    #                              epsilon=0.2, max_velocity=0.5, radius=0.2, phase=2, position_kp=.1, heading_kp=.1, position_kd=0.0, heading_kd=0.0
-    #                              )
-    #     r2d2 = Robot(robot_state=r2d2_state)
-    #     database = DataBase(r2d2)
+    def test1(self):
+        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=0,
+                                 epsilon=0.2, max_velocity=0.5, radius=0.2, phase=2, position_kp=.1, heading_kp=.1, position_kd=0.0, heading_kd=0.0
+                                 )
+        r2d2 = Robot(robot_state=r2d2_state)
+        database = DataBase(r2d2)
 
-    #     allowed_dist_error = 0.5
-    #     r2d2.move_to_target_node(
-    #         (42.444250, -66.483682), allowed_dist_error, database)
+        allowed_dist_error = 0.5
+        r2d2.move_to_target_node(
+            (42.444250, -66.483682), allowed_dist_error, database)
 
-    # def test2(self):
-    #     r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=math.pi/2,
-    #                              epsilon=0.2, max_velocity=0.5, radius=0.2, phase=2, position_kp=.1, heading_kp=.1, position_kd=0.0, heading_kd=0.0
-    #                              )
-    #     r2d2 = Robot(robot_state=r2d2_state)
-    #     database = DataBase(r2d2)
+    def test2(self):
+        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=math.pi/2,
+                                 epsilon=0.2, max_velocity=0.5, radius=0.2, phase=2, position_kp=.1, heading_kp=.1, position_kd=0.0, heading_kd=0.0
+                                 )
+        r2d2 = Robot(robot_state=r2d2_state)
+        database = DataBase(r2d2)
 
-    #     allowed_dist_error = 0.5
-    #     r2d2.move_to_target_node(
-    #         (52.444750, -76.483682), allowed_dist_error, database)
+        allowed_dist_error = 0.5
+        r2d2.move_to_target_node(
+            (52.444750, -76.483682), allowed_dist_error, database)
 
     def test3(self):
-        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=math.pi/2,
+        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=0,
                                  epsilon=0.2, max_velocity=0.5, radius=0.2, phase=2, position_kp=.1, heading_kp=.1, position_kd=0.0, heading_kd=0.0
                                  )
         r2d2 = Robot(robot_state=r2d2_state)

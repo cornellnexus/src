@@ -173,15 +173,15 @@ class Robot:
             distance_away = self.calculate_dist(target, predicted_state)
             x = self.robot_state.truthpose[:, 0]
             y = self.robot_state.truthpose[:, 1]
-            np.append(x, target[0])
-            np.append(y, target[1])
+            plt.scatter(target[0], target[1])
+            plt.text(target[0], target[1], "target")
 
-            for index in range(i):
-                plt.scatter(
-                    self.robot_state.truthpose[:, 0], self.robot_state.truthpose[:, 1])
-                plt.text(x[index], y[index], index)
-            plt.show()
-            print("truthpose", self.robot_state.truthpose)
+        for index in range(i):
+            plt.scatter(
+                self.robot_state.truthpose[:, 0], self.robot_state.truthpose[:, 1])
+            plt.text(x[index], y[index], index)
+        plt.show()
+        print("heading", self.robot_state.truthpose[:, 2])
         return i
 
     def write_to_csv(self, predicted_state):
