@@ -139,9 +139,11 @@ class TestGrid(unittest.TestCase):
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
         g = Grid(lat_min, lat_max, long_min, long_max)
         
+        #Create the expected border to compare with the initializec border
         my_border = []
         my_border += list(g.nodes[0][1:-1])
         my_border += list(g.nodes[38][1:-1])
+        #39 rows and 34 collumns based on the conversion between longitude/latitude 
         my_border += list(g.nodes[: , 0])
         my_border += list(g.nodes[: , 33])
         
@@ -172,6 +174,7 @@ class TestGrid(unittest.TestCase):
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
         g = Grid(lat_min, lat_max, long_min, long_max)
         
+        #Create the expected border to compare with the initializec border
         my_border = []
         my_border += list(np.diagonal(g.nodes[:17]))
         my_border += list(g.nodes[0][:-1])
@@ -179,7 +182,7 @@ class TestGrid(unittest.TestCase):
             for y in range(16,0,-1):
                 if (y == -x + 32):
                     my_border.append(g.nodes[y, x])
-                 
+        #Based on longitude/lattitude conversions, determine that the 16th node is the midpoint
         
         g.activate_triangle([0,0], [16,16], [32,0])  
         g.find_border_nodes() 
