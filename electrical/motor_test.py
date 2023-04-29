@@ -34,6 +34,9 @@ class BasicMotorControllerTest:
         while time.time() <	stop_time:
             self.mc.turn_left()
 
+    def stop(self):
+        self.mc.stop();
+
     # Moves forward for 3 seconds
     def motor_controller_forward(self):
         GPIO.add_event_detect(pin,GPIO.RISING)
