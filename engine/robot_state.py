@@ -3,6 +3,7 @@ import numpy as np
 from engine.phase import Phase
 from engine.is_raspberrypi import is_raspberrypi
 
+
 class Robot_State:
     """
     A class containing robot-specific information about the current state of a robot.
@@ -32,8 +33,7 @@ class Robot_State:
             is_sim: False if the physical robot is being used, True otherwise
             store_data: False if csv data should not be stored, True otherwise
             phase: the phase of the robot
-            is_roomba_obstacle: True if there's an obstacle detected during roomba traversal
-            is_roomba_traversal: True if we are using roomba traversal
+            enable_obstacle_avoidance: False if we want to pause obstacle avoidance
 
             CONSTANTS
             width: width of the robot in cm
@@ -83,9 +83,6 @@ class Robot_State:
             gps:
             imu:
             ekf:
-
-            THREADS
-            track_obstacle_thread
         """
         # TODO: Fill in missing spec for attributes above
 
@@ -95,8 +92,8 @@ class Robot_State:
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
         self.store_data = kwargs.get("store_data", False)
         self.phase = Phase(kwargs.get("phase", Phase.TRAVERSE if self.is_sim else Phase.SETUP))
-        self.is_roomba_obstacle = kwargs.get("is_roomba_obstacle", False)
-        self.is_roomba_traversal = kwargs.get("is_roomba_traversal", False)
+        self.enable_obstacle_avoidance = kwargs.get(
+            "enable_obstacle_avoidance", True)
 
         # CONSTANTS
         self.width = kwargs.get("width", 700)
@@ -126,10 +123,11 @@ class Robot_State:
         self.sensor_measuring_angle = kwargs.get("sensor_measuring_angle", 75)
         # TODO: replace this with actual margin
         self.width_margin = kwargs.get("width_margin", 1)
-        self.threshold_distance = kwargs.get("threshold_distance", ((
-            self.width + self.width_margin) / 2) / math.cos(math.radians((180 - self.sensor_measuring_angle) / 2)))
-        self.detect_obstacle_range = kwargs.get("detect_obstacle_range", min(
-            self.threshold_distance, self.max_sensor_range))  # set ultrasonic detection range
+        self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
+            math.radians((180 - self.sensor_measuring_angle) / 2))
+        # set ultrasonic detection range
+        self.detect_obstacle_range = min(
+            self.threshold_distance, self.max_sensor_range)
 
         # MEASUREMENTS
         self.state = kwargs.get("state", np.array(
@@ -156,9 +154,3 @@ class Robot_State:
         self.gps = kwargs.get("gps", None)
         self.imu = kwargs.get("imu", None)
         self.ekf = kwargs.get("ekf", None)
-
-        self.front_ultrasonic = kwargs.get("front_ultrasonic", None)
-        self.lf_ultrasonic = kwargs.get("lf_ultrasonic",None )
-        self.lb_ultrasonic = kwargs.get("lb_ultrasonic", None)
-        self.rf_ultrasonic = kwargs.get("rf_ultrasonic", None)
-        self.rb_ultrasonic = kwargs.get("rb_ultrasonic", None)
