@@ -26,15 +26,30 @@
   "sensors": {
     "gps": {
       "connected": Boolean
-      "reading": [ Float of latitude, Float of longitude ]
+      "reading": {
+        "latitude": Float,
+        "longitude": Float
+      }
     },
     "imu" {
       "connected": Boolean
       "reading": {
-        "accelerometer": [ Float of x-axis value, Float of y-axis value, Float of z-axis value ],
-        "magnetometer": [ Float of x-axis value, Float of y-axis value, Float of z-axis value ],
-        "gyroscope": [ Float of x-axis value, Float of y-axis value, Float of z-axis value ]
+        "accelerometer": {
+          "x-axis": Float,
+          "y-axis": Float,
+          "z-axis": Float
         }
+        "magnetometer": {
+          "x-axis": Float,
+          "y-axis": Float,
+          "z-axis": Float
+        }
+        "gyroscope": {
+          "x-axis": Float,
+          "y-axis": Float,
+          "z-axis": Float
+        }
+      }
     },
     "break_beams" {
       "half1": {

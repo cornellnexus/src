@@ -1,3 +1,6 @@
+import json
+from datetime import datetime
+
 class Transmittor:
     """
     A class that will transmit the current robot and mission states to the GUI
@@ -31,6 +34,27 @@ class Transmittor:
         # Information that we want:
         # https://docs.google.com/document/d/15H-kN6vgFRpZ-XSjbv7ulJhqrt_15Kya2FYC6WzGCtI/edit
 
-        pass
+        return json.dumps({
+            "timestamp": datetime.now().strftime("%H:%M:%S"),
+            "sensors": {
+                "gps": {
+                    "connected": self.robot_state.gps_connected,
+                    "reading": json.dumps(self.robot_state.gps.get_gps())
+                },
+                "imu": {
+                    "connected": self.robot_state.imu_connected,
+                    "reading": json.dumps(self.robot_state.imu.get_imu())
+                },
+                "break_beams": {
+                    
+                }
+            },
+            "battery": {
+                
+            },
+            "metrics": {
+                
+            }
+        })
     
     
