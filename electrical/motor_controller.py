@@ -41,21 +41,31 @@ class BasicMotorController:
             self.back_left = GPIO.PWM(self.pwm_pin_bl, 600)
             self.front_right = GPIO.PWM(self.pwm_pin_fr, 600)
             self.front_left = GPIO.PWM(self.pwm_pin_fl, 600)
-            if speed == "slow":
-                self.back_right.start(31)
-                self.back_left.start(31)
-                self.front_right.start(44)
-                self.front_left.start(44)
-            elif speed == "medium":
-                self.back_right.start(50)
-                self.back_left.start(50)
-                self.front_right.start(71)
-                self.front_left.start(71)
-            elif speed == "fast":
-                self.back_right.start(70)
-                self.back_left.start(70)
-                self.front_right.start(99)
-                self.front_left.start(99)
+            if speed == "very slow": #0.3 m/s
+                self.back_right.start(10.85)
+                self.back_left.start(10.85)
+                self.front_right.start(15.89)
+                self.front_left.start(15.89)
+            elif speed == "slow": #0.6 m/s
+                self.back_right.start(23.56)
+                self.back_left.start(23.56)
+                self.front_right.start(33.64)
+                self.front_left.start(33.64)
+            elif speed == "medium": #1 m/s
+                self.back_right.start(40.51)
+                self.back_left.start(40.51)
+                self.front_right.start(57.31)
+                self.front_left.start(57.31)
+            elif speed == "fast": # 1.4 m/s
+                self.back_right.start(57.46)
+                self.back_left.start(57.46)
+                self.front_right.start(80.98)
+                self.front_left.start(80.98)
+            elif speed == "max": # 1.7 m/s
+                self.back_right.start(70.17)
+                self.back_left.start(70.17)
+                self.front_right.start(98.73)
+                self.front_left.start(98.73)
 
     # stops the robot
     def stop(self):

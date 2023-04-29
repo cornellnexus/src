@@ -14,7 +14,7 @@ class BasicMotorControllerTest:
 
     def __init__(self): 
         self.mc = BasicMotorController(False, 1)
-        self.mc.setup('slow') # CHANGE SPEED HERE
+        self.mc.setup('very slow') # CHANGE SPEED HERE ('very slow','slow','medium','fast','max')
         self.counter_right = 0
 
     # Turns right for 3 seconds
