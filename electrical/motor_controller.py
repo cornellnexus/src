@@ -113,11 +113,40 @@ class BasicMotorController:
         if self.is_sim:
             print('turn_right')
         else:
-            GPIO.output([self.gpio_br], GPIO.HIGH)
+            self.back_right.start(6.61)
+            self.front_right.start(9.98)
+            self.back_left.start(23.56)
+            self.front_left.start(33.64)
+            #GPIO.output([self.gpio_br], GPIO.HIGH)
             GPIO.output([self.gpio_bl], GPIO.LOW)
-            self.back_right.start(100)
-            self.back_left.start(50)
-
+            GPIO.output([self.gpio_fr], GPIO.HIGH)
+            GPIO.output([self.gpio_fl], GPIO.LOW)
+            
+    def point_turn_right(self):
+        if self.is_sim:
+            print('turn_right')
+        else:
+            self.back_right.start(36.27)
+            self.front_right.start(51.4)
+            self.back_left.start(10.85)
+            self.front_left.start(15.89)
+            GPIO.output([self.gpio_br], GPIO.LOW)
+            GPIO.output([self.gpio_bl], GPIO.LOW)
+            GPIO.output([self.gpio_fr], GPIO.LOW)
+            GPIO.output([self.gpio_fl], GPIO.LOW)
+            
+    def point_turn_left(self):
+        if self.is_sim:
+            print('turn_right')
+        else:
+            self.back_left.start(36.27)
+            self.front_left.start(51.4)
+            self.back_right.start(10.85)
+            self.front_right.start(15.89)
+            GPIO.output([self.gpio_br], GPIO.HIGH)
+            GPIO.output([self.gpio_bl], GPIO.HIGH)
+            GPIO.output([self.gpio_fr], GPIO.HIGH)
+            GPIO.output([self.gpio_fl], GPIO.HIGH)
     # converts duty cycle into revolution per second base on experiment
     # see motor pulse per revolution sheet for derivation (electrical folder)
     # call individually on each wheel
