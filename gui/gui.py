@@ -260,7 +260,7 @@ def run_gui():
     def run_simulation(name):
         logging.info("Thread %s: starting", name)
         os.system("python -m gui.retrieve_inputs &")
-        os.system("python -m engine.sim_trajectory")
+        os.system("python -m engine.main")
         logging.info("Thread %s: finishing", name)
 
     format = "%(asctime)s: %(message)s"
@@ -286,7 +286,7 @@ def run_gui():
 
         if event == sg.WIN_CLOSED or event == 'Cancel':
             # once gui.gui.py is closed, close any other simulation scripts
-            os.system("pkill -f engine.sim_trajectory &")
+            os.system("pkill -f engine.main &")
             os.system("pkill -f gui.retrieve_inputs")
             break
         if event == 'Show':

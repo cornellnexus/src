@@ -31,10 +31,9 @@ class Robot_State:
             FLAGS
             using_ekf: False if are only using GPS/IMU, True if we are using EKF
             is_sim: False if the physical robot is being used, True otherwise
-            should_store_data: False if csv data should not be stored, True otherwise
+            store_data: False if csv data should not be stored, True otherwise
             phase: the phase of the robot
-            is_roomba_obstacle: True if there's an obstacle detected during roomba traversal
-            is_roomba_traversal: True if we are using roomba traversal
+            enable_obstacle_avoidance: False if we want to pause obstacle avoidance
 
             CONSTANTS
             width: width of the robot in cm
@@ -84,9 +83,6 @@ class Robot_State:
             gps:
             imu:
             ekf:
-
-            THREADS
-            track_obstacle_thread
         """
         # TODO: Fill in missing spec for attributes above
 
@@ -94,10 +90,10 @@ class Robot_State:
         # If false, only uses GPS and IMU; else, uses EKF
         self.using_ekf = False
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
-        self.should_store_data = kwargs.get("should_store_data", False)
-        self.phase = Phase(kwargs.get("phase", Phase.SETUP))
-        self.is_roomba_obstacle = kwargs.get("is_roomba_obstacle", False)
-        self.is_roomba_traversal = kwargs.get("is_roomba_traversal", False)
+        self.store_data = kwargs.get("store_data", False)
+        self.phase = Phase(kwargs.get("phase", Phase.TRAVERSE if self.is_sim else Phase.SETUP))
+        self.enable_obstacle_avoidance = kwargs.get(
+            "enable_obstacle_avoidance", True)
 
         # CONSTANTS
         self.width = kwargs.get("width", 700)

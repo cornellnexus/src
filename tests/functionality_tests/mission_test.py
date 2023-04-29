@@ -28,7 +28,7 @@ class MissionTest():
                                 self.mission.gps, self.mission.imu, self.mission.motor_controller)
         # disabled obstacle avoidance thread because if there is an obstacle,
         # the phase would go into obstacle avoidance despite wanting to solely test another phase (like traversal).
-        self.rb_state.track_obstacle_thread.stop()
+        self.rb_state.enable_obstacle_avoidance = False
 
     def test_traverse(self):
         self.r2d2.execute_traversal(self.mission.waypoints_to_visit, self.mission.allowed_dist_error, self.mission.base_station_loc,
@@ -36,7 +36,7 @@ class MissionTest():
 
     def test_avoid_obstacle(self):
         # can only test avoid obstacle by doing one of the other phase and having an obstacle
-        self.rb_state.track_obstacle_thread.start()
+        self.rb_state.enable_obstacle_avoidance = True
         self.r2d2.execute_traversal(self.mission.waypoints_to_visit, self.mission.allowed_dist_error, self.mission.base_station_loc,
                                     self.mission.control_mode, self.mission.time_limit, self.mission.roomba_radius, self.database)
 
