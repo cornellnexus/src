@@ -30,7 +30,6 @@ def parse_main():
                     help="a float for the base stations's latitude coordinate")
    parser.add_argument("base_long", type=float, nargs='?', const=1, default=-76.483682,
                     help="a float for the base stations's longitude coordinate")
-   parser.add_argument("-l", "--lawnmower", action="store_false",
-                    help="Set intial control mode to lawnmower") # TODO: add for additional control modes, after centralizing the different lawnmowers
+   # TODO: add flags for different control modes, after fixing which ones we have
    args = parser.parse_args()
    return(vars(args))
