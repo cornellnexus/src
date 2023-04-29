@@ -11,7 +11,6 @@ def parse_main():
       heading: a float for the robot's initial heading
       base_lat: a float for the base stations's latitude coordinate"
       base_long: a float for the base stations's longitude coordinate"
-      lawnmower: a boolean defaulted to True unless the user specifies otherwise
 
    By default, the robot is centered at (0, 0) in coordinate space facing northeast.
    The base station is centered at (latitude, longitude)

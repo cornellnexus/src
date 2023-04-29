@@ -22,7 +22,6 @@ if __name__ == "__main__":
     # Load user-defined arguments
     user_args = parse_main()
     
-    print(user_args.get("lawnmower"))
     r2d2_state = Robot_State(xpos=user_args.get("xpos", 0), ypos=user_args.get("ypos", 0), heading=user_args.get("heading", math.pi/4), store_data = config_args.get("store_data"), is_sim=config_args.get("is_sim") if is_raspberrypi() else not is_raspberrypi()) # Let user define if on the pi, otherwise set to True
     r2d2 = Robot(robot_state=r2d2_state)
     database = DataBase(r2d2) # TODO: Replace w new packet transmission impl
