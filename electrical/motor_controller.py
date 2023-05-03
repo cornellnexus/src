@@ -147,7 +147,8 @@ class BasicMotorController:
             GPIO.output([self.gpio_bl], GPIO.HIGH)
             GPIO.output([self.gpio_fr], GPIO.HIGH)
             GPIO.output([self.gpio_fl], GPIO.HIGH)
-    # converts duty cycle into revolution per second base on experiment
+
+    # converts duty cycle into revolutions per second base on physical testing data
     # see motor pulse per revolution sheet for derivation (electrical folder)
     # call individually on each wheel
     def rps_given_dc(self, dc):
@@ -165,8 +166,7 @@ class BasicMotorController:
             radius = self.back_radius
         elif (wheel_size == "small"):
             radius = self.front_radius
-        circumference = 2*math.pi*radius
-        distance = circumference*wheel_rps*time
+        distance = 2*math.pi*radius*wheel_rps*time
         if (self.is_sim == True) :
             print("Distance traveled in " + time + "seconds: " + distance + " meters")
         return distance
@@ -183,15 +183,11 @@ class MotorController:
         wheel_radius: the wheel radius 
         vm_load1: maximum velocity can drive load1 #TODO: make this more descriptive
         vm_load2: maximum velocity can drive load2 #TODO: make this more descriptive
-        L: radius of left motor #TODO: double check this 
-        R: radius of right motor #TODO: double check this
+        L: radius of left motor
+        R: radius of right motor 
     """
     def __init__(self, vm_load1, vm_load2, L, R, is_sim, gear_ratio):
-        self.vm_load1 = vm_load1
-        self.vm_load2 = vm_load2
-        self.L = L
-        self.R = R
-        # raspberry pi motor driver pinouts
+         # raspberry pi motor driver pinouts
         self.gpio_br = 5 # GPIO5, pin29, back right motor, DIR1
         self.gpio_bl = 6 # GPIO6, pin31, back left motor, DIR2
         self.gpio_fr = 23 # GPIO23, pin 16, front right motor, DIR1
@@ -200,13 +196,19 @@ class MotorController:
         self.pwm_pin_bl = 12  # GPIO12(PWM0), pin 32, back left motor, PWM2
         self.pwm_pin_fr = 25 # GPIO25, pin 22, front right motor, PWM1
         self.pwm_pin_fl = 8 # GPIO8, pin 24, front left motor, PWM2
-        self.is_sim = is_sim    # Change to False when running on robot, same with importing RPi.GPIO
+        self.is_sim = is_sim # Change to False when running on robot, same with importing RPi.GPIO
         self.gear_ratio = gear_ratio
         self.front_radius = 0.15    # unit is meters
         self.back_radius = 0.21    # unit is meters
+        self.vm_load1 = vm_load1
+        self.vm_load2 = vm_load2
+        self.L = L
+        self.R = R
+        self.pulses_per_rev = 853.98 # CEPR/4 from spec sheet, corroborated by physical testing
+
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([self.gpio_br, self.gpio_bl, self.gpio_fr, self.gpio_fl],GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup([self.pwm_pin_br, self.pwm_pin_bl], GPIO.OUT)  # pwm_pin_br, pwm_pin_bl
+        GPIO.setup([self.pwm_pin_br, self.pwm_pin_bl], GPIO.OUT)  # pwm_pin_fr, pwm_pin_fl
 
         self.pwm_br = GPIO.PWM(self.pwm_pin_br, 50)
         self.pwm_bl = GPIO.PWM(self.pwm_pin_bl, 50)
@@ -216,32 +218,110 @@ class MotorController:
         self.pwm_bl.start(0)
 
     # Initialize the robot's motors to 0 voltage. Used when powering the robot on.
-    def setup(self):
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup([self.gpio_br, self.gpio_bl, self.gpio_fr, self.gpio_fl],
-                    GPIO.OUT, initial=GPIO.LOW)
-        GPIO.setup([self.pwm_pin_br, self.pwm_pin_bl], GPIO.OUT)  # pwm_pin_br, pwm_pin_bl
 
-        self.pwm_br = GPIO.PWM(self.pwm_pin_br, 25)
-        self.pwm_bl = GPIO.PWM(self.pwm_pin_bl, 50)
+    def setup(self, speed):
+        if not self.is_sim:
+            GPIO.setmode(GPIO.BCM) #raspberry pi pinout reading mode
+            # back motors
+            GPIO.setup([self.gpio_br, self.gpio_bl], GPIO.OUT, initial=GPIO.LOW)
+            GPIO.setup([self.pwm_pin_br, self.pwm_pin_bl], GPIO.OUT)
+            # front motors
+            GPIO.setup([self.gpio_fr, self.gpio_fl], GPIO.OUT, initial=GPIO.LOW)
+            GPIO.setup([self.pwm_pin_fr, self.pwm_pin_fl], GPIO.OUT) 
+            # create object digital to analog conversion for PWM on port 25 at 1KHz
+            self.back_right = GPIO.PWM(self.pwm_pin_br, 600)
+            self.back_left = GPIO.PWM(self.pwm_pin_bl, 600)
+            self.front_right = GPIO.PWM(self.pwm_pin_fr, 600)
+            self.front_left = GPIO.PWM(self.pwm_pin_fl, 600)
+            if speed == "very slow": #0.3 m/s
+                self.back_right.start(10.85)
+                self.back_left.start(10.85)
+                self.front_right.start(15.89)
+                self.front_left.start(15.89)
+            elif speed == "slow": #0.6 m/s
+                self.back_right.start(23.56)
+                self.back_left.start(23.56)
+                self.front_right.start(33.64)
+                self.front_left.start(33.64)
+            elif speed == "medium": #1 m/s
+                self.back_right.start(40.51)
+                self.back_left.start(40.51)
+                self.front_right.start(57.31)
+                self.front_left.start(57.31)
+            elif speed == "fast": # 1.4 m/s
+                self.back_right.start(57.46)
+                self.back_left.start(57.46)
+                self.front_right.start(80.98)
+                self.front_left.start(80.98)
+            elif speed == "max": # 1.7 m/s
+                self.back_right.start(70.17)
+                self.back_left.start(70.17)
+                self.front_right.start(98.73)
+                self.front_left.start(98.73)
+ 
+    # converts duty cycle into revolution per second base on experiment
+    # see motor pulse per revolution sheet for derivation (electrical folder)
+    # call individually on each wheel
+    def rps_given_dc(self, dc):
+        motor_rps = (0.0537*dc + 0.1)/3 # from motor rps vs duty cycle graph
+        wheel_rps = (1/self.gear_ratio)*motor_rps
+        if (self.is_sim == True) :
+            print('Wheel revolutions per second for duty cycle '+ dc + ' is: ' + wheel_rps)
+        return wheel_rps
+    
+    # For an elapsed amount of time(seconds), wheel revolution per 
+    # second, and wheel size(small, big) returns expected distance the wheel travels(meters)
+    # call individually on each wheel (wheels at same side should return same value)
+    def revolutions_to_distance(self, time, wheel_rps, wheel_size):
+        if (wheel_size == 'big'):
+            radius = self.back_radius
+        elif (wheel_size == 'small'):
+            radius = self.front_radius
+        distance = 2*math.pi*radius*wheel_rps*time
+        if (self.is_sim == True) :
+            print('Distance traveled in ' + time + 'seconds: ' + distance + ' meters')
+        return distance
 
-    # converts the robot's overall calculated angular velocity and linear velocity
-    # into the angular velocities for left and right sides of the robot
-    def left_right_angular_vel(self, omega, vel):
-        if omega == 0:
-            vr = vel
-            vl = vel
-        else:
-            vr = omega * (self.R + self.L / 2)
-            vl = omega * (self.R - self.L / 2)
+    # Given a linear velocity and wheel size, outputs the duty cycle required for that wheel to travel at that
+    # velocity. Must be called on each wheel individually.
+    def lin_vel_to_dc(self,lin_vel, wheel_size):
+        if (wheel_size == 'big'):
+            radius = self.back_radius
+        elif (wheel_size == 'small'):
+            radius = self.front_radius
+        wheel_rev = lin_vel/(2*math.pi*radius) # wheel revolutions = distance traveled in one sec/circumference
+        motor_rev = self.gear_ratio * wheel_rev # motor to wheel revolution conversion based on gear ratio
+        duty_cycle = 8.62*motor_rev - 1.862 ## From duty cycle vs motor revolutions graph
+        return duty_cycle
 
-        omega_r = vr * self.wheel_radius
-        omega_l = vl * self.wheel_radius
-        return omega_r, omega_l
+    # Given the frequency of the PID, the fraction of the PID period that you want to count pulses over, the
+    # RPi pin connected to the wheel's motor encoder, and the wheel size, returns the wheel's current linear velocity
+    def get_wheel_lin_vel (self, pid_freq, time_frac, encoder_pin, wheel_size):
+        GPIO.add_event_detect(encoder_pin,GPIO.RISING) ## might need to do this for all pins before motors start running outside of this function
+        run_time = time.time() + time_frac*(1/pid_freq)
+        num_pulses = 0
+        while time.time() <	run_time:
+            if GPIO.event_detected(encoder_pin):
+                num_pulses+=1
+        GPIO.cleanup()
+
+        motor_rev = num_pulses / self.pulses_per_rev
+        wheel_rev = 1/self.gear_ratio * motor_rev # motor to wheel revolution conversion based on gear ratio
+        if (wheel_size == 'big'):
+            radius = self.back_radius
+        elif (wheel_size == 'small'):
+            radius = self.front_radius
+        
+        return (2*math.pi*radius*wheel_rev)/run_time # velocity = (circumference * revolutions)/time
+
+    # Given PID gains (determined by tuning), the desired velocity/setpoint, and the actual 
+    # velocity/process value, return an adjusted linear velocity to run at
+    def motor_pid(kP,kI,kD,actual_vel,desired_vel):
+        pid_lin_vel = 0
+        return pid_lin_vel
 
     # Change duty cycle (voltage applied) for motors based on
     # overall robot's angular and linear velocities
-
     def spin_motors(self, omega, vel):
         omega_right, omega_left = self.left_right_angular_vel(omega, vel)
 
@@ -262,29 +342,17 @@ class MotorController:
             self.pwm_bl.ChangeDutyCycle(dc2)
         else:
             print('dc1: ', dc1, ' and dc2: ', dc2)
- 
-    # converts duty cycle into revolution per second base on experiment
-    # see motor pulse per revolution sheet for derivation (electrical folder)
-    # call individually on each wheel
-    def rps_given_dc(self, dc):
-        motor_rps = (0.0537/3)*dc + 0.1/3
-        wheel_rps = (1/self.gear_ratio)*motor_rps
-        if (self.is_sim == True) :
-            print('Wheel revolutions per second for duty cycle '+ dc + ' is: ' + wheel_rps)
-        return wheel_rps
-    
-    # For an elapsed amount of time(seconds), wheel revolution per 
-    # second, and wheel size(small, big) returns expected distance the wheel travels(meters)
-    # call individually on each wheel (wheels at same side should return same value)
-    def revolutions_to_distance(self, time, wheel_rps, wheel_size):
-        if (wheel_size == 'big'):
-            radius = self.back_radius
-        elif (wheel_size == 'small'):
-            radius = self.front_radius
-        circumference = 2*math.pi*radius
-        distance = circumference*wheel_rps*time
-        if (self.is_sim == True) :
-            print('Distance traveled in ' + time + 'seconds: ' + distance + ' meters')
-        return distance
 
+     # converts the robot's overall calculated angular velocity and linear velocity
+    # into the angular velocities for left and right sides of the robot
+    def left_right_angular_vel(self, omega, vel):
+        if omega == 0:
+            vr = vel
+            vl = vel
+        else:
+            vr = omega * (self.R + self.L / 2)
+            vl = omega * (self.R - self.L / 2)
 
+        omega_r = vr * self.wheel_radius
+        omega_l = vl * self.wheel_radius
+        return omega_r, omega_l
