@@ -1,5 +1,5 @@
 known_width = 4.18 ##inches
-focal_length = 1.37478492e+03
+focal_length = 1.37478492e+03##pixels
 from electrical.motor_controller import BasicMotorController
 import numpy as np
 import cv2
@@ -17,11 +17,11 @@ class Steps(Enum):
     Done = 5
 
 cx, cy = int(960),int(540)
-idDict = {1: "R1", 2: "R2", 3: "R3"}#TODO add all the other tags
+idDict = {1: "R1", 2: "R2", 3: "R3"} #TODO add all the other tags
 visited = []
 timeout =  10##seconds
 angle_min = 10##degrees
-depth_min = 8
+depth_min = 8##inches
 step = Steps.Step1
 motor = BasicMotorController(True)
 start_time = None
@@ -33,14 +33,22 @@ arucoParams = cv2.aruco.DetectorParameters_create()
 cap = cv2.VideoCapture(0)
 window = 'Camera'
 cv2.namedWindow(window)
-def distance_to_camera(knownWidth, focalLength, perWidth):
-  # compute and return the distance from the maker to the camera
-  return (knownWidth * focalLength) / perWidth
+def distance_to_camera(known_width, focal_length, pixel_width):
+  """
+  Returns the perpendicular distance from the center of camera to the center of an April tag.
+  Arguments:
+    known_width: physically measured width of a 36h11 april tag 
+    focal_length: focal length of camera found using camera_calibration.py
+    pixel_width: width of 36h11 april tag expressed in pixels 
+  """
+  return (known_width * focal_length) / pixel_width
 
 def direction_of_tag(corner):
-  """Our camera is 1080p resolution
-  Inputs:corners of tag
-  Outputs whether tag is right or left of center of image"""
+  """
+  Returns whether tag is right or left of center of image.
+  Arguments:
+    corner: corner of tag
+  """
   (_, _, _, bottomLeft) = corner
   if  bottomLeft[0] > cx:
     return "right"
@@ -48,9 +56,12 @@ def direction_of_tag(corner):
     return "left"
 
 def visualization(corner, markerId):
-  """Our camera is 1080p resolution
-  Inputs:corner and id of tag
-  Outputs image of tag(s) with distance and angle from center of camera to tag"""
+  """
+  Returns image of tag(s) with labelled distance and angle from center of 1080p resolution camera to tag.
+  Arguments:
+    corner: corner of tag
+    markerId: id of tag
+  """
   markerId = float(markerId)
   (topLeft, _, bottomRight, bottomLeft) = corner[0]
   pixel_width = np.sqrt((bottomRight[0] - bottomLeft[0])**2 + (bottomRight[1] - bottomLeft[1])**2)
@@ -136,6 +147,7 @@ while True:
              
     cv2.imshow("Camera", image)
     key = cv2.waitKey(1) & 0xFF
+    #user terminates script TODO: end of docking phase should terminate script 
     if key == ord('q'):
       break
 cap.release()
