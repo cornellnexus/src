@@ -19,14 +19,16 @@ class Steps(Enum):
 cx, cy = int(960),int(540)
 idDict = {1: "R1", 2: "R2", 3: "R3"} #TODO add all the other tags
 visited = []
-timeout =  10##seconds
-angle_min = 10##degrees
-depth_min = 8##inches
 step = Steps.Step1
 motor = BasicMotorController(True)
 start_time = None
 angle = float("inf")
 depth = float("inf")
+timeout =  10##seconds
+angle_min = 10##degrees
+depth_min = 8##inches
+aligned_with_tag = angle <= angle_min
+close_to_tag = depth <= depth_min
 
 arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_APRILTAG_36h11)
 arucoParams = cv2.aruco.DetectorParameters_create()
@@ -88,11 +90,11 @@ while True:
     (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams)
     is_april_tag_in_view = len(corners) > 0
     if not is_april_tag_in_view:
-      if angle < angle_min and depth < depth_min:
+      if aligned_with_tag and close_to_tag:
         step == Steps.Step2
       if time.time() - start_time > timeout and step == Steps.Step1:
         #Step 1 - Check for april tags rn by rotating in circle for 15 seconds.
-          motor.turn_right()##TODO make time a parameter of this function
+          motor.turn_right()##TODO ask electrical to make time a parameter of this function
       if step == Steps.Step2:
         #Step 2 - go back until len(corners) = 1 or when we see at least 1 april tag
         motor.reverse()
@@ -102,11 +104,12 @@ while True:
       start_time = time.time()
       for (corner, markerId) in zip(corners, ids):
         visualization(corner,markerId)
-          #Step 1 starts here
+        seen_center_tag = idDict.get(markerId) == "R2"
+        #Step 1 starts here
         if step == Steps.Step1: 
-          if idDict.get(markerId) == "R2": ##TODO: Add B2, L2, F2 in the future
+          if seen_center_tag: ##TODO: Add B2, L2, F2 in the future
             #Step 1 is over once we aligned with center tag and we go forward.
-            if angle <= angle_min:
+            if aligned_with_tag:
               motor.go_forward()
             else:
               # Still in Step 1 - "Keep rotating till we reach center of middle tag"
@@ -117,7 +120,7 @@ while True:
           else:
             #All of this is Step 1 
             if idDict.get(markerId) not in visited: 
-              if(angle <= angle_min):
+              if(aligned_with_tag):
                 visited.append(idDict.get(markerId))
               else:
                 if direction_of_tag(corner[0]) == "right":
@@ -137,7 +140,7 @@ while True:
           
           #step 4: reverse by some experimentally determined constant -  15 inches 
           if step == Steps.Step4: 
-            if (depth < 15):
+            if (close_to_tag):
               motor.reverse()
             else:
               step == Steps.Done
