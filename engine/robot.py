@@ -93,9 +93,11 @@ class Robot:
             delta_phi (float): target radians to turn
         """
         # if it is a simulation, we update the robot state directly
+        # print("st1", self.robot_state.state)
         if self.robot_state.is_sim:
-            self.robot_state.state = np.round(integrate_odom(
-                self.robot_state.state, delta_d, delta_phi), 3)
+            self.robot_state.state = integrate_odom(
+                self.robot_state.state, delta_d, delta_phi)
+            # print("st2", self.robot_state.state)
             self.robot_state.truthpose = np.append(
                 self.robot_state.truthpose, np.transpose(self.robot_state.state), 0)
         # otherwise, we update the robot state using EKF
@@ -119,6 +121,7 @@ class Robot:
         self.loc_pid_x.reset_integral()
         self.loc_pid_y.reset_integral()
         i = 0
+        use_heading_pid = False
         while distance_away > allowed_dist_error:
             i += 1
             if i == 20:
@@ -134,12 +137,18 @@ class Robot:
             x_coords_error = target[0] - self.robot_state.state[0]
             y_coords_error = target[1] - self.robot_state.state[1]
 
+            if use_heading_pid:
+                desired_angle = math.atan2(y_coords_error, x_coords_error)
+                self.turn_to_target_heading(desired_angle, .01, database)
+
             x_vel = self.loc_pid_x.update(x_coords_error)
             y_vel = self.loc_pid_y.update(y_coords_error)
-
-            cmd_v, cmd_w = feedback_lin(
-                predicted_state, x_vel, y_vel, self.robot_state.epsilon)
-
+            if use_heading_pid:
+                cmd_v = np.array([math.sqrt(x_vel**2 + y_vel**2)])
+                cmd_w = np.array([0])
+            else:
+                cmd_v, cmd_w = feedback_lin(
+                    predicted_state, x_vel, y_vel, self.robot_state.epsilon)
             # clamping of velocities:
             (limited_cmd_v, limited_cmd_w) = limit_cmds(
                 cmd_v, cmd_w, self.robot_state.max_velocity, self.robot_state.radius)
