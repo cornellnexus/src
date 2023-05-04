@@ -1,6 +1,7 @@
 geopy==2.1.0
 pyserial==3.5 
 pynmea2==1.15.0
+pyparsing==2.2.1
 matplotlib
 haversine==2.3.0
 vincenty==0.1.4
