@@ -45,7 +45,7 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
             phase_change(robot_state)
             robot_state.goal_location = curr_waypoint
             robot_state.prev_phase = Phase.TRAVERSE
-            return unvisited_waypoints
+            return robot_state, unvisited_waypoints
         # TODO: THIS ISNT CORRECT: NEED TO CHECK IF AVOID_OBSTACLE IN move_to_target_node or can also make PID traversal a separate thread and stop the thread when obstacle detected
 
     robot_state.phase = Phase.RETURN
