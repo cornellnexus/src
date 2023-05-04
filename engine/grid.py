@@ -3,6 +3,7 @@ import math
 import numpy
 
 from engine.node import Node
+from engine.control_mode import ControlMode
 import numpy as np
 from engine.kinematics import meters_to_lat, meters_to_long, get_vincenty_x, get_vincenty_y
 from enum import Enum
@@ -576,8 +577,9 @@ class Grid:
             next_row = self.curr_pos[1] + 1
 
         # Traverse the row until it is time to turn
+
         while not self.is_before_turning_column(turning_column):
-            self.waypoints.append(new_pos)
+            # self.waypoints.append(new_pos)
             self.curr_pos = new_pos
             new_pos = self.get_next_traversal_pos()
 
@@ -637,7 +639,7 @@ class Grid:
             # the row (or terminating).
 
             self.add_guided_waypoints(is_vertical)
-
+        print(self.waypoints)
         return self.waypoints
 
     # --------------------- STANDARD TRAVERSAL ALGORITHMS -------------- #
@@ -778,7 +780,6 @@ class Grid:
                 - starting node is left most node at selected row
                 - ending node right most node at selected row
         """
-        from engine.mission import ControlMode  # import placed here to avoid circular import
         if mode == ControlMode.LAWNMOWER:
             waypoints = self.get_all_lawnmower_waypoints()
         elif mode == ControlMode.LAWNMOWER_B:
