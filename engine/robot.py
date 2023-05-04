@@ -8,6 +8,7 @@ from engine.robot_logic.obstacle_avoidance import avoid_obstacle_logic
 from engine.robot_logic.returning import return_logic
 from engine.robot_logic.docking import docking_logic
 
+
 class Robot:
     """
     A class whose objects contain robot-specific information, and methods to execute individual phases.
@@ -43,7 +44,6 @@ class Robot:
 
     def execute_traversal(self, mission_state, database):
         return traversal_logic(self.robot_state, mission_state, database)
-
 
     def execute_obstacle_avoidance(self, ):
         avoid_obstacle_logic(self.robot_state)

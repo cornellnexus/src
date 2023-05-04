@@ -13,14 +13,13 @@ Unit tests for database.py
 
 class TestDataBase(unittest.TestCase):
     # DataBase instances to test on
-    robot_state_default = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0,
-                          radius=0)
+    robot_state_default = Robot_State(epsilon=0, max_velocity=0,radius=0, phase = Phase.SETUP)
     robot_default = Robot(robot_state=robot_state_default)
 
     db_default = DataBase(robot_default)
     
     # We can't make is_sim false because it fails GitHub merge tests.
-    robot_state_initial = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0,
+    robot_state_initial = Robot_State(epsilon=0, max_velocity=0,
                           radius=0, plastic_level = 2, move_dist = 0.6, position_noise = 0.23, 
                           position_kp = 0.12, position_ki = 1.7, position_kd = 9.2, heading_kp = 0.2, 
                           heading_ki = 0.4, heading_kd = 0.16, phase = Phase.TRAVERSE, 
@@ -31,7 +30,7 @@ class TestDataBase(unittest.TestCase):
 
     db_initial = DataBase(robot_initial)
 
-    robot_state_one_param = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0, radius=0, plastic_level = 3, battery = 46, acceleration = [0.5, 0.2, 0.3])
+    robot_state_one_param = Robot_State(epsilon=0, max_velocity=0, radius=0, phase = Phase.SETUP, plastic_level = 3, battery = 46, acceleration = [0.5, 0.2, 0.3])
     robot_one_param = Robot(robot_state=robot_state_one_param)
 
     db_one_param = DataBase(robot_one_param)
@@ -170,7 +169,7 @@ class TestDataBase(unittest.TestCase):
                     self.assertEqual(ans, database.get_data(name), name)
 
     def test_phase_as_value(self):
-        robot_state_phase = Robot_State(xpos= 0, ypos =0, heading =0, epsilon =0, max_velocity =0, radius =0)
+        robot_state_phase = Robot_State(epsilon =0, max_velocity =0, radius =0, phase = Phase.SETUP)
         robot_phase = Robot(robot_state=robot_state_phase)
         db_robot_phase = DataBase(robot_phase)
         phases = list(Phase)

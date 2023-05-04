@@ -30,6 +30,8 @@ def track_obstacle(robot_state):
     front_ultrasonic = None
     counter = 0  # added for testing
     while True:
+        if not robot_state.enable_obstacle_avoidance:
+            continue
         if robot_state.is_sim:
             ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
                                             "r")  # added for testing
@@ -50,9 +52,7 @@ def track_obstacle(robot_state):
                 robot_state.phase = Phase.FAULT
                 phase_change(robot_state)
                 return None
-        if robot_state.is_roomba_traversal:  # roomba mode
-            robot_state.is_roomba_obstacle = True
-        elif (robot_state.phase in [Phase.TRAVERSE, Phase.RETURN, Phase.DOCKING, Phase.AVOID_OBSTACLE]):
+        if (robot_state.phase in [Phase.TRAVERSE, Phase.RETURN, Phase.DOCKING, Phase.AVOID_OBSTACLE]):
             if curr_ultrasonic_value < robot_state.detect_obstacle_range:
                 # Note: didn't check whether we can reach goal before contacting obstacle because obstacle
                 # detection does not detect angle, so obstacle could be calculated to be falsely farther away than

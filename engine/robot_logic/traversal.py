@@ -14,15 +14,17 @@ def traversal_logic(robot_state, mission_state, database):
         Currently we have two different traversal modes, our standard lawn-mower 
         traversal and our roomba-mode traversal. 
         """
+        robot_state.prev_phase = Phase.TRAVERSE
         control_mode = robot_state.control_mode
         if control_mode == ControlMode.LAWNMOWER:  
-            robot_state.is_roomba_traversal = False
             return traverse_standard(robot_state, mission_state.waypoints_to_visit,
                                      mission_state.allowed_dist_error, database)
         elif control_mode == ControlMode.ROOMBA:
-            robot_state.is_roomba_traversal = True
-            return traverse_roomba(robot_state, mission_state.base_station_loc,
+            robot_state.enable_obstacle_avoidance = False
+            traverse_roomba(robot_state, mission_state.base_station_loc,
                                    mission_state.time_limit, mission_state.roomba_radius)
+            robot_state.enable_obstacle_avoidance = True 
+            return None
 
 def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, database):
     """ Move the robot by following the traversal path given by [unvisited_waypoints].
@@ -38,14 +40,10 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
         # TODO: add obstacle avoidance support
         # TODO: add return when tank is full, etc
         # Removed function move to target heading since it doesn't really make sense
+        robot_state.goal_location = curr_waypoint
         move_to_target_node(robot_state, curr_waypoint, allowed_dist_error, database)
         unvisited_waypoints.popleft()
-        if robot_state.phase == Phase.AVOID_OBSTACLE: # TODO: Temp fix until goal loc reset
-            robot_state.phase == Phase.AVOID_OBSTACLE
-            phase_change(robot_state)
-            robot_state.goal_location = curr_waypoint
-            robot_state.prev_phase = Phase.TRAVERSE
-            return robot_state, unvisited_waypoints
+        
         # TODO: THIS ISNT CORRECT: NEED TO CHECK IF AVOID_OBSTACLE IN move_to_target_node or can also make PID traversal a separate thread and stop the thread when obstacle detected
 
     robot_state.phase = Phase.RETURN
@@ -65,9 +63,10 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
 
     # location error (in meters)
     distance_away = calculate_dist(target, predicted_state)
+    robot_state.goal_location = target
     robot_state.loc_pid_x.reset_integral()
     robot_state.loc_pid_y.reset_integral()
-    while distance_away > allowed_dist_error:
+    while (distance_away > allowed_dist_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
         # Error in terms of latitude and longitude, NOT meters
         x_coords_error = target[0] - robot_state.state[0]
         y_coords_error = target[1] - robot_state.state[1]
@@ -182,10 +181,11 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius):
         [new_x, new_y, new_theta] = robot_state.ekf.get_predicted_state(
             [curr_x, curr_y, curr_head], [robot_state.move_dist * robot_state.time_step, 0])
         next_radius = calculate_dist(base_station_loc, (new_x, new_y))
+        robot_state.goal_location = (new_x, new_y)
         # if moving will cause the robot to move through the obstacle
         is_next_timestep_blocked = next_radius < robot_state.detect_obstacle_range
         # sensor should not detect something in the robot
-        if (next_radius > roomba_radius) or (robot_state.is_roomba_obstacle and is_next_timestep_blocked):
+        if (next_radius > roomba_radius) or is_next_timestep_blocked:
             # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
             if robot_state.is_sim:
                 # for some reason I don't think this should work. This needs to be blocking: wait for the robot to finish going backward before turning
@@ -205,7 +205,7 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius):
         dt += 10  # accumulation in time in ms
         exit_boolean = (dt > time_limit)
     robot_state.phase = Phase.COMPLETE
-    phase_change  # TODO: CHANGE the next phase to return
+    phase_change(robot_state)  # TODO: CHANGE the next phase to return
     return None
 
 
@@ -219,7 +219,7 @@ def turn_to_target_heading(robot_state, target_heading, allowed_heading_error, d
             allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
                 place.
         """
-
+        robot_state.enable_obstacle_avoidance = False # we dont want the robot to avoid obstacle here
         predicted_state = robot_state.state  # this will come from Kalman Filter
 
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
@@ -242,4 +242,6 @@ def turn_to_target_heading(robot_state, target_heading, allowed_heading_error, d
                 "state", robot_state.state[0], robot_state.state[1], robot_state.state[2])
 
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
+            #re-enable after finishing turning 
+            robot_state.enable_obstacle_avoidance = True 
 
