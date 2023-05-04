@@ -27,7 +27,7 @@ depth: distance between center of camera and center of april tag
 timeout: a 10-second duration after which, if the AprilTag is not detected, the rotation process begins
 angle_min: the minimum, physically possible angle between center of camera and center of april tag
 depth_min: the minimum, physically possible distance between center of camera and center of april tag
-arucoDict: A predefined ArUco dictionary containing the AprilTag 36h11 marker set.
+arucoDict: A predefined ArUco dictionary containing the AprilTag 36h11 family.
 arucoParams: parameters that define various settings and thresholds used during the marker detection process.
 """
 cx, cy = int(960),int(540)
