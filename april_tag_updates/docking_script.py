@@ -8,7 +8,7 @@ from enum import Enum
 
 class Steps(Enum):
     """
-    An enumeration of the different steps in the April Tag Docking Algorithm
+    An enumerationof the different steps in the April Tag Docking Algorithm
     """
     Step1 = 1
     Step2 = 2
