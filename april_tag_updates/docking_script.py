@@ -51,6 +51,13 @@ window = 'Camera'
 cv2.namedWindow(window, cv2.WINDOW_NORMAL)
 cv2.resizeWindow(window, 960, 540)
 
+class Direction(Enum):
+    """
+    A class representing the two possible movements the camera can turn, right and left. 
+    """
+    RIGHT = 1
+    LEFT = 2
+
 def distance_to_camera(known_width, focal_length, pixel_width):
   """
   Returns the perpendicular distance from the center of camera to the center of an April tag.
@@ -69,9 +76,9 @@ def direction_of_tag(corner):
   """
   (_, _, _, bottomLeft) = corner
   if  bottomLeft[0] > cx:
-    return "right"
+    return Direction.RIGHT
   else:
-    return "left"
+    return Direction.LEFT
 
 def visualization(corner, markerId):
   """
@@ -138,14 +145,14 @@ while True:
               if(aligned):
                 visited.add(idDict.get(markerId))
               else:
-                if direction_of_tag(corner[0]) == "right":
+                if direction_of_tag(corner[0]) == Direction.RIGHT:
                   motor.turn_left()
                 else:
                   motor.turn_right()
         #Step 3 turns by 'angle' degrees to make a straight line. We assume 1 call of turn_right/left is 3 degrees. TODO: test how much turn_right and turn_left turns with our current robot 
         if step == Steps.Step3: 
           num_calls = max(int(angle//3),1)
-          if direction_of_tag(corner[0]) == "right":
+          if direction_of_tag(corner[0]) == Direction.RIGHT:
             for i in range(num_calls):
               motor.turn_right()
           else: 
