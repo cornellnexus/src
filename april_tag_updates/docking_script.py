@@ -8,29 +8,28 @@ from enum import Enum
 
 class Steps(Enum):
     """
-    An enumerationof the different steps in the April Tag Docking Algorithm
+    An enumeration of the different steps in the April Tag Docking Algorithm
+    
+    Arguments:
+        cx,cy: center point of an image captured by a camera with 1080p resolution 
+        idDict: dictionary of ids of April Tags mapped to corresponding string values. 
+        visited: set of non-centered april tags that have been already been seen and aligned with camera. 
+        step: the current step the docking algorithm is on  
+        motor: motor controller with commands to physically move the robot
+        start_time: the timestamp when script execution began
+        angle: current angle between center of camera and center of april tag
+        depth: distance between center of camera and center of april tag
+        timeout: experimentally determined 10-second duration after which, if the AprilTag is not detected, the rotation process begins
+        angle_min: the minimum, physically possible angle between center of camera and center of april tag
+        depth_min: the minimum, physically possible distance between center of camera and center of april tag
+        arucoDict: A predefined ArUco dictionary containing the AprilTag 36h11 family.
+        arucoParams: parameters that define various settings and thresholds used during the marker detection process.
     """
     Step1 = 1
     Step2 = 2
     Step3 = 3
     Step4 = 4
     Done = 5
-
-"""
-cx,cy: center point of an image captured by a camera with 1080p resolution 
-idDict: dictionary of ids of April Tags mapped to corresponding string values. 
-visited: set of non-centered april tags that have been already been seen and aligned with camera. 
-step: the current step the docking algorithm is on  
-motor: motor controller with commands to physically move the robot
-start_time: the timestamp when script execution began
-angle: current angle between center of camera and center of april tag
-depth: distance between center of camera and center of april tag
-timeout: experimentally determined 10-second duration after which, if the AprilTag is not detected, the rotation process begins
-angle_min: the minimum, physically possible angle between center of camera and center of april tag
-depth_min: the minimum, physically possible distance between center of camera and center of april tag
-arucoDict: A predefined ArUco dictionary containing the AprilTag 36h11 family.
-arucoParams: parameters that define various settings and thresholds used during the marker detection process.
-"""
 cx, cy = int(960),int(540)
 idDict = {1: "R1", 2: "R2", 3: "R3"} #TODO add all the other tags
 visited = set()
