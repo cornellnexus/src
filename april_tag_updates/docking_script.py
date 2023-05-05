@@ -17,7 +17,7 @@ class Steps(Enum):
     Done = 5
 
 """
-cx,cy: center point (coordinates 960, 540) of an image captured by a camera with 1080p resolution (1920x1080 pixels) 
+cx,cy: center point of an image captured by a camera with 1080p resolution 
 idDict: dictionary of ids of April Tags mapped to corresponding string values. 
 visited: set of non-centered april tags that have been already been seen and aligned with camera. 
 step: the current step the docking algorithm is on  
@@ -47,9 +47,10 @@ close_to_tag = lambda depth: depth <= depth_min
 aligned = False
 arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_APRILTAG_36h11)
 arucoParams = cv2.aruco.DetectorParameters_create()
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0,cv2.CAP_DSHOW)
 window = 'Camera'
-cv2.namedWindow(window)
+cv2.namedWindow(window, cv2.WINDOW_NORMAL)
+cv2.resizeWindow(window, 960, 540)
 
 def distance_to_camera(known_width, focal_length, pixel_width):
   """
@@ -100,11 +101,13 @@ def visualization(corner, markerId):
   angle = np.degrees(np.arcsin(horiz_dist/(depth)))
   cv2.putText(image, f"{angle:.2f} degrees", midpoint2, cv2.FONT_HERSHEY_COMPLEX, 1, (0, 101, 255), 2)
   cv2.putText(image, f"{depth:.2f} in (depth)", midpoint3, cv2.FONT_HERSHEY_COMPLEX, 1, (255,0, 255), 2)
+  return markerId, angle, depth
 
 while True:
     if start_time is None:
         start_time = time.time()
     ret, image = cap.read()
+    cx,cy  = image.shape[1]//2, image.shape[0]//2
     (corners, ids, rejected) = cv2.aruco.detectMarkers(image, arucoDict, parameters=arucoParams) #returns corner coordinates of detected markers (corners), their corresponding IDs (ids), and the coordinates of rejected marker candidates (rejected).
     is_april_tag_in_view = len(corners) > 0
     if not is_april_tag_in_view:
@@ -123,7 +126,7 @@ while True:
         step = Steps.Step3
       start_time = time.time()
       for (corner, markerId) in zip(corners, ids):
-        visualization(corner,markerId)
+        markerId, angle, depth = visualization(corner,markerId)
         seen_center_tag = idDict.get(markerId) == "R2"
         #Step 1 starts here.  
         if step == Steps.Step1: 
