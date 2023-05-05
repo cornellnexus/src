@@ -19,7 +19,8 @@ class Steps(Enum):
 """
 cx,cy: center point (coordinates 960, 540) of an image captured by a camera with 1080p resolution (1920x1080 pixels) 
 idDict: dictionary of ids of April Tags mapped to corresponding string values. 
-visited: list of non-centered april tags that have been already been seen and aligned with camera. 
+visited: set of non-centered april tags that have been already been seen and aligned with camera. 
+step: the current step the docking algorithm is on  
 motor: motor controller with commands to physically move the robot
 start_time: the timestamp when script execution began
 angle: current angle between center of camera and center of april tag
@@ -32,7 +33,7 @@ arucoParams: parameters that define various settings and thresholds used during 
 """
 cx, cy = int(960),int(540)
 idDict = {1: "R1", 2: "R2", 3: "R3"} #TODO add all the other tags
-visited = []
+visited = set()
 step = Steps.Step1
 motor = BasicMotorController(True) #TODO replace with MotorController instance
 start_time = None
@@ -41,8 +42,9 @@ depth = float("inf")
 timeout =  10##seconds
 angle_min = 10##degrees
 depth_min = 8##inches
-aligned_with_tag = angle <= angle_min
-close_to_tag = depth <= depth_min
+aligned_with_tag = lambda angle: angle <= angle_min
+close_to_tag = lambda depth: depth <= depth_min
+aligned = False
 arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_APRILTAG_36h11)
 arucoParams = cv2.aruco.DetectorParameters_create()
 cap = cv2.VideoCapture(0)
@@ -107,7 +109,7 @@ while True:
     is_april_tag_in_view = len(corners) > 0
     if not is_april_tag_in_view:
       #After we go forward until tag's no longer seen in Step 1, if we are aligned and close to the tag, Step 1 terminates and we proceed to Step 2. 
-      if aligned_with_tag and close_to_tag:
+      if aligned_with_tag(angle) and close_to_tag(depth):
         step == Steps.Step2
       #Step 1 - If no april tags have been spotted for 15 seconds (timeout), we rotate until we spot one. 
       if time.time() - start_time > timeout and step == Steps.Step1:
@@ -116,50 +118,45 @@ while True:
       if step == Steps.Step2:
         motor.reverse()
     else:
+      #Step 2 terminates by reversing until the center tag is seen. Proceed to Step 3
       if step == Steps.Step2:
-        step == Steps.Step3
+        step = Steps.Step3
       start_time = time.time()
       for (corner, markerId) in zip(corners, ids):
         visualization(corner,markerId)
         seen_center_tag = idDict.get(markerId) == "R2"
         #Step 1 starts here.  
         if step == Steps.Step1: 
-          if seen_center_tag: ##TODO: Add B2, L2, F2 in the future
+          aligned = aligned_with_tag(angle)
+          if seen_center_tag and aligned: 
             #Once the camera's aligned with the center tag, the robot goes forward until the tag is no longer visible. 
-            if aligned_with_tag:
-              motor.go_forward()
-            else:
-              # If not aligned with the tag, we're still in Step 1 and the camera turns in the appropriate direction till we are. 
-              if direction_of_tag(corner[0]) == "right":
-                motor.turn_left()
-              else: 
-                motor.turn_right()
-          else:  #If we don't see the center tag, we are still in Step 1. We align with the current, non-center tag. 
+            motor.go_forward()
+          else:  #If we aren't aligned with the center tag, we are still in Step 1. We align with the current tag (whether it's the center or not) 
             if idDict.get(markerId) not in visited: 
-              if(aligned_with_tag):
-                visited.append(idDict.get(markerId))
+              if(aligned):
+                visited.add(idDict.get(markerId))
               else:
                 if direction_of_tag(corner[0]) == "right":
                   motor.turn_left()
                 else:
                   motor.turn_right()
-          #Step 3 turns by 'angle' degrees to make a straight line. We assume 1 call of turn_right/left is 3 degrees. TODO: test how much turn_right and turn_left turns with our current robot 
-          if step == Steps.Step3: 
-            num_calls = max(int(angle//3),1)
-            if direction_of_tag(corner[0]) == "right":
-              for i in range(num_calls):
-                motor.turn_right()
-            else: 
-              for i in range(num_calls):
-                motor.turn_left()
-            step == Steps.Step4
+        #Step 3 turns by 'angle' degrees to make a straight line. We assume 1 call of turn_right/left is 3 degrees. TODO: test how much turn_right and turn_left turns with our current robot 
+        if step == Steps.Step3: 
+          num_calls = max(int(angle//3),1)
+          if direction_of_tag(corner[0]) == "right":
+            for i in range(num_calls):
+              motor.turn_right()
+          else: 
+            for i in range(num_calls):
+              motor.turn_left()
+          step == Steps.Step4
           
-          #step 4: reverse by some experimentally determined constant -  15 inches 
-          if step == Steps.Step4: 
-            if (depth <= 15):
-              motor.reverse()
-            else:
-              step == Steps.Done
+        #step 4: reverse by some experimentally determined constant -  15 inches 
+        if step == Steps.Step4: 
+          if (depth <= 15):
+            motor.reverse()
+          else:
+            step == Steps.Done
 
     if step == Steps.Done:
       break
