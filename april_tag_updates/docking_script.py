@@ -24,7 +24,7 @@ motor: motor controller with commands to physically move the robot
 start_time: the timestamp when script execution began
 angle: current angle between center of camera and center of april tag
 depth: distance between center of camera and center of april tag
-timeout: a 10-second duration after which, if the AprilTag is not detected, the rotation process begins
+timeout: experimentally determined 10-second duration after which, if the AprilTag is not detected, the rotation process begins
 angle_min: the minimum, physically possible angle between center of camera and center of april tag
 depth_min: the minimum, physically possible distance between center of camera and center of april tag
 arucoDict: A predefined ArUco dictionary containing the AprilTag 36h11 family.
@@ -85,10 +85,12 @@ def visualization(corner, markerId):
   cxt,cyt = int((topLeft[0] + bottomRight[0])//2),int((topLeft[1] + bottomRight[1])//2)
   cv2.circle(image, (cxt, cyt), radius = 20, color = (0, 0, 255), thickness = -1)
   cv2.circle(image, (cx, cy), radius = 20, color = (0, 0, 255), thickness = -1)
-  cv2.line(image,(cxt, cyt),(cx, cy), color = (0, 0, 0), thickness = 2)
+  # Draw a line between the center of the tag and the center of the camera
+  cv2.line(image,(cxt, cyt),(cx, cy), color = (0, 0, 0), thickness = 2)  
   ratio= known_width/pixel_width
   dpix = np.sqrt((cx-cxt)**2+(cy-cyt)**2)
   horiz_dist = dpix * ratio
+  # Define midpoints for text placement of horizontal distance., angle, and depth distance to tag
   midpoint = (int((cx + cxt) //2 ), int((cy + cyt) //2 - 25 ))
   midpoint2 = (int((cx + cxt) //2), int((cy + cyt) //2 + 50 ))
   midpoint3 = (int((cx + cxt) //2), int((cy + cyt) //2 - 100 ))
