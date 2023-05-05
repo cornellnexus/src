@@ -44,8 +44,6 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
         move_to_target_node(robot_state, curr_waypoint, allowed_dist_error, database)
         unvisited_waypoints.popleft()
         
-        # TODO: THIS ISNT CORRECT: NEED TO CHECK IF AVOID_OBSTACLE IN move_to_target_node or can also make PID traversal a separate thread and stop the thread when obstacle detected
-
     robot_state.phase = Phase.RETURN
     phase_change(robot_state)
     return robot_state, unvisited_waypoints
@@ -242,6 +240,6 @@ def turn_to_target_heading(robot_state, target_heading, allowed_heading_error, d
                 "state", robot_state.state[0], robot_state.state[1], robot_state.state[2])
 
             abs_heading_error = abs(target_heading - float(predicted_state[2]))
-            #re-enable after finishing turning 
-            robot_state.enable_obstacle_avoidance = True 
+        #re-enable after finishing turning 
+        robot_state.enable_obstacle_avoidance = True 
 
