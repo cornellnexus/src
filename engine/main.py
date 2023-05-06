@@ -34,9 +34,7 @@ if __name__ == "__main__":
         packet_sender = threading.Thread(target=send_packet_to_gui, args=(
             1, r2d2_state, database), daemon=True)  # Thread to read and send robot properties
         packet_sender.start()
-
     m.execute_mission(database)  # Run main mission
-
     ''' ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------'''
     if config_args.get("simulate_trajectory"):
         plot_sim_traj(m=m) #  Plot the trajectory of the completed mission

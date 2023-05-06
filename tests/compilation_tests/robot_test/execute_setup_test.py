@@ -7,7 +7,7 @@ from electrical.motor_controller import BasicMotorController, MotorController
 
 
 '''
-Unit tests for robot.py execute_setup function
+Unit tests for robot_logic/setup.py execute_setup function
 '''
 
 class TestSetup(unittest.TestCase):

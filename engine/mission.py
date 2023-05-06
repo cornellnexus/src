@@ -1,4 +1,5 @@
-from engine.robot import Phase
+from engine.phase import Phase
+from engine.robot import Robot
 
 class Mission:
     def __init__(self, mission_state):
@@ -14,30 +15,22 @@ class Mission:
         Activates the main control loop. Depending on the robot's phase, different motion control algorithms are
         activated.
         """
-        while self.mission_state.robot.robot_state.phase != Phase.COMPLETE:
-            if self.mission_state.robot.robot_state.phase == Phase.SETUP:
-                # TODO: Determine if sensors are part of mission vs robot
+        #add goal_loc param if goal_loc becomes dynamic
+        #TODO: Determine if sensors are part of mission vs robot
+        while self.mission_state.robot.robot_state.phase != Phase.COMPLETE: 
+            phase = self.mission_state.robot.robot_state.phase
+            if phase == Phase.SETUP: 
                 self.mission_state.robot.execute_setup()
-
-            elif self.mission_state.robot.robot_state.phase == Phase.TRAVERSE:
-                self.mission_state.waypoints_to_visit = self.mission_state.robot.execute_traversal(self.mission_state.waypoints_to_visit,
-                                                                       self.mission_state.allowed_dist_error, self.mission_state.base_station.position,
-                                                                       self.mission_state.control_mode, self.mission_state.time_limit,
-                                                                       self.mission_state.roomba_radius, database)
-
-            elif self.mission_state.robot.robot_state.phase == Phase.AVOID_OBSTACLE:
-                self.mission_state.robot.execute_avoid_obstacle(self.mission_state.robot.robot_state.dist_to_goal, database)
-                # add goal_loc param if goal_loc becomes dynamic
-
-            elif self.mission_state.robot.robot_state.phase == Phase.RETURN:
-                self.mission_state.robot.execute_return(self.mission_state.base_station.position, self.mission_state.base_station.heading,
-                                          self.mission_state.allowed_docking_pos_error, self.mission_state.allowed_heading_error, database)
-
-            elif self.mission_state.robot.robot_state.phase == Phase.DOCKING:
+            elif phase == Phase.TRAVERSE:
+                # TODO: clean up parameters for this function
+                # allowed_dist_error, roomba_radius, and time_limit should be constants?
+                self.mission_state.robot.robot_state, self.mission_state.waypoints_to_visit = self.mission_state.robot.execute_traversal(self.mission_state, database)
+            elif phase == Phase.AVOID_OBSTACLE: 
+                self.mission_state.robot.execute_avoid_obstacle(self.mission_state.robot.robot_state, database)
+            elif phase == Phase.RETURN:
+                self.mission_state.robot.execute_return(self.mission_state, database)
+            elif phase == Phase.DOCKING:
                 self.mission_state.robot.execute_docking()
-            
-            #update the database with the most recent state
+
+             #update the database with the most recent state
             database.update_data("phase", self.mission_state.robot.robot_state.phase)
-            
-
-

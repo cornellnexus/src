@@ -1,7 +1,9 @@
 import math
 import numpy as np
 from engine.phase import Phase
+from engine.control_mode import ControlMode
 from engine.is_raspberrypi import is_raspberrypi
+from engine.pid_controller import PID   
 
 
 class Robot_State:
@@ -40,6 +42,7 @@ class Robot_State:
             length: length of the robot in cm
             time_step: the amount of time that passes between each feedback loop cycle, should only be used if is_sim
                 is True
+            control_mode: parameter to designate if we want to do lawnmower traversal or roomba traversal
             position_kp: the proportional factor of the position PID
             position_ki: the integral factor of the position PID
             position_kd: the derivative factor of the position PID
@@ -59,6 +62,19 @@ class Robot_State:
             width_margin:
             threshold_distance:
             detect_obstacle_range:
+            init_threshold: Radius in meters from initial position that will detect robot is back in initial position
+                    This parameter needs to be tuned.
+                    The reasoning behind this parameter is that sometimes location reading will be inaccurate or not frequent read
+                    so the sensor thinks we're still at the init x y pos. We should make this small enough that robot actually leaves
+                    init_threshold at some time during boundary following or add a timeout
+            goal_threshold: Threshold in meters from goal that will be detected as reaching goal in obstacle avoidance.
+                    Goal is where the robot wanted to go when there isn't an obstacle
+            threshold_to_recalculate_on_line: threshold in meters that we dont want to recalculate whether the robot 
+                    is on the line to the goal.
+                    This parameter needs to be tuned
+                    Reasoning for this: without this condition, the robot could move closer to the goal (on a slant, not directly 
+                    towards the goal) but still be on the line, making the robot keep exiting obstacle avoidance when its effectively
+                    in the same position as before
 
             MEASUREMENTS
             state: Robot's state, np.array state contains the robot's x position, y position, and heading
@@ -90,7 +106,7 @@ class Robot_State:
         # If false, only uses GPS and IMU; else, uses EKF
         self.using_ekf = False
         self.is_sim = kwargs.get("is_sim", not is_raspberrypi())
-        self.store_data = kwargs.get("store_data", False)
+        self.should_store_data = kwargs.get("store_data", False)
         self.phase = Phase(kwargs.get("phase", Phase.TRAVERSE if self.is_sim else Phase.SETUP))
         self.enable_obstacle_avoidance = kwargs.get(
             "enable_obstacle_avoidance", True)
@@ -99,6 +115,7 @@ class Robot_State:
         self.width = kwargs.get("width", 700)
         self.length = kwargs.get("length", 700)
         self.time_step = kwargs.get("time_step", 1)
+        self.control_mode = kwargs.get("control_mode", ControlMode.LAWNMOWER) 
         self.position_kp = kwargs.get("position_kp", 1)
         self.position_ki = kwargs.get("position_ki", 0)
         self.position_kd = kwargs.get("position_kd", 0)
@@ -123,11 +140,14 @@ class Robot_State:
         self.sensor_measuring_angle = kwargs.get("sensor_measuring_angle", 75)
         # TODO: replace this with actual margin
         self.width_margin = kwargs.get("width_margin", 1)
-        self.threshold_distance = ((self.width + self.width_margin) / 2) / math.cos(
-            math.radians((180 - self.sensor_measuring_angle) / 2))
-        # set ultrasonic detection range
-        self.detect_obstacle_range = min(
-            self.threshold_distance, self.max_sensor_range)
+        self.threshold_distance = kwargs.get("threshold_distance", ((
+            self.width + self.width_margin) / 2) / math.cos(math.radians((180 - self.sensor_measuring_angle) / 2)))
+        self.detect_obstacle_range = kwargs.get("detect_obstacle_range", min(
+            self.threshold_distance, self.max_sensor_range))  # set ultrasonic detection range
+        # Obstacle Avoidance Constants
+        self.init_threshold = kwargs.get("init_threshold", 3.0)
+        self.goal_threshold = kwargs.get("goal_threshold", 3.0)
+        self.threshold_to_recalculate_on_line = kwargs.get("threshold_to_recalculate_on_line", 3.0)
 
         # MEASUREMENTS
         self.state = kwargs.get("state", np.array(
@@ -154,3 +174,22 @@ class Robot_State:
         self.gps = kwargs.get("gps", None)
         self.imu = kwargs.get("imu", None)
         self.ekf = kwargs.get("ekf", None)
+
+        self.front_ultrasonic = kwargs.get("front_ultrasonic", None)
+        self.lf_ultrasonic = kwargs.get("lf_ultrasonic",None )
+        self.lb_ultrasonic = kwargs.get("lb_ultrasonic", None)
+        self.rf_ultrasonic = kwargs.get("rf_ultrasonic", None)
+        self.rb_ultrasonic = kwargs.get("rb_ultrasonic", None)
+
+        #OBJECTS
+        self.loc_pid_x = PID(
+            Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, 
+            target=0, sample_time=self.time_step, output_limits=(None, None))
+
+        self.loc_pid_y = PID(
+            Kp=self.position_kp, Ki=self.position_ki, Kd=self.position_kd, 
+            target=0, sample_time=self.time_step, output_limits=(None, None))
+
+        self.head_pid = PID(
+            Kp=self.heading_kp, Ki=self.heading_ki, Kd=self.heading_kd, 
+            target=0, sample_time=self.time_step, output_limits=(None, None))

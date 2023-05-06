@@ -3,7 +3,9 @@ import math
 from electrical.motor_controller import MotorController
 from engine.grid import Grid
 from engine.database import DataBase
-from engine.robot import Robot, Phase
+from engine.robot import Robot
+from engine.robot_logic.traversal import move_to_target_node
+from engine.phase import Phase
 from engine.robot_state import Robot_State
 
 import matplotlib.pyplot as plt
@@ -61,8 +63,7 @@ def traverse_straight_line(lat_min=42.444250, lat_max=42.444599, long_min=-76.48
     iter = 0
     while len(waypoints) > 0:
         curr_waypoint = waypoints[0].get_m_coords()
-        r2d2.move_to_target_node(
-            curr_waypoint, allowed_dist_error, database)
+        move_to_target_node(curr_waypoint, allowed_dist_error, database)
 
         with open('csv/velocities.csv', 'a') as f:
             writer = csv.writer(f)
@@ -85,7 +86,7 @@ def one_node_straight_line(long, lat, err):
     r2d2_state.motor_controller = MotorController() # By pass execute_setup
     r2d2 = Robot(r2d2_state)
     database = DataBase(r2d2)
-    r2d2.move_to_target_node([long, lat], err, database)
+    move_to_target_node([long, lat], err, database)
 
 
 def no_pid_straight():
