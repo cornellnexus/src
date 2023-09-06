@@ -8,23 +8,25 @@ from engine.kinematics import *
 from engine.robot_logic.robot_helpers import phase_change, calculate_dist
 from csv_files.csv_util import write_state_to_csv
 
+
 def traversal_logic(robot_state, mission_state, database):
-        """
-        Function called by our Mission to start the traversal phase. 
-        Currently we have two different traversal modes, our standard lawn-mower 
-        traversal and our roomba-mode traversal. 
-        """
-        robot_state.prev_phase = Phase.TRAVERSE
-        control_mode = robot_state.control_mode
-        if control_mode == ControlMode.LAWNMOWER:  
-            return traverse_standard(robot_state, mission_state.waypoints_to_visit,
-                                     mission_state.allowed_dist_error, database)
-        elif control_mode == ControlMode.ROOMBA:
-            robot_state.enable_obstacle_avoidance = False
-            traverse_roomba(robot_state, mission_state.base_station_loc,
-                                   mission_state.time_limit, mission_state.roomba_radius)
-            robot_state.enable_obstacle_avoidance = True 
-            return None
+    """
+    Function called by our Mission to start the traversal phase. 
+    Currently we have two different traversal modes, our standard lawn-mower 
+    traversal and our roomba-mode traversal. 
+    """
+    robot_state.prev_phase = Phase.TRAVERSE
+    control_mode = robot_state.control_mode
+    if control_mode == ControlMode.LAWNMOWER:
+        return traverse_standard(robot_state, mission_state.waypoints_to_visit,
+                                 mission_state.allowed_dist_error, database)
+    elif control_mode == ControlMode.ROOMBA:
+        robot_state.enable_obstacle_avoidance = False
+        traverse_roomba(robot_state, mission_state.base_station_loc,
+                        mission_state.time_limit, mission_state.roomba_radius)
+        robot_state.enable_obstacle_avoidance = True
+        return None
+
 
 def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, database):
     """ Move the robot by following the traversal path given by [unvisited_waypoints].
@@ -41,12 +43,14 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
         # TODO: add return when tank is full, etc
         # Removed function move to target heading since it doesn't really make sense
         robot_state.goal_location = curr_waypoint
-        move_to_target_node(robot_state, curr_waypoint, allowed_dist_error, database)
+        move_to_target_node(robot_state, curr_waypoint,
+                            allowed_dist_error, database)
         unvisited_waypoints.popleft()
-        
+
     robot_state.phase = Phase.RETURN
     phase_change(robot_state)
     return robot_state, unvisited_waypoints
+
 
 def move_to_target_node(robot_state, target, allowed_dist_error, database):
     """
@@ -64,16 +68,33 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
     robot_state.goal_location = target
     robot_state.loc_pid_x.reset_integral()
     robot_state.loc_pid_y.reset_integral()
+    using_heading_pid = True
+    simulate = False
+    if simulate:
+        i = 0
+    import matplotlib.pyplot as plt
     while (distance_away > allowed_dist_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
         # Error in terms of latitude and longitude, NOT meters
         x_coords_error = target[0] - robot_state.state[0]
         y_coords_error = target[1] - robot_state.state[1]
+        if simulate:
+            i += 1
+            if i == 50:
+                break
+        desired_angle = math.atan2(
+            target[1] - robot_state.state[1], target[0] - robot_state.state[0])
 
         x_vel = robot_state.loc_pid_x.update(x_coords_error)
         y_vel = robot_state.loc_pid_y.update(y_coords_error)
+        if using_heading_pid:
+            turn_to_target_heading(robot_state, desired_angle, 0.01, database)
 
         cmd_v, cmd_w = feedback_lin(
             predicted_state, x_vel, y_vel, robot_state.epsilon)
+
+        if using_heading_pid:
+            cmd_v = np.array([math.sqrt(x_vel**2 + y_vel**2)])
+            cmd_w = np.array([0])
 
         # clamping of velocities:
         (limited_cmd_v, limited_cmd_w) = limit_cmds(
@@ -83,7 +104,8 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
 
         robot_state.linear_v = limited_cmd_v[0]
         robot_state.angular_v = limited_cmd_w[0]
-        travel(robot_state, robot_state.time_step * limited_cmd_v[0], robot_state.time_step * limited_cmd_w[0])
+        travel(robot_state, robot_state.time_step *
+               limited_cmd_v[0], robot_state.time_step * limited_cmd_w[0])
         if not robot_state.is_sim:
             robot_state.motor_controller.spin_motors(
                 limited_cmd_w[0], limited_cmd_v[0])
@@ -105,6 +127,18 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
 
         # location error (in meters)
         distance_away = calculate_dist(target, predicted_state)
+        if simulate:
+            x = robot_state.truthpose[:, 0]
+            y = robot_state.truthpose[:, 1]
+            plt.scatter(target[0], target[1])
+            plt.text(target[0], target[1], "target")
+    if simulate:
+        for index in range(i):
+            plt.scatter(
+                robot_state.truthpose[:, 0], robot_state.truthpose[:, 1])
+            plt.text(x[index], y[index], index)
+        plt.show()
+
 
 def travel(robot_state, delta_d, delta_phi):
     """
@@ -115,12 +149,16 @@ def travel(robot_state, delta_d, delta_phi):
     """
     # if it is a simulation, we update the robot state directly
     if robot_state.is_sim:
-        robot_state.state = np.round(integrate_odom(robot_state.state, delta_d, delta_phi), 3)
-        robot_state.truthpose = np.append(robot_state.truthpose, np.transpose(robot_state.state), 0)
+        robot_state.state = integrate_odom(
+            robot_state.state, delta_d, delta_phi)
+        robot_state.truthpose = np.append(
+            robot_state.truthpose, np.transpose(robot_state.state), 0)
     # otherwise, we update the robot state using EKF
     else:
-        update_state(robot_state, delta_d/robot_state.time_step, delta_phi/robot_state.time_step)
-        
+        update_state(robot_state, delta_d/robot_state.time_step,
+                     delta_phi/robot_state.time_step)
+
+
 def update_state(robot_state, velocity, omega):
     """
     Updates the state of the robot given the linear velocity (velocity) and angular velocity (omega) of the robot
@@ -130,14 +168,16 @@ def update_state(robot_state, velocity, omega):
     Returns:
         new_state/measurement (Tuple): new x, y, and heading of robot
     """
-    robot_state.gps_data = (robot_state.gps.get_gps()["long"], robot_state.gps.get_gps()["lat"])
-    
+    robot_state.gps_data = (robot_state.gps.get_gps()[
+                            "long"], robot_state.gps.get_gps()["lat"])
+
     robot_state.imu_data = robot_state.imu.get_gps()
 
     x = get_vincenty_x(robot_state.init_gps, robot_state.gps_data)
     y = get_vincenty_y(robot_state.init_gps, robot_state.gps_data)
 
-    heading = math.degrees(math.atan2(robot_state.imu_data["mag"]["y"], robot_state.imu_data["mag"]["x"]))
+    heading = math.degrees(math.atan2(
+        robot_state.imu_data["mag"]["y"], robot_state.imu_data["mag"]["x"]))
 
     measurements = np.array([[x], [y], [heading]])
     if robot_state.using_ekf:
@@ -149,6 +189,7 @@ def update_state(robot_state, velocity, omega):
         new_state = np.array([[new_x], [new_y], [new_heading]])
         return new_state
     return measurements
+
 
 def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius):
     """ Move the robot in a roomba-like manner.
@@ -207,39 +248,41 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius):
     return None
 
 
-# JULIE NOTE: I DONT THINK THIS FUNCTION WILL WORK. WE CAN'T TURN IN PLACE. 
+# JULIE NOTE: I DONT THINK THIS FUNCTION WILL WORK. WE CAN'T TURN IN PLACE.
 # I am leaving this here because the obstacle avoidance code currently uses it
 def turn_to_target_heading(robot_state, target_heading, allowed_heading_error, database):
-        """
-        Turns robot in-place to target heading + or - allowed_heading_error, utilizing heading PID.
-        Arguments:
-            target_heading: the heading in radians the robot should approach at the end of in-place rotation.
-            allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
-                place.
-        """
-        robot_state.enable_obstacle_avoidance = False # we dont want the robot to avoid obstacle here
+    """
+    Turns robot in-place to target heading + or - allowed_heading_error, utilizing heading PID.
+    Arguments:
+        target_heading: the heading in radians the robot should approach at the end of in-place rotation.
+        allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
+            place.
+    """
+    # we dont want the robot to avoid obstacle here
+    robot_state.enable_obstacle_avoidance = False
+    predicted_state = robot_state.state  # this will come from Kalman Filter
+
+    abs_heading_error = abs(target_heading - float(predicted_state[2]))
+    robot_state.head_pid.reset_integral()
+    while abs_heading_error > allowed_heading_error:
+        theta_error = target_heading - robot_state.state[2]
+        w = robot_state.head_pid.update(theta_error)  # angular velocity
+        _, limited_cmd_w = limit_cmds(
+            0, w, robot_state.max_velocity, robot_state.radius)
+
+        # Get state after movement:
+        predicted_state = robot_state.state  # this will come from Kalman Filter
+        travel(robot_state, 0, robot_state.time_step * limited_cmd_w)
+        if not robot_state.is_sim:
+            robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
+            time.sleep(10)
+
+        # Get state after movement:
         predicted_state = robot_state.state  # this will come from Kalman Filter
 
+        database.update_data(
+            "state", robot_state.state[0], robot_state.state[1], robot_state.state[2])
+
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
-        robot_state.head_pid.reset_integral()
-        while abs_heading_error > allowed_heading_error:
-            theta_error = target_heading - robot_state.state[2]
-            w = robot_state.head_pid.update(theta_error)  # angular velocity
-            _, limited_cmd_w = limit_cmds(
-                0, w, robot_state.max_velocity, robot_state.radius)
-
-            travel(robot_state, 0, robot_state.time_step * limited_cmd_w)
-            if not robot_state.is_sim:
-                robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
-                time.sleep(10)
-
-            # Get state after movement:
-            predicted_state = robot_state.state  # this will come from Kalman Filter
-
-            database.update_data(
-                "state", robot_state.state[0], robot_state.state[1], robot_state.state[2])
-
-            abs_heading_error = abs(target_heading - float(predicted_state[2]))
-        #re-enable after finishing turning 
-        robot_state.enable_obstacle_avoidance = True 
-
+    # re-enable after finishing turning
+    robot_state.enable_obstacle_avoidance = True
