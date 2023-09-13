@@ -71,28 +71,27 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
     using_heading_pid = True
     simulate = False
     if simulate:
-        i = 0
+        iterations = 0
     import matplotlib.pyplot as plt
     while (distance_away > allowed_dist_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
         # Error in terms of latitude and longitude, NOT meters
         x_coords_error = target[0] - robot_state.state[0]
         y_coords_error = target[1] - robot_state.state[1]
         if simulate:
-            i += 1
-            if i == 50:
+            iterations += 1
+            if iterations == 50:
                 break
         desired_angle = math.atan2(
             target[1] - robot_state.state[1], target[0] - robot_state.state[0])
 
         x_vel = robot_state.loc_pid_x.update(x_coords_error)
         y_vel = robot_state.loc_pid_y.update(y_coords_error)
-        if using_heading_pid:
-            turn_to_target_heading(robot_state, desired_angle, 0.01, database)
 
         cmd_v, cmd_w = feedback_lin(
             predicted_state, x_vel, y_vel, robot_state.epsilon)
 
         if using_heading_pid:
+            turn_to_target_heading(robot_state, desired_angle, 0.01, database)
             cmd_v = np.array([math.sqrt(x_vel**2 + y_vel**2)])
             cmd_w = np.array([0])
 
@@ -133,7 +132,7 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             plt.scatter(target[0], target[1])
             plt.text(target[0], target[1], "target")
     if simulate:
-        for index in range(i):
+        for index in range(iterations):
             plt.scatter(
                 robot_state.truthpose[:, 0], robot_state.truthpose[:, 1])
             plt.text(x[index], y[index], index)

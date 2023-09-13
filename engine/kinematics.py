@@ -120,7 +120,6 @@ def integrate_odom(pose, d, phi):
         new_y = pose[1] + (d / phi) * \
             (-math.cos(pose[2] + phi) + math.cos(pose[2]))
         new_theta = pose[2] + phi
-        # new_theta = (pose[2] + phi)
     return np.array([[float(new_x)], [float(new_y)], [float(new_theta)]])
 
 
