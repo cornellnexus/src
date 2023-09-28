@@ -12,12 +12,13 @@ from engine.is_raspberrypi import is_raspberrypi
 if is_raspberrypi():
     # Electrical library imports
     from electrical.motor_controller import MotorController
-    import electrical.gps as GPS 
-    import electrical.imu as IMU 
+    import electrical.gps as GPS
+    import electrical.imu as IMU
     import electrical.radio_module as RadioModule
     import serial
     import board
     import busio
+
 
 def track_obstacle(robot_state):
     """ Continuously checks if there's an obstacle in the way.
@@ -30,17 +31,20 @@ def track_obstacle(robot_state):
     front_ultrasonic = None
     counter = 0  # added for testing
     while True:
+        if not robot_state.is_sim:
+            time.sleep(10)  # don't hog the cpu
         if not robot_state.enable_obstacle_avoidance:
             continue
         if robot_state.is_sim:
             ultrasonic_value_file = open(ROOT_DIR + '/tests/functionality_tests/csv/ultrasonic_values.csv',
-                                            "r")  # added for testing
+                                         "r")  # added for testing
             content = ultrasonic_value_file.readlines()
             ultrasonic_value_file.close()
             try:
                 line = content[counter]
                 counter += 1
-                curr_ultrasonic_value = float((''.join(line.rstrip('\n')).strip('()').split(', '))[0])
+                curr_ultrasonic_value = float(
+                    (''.join(line.rstrip('\n')).strip('()').split(', '))[0])
             except IndexError:
                 print("no more sensor data")
                 break
@@ -74,22 +78,26 @@ def track_obstacle(robot_state):
             if robot_state.is_sim:
                 with open(ROOT_DIR + '/tests/functionality_tests/csv/avoid_obstacle_result.csv', 'a') as fd:
                     fd.write("Fault" + '\n')
-        if not robot_state.is_sim:
-            time.sleep(10)  # don't hog the cpu
+
 
 def setup_logic(robot_state):
     if not robot_state.is_sim:
-        robot_state.motor_controller = MotorController(wheel_radius = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = robot.is_sim)
-        robot_state.robot_radio_session = RadioModule(serial.Serial('/dev/ttyS0', 57600)) 
-        robot_state.gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), is_sim = robot_state.is_sim) 
-        robot_state.imu = IMU(init_i2c = busio.I2C(board.SCL, board.SDA), is_sim = robot_state.is_sim) 
-    
+        robot_state.motor_controller = MotorController(
+            wheel_radius=0, vm_load1=1, vm_load2=1, L=0, R=0, is_sim=robot.is_sim)
+        robot_state.robot_radio_session = RadioModule(
+            serial.Serial('/dev/ttyS0', 57600))
+        robot_state.gps = GPS(serial.Serial(
+            '/dev/ttyACM0', 19200, timeout=5), is_sim=robot_state.is_sim)
+        robot_state.imu = IMU(init_i2c=busio.I2C(
+            board.SCL, board.SDA), is_sim=robot_state.is_sim)
+
         gps_setup = robot_state.gps.setup()
         imu_setup = robot_state.imu.setup()
         robot_state.radio_session.setup_robot()
         robot_state.motor_controller.setup(robot_state.is_sim)
 
-        robot_state.init_gps = (robot_state.gps.get_gps()["long"], robot_state.gps.get_gps()["lat"])
+        robot_state.init_gps = (robot_state.gps.get_gps()[
+                                "long"], robot_state.gps.get_gps()["lat"])
         robot_state.imu_data = robot_state.imu.get_gps()
         x_init, y_init = (0, 0)
         heading_init = math.degrees(math.atan2(
@@ -103,10 +111,11 @@ def setup_logic(robot_state):
         robot_state.ekf = LocalizationEKF(mu, sigma)
 
         if (robot_state.radio_session.connected and gps_setup and imu_setup):
-            obstacle_avoidance = threading.Thread(target=track_obstacle, args=robot_state, daemon=True)
+            obstacle_avoidance = threading.Thread(
+                target=track_obstacle, args=robot_state, daemon=True)
             obstacle_avoidance.start()  # spawn thread to monitor obstacles
             robot_state.phase = Phase.TRAVERSE
             phase_change(robot_state)
     else:
         robot_state.phase = Phase.TRAVERSE
-        phase_change(robot_state)    
+        phase_change(robot_state)
