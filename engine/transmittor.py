@@ -23,7 +23,7 @@ class Transmittor:
         """        
         self.gather_info()
     
-    def gather_info(self):
+    def rmi(self):
         """
         Returns an encoded dictionary, containing the data across states.
         """
@@ -45,16 +45,77 @@ class Transmittor:
                     "connected": self.robot_state.imu_connected,
                     "reading": json.dumps(self.robot_state.imu.get_imu())
                 },
-                "break_beams": {
-                    
-                }
-            },
-            "battery": {
-                
-            },
-            "metrics": {
-                
+                # "break_beams": {
+                #     "half1": {
+                #         "connected": 
+                #         "blocked": 
+                #     },
+                #     "half2": {
+                #         "connected": 
+                #         "blocked": 
+                #     },
+                #     "full1": {
+                #         "connected": 
+                #         "blocked": 
+                #     },
+                #     "full2": {
+                #         "connected": 
+                #         "blocked": 
+                #     },
+                #     #"half_full": 
+                #     #"max_full": 
+                # },
+                "wheel_motors": {
+                    #"duty_cycle": Float,
+                    #"linear_velocity": Float,
+                    #"left_wheel_velocity": Float,
+                    #"right_wheel_velocity": Float
+                },
+                "cams": {
+                    "front_cam": {
+                        #"connected": Boolean,
+                        #"tag_id_detected": String or null
+                    },
+                    "back_cam": {
+                        #"connected": Boolean,
+                        #"tag_id_detected": String or null
+                    }
+                },
+                "ultrasonic": { 
+                    "front_uls": {
+                        #"connected": Boolean,
+                        #"distance_to_object": Float or null
+                    },
+                    "left1_uls": {
+                        #"connected": Boolean,
+                        #"distance_to_object": Float or null
+                    },
+                    "left2_uls": {
+                       # "connected": Boolean,
+                       # "distance_to_object": Float or null
+                    },
+                    "right_uls": {
+                       # "connected": Boolean,
+                       # "distance_to_object": Float or null
+                    }
+                }, 
             }
-        })
+            "battery": {
+                "battery_percent": self.robot_state.battery,
+                # "time_until_recharge": 
+                # "low_power_mode":
+                
+            },
+            
+            "metrics": {
+                "goal_loc": self.robot_state.goal_location,
+                "state": self.robot_state.goal_location,
+                "phase": self.robot_state.phase,
+                "eta_to_base": String HH:MM:SS,
+                "goal_nodes_completed": Integer,
+                "eta_complete": 
+            },
+        }
+        )
     
     
