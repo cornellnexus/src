@@ -1,4 +1,6 @@
-from engine.robot import Robot, Phase
+from engine.robot import Robot
+from engine.robot_logic.set_up import execute_setup
+from engine.phase import Phase
 from engine.robot_state import Robot_State
 from electrical.radio_module import RadioModule
 from electrical.motor_controller import MotorController
@@ -32,7 +34,7 @@ class RobotSetupPhaseTest:
         self.motor_controller = MotorController(wheel_r = 0, vm_load1 = 1, vm_load2 = 1, L = 0, R = 0, is_sim = self.robot.robot_state.is_sim)
     
     def run(self): 
-        self.robot.execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
+        execute_setup(self.robot_radio_session, self.gps, self.imu, self.motor_controller)
 
 class BaseStationSetupPhaseTest: 
     """
@@ -44,7 +46,7 @@ class BaseStationSetupPhaseTest:
     def run(self): 
         pass
         #TODO: change this into a base station execute_setup function
-        # self.robot.execute_setup(self.base_session, self.gps, self.imu, self.pid_motor)
+        # execute_setup(self.base_session, self.gps, self.imu, self.pid_motor)
 
 #TODO:  	
 #check phase at the end
