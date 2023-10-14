@@ -788,7 +788,7 @@ class Grid:
             waypoints = self.get_spiral_waypoints()
         elif mode == ControlMode.STRAIGHT:
             waypoints = self.get_straight_line_waypoints(y_start_pct=0.5)
-        elif mode == ControlMode.LAWNMOWER_GUIDED:
+        elif mode == ControlMode.LAWNMOWER_A:
             waypoints = self.get_all_guided_lawnmower_waypoints_adjustable(
                 True)
         else:

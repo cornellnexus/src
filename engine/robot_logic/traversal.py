@@ -73,11 +73,18 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
         x_coords_error = target[0] - robot_state.state[0]
         y_coords_error = target[1] - robot_state.state[1]
 
+        desired_angle = math.atan2(
+            target[1] - robot_state.state[1], target[0] - robot_state.state[0])
+
         x_vel = robot_state.loc_pid_x.update(x_coords_error)
         y_vel = robot_state.loc_pid_y.update(y_coords_error)
 
         cmd_v, cmd_w = feedback_lin(
             predicted_state, x_vel, y_vel, robot_state.epsilon)
+
+        turn_to_target_heading(robot_state, desired_angle, 0.01, database)
+        cmd_v = np.array([math.sqrt(x_vel**2 + y_vel**2)])
+        cmd_w = np.array([0])
 
         # clamping of velocities:
         (limited_cmd_v, limited_cmd_w) = limit_cmds(
@@ -123,8 +130,8 @@ def travel(robot_state, delta_d, delta_phi):
     """
     # if it is a simulation, we update the robot state directly
     if robot_state.is_sim:
-        robot_state.state = np.round(integrate_odom(
-            robot_state.state, delta_d, delta_phi), 3)
+        robot_state.state = integrate_odom(
+            robot_state.state, delta_d, delta_phi)
         robot_state.truthpose = np.append(
             robot_state.truthpose, np.transpose(robot_state.state), 0)
     # otherwise, we update the robot state using EKF
@@ -177,7 +184,9 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
     # to add obstacle avoidance, can either change roomba to go to point on the circle in the direction of the
     # robot direction or use raw sensor value
     # can we guarantee that when giving a velocity that the robot will move at that velocity?
-    dt = 0
+    dt = 10
+    accumulated_time = 0
+    robot_state.turn_angle = 5*math.pi/7
     # TODO: battery_limit, time_limit, tank_capacity is full
     exit_boolean = False
     if not robot_state.is_sim:
@@ -205,17 +214,22 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
             is_next_timestep_blocked = front_ultrasonic.distance(
             ) < robot_state.detect_obstacle_range
         else:
-            is_next_timestep_blocked = False
+            [new_x_2, new_y_2] = [curr_pos[0] + robot_state.move_dist * math.cos(curr_pos[2]),
+                                  curr_pos[1] + robot_state.move_dist * math.sin(curr_pos[2])]
+            next_radius_2 = calculate_dist(
+                base_station_loc, (new_x_2, new_y_2))
+            is_next_timestep_blocked = next_radius_2 > roomba_radius
         # sensor should not detect something in the robot
         if (next_radius > roomba_radius) or is_next_timestep_blocked:
             # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
             allowed_dist_error = 0.01
             allowed_heading_error = 0.01
             # double check that robot wont collide behind
-            move_to_target_node(robot_state, curr_pos[:2] - robot_state.move_dist,
+            move_to_target_node(robot_state, (curr_pos[0] - robot_state.move_dist * math.cos(curr_pos[2]), curr_pos[1] - robot_state.move_dist * math.sin(curr_pos[2])),
                                 allowed_dist_error, database)
             turn_to_target_heading(
-                robot_state, robot_state.turn_angle, allowed_heading_error, database)
+                robot_state, curr_pos[2] + robot_state.turn_angle, allowed_heading_error, database)
+            travel(robot_state, 0, robot_state.turn_angle)
         else:
             travel(robot_state, robot_state.move_dist, 0)
             database.update_data(
@@ -225,8 +239,8 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
                 robot_state.motor_controller.motors(0, 0)
         if not robot_state.is_sim:
             time.sleep(10)
-        dt += 10  # accumulation in time in ms
-        exit_boolean = (dt > time_limit)
+        accumulated_time += dt  # accumulation in time in ms
+        exit_boolean = (accumulated_time > time_limit)
         past_pos = curr_pos
     robot_state.phase = Phase.RETURN
     phase_change(robot_state)
