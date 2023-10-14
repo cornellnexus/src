@@ -25,9 +25,11 @@ def engine():
 
     node1 = Node(-76.483682, 42.444250)
     node2 = Node(-76.483682, 42.444416)
-    robot_state = Robot_State(xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0, radius=1)
+    robot_state = Robot_State(
+        xpos=0, ypos=0, heading=0, epsilon=0, max_velocity=0, radius=1
+    )
     robot = Robot(robot_state)
-    gps = GPS(serial.Serial('/dev/ttyACM0', 19200, timeout=5), robot.robot_state.is_sim)
+    gps = GPS(serial.Serial("/dev/ttyACM0", 19200, timeout=5), robot.robot_state.is_sim)
     motor_controller = BasicMotorController(robot.robot_state.is_sim)
     queue = [node1, node2]
 
@@ -40,8 +42,7 @@ def engine():
     # distance_from_target <- get pythagerean distance from target in meters
     # must be in form latitude,longitude.
     # check distance is correct (order o f coordinates in initialization):
-    distance_from_target = \
-        geopy.distance.distance(predicted_loc, target_coords).meters
+    distance_from_target = geopy.distance.distance(predicted_loc, target_coords).meters
     gps_noise_range = 3
 
     # while robot is too far away from target node
@@ -53,7 +54,9 @@ def engine():
         print("MOVING FORWARD")
         predicted_loc = gps.get_gps()
         print("GPS PREDICTED LOCATION: " + str(predicted_loc))
-        distance_from_target = geopy.distance.distance(predicted_loc, target_node.get_coords()).meters
+        distance_from_target = geopy.distance.distance(
+            predicted_loc, target_node.get_coords()
+        ).meters
 
         print("DISTANCE FROM  TAR GET : " + str(distance_from_target))
     motor_controller.stop()

@@ -9,6 +9,7 @@ import numpy as np
 from enum import IntEnum
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
+
 # from engine.sensor_module import SensorModule
 from constants.definitions import ENGINEERING_QUAD
 from engine.ekf import LocalizationEKF
@@ -42,22 +43,31 @@ if __name__ == "__main__":
     gps_data_file = "./csv_files/GPS_22-11-2021.txt"
 
     # Read command-line arguments
-    if len(sys.argv) != 4 or "live=" not in sys.argv[1] or "data=" not in sys.argv[2] or "ekf=" not in sys.argv[3]\
-            or len(sys.argv[1]) != 6 or len(sys.argv[2]) != 6 or len(sys.argv[3]) != 5:
-        sys.exit("Two inputs required, and must be of this format: live=<0 (Live data) or 1 (Data from file)> and "
-                 "data=<0 (IMU) or 1 (GPS) or 2 (IMU and GPS)>")
+    if (
+        len(sys.argv) != 4
+        or "live=" not in sys.argv[1]
+        or "data=" not in sys.argv[2]
+        or "ekf=" not in sys.argv[3]
+        or len(sys.argv[1]) != 6
+        or len(sys.argv[2]) != 6
+        or len(sys.argv[3]) != 5
+    ):
+        sys.exit(
+            "Two inputs required, and must be of this format: live=<0 (Live data) or 1 (Data from file)> and "
+            "data=<0 (IMU) or 1 (GPS) or 2 (IMU and GPS)>"
+        )
 
-    is_live = sys.argv[1][sys.argv[1].index("=")+1:]
+    is_live = sys.argv[1][sys.argv[1].index("=") + 1 :]
     if is_live != "0" and is_live != "1":
         sys.exit("The value of the live argument must be 0 or 1.")
     is_live = int(is_live)
 
-    data_type = sys.argv[2][sys.argv[2].index("=")+1:]
+    data_type = sys.argv[2][sys.argv[2].index("=") + 1 :]
     if data_type != "0" and data_type != "1" and data_type != "2":
         sys.exit("The value of the data argument must be 0, 1, or 2.")
     data_type = int(data_type)
 
-    use_ekf = sys.argv[3][sys.argv[3].index("=")+1:]
+    use_ekf = sys.argv[3][sys.argv[3].index("=") + 1 :]
     if use_ekf != "0" and use_ekf != "1":
         sys.exit("The value of the ekf argument must be 0 or 1.")
     use_ekf = int(use_ekf)
@@ -77,11 +87,11 @@ if __name__ == "__main__":
     circle_patch = plt.Circle((0, 0), 1, fc="blue")
     if data_type == DataType.IMU_ONLY or data_type == DataType.IMU_AND_GPS:
         wedge_patch = patch.Wedge(
-            (0, 0), 3, 100, 80, animated=True, fill=False, width=2, ec="b", hatch="xx")
+            (0, 0), 3, 100, 80, animated=True, fill=False, width=2, ec="b", hatch="xx"
+        )
     if data_type == DataType.GPS_ONLY or data_type == DataType.IMU_AND_GPS:
         eng_quad_img = mpimg.imread(zone_photo)
-        plt.imshow(eng_quad_img, origin="upper",
-                   extent=[0, x_range, 0, y_range])
+        plt.imshow(eng_quad_img, origin="upper", extent=[0, x_range, 0, y_range])
 
     # Sensor data acquisition setup
     if is_live:
@@ -94,22 +104,18 @@ if __name__ == "__main__":
         if data_type == DataType.IMU_ONLY:
             with open(imu_data_file) as file:
                 imu_readings = file.readlines()
-                imu_readings = [ast.literal_eval(
-                    line) for line in imu_readings]
+                imu_readings = [ast.literal_eval(line) for line in imu_readings]
         elif data_type == DataType.GPS_ONLY:
             with open(gps_data_file) as file:
                 gps_readings = file.readlines()
-                gps_readings = [ast.literal_eval(
-                    line) for line in gps_readings]
+                gps_readings = [ast.literal_eval(line) for line in gps_readings]
         else:
             with open(imu_data_file) as file:
                 imu_readings = file.readlines()
-                imu_readings = [ast.literal_eval(
-                    line) for line in imu_readings]
+                imu_readings = [ast.literal_eval(line) for line in imu_readings]
             with open(gps_data_file) as file:
                 gps_readings = file.readlines()
-                gps_readings = [ast.literal_eval(
-                    line) for line in gps_readings]
+                gps_readings = [ast.literal_eval(line) for line in gps_readings]
 
         if not gps_readings:
             frames = len(imu_readings)
@@ -119,21 +125,25 @@ if __name__ == "__main__":
             frames = min(len(imu_readings) - 1, len(gps_readings) - 1)
 
     # EKF setup
-    
-    # First GPS reading -> 0,0 in global frame 
-    # Map GPS coordinates to global 
+
+    # First GPS reading -> 0,0 in global frame
+    # Map GPS coordinates to global
     # MAp GPS initial to 0,0
-    # New measurement - initial -> convert to meters 
+    # New measurement - initial -> convert to meters
 
     # If we are using the EKF, need to initialize the EKF object, which takes
     # in an initial mu (initial robot state) and initial sigma (initial confidence matrix)
-    # This is documented more in the complete EKF documentation 
+    # This is documented more in the complete EKF documentation
     if use_ekf:
         # Get the first GPS coordinate
         first_gps_coord = (gps_readings[0]["lat"], gps_readings[0]["lon"])
-        
-        x_init, y_init = get_vincenty_x(zone[0], first_gps_coord), get_vincenty_y(zone[0], first_gps_coord)
-        heading_init = math.degrees(math.atan2(-1 * imu_readings[0]["mag"]["x"], imu_readings[0]["mag"]["y"]))
+
+        x_init, y_init = get_vincenty_x(zone[0], first_gps_coord), get_vincenty_y(
+            zone[0], first_gps_coord
+        )
+        heading_init = math.degrees(
+            math.atan2(-1 * imu_readings[0]["mag"]["x"], imu_readings[0]["mag"]["y"])
+        )
 
         # mu is meters from start position (bottom left position facing up)
         mu = np.array([[x_init], [y_init], [heading_init]])
@@ -159,12 +169,19 @@ if __name__ == "__main__":
                 # new_heading = math.degrees(
                 #     math.atan2(sensor_module.imu_dict["mag"][1], sensor_module.imu_dict["mag"][0]))
                 new_heading = math.degrees(
-                    math.atan2(-1 * sensor_module.imu_dict["mag"][0], sensor_module.imu_dict["mag"][1]))
+                    math.atan2(
+                        -1 * sensor_module.imu_dict["mag"][0],
+                        sensor_module.imu_dict["mag"][1],
+                    )
+                )
             else:
                 # new_heading = math.degrees(math.atan2(
                 #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
-                new_heading = math.degrees(math.atan2(
-                    -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
+                new_heading = math.degrees(
+                    math.atan2(
+                        -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]
+                    )
+                )
             wedge_patch.update({"center": (0, 0)})
             wedge_patch.theta1 = new_heading - 10
             wedge_patch.theta2 = new_heading + 10
@@ -176,8 +193,10 @@ if __name__ == "__main__":
                 new_location = sensor_module.get_measurement(zone[0])[:2]
             else:
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
-                new_location = (get_vincenty_x(
-                    zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord))
+                new_location = (
+                    get_vincenty_x(zone[0], gps_coord),
+                    get_vincenty_y(zone[0], gps_coord),
+                )
 
             circle_patch.center = new_location
             return [circle_patch]
@@ -192,21 +211,25 @@ if __name__ == "__main__":
 
             elif not is_live and use_ekf:
 
-                # Potential future testing note from Allen: 
-                # I think as long as we have a theta, r, and width, we have a valid arclength 
-                # (arclength = theta*R, where R = r or r + width. Then we can randomize theta, r, 
+                # Potential future testing note from Allen:
+                # I think as long as we have a theta, r, and width, we have a valid arclength
+                # (arclength = theta*R, where R = r or r + width. Then we can randomize theta, r,
                 # and width to see if the property holds
-                
-                arc_lengths = ekf.get_arc_lengths(1,1) # temporary placeholder
-                mu_bar, sigma_bar = ekf.predict_step(arc_lengths) 
+
+                arc_lengths = ekf.get_arc_lengths(1, 1)  # temporary placeholder
+                mu_bar, sigma_bar = ekf.predict_step(arc_lengths)
 
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
                 x, y = get_vincenty_x(zone[0], gps_coord), get_vincenty_y(
-                    zone[0], gps_coord)
+                    zone[0], gps_coord
+                )
                 # heading = math.degrees(math.atan2(
                 #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
-                heading = math.degrees(math.atan2(
-                    -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
+                heading = math.degrees(
+                    math.atan2(
+                        -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]
+                    )
+                )
 
                 measurements = np.array([[x], [y], [heading]])
                 # update_step is a procedure, attributes updated in this method.
@@ -218,11 +241,16 @@ if __name__ == "__main__":
 
                 # new_heading = math.degrees(math.atan2(
                 #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
-                new_heading = math.degrees(math.atan2(
-                    -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]))
+                new_heading = math.degrees(
+                    math.atan2(
+                        -1 * imu_readings[i]["mag"]["x"], imu_readings[i]["mag"]["y"]
+                    )
+                )
                 gps_coord = (gps_readings[i]["lat"], gps_readings[i]["lon"])
-                new_location = (get_vincenty_x(
-                    zone[0], gps_coord), get_vincenty_y(zone[0], gps_coord))
+                new_location = (
+                    get_vincenty_x(zone[0], gps_coord),
+                    get_vincenty_y(zone[0], gps_coord),
+                )
 
                 # print(new_heading)
                 # print(new_location)
@@ -234,5 +262,6 @@ if __name__ == "__main__":
             return circle_patch, wedge_patch
 
     anim = animation.FuncAnimation(
-        fig, animate, init_func=init, frames=frames, interval=20, blit=True)
+        fig, animate, init_func=init, frames=frames, interval=20, blit=True
+    )
     plt.show()

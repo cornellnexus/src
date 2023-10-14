@@ -1,10 +1,10 @@
 import unittest
 
-'''
+"""
 Unit tests for kinematics.py
 
 TODO: Write test cases
-'''
+"""
 
 
 class TestKinematics(unittest.TestCase):
@@ -39,5 +39,5 @@ class TestKinematics(unittest.TestCase):
         pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

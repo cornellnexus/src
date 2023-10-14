@@ -1,9 +1,11 @@
 from enum import Enum
 
+
 class ControlMode(Enum):
     """
     An enumeration of different control modes
     """
+
     LAWNMOWER = 1
     LAWNMOWER_B = 2
     LAWNMOWER_A = 3

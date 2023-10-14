@@ -1,4 +1,4 @@
-'''
+"""
 [gui_popup] contains functions for the initial pop-up window.
 The main functions of this file is [run_popup()].
 This will setup the pop-up window and manage the window activity.
@@ -7,7 +7,7 @@ This will setup the pop-up window and manage the window activity.
 Purpose: The pop-up window will prompt the user to input information for the GUI settings (e.g. map bounds).
 
 Future Plans: If other featurue are added to the GUI, add necessary setup prompts and components to [set_up].
-'''
+"""
 
 import PySimpleGUI as sg
 
@@ -19,18 +19,20 @@ def set_up():
     [set_up] creates the layout for the popup window.
 
     """
-    layout = [[sg.Text('Enter Map Bounds:')],
-              [sg.Text('Minimum Longitude:')],
-              [sg.InputText(key='-MINLONG-')],
-              [sg.Text('Maximum Longitude:')],
-              [sg.InputText(key='-MAXLONG-')],
-              [sg.Text('Minimum Lattitude:')],
-              [sg.InputText(key='-MINLAT-')],
-              [sg.Text('Maximum Lattitude:')],
-              [sg.InputText(key='-MAXLAT-')],
-              [sg.Button('Store Data')],
-              [sg.Submit(), sg.Cancel()]]
-    window = sg.Window('Cornell Nexus', layout)
+    layout = [
+        [sg.Text("Enter Map Bounds:")],
+        [sg.Text("Minimum Longitude:")],
+        [sg.InputText(key="-MINLONG-")],
+        [sg.Text("Maximum Longitude:")],
+        [sg.InputText(key="-MAXLONG-")],
+        [sg.Text("Minimum Lattitude:")],
+        [sg.InputText(key="-MINLAT-")],
+        [sg.Text("Maximum Lattitude:")],
+        [sg.InputText(key="-MAXLAT-")],
+        [sg.Button("Store Data")],
+        [sg.Submit(), sg.Cancel()],
+    ]
+    window = sg.Window("Cornell Nexus", layout)
     return window
 
 
@@ -52,7 +54,7 @@ def run_popup():
     while popup_open:  # The Event Loop
         event, values = window.read()
         # TODO fix close out window to not reference popup map bounds
-        if event == 'Cancel':
+        if event == "Cancel":
             popup_open = False
             close_gui = True
             window.close()
@@ -63,18 +65,18 @@ def run_popup():
             close_gui = True
             break
 
-        if event == 'Store Data':
+        if event == "Store Data":
             print("TODO")
             break
 
         try:
-            long_min = int(values['-MINLONG-'])
-            long_max = int(values['-MAXLONG-'])
-            lat_min = int(values['-MINLAT-'])
-            lat_max = int(values['-MAXLAT-'])
+            long_min = int(values["-MINLONG-"])
+            long_max = int(values["-MAXLONG-"])
+            lat_min = int(values["-MINLAT-"])
+            lat_max = int(values["-MAXLAT-"])
 
             if long_max <= long_min or lat_max <= lat_min:
-                sg.popup('Invalid map bounds')
+                sg.popup("Invalid map bounds")
             else:
                 input_data["long_min"] = long_min
                 input_data["long_max"] = long_max
@@ -84,17 +86,13 @@ def run_popup():
                 popup_open = False
                 break
         except:
-            sg.popup('Invalid map bounds')
+            sg.popup("Invalid map bounds")
 
     return close_gui
 
-#Store user input data
-input_data = {
-    "long_min": None,
-    "long_max": None,
-    "lat_min": None,
-    "lat_max": None
-}
+
+# Store user input data
+input_data = {"long_min": None, "long_max": None, "lat_min": None, "lat_max": None}
 
 
 def get_input_data():

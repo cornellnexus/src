@@ -12,7 +12,7 @@ from collections import deque
 
 target = [0, 0]
 add_to_x = False
-gps_noise_range = .3
+gps_noise_range = 0.3
 
 
 class TestMoveToTargetNode(unittest.TestCase):
@@ -133,5 +133,5 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         self.assertEqual(deque([]), waypoints_to_visit)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -9,16 +9,16 @@ class Commands:
     # does this work for printing first row with the column names?
     def print_coords(self):
         with open("coordinates.txt") as csv_file:
-            csv_reader = csv.reader(csv_file, delimiter=',')
+            csv_reader = csv.reader(csv_file, delimiter=",")
             for row in csv_reader:
-                print("x: " + row[0] + "\ty: " + row[1] +
-                      "\theading: " + row[2])
+                print("x: " + row[0] + "\ty: " + row[1] + "\theading: " + row[2])
 
     def write_coords(self):
-        with open("coordinates.txt", "a", newline='') as csv_file:
+        with open("coordinates.txt", "a", newline="") as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerow(
-                ["%.2f" % self.x, "%.2f" % self.y, "%.2f" % self.heading])
+                ["%.2f" % self.x, "%.2f" % self.y, "%.2f" % self.heading]
+            )
 
     # coords as floats, angles in degrees
 
@@ -50,11 +50,9 @@ class Commands:
         dist_per_time_step = (rpm / 60) * self.time_step * self.radius * 2 * math.pi
         steps_to_travel = self.calc_steps(dist, rpm)
 
-        while (steps_to_travel > 0):
-            self.x += float(dist_per_time_step) * \
-                      math.sin(math.radians(self.heading))
-            self.y += float(dist_per_time_step) * \
-                      math.cos(math.radians(self.heading))
+        while steps_to_travel > 0:
+            self.x += float(dist_per_time_step) * math.sin(math.radians(self.heading))
+            self.y += float(dist_per_time_step) * math.cos(math.radians(self.heading))
             self.write_coords()
             steps_to_travel -= 1
             time.sleep(self.time_step)
@@ -62,10 +60,8 @@ class Commands:
         self.front_right_rpm = 0
 
     def move_with_key(self, dist):
-        self.x += float(dist) * \
-                  math.sin(math.radians(self.heading))
-        self.y += float(dist) * \
-                  math.cos(math.radians(self.heading))
+        self.x += float(dist) * math.sin(math.radians(self.heading))
+        self.y += float(dist) * math.cos(math.radians(self.heading))
         self.write_coords()
         self.print_coords()
         # self.write_coords()

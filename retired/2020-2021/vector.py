@@ -20,7 +20,9 @@ class Vector:
         self.angle = math.atan((self.y2 - self.y1) / (self.x2 - self.x1))
 
     def calculateMagnitude(self):
-        self.magnitude = math.sqrt(((self.y2 - self.y1) ** 2) + ((self.x2 - self.x1) ** 2))
+        self.magnitude = math.sqrt(
+            ((self.y2 - self.y1) ** 2) + ((self.x2 - self.x1) ** 2)
+        )
 
     def __init__(self, x1, y1, x2, y2):
         self.p1 = (x1, y1)

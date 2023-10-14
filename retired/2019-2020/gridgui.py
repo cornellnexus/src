@@ -24,8 +24,8 @@ def parseAndFormatCsvLine(line):
     secondComma = line.index(",", firstComma + 1)
 
     xCoord = float(line[0:firstComma])
-    yCoord = float(line[firstComma + 1:secondComma])
-    angle = float(line[secondComma + 1:])  # ignore for now b.c. we do not need it.
+    yCoord = float(line[firstComma + 1 : secondComma])
+    angle = float(line[secondComma + 1 :])  # ignore for now b.c. we do not need it.
 
     return (xCoord, yCoord)
 
@@ -46,7 +46,7 @@ def pasteCoords(coords):
 
     for (x, y) in coords:
         # Create oval based on coordinates
-        c.create_oval(x - 3, y - 3, x + 3, y + 3, fill='green')
+        c.create_oval(x - 3, y - 3, x + 3, y + 3, fill="green")
 
 
 def generatediagonalCoordsFile():
@@ -85,39 +85,73 @@ vert_max = 500
 # key is the string of coordinate you want to access
 def dfs(visited, coordinates, key):
     if key not in visited:
-        if (coordinates[key].x == hori_min and coordinates[key].y == vert_min):
-            neighbors = [[coordinates[key].x + 1, 0], [coordinates[key].x + 1, coordinates[key].y + 1],
-                         [0, coordinates[key].y + 1]]
-        elif (coordinates[key].x == hori_min and coordinates[key].y == vert_max):
-            neighbors = [[coordinates[key].x + 1, coordinates[key].y], [coordinates[key].x + 1, coordinates[key].y - 1],
-                         [coordinates[key].x, coordinates[key].y - 1]]
-        elif (coordinates[key].x == hori_max and coordinates[key].y == vert_max):
-            neighbors = [[coordinates[key].x - 1, coordinates[key].y], [coordinates[key].x - 1, coordinates[key].y - 1],
-                         [coordinates[key].x, coordinates[key].y - 1]]
-        elif (coordinates[key].x == hori_max and coordinates[key].y == vert_min):
-            neighbors = [[coordinates[key].x - 1, coordinates[key].y], [coordinates[key].x - 1, coordinates[key].y - 1],
-                         [coordinates[key].x, coordinates[key].y - 1]]
-        elif (coordinates[key].x == hori_min):
-            neighbors = [[coordinates[key].x, coordinates[key].y - 1], [coordinates[key].x + 1, coordinates[key].y + 1],
-                         [coordinates[key].x + 1, coordinates[key].y], [coordinates[key].x + 1, coordinates[key].y - 1],
-                         [coordinates[key].x, coordinates[key].y - 1]]
-        elif (coordinates[key].x == hori_max):
-            neighbors = [[coordinates[key].x, coordinates[key].y + 1], [coordinates[key].x, coordinates[key].y - 1],
-                         [coordinates[key].x - 1, coordinates[key].y + 1], [coordinates[key].x - 1, coordinates[key].y],
-                         [coordinates[key].x - 1, coordinates[key].y - 1]]
-        elif (coordinates[key].y == vert_min):
-            neighbors = [[coordinates[key].x - 1, coordinates[key].y], [coordinates[key].x - 1, coordinates[key].y + 1],
-                         [coordinates[key].x, coordinates[key].y + 1], [coordinates[key].x + 1, coordinates[key].y + 1],
-                         [coordinates[key].x + 1, coordinates[key].y]]
-        elif (coordinates[key].y == vert_max):
-            neighbors = [[coordinates[key].x - 1, coordinates[key].y], [coordinates[key].x - 1, coordinates[key].y - 1],
-                         [coordinates[key].x, coordinates[key].y - 1], [coordinates[key].x + 1, coordinates[key].y - 1],
-                         [coordinates[key].x + 1, coordinates[key].y]]
+        if coordinates[key].x == hori_min and coordinates[key].y == vert_min:
+            neighbors = [
+                [coordinates[key].x + 1, 0],
+                [coordinates[key].x + 1, coordinates[key].y + 1],
+                [0, coordinates[key].y + 1],
+            ]
+        elif coordinates[key].x == hori_min and coordinates[key].y == vert_max:
+            neighbors = [
+                [coordinates[key].x + 1, coordinates[key].y],
+                [coordinates[key].x + 1, coordinates[key].y - 1],
+                [coordinates[key].x, coordinates[key].y - 1],
+            ]
+        elif coordinates[key].x == hori_max and coordinates[key].y == vert_max:
+            neighbors = [
+                [coordinates[key].x - 1, coordinates[key].y],
+                [coordinates[key].x - 1, coordinates[key].y - 1],
+                [coordinates[key].x, coordinates[key].y - 1],
+            ]
+        elif coordinates[key].x == hori_max and coordinates[key].y == vert_min:
+            neighbors = [
+                [coordinates[key].x - 1, coordinates[key].y],
+                [coordinates[key].x - 1, coordinates[key].y - 1],
+                [coordinates[key].x, coordinates[key].y - 1],
+            ]
+        elif coordinates[key].x == hori_min:
+            neighbors = [
+                [coordinates[key].x, coordinates[key].y - 1],
+                [coordinates[key].x + 1, coordinates[key].y + 1],
+                [coordinates[key].x + 1, coordinates[key].y],
+                [coordinates[key].x + 1, coordinates[key].y - 1],
+                [coordinates[key].x, coordinates[key].y - 1],
+            ]
+        elif coordinates[key].x == hori_max:
+            neighbors = [
+                [coordinates[key].x, coordinates[key].y + 1],
+                [coordinates[key].x, coordinates[key].y - 1],
+                [coordinates[key].x - 1, coordinates[key].y + 1],
+                [coordinates[key].x - 1, coordinates[key].y],
+                [coordinates[key].x - 1, coordinates[key].y - 1],
+            ]
+        elif coordinates[key].y == vert_min:
+            neighbors = [
+                [coordinates[key].x - 1, coordinates[key].y],
+                [coordinates[key].x - 1, coordinates[key].y + 1],
+                [coordinates[key].x, coordinates[key].y + 1],
+                [coordinates[key].x + 1, coordinates[key].y + 1],
+                [coordinates[key].x + 1, coordinates[key].y],
+            ]
+        elif coordinates[key].y == vert_max:
+            neighbors = [
+                [coordinates[key].x - 1, coordinates[key].y],
+                [coordinates[key].x - 1, coordinates[key].y - 1],
+                [coordinates[key].x, coordinates[key].y - 1],
+                [coordinates[key].x + 1, coordinates[key].y - 1],
+                [coordinates[key].x + 1, coordinates[key].y],
+            ]
         else:
-            neighbors = [[coordinates[key].x - 1, coordinates[key].y - 1], [coordinates[key].x, coordinates[key].y - 1],
-                         [coordinates[key].x + 1, coordinates[key].y - 1], [coordinates[key].x + 1, coordinates[key].y],
-                         [coordinates[key].x + 1, coordinates[key].y + 1], [coordinates[key].x, coordinates[key].y + 1],
-                         [coordinates[key].x - 1, coordinates[key].y + 1], [coordinates[key].x - 1, coordinates[key].y]]
+            neighbors = [
+                [coordinates[key].x - 1, coordinates[key].y - 1],
+                [coordinates[key].x, coordinates[key].y - 1],
+                [coordinates[key].x + 1, coordinates[key].y - 1],
+                [coordinates[key].x + 1, coordinates[key].y],
+                [coordinates[key].x + 1, coordinates[key].y + 1],
+                [coordinates[key].x, coordinates[key].y + 1],
+                [coordinates[key].x - 1, coordinates[key].y + 1],
+                [coordinates[key].x - 1, coordinates[key].y],
+            ]
         visited.append(key)
         for neighbor in neighbors:
             dfs(visited, coordinates, neighbor)
@@ -126,22 +160,22 @@ def dfs(visited, coordinates, key):
 def createGrid(event=None):
     w = c.winfo_width()  # Get current width of canvas
     h = c.winfo_height()  # Get current height of canvas
-    c.delete('grid_line')  # Will only remove the grid_line
+    c.delete("grid_line")  # Will only remove the grid_line
 
     # Creates all vertical lines at intevals of 100
     for i in range(0, w, 25):
-        c.create_line([(i, 0), (i, h)], tag='grid_line')
+        c.create_line([(i, 0), (i, h)], tag="grid_line")
 
     # Creates all horizontal lines at intevals of 100
     for i in range(0, h, 25):
-        c.create_line([(0, i), (w, i)], tag='grid_line')
+        c.create_line([(0, i), (w, i)], tag="grid_line")
 
 
 root = tk.Tk()
-c = tk.Canvas(root, height=500, width=500, bg='white')
+c = tk.Canvas(root, height=500, width=500, bg="white")
 c.pack(fill=tk.BOTH, expand=True)
 
-c.bind('<Configure>', createGrid)
+c.bind("<Configure>", createGrid)
 
 generatediagonalCoordsFile()
 

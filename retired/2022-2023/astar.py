@@ -2,7 +2,7 @@ from queue import PriorityQueue
 
 
 # TODO: documentation
-class Astar():
+class Astar:
 
     # A* Algorithm (hardcoded inputs)
     # Hardcoded: ROWS, SCREEN WIDTH, STARTING NODE, ENDING NODE
@@ -44,8 +44,9 @@ class Astar():
                 if temp_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = temp_g_score
-                    f_score[neighbor] = temp_g_score + \
-                                        heuristic(neighbor.get_pos(), end.get_pos())
+                    f_score[neighbor] = temp_g_score + heuristic(
+                        neighbor.get_pos(), end.get_pos()
+                    )
                     if neighbor not in open_set_hash:
                         count += 1
                         open_set.put((f_score[neighbor], count, neighbor))
@@ -65,10 +66,10 @@ class Astar():
         algorithm(grid, start, end)
 
 
-'''
+"""
 A Node is a cell which composes part of the graph that our robot is localized
 in.
-'''
+"""
 
 
 class Node:

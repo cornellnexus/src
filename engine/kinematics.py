@@ -10,12 +10,12 @@ EARTH_RADIUS = 6371008.8  # meters
 
 def robot_to_global(pose, x_robot, y_robot):
     """
-    Transforms the (x_robot, y_robot) point in robot coordinates into global 
+    Transforms the (x_robot, y_robot) point in robot coordinates into global
     coordinates (x_global, y_global). Outputs a [2x1] np array.
 
-    Inputs: 
+    Inputs:
         pose: robot's current pose (global) [3x1]
-        x_R: x coordinate in robot/body frame 
+        x_R: x coordinate in robot/body frame
         y_R: y coordinate in robot/body frame
     """
     px = pose[0]
@@ -37,7 +37,7 @@ def global_to_robot(pose, x_global, y_global):
 
     Inputs: 
         pose: robot's current pose (global) [3x1]
-        x_global: x coordinate in global frame 
+        x_global: x coordinate in global frame
         y_global: y coordinate in global frame
 
         xy_global: 2D point in gloabl coordinates [2x1] (get rid of this?)
@@ -59,8 +59,8 @@ def global_to_robot(pose, x_global, y_global):
 
 def feedback_lin(curr_pose, vx_global, vy_global, epsilon):
     """
-    Given desired x and y velocity in the inertial frame (calculated by 
-    desired pose - current pose), returns the linear and angular 
+    Given desired x and y velocity in the inertial frame (calculated by
+    desired pose - current pose), returns the linear and angular
     velocity the robot should move at.
         curr_pose: [3x1] (is this global?)
     """
@@ -76,9 +76,9 @@ def feedback_lin(curr_pose, vx_global, vy_global, epsilon):
 
 
 def limit_cmds(v, w, max_v, wheel_to_center):
-    '''
-    Returns a scaled v and w, such that 
-    '''
+    """
+    Returns a scaled v and w, such that
+    """
     diameter = wheel_to_center * 2
     v_leftwheel = (-w * diameter + 2 * v) / 2
     v_rightwheel = (w * diameter + 2 * v) / 2
@@ -125,7 +125,7 @@ def integrate_odom(pose, d, phi):
 
 def meters_to_gps(lat, long, dy, dx):
     """
-    Returns the approximate gps coordinate of starting at (lat,long) and moving 
+    Returns the approximate gps coordinate of starting at (lat,long) and moving
     dx meters horizontally (E-W) and dy meters vertically. [N-S]
     """
     new_lat = lat + ((dy / EARTH_RADIUS) * (180 / math.pi)) / 1000
@@ -138,7 +138,7 @@ def meters_to_lat(m):
     """
     Returns an approximation of m meters in units of latitude.
     """
-    lat = ((m / EARTH_RADIUS) * (180 / math.pi))
+    lat = (m / EARTH_RADIUS) * (180 / math.pi)
     return lat
 
 

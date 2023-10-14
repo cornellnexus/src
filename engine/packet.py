@@ -1,9 +1,10 @@
-'''
+"""
 Packet functionality
-'''
+"""
+
 
 def fix_data_size(s, desired_int_length, desired_decimal_length):
-    '''
+    """
     Args:
         s: input string representing a numeric value
         desired_int_length: integer representing the number of digits that should appear before the decimal point
@@ -13,7 +14,7 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
     is of the same value as s. Note that there are 3 digits before the decimal point (desire_int_length) and
     1 digit after the decimal point (desired_decimal_length).
 
-    '''
+    """
 
     separator_index = s.find(".")
     has_deci = True
@@ -21,13 +22,13 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
         has_deci = False
         separator_index = len(s)
     current_int_len = len(s[0:separator_index])
-    current_deci_len = len(s[separator_index + 1:])
+    current_deci_len = len(s[separator_index + 1 :])
     int_difference = desired_int_length - current_int_len
     deci_difference = desired_decimal_length - current_deci_len
 
     if int_difference < 0:
         # shrink:
-        print("value of "+ s +" too large?? possibly round?")
+        print("value of " + s + " too large?? possibly round?")
     else:
         # extend: add 0's to the beginning to extend integer value
         int_buffer = "0" * int_difference
@@ -37,7 +38,7 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
         s = s + "."
     if deci_difference < 0:
         # shrink: cut off extra decimal values
-        s = s[0:len(s) + deci_difference]
+        s = s[0 : len(s) + deci_difference]
     else:
         # extend: add 0's to the end to extend decimal values
         deci_buffer = "0" * deci_difference
@@ -47,7 +48,7 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
 
 
 def fix_values_size(str_vals, desired_int_length, desired_decimal_length):
-    '''
+    """
 
     Args:
         str_vals: list of strings representing numerical values
@@ -59,14 +60,18 @@ def fix_values_size(str_vals, desired_int_length, desired_decimal_length):
     values as [t]. Note that there are 3 digits before the decimal point (desire_int_length) and 1 digit after the
     decimal point (desired_decimal_length) for the str_val values.
 
-    '''
+    """
     formatted_str = ""
     for i in range(len(str_vals)):
         s = str_vals[i]
         if i == len(str_vals) - 1:
-            formatted_str += fix_data_size(s, desired_int_length, desired_decimal_length)
+            formatted_str += fix_data_size(
+                s, desired_int_length, desired_decimal_length
+            )
         else:
-            formatted_str += fix_data_size(s, desired_int_length, desired_decimal_length) + ","
+            formatted_str += (
+                fix_data_size(s, desired_int_length, desired_decimal_length) + ","
+            )
 
     return formatted_str
 
@@ -89,7 +94,10 @@ class Packet:
     Returns: string of the following format using correcting size of args
     "phase:0;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00,000.00;batt:000;ctrl:1"
     """
-    def __init__(self, phase, p_weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl):
+
+    def __init__(
+        self, phase, p_weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt, ctrl
+    ):
         self.phase = phase
         self.p_weight = p_weight
         self.acc = acc
@@ -103,18 +111,23 @@ class Packet:
         self.ctrl = ctrl
 
     def __str__(self):
-        '''
+        """
         Returns: string of the following format using correcting size of args
         "phase:0;p_weight:00.0;acc:0.00,0.00,0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coord:000.00,000.00;batt:000;ctrl:1"
-        '''
-        args = [("phase:", self.phase), (";p_weight:", fix_data_size(self.p_weight, 2, 1)),
-                (";acc:", fix_values_size(self.acc, 1, 2)), 
-                (";n_dist:", fix_data_size(self.n_dist, 2, 1)),
-                (";rot:", fix_data_size(self.rot, 2, 2)), (";last_n:", fix_values_size(self.last_n, 3, 2)),
-                (";vel:", fix_data_size(self.vel, 1, 2)), (";next_n:", fix_values_size(self.next_n, 3, 2)),
-                (";coord:", fix_values_size(self.coord, 3, 2)),
-                (";batt:", fix_data_size(self.batt + ".0", 3, -1)), (";ctrl:", self.ctrl)
-                ]
+        """
+        args = [
+            ("phase:", self.phase),
+            (";p_weight:", fix_data_size(self.p_weight, 2, 1)),
+            (";acc:", fix_values_size(self.acc, 1, 2)),
+            (";n_dist:", fix_data_size(self.n_dist, 2, 1)),
+            (";rot:", fix_data_size(self.rot, 2, 2)),
+            (";last_n:", fix_values_size(self.last_n, 3, 2)),
+            (";vel:", fix_data_size(self.vel, 1, 2)),
+            (";next_n:", fix_values_size(self.next_n, 3, 2)),
+            (";coord:", fix_values_size(self.coord, 3, 2)),
+            (";batt:", fix_data_size(self.batt + ".0", 3, -1)),
+            (";ctrl:", self.ctrl),
+        ]
 
         packet = ""
         for (heading, value) in args:

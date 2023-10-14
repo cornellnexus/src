@@ -2,7 +2,7 @@ import serial
 import time
 import pynmea
 
-ser = serial.Serial('COM3', 115200)  # serial port
+ser = serial.Serial("COM3", 115200)  # serial port
 
 
 class Sensor_Data:
@@ -60,16 +60,16 @@ def parse_whole_reading(str):
     c_index = str.index("c")
     grouping = []
     print("here2")
-    grouping.append(str[a_x_index + 4:a_y_index - 1])
-    grouping.append(str[a_y_index + 4:a_z_index - 1])
-    grouping.append(str[a_z_index + 4:m_x_index - 1])
-    grouping.append(str[m_x_index + 4:m_y_index - 1])
-    grouping.append(str[m_y_index + 4:m_z_index - 1])
-    grouping.append(str[m_z_index + 4:g_x_index - 1])
-    grouping.append(str[g_x_index + 4:g_y_index - 1])
-    grouping.append(str[g_y_index + 4:g_z_index - 1])
-    grouping.append(str[g_z_index + 4:c_index - 1])
-    grouping.append(str[c_index + 2:])
+    grouping.append(str[a_x_index + 4 : a_y_index - 1])
+    grouping.append(str[a_y_index + 4 : a_z_index - 1])
+    grouping.append(str[a_z_index + 4 : m_x_index - 1])
+    grouping.append(str[m_x_index + 4 : m_y_index - 1])
+    grouping.append(str[m_y_index + 4 : m_z_index - 1])
+    grouping.append(str[m_z_index + 4 : g_x_index - 1])
+    grouping.append(str[g_x_index + 4 : g_y_index - 1])
+    grouping.append(str[g_y_index + 4 : g_z_index - 1])
+    grouping.append(str[g_z_index + 4 : c_index - 1])
+    grouping.append(str[c_index + 2 :])
 
     s.set_IMU_all(grouping)
     readings.append(s)
@@ -88,12 +88,12 @@ while True:
         print(readings)
         break
 
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout=5)
+ser = serial.Serial("/dev/ttyACM0", 9600, timeout=5)
 
 
 def raw_gps_update():
     line = ser.readline()
-    if line.find('GGA') > 0:
+    if line.find("GGA") > 0:
         msg = pynmea2.parse(line)
         return (msg.longitude, msg.latitude)
     return (-1, -1)

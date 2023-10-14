@@ -5,9 +5,9 @@ from engine.grid import Grid
 from engine.kinematics import get_vincenty_x, get_vincenty_y
 from engine.control_mode import ControlMode
 
-'''
+"""
 Visualization and unit tests for grid.py
-'''
+"""
 
 
 def graph_traversal_path(g, map_name, distance_type, mode=ControlMode.LAWNMOWER):
@@ -31,19 +31,19 @@ def graph_traversal_path(g, map_name, distance_type, mode=ControlMode.LAWNMOWER)
 
     # Plotting gps grid
     plot1 = plt.figure(1)
-    plt.plot(gps_xlist, gps_ylist, marker='o', markerfacecolor='blue')
-    plt.plot(gps_xlist[0], gps_ylist[0], marker='o', markerfacecolor='red')
+    plt.plot(gps_xlist, gps_ylist, marker="o", markerfacecolor="blue")
+    plt.plot(gps_xlist[0], gps_ylist[0], marker="o", markerfacecolor="red")
     plt.ylim(min(gps_ylist) - 0.000001, max(gps_ylist) + 0.000001)
     plt.xlim(min(gps_xlist) - 0.000001, max(gps_xlist) + 0.000001)
-    plt.title('Grid in GPS coordinates ' + '(' + distance_type + ')')
+    plt.title("Grid in GPS coordinates " + "(" + distance_type + ")")
 
     # Plotting meters grid
     plot2 = plt.figure(2)
-    plt.plot(m_xlist, m_ylist, marker='o', markerfacecolor='blue')
-    plt.plot(m_xlist[0], m_ylist[0], marker='o', markerfacecolor='red')
+    plt.plot(m_xlist, m_ylist, marker="o", markerfacecolor="blue")
+    plt.plot(m_xlist[0], m_ylist[0], marker="o", markerfacecolor="red")
     plt.ylim(min(m_ylist) - 1, max(m_ylist) + 1)
     plt.xlim(min(m_xlist) - 1, max(m_xlist) + 1)
-    plt.title(map_name + ' Grid in Meters ' + '(' + distance_type + ')')
+    plt.title(map_name + " Grid in Meters " + "(" + distance_type + ")")
 
     plt.show()
     plt.close()
@@ -64,6 +64,7 @@ class VisualizeGrid(unittest.TestCase):
         g = Grid(42.444250, 42.444599, -76.483682, -76.483276)
         pass  # passing only for github tests to not have graph pop-ups
         # graph_traversal_path(g, 'Engineering Quad', 'Vincenty', ControlMode.LAWNMOWER)
+
     #
 
     def test_paul_mansion(self):
@@ -90,11 +91,16 @@ class TestGrid(unittest.TestCase):
         self.assertEqual(count, g.get_num_cols() * 2,
                          'is_border_node flag is set correctly')
         border_waypoints = g.get_waypoints(ControlMode.LAWNMOWER_B)
-        border_node_count = (g.get_num_cols()*2)
+        border_node_count = g.get_num_cols() * 2
         self.assertEqual(len(border_waypoints), border_node_count)
 
     def test_node_boundaries(self):
-        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        lat_min, lat_max, long_min, long_max = (
+            42.444250,
+            42.444599,
+            -76.483682,
+            -76.483276,
+        )
         g = Grid(lat_min, lat_max, long_min, long_max)
         full_waypoints = g.get_waypoints(ControlMode.LAWNMOWER)
 
@@ -107,7 +113,12 @@ class TestGrid(unittest.TestCase):
             1], y_range, "The meters grid shouldn't be larger than the long bounds")
 
     def test_inside(self):
-        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        lat_min, lat_max, long_min, long_max = (
+            42.444250,
+            42.444599,
+            -76.483682,
+            -76.483276,
+        )
         g = Grid(lat_min, lat_max, long_min, long_max)
         self.assertTrue(g.is_inside_triangle((2, 2), (3, 3), (1, 3), (2,
                         2.5)), "this point is inside the triangle")
@@ -118,7 +129,12 @@ class TestGrid(unittest.TestCase):
 
     def test_is_on_border(self):
         count = 0
-        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        lat_min, lat_max, long_min, long_max = (
+            42.444250,
+            42.444599,
+            -76.483682,
+            -76.483276,
+        )
         g = Grid(lat_min, lat_max, long_min, long_max)
 
         g.activate_triangle((1, 1), (5, 5), (9, 1))
@@ -136,7 +152,12 @@ class TestGrid(unittest.TestCase):
         self.assertEqual(len(g.border_nodes), count)
 
     def test_ActivateRectangle(self):
-        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        lat_min, lat_max, long_min, long_max = (
+            42.444250,
+            42.444599,
+            -76.483682,
+            -76.483276,
+        )
         g = Grid(lat_min, lat_max, long_min, long_max)
 
         # Create the expected border to compare with the initializec border
@@ -171,7 +192,12 @@ class TestGrid(unittest.TestCase):
 
     def test_ActivateTriangle(self):
 
-        lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
+        lat_min, lat_max, long_min, long_max = (
+            42.444250,
+            42.444599,
+            -76.483682,
+            -76.483276,
+        )
         g = Grid(lat_min, lat_max, long_min, long_max)
 
         # Create the expected border to compare with the initializec border
