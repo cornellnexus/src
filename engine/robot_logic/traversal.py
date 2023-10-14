@@ -61,6 +61,7 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
         can be from a node for the robot to have "visited" that node
         database: 
     """
+    import matplotlib.pyplot as plt
     predicted_state = robot_state.state  # this will come from Kalman Filter
 
     # location error (in meters)
@@ -72,7 +73,6 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
     simulate = False
     if simulate:
         iterations = 0
-    import matplotlib.pyplot as plt
     while (distance_away > allowed_dist_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
         # Error in terms of latitude and longitude, NOT meters
         x_coords_error = target[0] - robot_state.state[0]
