@@ -22,10 +22,10 @@ def traversal_logic(robot_state, mission_state, database):
                                  mission_state.allowed_dist_error, database)
     elif control_mode == ControlMode.ROOMBA:
         robot_state.enable_obstacle_avoidance = False
-        traverse_roomba(robot_state, mission_state.base_station.position,
-                        mission_state.time_limit, mission_state.roomba_radius, database)
+        robot_state = traverse_roomba(robot_state, mission_state.base_station.position,
+                                      mission_state.time_limit, mission_state.roomba_radius, database)
         robot_state.enable_obstacle_avoidance = True
-        return None
+        return robot_state, None
 
 
 def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, database):
@@ -186,7 +186,6 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
     # can we guarantee that when giving a velocity that the robot will move at that velocity?
     dt = 10
     accumulated_time = 0
-    robot_state.turn_angle = 5*math.pi/7
     # TODO: battery_limit, time_limit, tank_capacity is full
     exit_boolean = False
     if not robot_state.is_sim:
@@ -214,11 +213,11 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
             is_next_timestep_blocked = front_ultrasonic.distance(
             ) < robot_state.detect_obstacle_range
         else:
-            [new_x_2, new_y_2] = [curr_pos[0] + robot_state.move_dist * math.cos(curr_pos[2]),
-                                  curr_pos[1] + robot_state.move_dist * math.sin(curr_pos[2])]
             next_radius_2 = calculate_dist(
-                base_station_loc, (new_x_2, new_y_2))
-            is_next_timestep_blocked = next_radius_2 > roomba_radius
+                base_station_loc, curr_pos[:2])
+            threshold = 1
+            is_next_timestep_blocked = abs(
+                next_radius_2 - roomba_radius) < threshold
         # sensor should not detect something in the robot
         if (next_radius > roomba_radius) or is_next_timestep_blocked:
             # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
@@ -229,7 +228,6 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
                                 allowed_dist_error, database)
             turn_to_target_heading(
                 robot_state, curr_pos[2] + robot_state.turn_angle, allowed_heading_error, database)
-            travel(robot_state, 0, robot_state.turn_angle)
         else:
             travel(robot_state, robot_state.move_dist, 0)
             database.update_data(
@@ -238,7 +236,7 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
                 # TODO: determine what vel to run this at
                 robot_state.motor_controller.motors(0, 0)
         if not robot_state.is_sim:
-            time.sleep(10)
+            time.sleep(dt)
         accumulated_time += dt  # accumulation in time in ms
         exit_boolean = (accumulated_time > time_limit)
         past_pos = curr_pos
@@ -246,7 +244,7 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
     phase_change(robot_state)
     if not robot_state.is_sim:
         robot_state.motor_controller.spin_motors(0, 0)
-    return None
+    return robot_state
 
 
 # JULIE NOTE: I DONT THINK THIS FUNCTION WILL WORK. WE CAN'T TURN IN PLACE.

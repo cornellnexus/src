@@ -24,10 +24,8 @@ class Mission:
             elif phase == Phase.TRAVERSE:
                 # TODO: clean up parameters for this function
                 # allowed_dist_error, roomba_radius, and time_limit should be constants?
-                res = self.mission_state.robot.execute_traversal(
+                self.mission_state.robot.robot_state, self.mission_state.waypoints_to_visit = self.mission_state.robot.execute_traversal(
                     self.mission_state, database)
-                if res is not None:
-                    self.mission_state.robot.robot_state, self.mission_state.waypoints_to_visit = res
             elif phase == Phase.AVOID_OBSTACLE:
                 self.mission_state.robot.execute_avoid_obstacle(
                     self.mission_state.robot.robot_state, database)
