@@ -6,6 +6,7 @@ import numpy as np
 import math
 
 from engine.kinematics import get_vincenty_x, get_vincenty_y
+from electrical import breakbeam
 
 
 class SensorModule:
@@ -22,8 +23,10 @@ class SensorModule:
         self.imu_dict = {"mag": {"x": 0, "y": 0}}
         self.created = datetime.now().strftime("%d-%m-%Y_%H_%M_%S")
         self.write_data = write
-
         self.gps_dict = {"lon": 0, "lat": 0}
+
+        #Initialize breakbeam sensors
+        self.breakbeam = breakbeam()
 
     def update_imu_data(self):
         """

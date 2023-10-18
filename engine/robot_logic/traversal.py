@@ -7,6 +7,7 @@ from constants.definitions import *
 from engine.kinematics import *
 from engine.robot_logic.robot_helpers import phase_change, calculate_dist
 from csv_files.csv_util import write_state_to_csv
+from electrical import breakbeam
 
 def traversal_logic(robot_state, mission_state, database):
         """
@@ -35,14 +36,15 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
         Returns:
             unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
     """
-    while unvisited_waypoints:
-        curr_waypoint = unvisited_waypoints[0].get_m_coords()
-        # TODO: add obstacle avoidance support
-        # TODO: add return when tank is full, etc
-        # Removed function move to target heading since it doesn't really make sense
-        robot_state.goal_location = curr_waypoint
-        move_to_target_node(robot_state, curr_waypoint, allowed_dist_error, database)
-        unvisited_waypoints.popleft()
+    while robot_state.breakbeam.checkfull() != 4: 
+        while unvisited_waypoints:
+            curr_waypoint = unvisited_waypoints[0].get_m_coords()
+            # TODO: add obstacle avoidance support
+            # TODO: add return when tank is full, etc
+            # Removed function move to target heading since it doesn't really make sense
+            robot_state.goal_location = curr_waypoint
+            move_to_target_node(robot_state, curr_waypoint, allowed_dist_error, database)
+            unvisited_waypoints.popleft()
         
     robot_state.phase = Phase.RETURN
     phase_change(robot_state)

@@ -3,7 +3,7 @@ import numpy as np
 from engine.phase import Phase
 from engine.control_mode import ControlMode
 from engine.is_raspberrypi import is_raspberrypi
-from engine.pid_controller import PID   
+from engine.pid_controller import PID
 
 
 class Robot_State:
@@ -174,6 +174,7 @@ class Robot_State:
         self.gps = kwargs.get("gps", None)
         self.imu = kwargs.get("imu", None)
         self.ekf = kwargs.get("ekf", None)
+        self.breakbeam = kwargs.get("breakbeam", None)
 
         self.front_ultrasonic = kwargs.get("front_ultrasonic", None)
         self.lf_ultrasonic = kwargs.get("lf_ultrasonic",None )
