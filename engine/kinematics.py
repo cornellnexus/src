@@ -21,8 +21,8 @@ def robot_to_global(pose, x_robot, y_robot):
     px = pose[0]
     py = pose[1]
     theta = pose[2]
-    Tgr = np.array([[math.cos(theta), -1 * math.sin(theta), px], \
-                    [math.sin(theta), math.cos(theta), py], \
+    Tgr = np.array([[math.cos(theta), -1 * math.sin(theta), px],
+                    [math.sin(theta), math.cos(theta), py],
                     [0, 0, 1]])
     # DEBUG UPDATE: added [1] to array in order to make it 3x3 times 3x1 rather than 2x1
     # rounding x,y coordinates to make it testable (ex: 4.000000001 --> 4); noise?
@@ -34,7 +34,7 @@ def robot_to_global(pose, x_robot, y_robot):
 def global_to_robot(pose, x_global, y_global):
     """
     Transforms xy_global into robot coordinates. Outputs a [2x1] np array. 
-    
+
     Inputs: 
         pose: robot's current pose (global) [3x1]
         x_global: x coordinate in global frame 
@@ -45,8 +45,8 @@ def global_to_robot(pose, x_global, y_global):
     px = pose[0]
     py = pose[1]
     theta = pose[2]
-    Tgr = np.array([[math.cos(theta), -1 * math.sin(theta), px], \
-                    [math.sin(theta), math.cos(theta), py], \
+    Tgr = np.array([[math.cos(theta), -1 * math.sin(theta), px],
+                    [math.sin(theta), math.cos(theta), py],
                     [0, 0, 1]])
     Trg = np.linalg.inv(Tgr)
     # DEBUG UPDATE: Adjusting parameters to be consistent with first funtion
@@ -66,7 +66,8 @@ def feedback_lin(curr_pose, vx_global, vy_global, epsilon):
     """
     theta = float(curr_pose[2])
     v = vx_global * math.cos(theta) + vy_global * math.sin(theta)
-    w = (-1 / epsilon) * vx_global * math.sin(theta) + (1 / epsilon) * vy_global * math.cos(theta)
+    w = (-1 / epsilon) * vx_global * math.sin(theta) + \
+        (1 / epsilon) * vy_global * math.cos(theta)
     return (v, w)
 
 
@@ -114,10 +115,11 @@ def integrate_odom(pose, d, phi):
         new_y = pose[1] + d * math.sin(pose[2])
         new_theta = pose[2]
     else:
-        new_x = pose[0] + (d / phi) * (math.sin(pose[2] + phi) - math.sin(pose[2]))
-        new_y = pose[1] + (d / phi) * (-math.cos(pose[2] + phi) + math.cos(pose[2]))
-        new_theta = (pose[2] + phi) % (2 * math.pi)
-        # new_theta = (pose[2] + phi)
+        new_x = pose[0] + (d / phi) * \
+            (math.sin(pose[2] + phi) - math.sin(pose[2]))
+        new_y = pose[1] + (d / phi) * \
+            (-math.cos(pose[2] + phi) + math.cos(pose[2]))
+        new_theta = (pose[2] + phi + math.pi) % (2 * math.pi) - math.pi
     return np.array([[float(new_x)], [float(new_y)], [float(new_theta)]])
 
 
@@ -127,7 +129,8 @@ def meters_to_gps(lat, long, dy, dx):
     dx meters horizontally (E-W) and dy meters vertically. [N-S]
     """
     new_lat = lat + ((dy / EARTH_RADIUS) * (180 / math.pi)) / 1000
-    new_long = long + ((dx / EARTH_RADIUS) * (180 / math.pi) / math.cos(lat * math.pi / 180))
+    new_long = long + ((dx / EARTH_RADIUS) *
+                       (180 / math.pi) / math.cos(lat * math.pi / 180))
     return new_lat, new_long
 
 
@@ -143,7 +146,8 @@ def meters_to_long(m, latitude):
     """
     Returns an approximation of m meters in units of longitude.
     """
-    long = ((m / EARTH_RADIUS) * (180 / math.pi) / math.cos(latitude * math.pi / 180))
+    long = ((m / EARTH_RADIUS) * (180 / math.pi) /
+            math.cos(latitude * math.pi / 180))
     return long
 
 
