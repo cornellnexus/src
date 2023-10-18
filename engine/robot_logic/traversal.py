@@ -60,6 +60,7 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
         can be from a node for the robot to have "visited" that node
         database: 
     """
+    import matplotlib.pyplot as plt
     predicted_state = robot_state.state  # this will come from Kalman Filter
 
     # location error (in meters)
@@ -67,10 +68,20 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
     robot_state.goal_location = target
     robot_state.loc_pid_x.reset_integral()
     robot_state.loc_pid_y.reset_integral()
+    using_heading_pid = True
+    simulate = False
+    if simulate:
+        iterations = 0
     while (distance_away > allowed_dist_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
         # Error in terms of latitude and longitude, NOT meters
         x_coords_error = target[0] - robot_state.state[0]
         y_coords_error = target[1] - robot_state.state[1]
+        if simulate:
+            iterations += 1
+            if iterations == 50:
+                break
+        desired_angle = math.atan2(
+            target[1] - robot_state.state[1], target[0] - robot_state.state[0])
 
         desired_angle = math.atan2(
             target[1] - robot_state.state[1], target[0] - robot_state.state[0])
@@ -81,9 +92,10 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
         cmd_v, cmd_w = feedback_lin(
             predicted_state, x_vel, y_vel, robot_state.epsilon)
 
-        turn_to_target_heading(robot_state, desired_angle, 0.01, database)
-        cmd_v = np.array([math.sqrt(x_vel**2 + y_vel**2)])
-        cmd_w = np.array([0])
+        if using_heading_pid:
+            turn_to_target_heading(robot_state, desired_angle, 0.01, database)
+            cmd_v = np.array([math.sqrt(x_vel**2 + y_vel**2)])
+            cmd_w = np.array([0])
 
         # clamping of velocities:
         (limited_cmd_v, limited_cmd_w) = limit_cmds(
@@ -116,8 +128,19 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
 
         # location error (in meters)
         distance_away = calculate_dist(target, predicted_state)
+        if simulate:
+            x = robot_state.truthpose[:, 0]
+            y = robot_state.truthpose[:, 1]
+            plt.scatter(target[0], target[1])
+            plt.text(target[0], target[1], "target")
     if not robot_state.is_sim:
         robot_state.motor_controller.spin_motors(0, 0)
+    if simulate:
+        for index in range(iterations):
+            plt.scatter(
+                robot_state.truthpose[:, 0], robot_state.truthpose[:, 1])
+            plt.text(x[index], y[index], index)
+        plt.show()
 
 
 def travel(robot_state, delta_d, delta_phi):
@@ -256,7 +279,8 @@ def turn_to_target_heading(robot_state, target_heading, allowed_heading_error, d
         allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
             place.
     """
-    robot_state.enable_obstacle_avoidance = False  # we dont want the robot to avoid obstacle here
+    # we dont want the robot to avoid obstacle here
+    robot_state.enable_obstacle_avoidance = False
     predicted_state = robot_state.state  # this will come from Kalman Filter
 
     abs_heading_error = abs(target_heading - float(predicted_state[2]))
