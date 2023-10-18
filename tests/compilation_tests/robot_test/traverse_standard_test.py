@@ -95,18 +95,10 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         grid_mode = ControlMode.LAWNMOWER_B
         all_waypoints = grid.get_waypoints(grid_mode)
         waypoints_to_visit = deque(all_waypoints)
-
-
-<< << << < HEAD
-   r2d2_state, unvisited_waypoints = traverse_standard(
-        r2d2_state, waypoints_to_visit, allowed_dist_error, database)
-    self.assertEqual(deque([]), unvisited_waypoints)
-== == == =
-   while waypoints_to_visit:
-        r2d2_state, waypoints_to_visit = traverse_standard(
-            r2d2_state, waypoints_to_visit, allowed_dist_error, database)
-    self.assertEqual(deque([]), waypoints_to_visit)
->>>>>> > main
+        while waypoints_to_visit:
+                r2d2_state, waypoints_to_visit = traverse_standard(
+                    r2d2_state, waypoints_to_visit, allowed_dist_error, database)
+        self.assertEqual(deque([]), waypoints_to_visit)
 
    def test_different_heading(self):
         r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi,
