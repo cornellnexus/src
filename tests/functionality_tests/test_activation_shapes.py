@@ -77,7 +77,7 @@ def main():
     if activation_type == "line":
         row = 0  # rows are y position
         col = cols // 2  # cols are x position
-        grid.activate_line(row, col, n=cols//2, is_horizontal=False)
+        grid.activate_line((row, col), n=cols//2, is_horizontal=False)
         grid.find_border_nodes()
         way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(
             is_vertical)

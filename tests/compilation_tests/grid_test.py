@@ -88,7 +88,7 @@ class TestGrid(unittest.TestCase):
         self.assertNotEqual(count, g.get_num_rows(
         ) * g.get_num_cols(), 'is_border_node flag is set correctly')
         self.assertEqual(count, g.get_num_cols() * 2,
-                            'is_border_node flag is set correctly')
+                         'is_border_node flag is set correctly')
         border_waypoints = g.get_waypoints(ControlMode.LAWNMOWER_B)
         border_node_count = (g.get_num_cols()*2)
         self.assertEqual(len(border_waypoints), border_node_count)
@@ -102,9 +102,9 @@ class TestGrid(unittest.TestCase):
         x_range = get_vincenty_x((lat_min, long_min), (lat_max, long_max))
         top_right_node = g.nodes[g.get_num_rows()-1][g.get_num_cols()-1]
         self.assertLessEqual(top_right_node.get_m_coords()[
-                                0], x_range, "The meters grid shouldn't be larger than the lat bounds")
+            0], x_range, "The meters grid shouldn't be larger than the lat bounds")
         self.assertLessEqual(top_right_node.get_m_coords()[
-                                1], y_range, "The meters grid shouldn't be larger than the long bounds")
+            1], y_range, "The meters grid shouldn't be larger than the long bounds")
 
     def test_inside(self):
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
@@ -112,7 +112,7 @@ class TestGrid(unittest.TestCase):
         self.assertTrue(g.is_inside_triangle((2, 2), (3, 3), (1, 3), (2,
                         2.5)), "this point is inside the triangle")
         self.assertFalse(g.is_inside_triangle((2, 2), (3, 3), (1, 3),
-                            (10, 10)), "this point is outside the triangle")
+                                              (10, 10)), "this point is outside the triangle")
         self.assertTrue(g.is_inside_triangle((2, 2), (3, 3), (1, 3), (2,
                         2)), "this point is inside the triangle")
 
@@ -130,7 +130,7 @@ class TestGrid(unittest.TestCase):
         for row in range(rows):
             for col in range(cols):
                 node = g.nodes[row][col]
-                if node.is_active_node() and g.is_on_border(row, col, rows-1, cols-1):
+                if node.is_active_node() and g.is_on_border((row, col), rows-1, cols-1):
                     count += 1
 
         self.assertEqual(len(g.border_nodes), count)
@@ -138,73 +138,75 @@ class TestGrid(unittest.TestCase):
     def test_ActivateRectangle(self):
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
         g = Grid(lat_min, lat_max, long_min, long_max)
-        
-        #Create the expected border to compare with the initializec border
+
+        # Create the expected border to compare with the initializec border
         my_border = []
         my_border += list(g.nodes[0][1:-1])
         my_border += list(g.nodes[38][1:-1])
-        #39 rows and 34 collumns based on the conversion between longitude/latitude 
-        my_border += list(g.nodes[: , 0])
-        my_border += list(g.nodes[: , 33])
-        
+        # 39 rows and 34 collumns based on the conversion between longitude/latitude
+        my_border += list(g.nodes[:, 0])
+        my_border += list(g.nodes[:, 33])
+
         rows = g.nodes.shape[0]
         cols = g.nodes.shape[1]
 
         g.activate_rectangle(0, 0, rows, cols)
         g.find_border_nodes()
 
-        #Uncomment to plot borders and compare
+        # Uncomment to plot borders and compare
 
         # for node in my_border:
         #     plt.plot(node.x, node.y, marker = '.')
 
         # for node in g.border_nodes:
         #     plt.plot(node[1], node[2], marker = '.')
-        
-        #plt.show()
-        
-        list_bordernodes = set([(node[0].x,node[0].y) for node in g.border_nodes])
-        my_border = set([(node.x,node.y) for node in my_border])
+
+        # plt.show()
+
+        list_bordernodes = set([(node[0].x, node[0].y)
+                               for node in g.border_nodes])
+        my_border = set([(node.x, node.y) for node in my_border])
 
         self.assertEqual(my_border, list_bordernodes)
-
 
     def test_ActivateTriangle(self):
 
         lat_min, lat_max, long_min, long_max = 42.444250, 42.444599, -76.483682, -76.483276
         g = Grid(lat_min, lat_max, long_min, long_max)
-        
-        #Create the expected border to compare with the initializec border
+
+        # Create the expected border to compare with the initializec border
         my_border = []
         my_border += list(np.diagonal(g.nodes[:17]))
         my_border += list(g.nodes[0][:-1])
         for x in range(16, 33):
-            for y in range(16,0,-1):
+            for y in range(16, 0, -1):
                 if (y == -x + 32):
                     my_border.append(g.nodes[y, x])
-        #Based on longitude/lattitude conversions, determine that the 16th node is the midpoint
-        
-        g.activate_triangle([0,0], [16,16], [32,0])  
-        g.find_border_nodes() 
+        # Based on longitude/lattitude conversions, determine that the 16th node is the midpoint
 
-        #Uncomment to plot borders and compare
+        g.activate_triangle([0, 0], [16, 16], [32, 0])
+        g.find_border_nodes()
+
+        # Uncomment to plot borders and compare
 
         # for node in my_border:
         #     plt.plot(node.x, node.y, marker = '.')
 
         # for node in g.border_nodes:
         #     plt.plot(node[1], node[2], marker = '.')
-        
-        #plt.show()
-        
+
+        # plt.show()
+
         for node in my_border:
             node.x = round(node.x)
-            node.y = round(node.y)   
+            node.y = round(node.y)
 
-        list_bordernodes = set([(round(node[1]),round(node[2])) for node in g.border_nodes])
-        my_border = set([(node.x,node.y) for node in my_border])
+        list_bordernodes = set([(round(node[1]), round(node[2]))
+                               for node in g.border_nodes])
+        my_border = set([(node.x, node.y) for node in my_border])
 
         self.assertTrue(my_border.issubset(list_bordernodes))
+
 
 if __name__ == '__main__':
     unittest.main()
