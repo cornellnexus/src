@@ -17,7 +17,7 @@ corrected_accel_lst = []
 def accel_cal_aux():
     """
     Returns tuple containing (aoffset, scale_ax, scale_ay, scale_az)
-    Helper function for [accel_cal] in getting the IMU accelerometer's raw data values in 
+    Helper function for [accel_cal] in getting the IMU accelerometer's raw data values in
     x, y, and z directions, as well as determining the offset error for the accelerometer.
 
     Parameters: None.
@@ -31,29 +31,30 @@ def accel_cal_aux():
 
     time.sleep(3)
 
-    running_amin = tuple(map(lambda x, y: min(x,y), accel_tuple))
-    running_amax = tuple(map(lambda x, y: max(x,y), accel_tuple))
+    running_amin = tuple(map(lambda x, y: min(x, y), accel_tuple))
+    running_amax = tuple(map(lambda x, y: max(x, y), accel_tuple))
 
     t_end = time.time() + 60
     while time.time() < t_end:
         accel_x, accel_y, accel_z = sensor.acceleration
         accel_tuple = (accel_x, accel_y, accel_z)
-        running_amin = tuple(map(lambda x, y: min(x,y), running_amin, accel_tuple))
-        running_amax = tuple(map(lambda x, y: max(x,y), running_amax, accel_tuple))
+        running_amin = tuple(map(lambda x, y: min(x, y), running_amin, accel_tuple))
+        running_amax = tuple(map(lambda x, y: max(x, y), running_amax, accel_tuple))
 
-    aoffset = tuple(map(lambda x1, x2: (x1+x2) / 2., running_amin, running_amax))
-    avg_adelta = tuple(map(lambda x1, x2: (x2-x1)/2., running_amin, running_amax))
-    combined_avg_adelta = (avg_adelta[0] + avg_adelta[1] + avg_adelta[2])/3.
+    aoffset = tuple(map(lambda x1, x2: (x1 + x2) / 2.0, running_amin, running_amax))
+    avg_adelta = tuple(map(lambda x1, x2: (x2 - x1) / 2.0, running_amin, running_amax))
+    combined_avg_adelta = (avg_adelta[0] + avg_adelta[1] + avg_adelta[2]) / 3.0
     scale_ax = combined_avg_adelta / avg_adelta[0]
     scale_ay = combined_avg_adelta / avg_adelta[1]
     scale_az = combined_avg_adelta / avg_adelta[2]
 
     return (aoffset, scale_ax, scale_ay, scale_az)
 
+
 def accel_cal():
     """
     Returns tuple containing (corrected_ax, corrected_ay, corrected_az)
-    This functions purpose is to adjust the acceleration in the x, y, and z directions 
+    This functions purpose is to adjust the acceleration in the x, y, and z directions
     using the IMU error offset calculated using [accel_cal_aux()]
 
     Parameters: None.
@@ -79,12 +80,12 @@ def accel_cal():
 
     return corrected_accel
 
+
 def main():
     sensor_ax, sensor_ay, sensor_az = sensor.acceleration
     print("sensor_acc: " + str((sensor_ax, sensor_ay, sensor_az)))
 
-    while (len(corrected_accel_lst) < 10):
+    while len(corrected_accel_lst) < 10:
         updated_accel = accel_cal()
         corrected_accel_lst.append(updated_accel)
     print(corrected_accel_lst)
-

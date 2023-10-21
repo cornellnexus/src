@@ -8,7 +8,6 @@
 #     logging.info("Thread %s: finishing", name)
 
 
-
 # if __name__ == "__main__":
 #     format = "%(asctime)s: %(message)s"
 #     logging.basicConfig(format=format, level=logging.INFO,
@@ -22,6 +21,5 @@
 
 #     logging.info("Main    : wait for the thread to finish")
 #     # x.join()
-    
-#     logging.info("Main    : all done")
 
+#     logging.info("Main    : all done")

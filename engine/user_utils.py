@@ -10,13 +10,15 @@ def get_coord_inputs():
         lat_min = float(input("Enter minimum latitude: "))
         lat_max = float(input("Enter maximum latitude: "))
         if lat_max <= lat_min:
-            raise Exception("The maximum latitude must be larger"
-                            " than the minimum latitude")
+            raise Exception(
+                "The maximum latitude must be larger" " than the minimum latitude"
+            )
         long_min = float(input("Enter minimum longitude: "))
         long_max = float(input("Enter maximum longitude: "))
         if long_max <= long_min:
-            raise Exception("The maximum longitude must be larger"
-                            " than the minimum longitude")
+            raise Exception(
+                "The maximum longitude must be larger" " than the minimum longitude"
+            )
 
         return (lat_min, lat_max, long_min, long_max)
     except ValueError:
@@ -29,7 +31,7 @@ Precondition: User must input 'y' or 'n'
 """
 # def get_display_gui():
 #     try:
-#         display_gui = input("Do you want to display a GUI of the" 
+#         display_gui = input("Do you want to display a GUI of the"
 #                     "traversal in real-time? Type y for yes and n for no. \n")
 #         if display_gui == "y":
 #             return True

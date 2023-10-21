@@ -67,54 +67,54 @@ Wiring Description (Should not change):
                           |___________________|
   
 """
+
+
 class Ultrasonic:
-    
     i2c = busio.I2C(board.SCL, board.SDA)
     mcp = MCP23008(i2c)
-    
+
     def __init__(self, sensor):
         self.sensor = sensor
-        #pin outs for the four ultrasonic sensors
-        if (self.sensor == 0):
-          self.trigger = self.mcp.get_pin(0)
-          self.echo= self.mcp.get_pin(1)
-        if (self.sensor == 1):
-          self.trigger = self.mcp.get_pin(2)
-          self.echo= self.mcp.get_pin(3)
-        if (self.sensor == 2):
-          self.trigger = self.mcp.get_pin(4)
-          self.echo= self.mcp.get_pin(5)
-        if (self.sensor == 3):
-          self.trigger = self.mcp.get_pin(6)
-          self.echo= self.mcp.get_pin(7)
+        # pin outs for the four ultrasonic sensors
+        if self.sensor == 0:
+            self.trigger = self.mcp.get_pin(0)
+            self.echo = self.mcp.get_pin(1)
+        if self.sensor == 1:
+            self.trigger = self.mcp.get_pin(2)
+            self.echo = self.mcp.get_pin(3)
+        if self.sensor == 2:
+            self.trigger = self.mcp.get_pin(4)
+            self.echo = self.mcp.get_pin(5)
+        if self.sensor == 3:
+            self.trigger = self.mcp.get_pin(6)
+            self.echo = self.mcp.get_pin(7)
         self.echo.direction = digitalio.Direction.INPUT
         self.trigger.direction = digitalio.Direction.OUTPUT
-        
+
     def distance(self):
         # set Trigger to HIGH
         self.trigger.value = True
-     
+
         # set Trigger after 0.01ms to LOW
         time.sleep(0.00001)
         self.trigger.value = False
-     
+
         StartTime = time.time()
         StopTime = time.time()
-     
+
         # save StartTime
         while self.echo.value == False:
             StartTime = time.time()
         # save time of arrival
         while self.echo.value == True:
             StopTime = time.time()
-     
+
         # time difference between start and arrival
         TimeElapsed = StopTime - StartTime
         # multiply with the sonic speed (34300 cm/s)
         # and divide by 2, because there and back
         distance = (TimeElapsed * 34300) / 2
         return distance
-
 
 
 """
@@ -144,43 +144,43 @@ Wiring Description:
   pin on the RPI. The 5V pin should go to 5V, and the GND pin to GND  
 """
 
+
 class UltrasonicRPI:
+    def __init__(self, echo, trig):
+        self.echo = echo
+        self.trig = trig
 
-  def __init__(self, echo, trig):
-    self.echo = echo
-    self.trig = trig
+        # GPIO Mode (BCM)
+        GPIO.setmode(GPIO.BCM)
 
-    #GPIO Mode (BCM)
-    GPIO.setmode(GPIO.BCM)
-  
-    #set GPIO direction (IN / OUT)
-    GPIO.setup(self.trig, GPIO.OUT)
-    GPIO.setup(self.echo, GPIO.IN)
-  
-  # Returns the distance from and object in cm (range is 20-600)
-  def distance(self):
-      # set Trigger to HIGH
-      GPIO.output(self.trig, True)
-  
-      # set Trigger after 0.01ms to LOW
-      time.sleep(0.00001)
-      GPIO.output(self.trig, False)
-  
-      StartTime = time.time()
-      StopTime = time.time()
-  
-      # save StartTime
-      while GPIO.input(self.echo) == 0:
-          StartTime = time.time()
-  
-      # save time of arrival
-      while GPIO.input(self.echo) == 1:
-          StopTime = time.time()
-  
-      # time difference between start and arrival
-      TimeElapsed = StopTime - StartTime
-      # multiply with the sonic speed (34300 cm/s)
-      # and divide by 2, because there and back
-      distance = (TimeElapsed * 34300) / 2
-  
-      return distance
+        # set GPIO direction (IN / OUT)
+        GPIO.setup(self.trig, GPIO.OUT)
+        GPIO.setup(self.echo, GPIO.IN)
+
+    # Returns the distance from and object in cm (range is 20-600)
+    def distance(self):
+        # set Trigger to HIGH
+        GPIO.output(self.trig, True)
+
+        # set Trigger after 0.01ms to LOW
+        time.sleep(0.00001)
+        GPIO.output(self.trig, False)
+
+        StartTime = time.time()
+        StopTime = time.time()
+
+        # save StartTime
+        while GPIO.input(self.echo) == 0:
+            StartTime = time.time()
+
+        # save time of arrival
+        while GPIO.input(self.echo) == 1:
+            StopTime = time.time()
+
+        # time difference between start and arrival
+        TimeElapsed = StopTime - StartTime
+        # multiply with the sonic speed (34300 cm/s)
+        # and divide by 2, because there and back
+        distance = (TimeElapsed * 34300) / 2
+
+        return distance
