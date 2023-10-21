@@ -1,9 +1,11 @@
 from enum import Enum
 
+
 class Phase(Enum):
     """
     An enumeration of different robot phases.
     """
+
     SETUP = 1
     TRAVERSE = 2
     AVOID_OBSTACLE = 3

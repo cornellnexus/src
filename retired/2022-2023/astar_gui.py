@@ -2,16 +2,16 @@ import pygame
 import math
 from queue import PriorityQueue
 
-'''
+"""
 Create window using pygame GUI library
-'''
+"""
 WIDTH = 600
 WINDOW = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("A* Pathfinding Algorithm")
 
-'''
+"""
 Colors defined by their RGB values
-'''
+"""
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 255, 0)
@@ -23,9 +23,9 @@ ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
 
-'''
+"""
 Calculate the distance between two Euclidean points
-'''
+"""
 
 
 def heuristic(p1, p2):
@@ -34,9 +34,9 @@ def heuristic(p1, p2):
     return abs(x1 - x2) + abs(y1 - y2)
 
 
-'''
+"""
 Draws a path from the current node
-'''
+"""
 
 
 def reconstruct_path(came_from, current, draw):
@@ -46,9 +46,9 @@ def reconstruct_path(came_from, current, draw):
         draw()
 
 
-'''
+"""
 Implementation of the a* algorithm
-'''
+"""
 
 
 def algorithm(draw, grid, start, end):
@@ -85,8 +85,9 @@ def algorithm(draw, grid, start, end):
             if temp_g_score < g_score[neighbor]:
                 came_from[neighbor] = current
                 g_score[neighbor] = temp_g_score
-                f_score[neighbor] = temp_g_score + \
-                                    heuristic(neighbor.get_pos(), end.get_pos())
+                f_score[neighbor] = temp_g_score + heuristic(
+                    neighbor.get_pos(), end.get_pos()
+                )
                 if neighbor not in open_set_hash:
                     count += 1
                     open_set.put((f_score[neighbor], count, neighbor))
@@ -100,10 +101,10 @@ def algorithm(draw, grid, start, end):
     return False
 
 
-'''
+"""
 A Node is a cell which composes part of the graph that our robot is localized
 in.
-'''
+"""
 
 
 class Node:
@@ -157,20 +158,25 @@ class Node:
         self.color = PURPLE
 
     def draw(self, win):
-        pygame.draw.rect(
-            win, self.color, (self.x, self.y, self.width, self.width))
+        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
 
     def update_neighbors(self, grid):
         self.neighbors = []
         # DOWN
-        if self.row < self.total_rows - 1 and not grid[self.row + 1][self.col].is_barrier():
+        if (
+            self.row < self.total_rows - 1
+            and not grid[self.row + 1][self.col].is_barrier()
+        ):
             self.neighbors.append(grid[self.row + 1][self.col])
 
         # UP
         if self.row > 0 and not grid[self.row - 1][self.col].is_barrier():
             self.neighbors.append(grid[self.row - 1][self.col])
         # RIGHT
-        if self.col < self.total_rows - 1 and not grid[self.row][self.col + 1].is_barrier():
+        if (
+            self.col < self.total_rows - 1
+            and not grid[self.row][self.col + 1].is_barrier()
+        ):
             self.neighbors.append(grid[self.row][self.col + 1])
         # LEFT
         if self.col > 0 and not grid[self.row][self.col - 1].is_barrier():
@@ -263,8 +269,7 @@ def main(win, width):
                     for row in grid:
                         for node in row:
                             node.update_neighbors(grid)
-                    algorithm(lambda: draw(win, grid, ROWS, width),
-                              grid, start, end)
+                    algorithm(lambda: draw(win, grid, ROWS, width), grid, start, end)
 
                 if event.key == pygame.K_c:
                     start = None

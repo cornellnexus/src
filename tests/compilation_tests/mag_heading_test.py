@@ -1,4 +1,4 @@
-#import wmm2020
+# import wmm2020
 import csv
 import math
 import numpy as np
@@ -9,11 +9,11 @@ import os
 from constants.definitions import CSV_PATH
 
 
-with open(CSV_PATH + '/imu_360_sample1.csv') as csv_file:
+with open(CSV_PATH + "/imu_360_sample1.csv") as csv_file:
     reader = csv.reader(csv_file)
     row_count = sum(1 for row in reader)
 
-with open(CSV_PATH + '/imu_360_sample1.csv') as csv_file:
+with open(CSV_PATH + "/imu_360_sample1.csv") as csv_file:
     reader = csv.reader(csv_file)
     acc_data = np.zeros((row_count, 3))
     mag_data = np.zeros((row_count, 3))
@@ -51,8 +51,12 @@ ekf = EKF(gyr=gyr_data, acc=acc_data, mag=mag_data)
 height = np.shape(ekf.R)[0]
 for i in range(height):
     top = 2.0 * (ekf.R[i, 2] * ekf.R[i, 3] + ekf.R[i, 0] * ekf.R[i, 1])
-    bottom = ekf.R[i, 0] * ekf.R[i, 0] - ekf.R[i, 1] * ekf.R[i, 1] - ekf.R[i, 2] * ekf.R[i, 2] + ekf.R[i, 3] * ekf.R[
-        i, 3]
+    bottom = (
+        ekf.R[i, 0] * ekf.R[i, 0]
+        - ekf.R[i, 1] * ekf.R[i, 1]
+        - ekf.R[i, 2] * ekf.R[i, 2]
+        + ekf.R[i, 3] * ekf.R[i, 3]
+    )
 
     heading = np.degrees(math.atan2(top, bottom))
 

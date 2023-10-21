@@ -5,7 +5,6 @@ import time
 sm = SensorModule(write=False)
 
 while True:
-
     sm.update_gps_data()
     time.sleep(1)
 

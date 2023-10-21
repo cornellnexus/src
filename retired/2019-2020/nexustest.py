@@ -13,7 +13,7 @@
 import serial
 import time
 
-ser = serial.Serial('COM3', 115200)  # serial port
+ser = serial.Serial("COM3", 115200)  # serial port
 
 
 class Sensor_Data:
@@ -78,16 +78,16 @@ def parse_whole_reading(str):
     c_index = str.index("c")
     grouping = []
     print("here2")
-    grouping.append(str[a_x_index + 4:a_y_index - 1])
-    grouping.append(str[a_y_index + 4:a_z_index - 1])
-    grouping.append(str[a_z_index + 4:m_x_index - 1])
-    grouping.append(str[m_x_index + 4:m_y_index - 1])
-    grouping.append(str[m_y_index + 4:m_z_index - 1])
-    grouping.append(str[m_z_index + 4:g_x_index - 1])
-    grouping.append(str[g_x_index + 4:g_y_index - 1])
-    grouping.append(str[g_y_index + 4:g_z_index - 1])
-    grouping.append(str[g_z_index + 4:c_index - 1])
-    grouping.append(str[c_index + 2:])
+    grouping.append(str[a_x_index + 4 : a_y_index - 1])
+    grouping.append(str[a_y_index + 4 : a_z_index - 1])
+    grouping.append(str[a_z_index + 4 : m_x_index - 1])
+    grouping.append(str[m_x_index + 4 : m_y_index - 1])
+    grouping.append(str[m_y_index + 4 : m_z_index - 1])
+    grouping.append(str[m_z_index + 4 : g_x_index - 1])
+    grouping.append(str[g_x_index + 4 : g_y_index - 1])
+    grouping.append(str[g_y_index + 4 : g_z_index - 1])
+    grouping.append(str[g_z_index + 4 : c_index - 1])
+    grouping.append(str[c_index + 2 :])
 
     s.set_IMU_all(grouping)
     readings.append(s)

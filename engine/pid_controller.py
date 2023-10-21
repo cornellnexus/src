@@ -1,5 +1,3 @@
-
-
 class PID:
     """
     Instances represent a PID Controller that is used to continuously correct errors.
@@ -17,7 +15,9 @@ class PID:
         # derivative: Derivative controller command
     """
 
-    def __init__(self, Kp=1, Ki=0, Kd=0, target=0, sample_time=0.01, output_limits=(None, None)):
+    def __init__(
+        self, Kp=1, Ki=0, Kd=0, target=0, sample_time=0.01, output_limits=(None, None)
+    ):
         self.Kp, self.Ki, self.Kd = Kp, Ki, Kd
         self.target = target
         self.sample_time = sample_time
@@ -48,8 +48,7 @@ class PID:
             #         min(self.integral, self.output_limits[1]), self.output_limits[0])
             self.integral += self.Ki * error * self.sample_time
 
-        self.derivative = self.Kd * \
-            ((error - self.prev_error) / self.sample_time)
+        self.derivative = self.Kd * ((error - self.prev_error) / self.sample_time)
         value = self.proportional + self.integral + self.derivative
         self.prev_error = error
         return value

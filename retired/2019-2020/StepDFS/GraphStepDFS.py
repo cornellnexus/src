@@ -141,16 +141,25 @@ class Graph:
     # the neighbor array of coordinateNode.
     # Precondition: coordinateNode is in the dictionary coordinates
     def addNewNeighborNodeToCoordinate(self, coordinateNode, neighborX, neighborY):
-        if (neighborX <= self.lat_max and neighborX >= self.lat_min
-                and neighborY <= self.long_max and neighborY >= self.long_min):
+        if (
+            neighborX <= self.lat_max
+            and neighborX >= self.lat_min
+            and neighborY <= self.long_max
+            and neighborY >= self.long_min
+        ):
             neighborX = round(neighborX, 5)
             neighborY = round(neighborY, 5)
 
-            print("NEIGHBOR NODE - Latitude: " +
-                  str(neighborX) + " Longitude: " + str(neighborY))
+            print(
+                "NEIGHBOR NODE - Latitude: "
+                + str(neighborX)
+                + " Longitude: "
+                + str(neighborY)
+            )
 
             neighborNode = self.checkIfCoordinateInCoordsDictElseGenerateNode(
-                neighborX, neighborY)
+                neighborX, neighborY
+            )
             coordinateNode.addNeighbor(neighborNode)
         # else:
         # print("Oout of Bouds: " + str(neighborX) + ", " +  str(neighborY))
@@ -172,21 +181,29 @@ class Graph:
         # self.long_step = round(self.long_step,5)
 
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x, y + self.long_step)  # Neighbor above
+            coordinateToAddNeighborsTo, x, y + self.long_step
+        )  # Neighbor above
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x, y - self.long_step)  # Neighbor below
+            coordinateToAddNeighborsTo, x, y - self.long_step
+        )  # Neighbor below
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x + self.lat_step, y)  # Neighbor to the right
+            coordinateToAddNeighborsTo, x + self.lat_step, y
+        )  # Neighbor to the right
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x - self.lat_step, y)  # Neighbor to the left
+            coordinateToAddNeighborsTo, x - self.lat_step, y
+        )  # Neighbor to the left
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x + self.lat_step, y + self.long_step)  # Diagnol upper right neighbor
+            coordinateToAddNeighborsTo, x + self.lat_step, y + self.long_step
+        )  # Diagnol upper right neighbor
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x - self.lat_step, y + self.long_step)  # Diagnoal upper left neighbor
+            coordinateToAddNeighborsTo, x - self.lat_step, y + self.long_step
+        )  # Diagnoal upper left neighbor
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x + self.lat_step, y - self.long_step)  # Diagnoal lower right
+            coordinateToAddNeighborsTo, x + self.lat_step, y - self.long_step
+        )  # Diagnoal lower right
         self.addNewNeighborNodeToCoordinate(
-            coordinateToAddNeighborsTo, x - self.lat_step, y - self.long_step)  # Diagnol lower left
+            coordinateToAddNeighborsTo, x - self.lat_step, y - self.long_step
+        )  # Diagnol lower left
 
     # Auto-creates coordinates given xMax and yMax. This is our old hard-coded version
     # of created the coordinates.
@@ -232,19 +249,26 @@ class Graph:
     def generateCoordinates(self):
         # coord = []
 
-        for lat in numpy.arange(self.lat_min, self.lat_max + self.lat_step, self.lat_step):
-            for longi in numpy.arange(self.long_min, self.long_max + self.long_step, self.long_step):
+        for lat in numpy.arange(
+            self.lat_min, self.lat_max + self.lat_step, self.lat_step
+        ):
+            for longi in numpy.arange(
+                self.long_min, self.long_max + self.long_step, self.long_step
+            ):
                 # coord.append((lat,longi))
 
                 lat = round(lat, 5)
                 longi = round(longi, 5)
 
-                print("------------------------OUTER COORD - Latitude: " +
-                      str(lat) + " Longitude: " + str(longi))
+                print(
+                    "------------------------OUTER COORD - Latitude: "
+                    + str(lat)
+                    + " Longitude: "
+                    + str(longi)
+                )
                 if (lat, longi) not in self.coordinates:
                     print("OUTER COORD NOT FOUND")
-                    self.coordinates[(lat, longi)] = CoordinateNina(
-                        lat, longi, [])
+                    self.coordinates[(lat, longi)] = CoordinateNina(lat, longi, [])
                 else:
                     print("OUTER COORD FOUND")
 
@@ -261,7 +285,7 @@ class Graph:
     # Prints all of the coordinates in the dictionary
     def printAllCoordinates(self):
         for key in self.coordinates.keys():
-            print(key, '->', self.coordinates[key])
+            print(key, "->", self.coordinates[key])
 
     # Starts the DFS traversal
     # Precondition: (x,y) must be a key value in dictionary coordinates

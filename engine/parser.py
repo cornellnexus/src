@@ -19,20 +19,62 @@ def parse_main():
 
     Return a dictionary of the user inputted arguments above.
     """
-    parser = argparse.ArgumentParser(
-        description='Process Mission information.')
-    parser.add_argument("xpos", type=float, nargs='?', const=1, default=0,
-                        help="a float for the robot's initial x position in coordinate space")
-    parser.add_argument("ypos", type=float, nargs='?', const=1, default=0,
-                        help="a float for the robot's initial y position in coordinate space")
-    parser.add_argument("heading", type=float, nargs='?', const=1, default=math.pi/4,
-                        help="a float for the robot's initial heading")
-    parser.add_argument("base_lat", type=float, nargs='?', const=1, default=42.444250,
-                        help="a float for the base stations's latitude coordinate")
-    parser.add_argument("base_long", type=float, nargs='?', const=1, default=-76.483682,
-                        help="a float for the base stations's longitude coordinate")
-    parser.add_argument("-c", "--control_mode", type=str, choices=["lawnmower", "lawnmower_b", "lawnmower_a", "spiral", "roomba", "manual", "straight"],
-                        help="determines initial control mode")
+    parser = argparse.ArgumentParser(description="Process Mission information.")
+    parser.add_argument(
+        "xpos",
+        type=float,
+        nargs="?",
+        const=1,
+        default=0,
+        help="a float for the robot's initial x position in coordinate space",
+    )
+    parser.add_argument(
+        "ypos",
+        type=float,
+        nargs="?",
+        const=1,
+        default=0,
+        help="a float for the robot's initial y position in coordinate space",
+    )
+    parser.add_argument(
+        "heading",
+        type=float,
+        nargs="?",
+        const=1,
+        default=math.pi / 4,
+        help="a float for the robot's initial heading",
+    )
+    parser.add_argument(
+        "base_lat",
+        type=float,
+        nargs="?",
+        const=1,
+        default=42.444250,
+        help="a float for the base stations's latitude coordinate",
+    )
+    parser.add_argument(
+        "base_long",
+        type=float,
+        nargs="?",
+        const=1,
+        default=-76.483682,
+        help="a float for the base stations's longitude coordinate",
+    )
+    parser.add_argument(
+        "-c",
+        "--control_mode",
+        type=str,
+        choices=[
+            "lawnmower",
+            "lawnmower_b",
+            "lawnmower_a",
+            "spiral",
+            "roomba",
+            "manual",
+            "straight",
+        ],
+        help="determines initial control mode",
+    )
     # TODO: add flags for different control modes, after fixing which ones we have
     args = parser.parse_args()
-    return (vars(args))
+    return vars(args)

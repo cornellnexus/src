@@ -8,7 +8,7 @@ class BasicMotorControllerTest:
 
     For this test to run properly, the wired connections of the GPIO pins must be set-up properly.
 
-    Expected Outcome: Motor rotates one direction for three seconds, stops, rotates the opposite 
+    Expected Outcome: Motor rotates one direction for three seconds, stops, rotates the opposite
     direction for the next three seconds.
     """
 
@@ -38,12 +38,12 @@ class BasicMotorControllerTest:
 
 class MotorControllerTest:
     """
-    MotorControllerTest checks that the motors are able to rotate for a respective omega and velocity value set. 
+    MotorControllerTest checks that the motors are able to rotate for a respective omega and velocity value set.
 
     For this test to run properly, the wired connections of the GPIO pins must be set-up properly.
 
     Expected Outcome: Motor rotates for 5 seconds at omega = 0 and velocity = 30, stops, then proceeds
-    to rotate at omega = 20 and velocity = 30. 
+    to rotate at omega = 20 and velocity = 30.
     """
 
     def __init__(self):
