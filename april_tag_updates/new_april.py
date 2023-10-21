@@ -62,7 +62,7 @@ while True:
         if len(corners) < 2:
             if len(CACHED_PTS) >= 2:
                 corners = CACHED_PTS
-        for (markerCorner, markerId) in zip(corners, ids):
+        for markerCorner, markerId in zip(corners, ids):
             print("[INFO] Marker detected1")
             corners_abcd = markerCorner.reshape((4, 2))
             (topLeft, topRight, bottomRight, bottomLeft) = corners_abcd
@@ -128,7 +128,7 @@ while True:
         if len(corners2) < 2:
             if len(CACHED_PTS2) >= 2:
                 corners2 = CACHED_PTS2
-        for (markerCorner, markerId) in zip(corners2, ids2):
+        for markerCorner, markerId in zip(corners2, ids2):
             print("[INFO] Marker detected2")
             corners_abcd = markerCorner.reshape((4, 2))
             (topLeft, topRight, bottomRight, bottomLeft) = corners_abcd

@@ -28,6 +28,7 @@ GPIO.setup(PWML, GPIO.OUT)
 pR = GPIO.PWM(PWMR, freq)
 pL = GPIO.PWM(PWML, freq)
 
+
 # Spin clockwise
 def spin180_cw():
     pL.ChangeDutyCycle(6.5)
@@ -48,7 +49,6 @@ pL.start(0)
 
 
 def main():
-
     # Define two parsers as in cam_calibrate_nexus.py
     parser = ArgumentParser(description="test apriltag Python bindings")
     parser2 = ArgumentParser(description="test apriltag Python bindings")
@@ -100,7 +100,6 @@ def main():
     start_time = 0
 
     while True:
-
         # Read every frame
         success, frame = cap.read()
         success2, frame2 = cap2.read()

@@ -70,7 +70,6 @@ Wiring Description (Should not change):
 
 
 class Ultrasonic:
-
     i2c = busio.I2C(board.SCL, board.SDA)
     mcp = MCP23008(i2c)
 

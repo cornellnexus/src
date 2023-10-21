@@ -415,7 +415,6 @@ if not close_gui:
 
     # Run the gui if the user doesn't close out of the window
     if bounds != None:
-
         fig, ax = setup(bounds)  # Set up matplotlib map figure
         (
             circle_patch,

@@ -93,11 +93,10 @@ class TestDataBase(unittest.TestCase):
             (db_one_param_str, self.db_one_param),
         ]
 
-        for (expected_ans, database) in testcases:
+        for expected_ans, database in testcases:
             self.assertEqual(expected_ans, str(database), str(database))
 
     def test_get_data(self):
-
         db_params = [
             (Phase.SETUP, "phase"),
             ([0, 0, 0], "state"),
@@ -150,7 +149,7 @@ class TestDataBase(unittest.TestCase):
         ]
 
         for expected_ans, database in testcases:
-            for (ans, name) in expected_ans:
+            for ans, name in expected_ans:
                 multiple_params = [
                     "state",
                     "acceleration",
@@ -235,7 +234,7 @@ class TestDataBase(unittest.TestCase):
         ]
 
         for expected_ans, database in testcases:
-            for (ans, name) in expected_ans:
+            for ans, name in expected_ans:
                 multiple_params = [
                     "state",
                     "acceleration",

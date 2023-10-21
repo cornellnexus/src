@@ -16,7 +16,7 @@ class GUI:
         self.initializeGrid()
 
     def animateRobotMovingGivenCoordList(self, coords):
-        for (x, y) in coords:
+        for x, y in coords:
             self.moveRobot(x, y)
 
     def moveRobot(self, x, y):

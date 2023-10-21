@@ -14,7 +14,6 @@ import math
 
 
 def main():
-
     """Main function."""
 
     # axis definitions
@@ -64,7 +63,6 @@ def main():
     detector2 = apriltag.Detector(options2, searchpath=apriltag._get_demo_searchpath())
 
     while True:
-
         success, frame = cap.read()
         success2, frame2 = cap2.read()
 

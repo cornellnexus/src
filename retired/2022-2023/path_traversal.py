@@ -62,7 +62,6 @@ class PathTraversal:
         for curr_goal_ind in range(
             num_goals
         ):  # TODO: while queue: should we switch to this format?
-
             curr_goal = waypoints[curr_goal_ind].get_coords()  # target coords (meters)
             predicted_state = r2d2.state  # this will come from Kalman Filter
 

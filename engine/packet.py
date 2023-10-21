@@ -130,7 +130,7 @@ class Packet:
         ]
 
         packet = ""
-        for (heading, value) in args:
+        for heading, value in args:
             packet += heading + str(value)
 
         return packet

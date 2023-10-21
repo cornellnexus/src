@@ -5,7 +5,6 @@ import argparse
 
 
 def main():
-
     parser = argparse.ArgumentParser(
         description="calibrate camera intrinsics using OpenCV"
     )
@@ -69,7 +68,6 @@ def main():
     ipoints = []
 
     for filename in options.filenames:
-
         rgb = cv2.imread(filename)
 
         if rgb is None:

@@ -5,7 +5,6 @@ from engine.grid import Grid
 
 
 def main():
-
     grid = Grid(42.444250, 42.444599, -76.483682, -76.483276)
 
     rows = grid.get_num_rows()
@@ -39,7 +38,6 @@ def main():
         way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
 
     if activation_type == "rectangle":
-
         rec_row_start = rows // 3  # Good value 13
         rec_row_limit = 2 * rows // 3  # Good value 26
         rec_col_start = cols // 3  # Good value 11
@@ -74,7 +72,7 @@ def main():
     if activation_type == "line":
         row = 0  # rows are y position
         col = cols // 2  # cols are x position
-        grid.activate_line((row, col), n=cols//2, is_horizontal=False)
+        grid.activate_line((row, col), n=cols // 2, is_horizontal=False)
         grid.find_border_nodes()
         way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
 

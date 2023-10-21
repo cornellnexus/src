@@ -44,7 +44,6 @@ class Commands:
         return sec_num / self.time_step
 
     def move_in_line(self, dist, rpm):
-
         self.front_left_rpm = rpm
         self.front_right_rpm = rpm
         dist_per_time_step = (rpm / 60) * self.time_step * self.radius * 2 * math.pi

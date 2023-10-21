@@ -34,7 +34,7 @@ class TestAstar(unittest.TestCase):
             (2, 1),
             (2, 2),
         ]
-        for (ans, node) in zip(ans_set, self.test_nodes):
+        for ans, node in zip(ans_set, self.test_nodes):
             self.assertEqual(ans, node.get_pos())
 
     def test_make_grid(self):

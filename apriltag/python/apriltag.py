@@ -166,7 +166,6 @@ class Detection(DetectionBase):
     _max_len = max(len(field) for field in _print_fields)
 
     def tostring(self, values=None, indent=0):
-
         """Converts this object to a string with the given level of indentation."""
 
         rval = []
@@ -176,7 +175,6 @@ class Detection(DetectionBase):
             values = collections.OrderedDict(zip(self._print_fields, self))
 
         for label in values:
-
             value_str = str(values[label])
 
             if value_str.find("\n") > 0:
@@ -219,7 +217,6 @@ class DetectorOptions(object):
         debug=False,
         quad_contours=True,
     ):
-
         self.families = families
         self.border = int(border)
 
@@ -237,7 +234,6 @@ class DetectorOptions(object):
 
 
 def add_arguments(parser):
-
     """Add arguments to the given argparse.ArgumentParser object to enable
     passing in the resulting parsed arguments into the initializer for
     Detector.
@@ -339,7 +335,6 @@ class Detector(object):
     """
 
     def __init__(self, options=None, searchpath=[]):
-
         if options is None:
             options = DetectorOptions()
 
@@ -414,7 +409,6 @@ class Detector(object):
             self.libc.apriltag_detector_destroy(self.tag_detector)
 
     def detect(self, img, return_image=False):
-
         """Run detectons on the provided image. The image must be a grayscale
         image of type numpy.uint8."""
 
@@ -431,7 +425,6 @@ class Detector(object):
         apriltag = ctypes.POINTER(_ApriltagDetection)()
 
         for i in range(0, detections.contents.size):
-
             # extract the data for each apriltag that was identified
             self.libc.zarray_get(detections, i, ctypes.byref(apriltag))
 
@@ -458,12 +451,10 @@ class Detector(object):
         self.libc.image_u8_destroy(c_img)
 
         if return_image:
-
             dimg = self._vis_detections(img.shape, detections)
             rval = return_info, dimg
 
         else:
-
             rval = return_info
 
         self.libc.apriltag_detections_destroy(detections)
@@ -471,7 +462,6 @@ class Detector(object):
         return rval
 
     def add_tag_family(self, name):
-
         """Add a single tag family to this detector."""
 
         family = self.libc.apriltag_family_create(name.encode("ascii"))
@@ -483,7 +473,6 @@ class Detector(object):
             print("Unrecognized tag family name. Try e.g. tag36h11")
 
     def detection_pose(self, detection, camera_params, tag_size=1, z_sign=1):
-
         fx, fy, cx, cy = [ctypes.c_double(c) for c in camera_params]
 
         H = self.libc.matd_create(3, 3)
@@ -518,7 +507,6 @@ class Detector(object):
         return M, init_error.value, final_error.value
 
     def _vis_detections(self, shape, detections):
-
         height, width = shape
         c_dimg = self.libc.image_u8_create(width, height)
         self.libc.apriltag_vis_detections(detections, c_dimg)
@@ -531,7 +519,6 @@ class Detector(object):
         return rval
 
     def _declare_return_types(self):
-
         self.libc.apriltag_detector_create.restype = ctypes.POINTER(_ApriltagDetector)
         self.libc.apriltag_family_create.restype = ctypes.POINTER(_ApriltagFamily)
         self.libc.apriltag_detector_detect.restype = ctypes.POINTER(_ZArray)
@@ -544,7 +531,6 @@ class Detector(object):
         self.libc.matd_create.restype = ctypes.POINTER(_Matd)
 
     def _convert_image(self, img):
-
         height = img.shape[0]
         width = img.shape[1]
         c_img = self.libc.image_u8_create(width, height)
@@ -564,7 +550,6 @@ class Detector(object):
 
 
 def _get_demo_searchpath():
-
     return [
         os.path.join(os.path.dirname(__file__), "../build/lib"),
         os.path.join(os.getcwd(), "../build/lib"),
@@ -575,7 +560,6 @@ def _get_demo_searchpath():
 
 
 def _camera_params(pstr):
-
     pstr = pstr.strip()
 
     if pstr[0] == "(" and pstr[-1] == ")":
@@ -592,7 +576,6 @@ def _camera_params(pstr):
 
 
 def _draw_pose(overlay, camera_params, tag_size, pose, z_sign=1):
-
     opoints = (
         numpy.array(
             [
@@ -653,7 +636,6 @@ def _draw_pose(overlay, camera_params, tag_size, pose, z_sign=1):
 
 
 def main():
-
     """Test function for this Python wrapper."""
 
     from argparse import ArgumentParser
@@ -712,7 +694,6 @@ def main():
         from PIL import Image
 
     for filename in options.filenames:
-
         if _HAVE_CV2:
             orig = cv2.imread(filename)
             if len(orig.shape) == 3:
@@ -744,7 +725,6 @@ def main():
             print(detection.tostring(indent=2))
 
             if options.camera_params is not None:
-
                 pose, e0, e1 = det.detection_pose(
                     detection, options.camera_params, options.tag_size
                 )

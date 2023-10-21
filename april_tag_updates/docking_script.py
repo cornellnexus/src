@@ -171,7 +171,7 @@ while True:
         if step == Steps.Step2:
             step = Steps.Step3
         start_time = time.time()
-        for (corner, markerId) in zip(corners, ids):
+        for corner, markerId in zip(corners, ids):
             markerId, angle, depth = visualization(corner, markerId)
             seen_center_tag = idDict.get(markerId) == "R2"
             # Step 1 starts here.

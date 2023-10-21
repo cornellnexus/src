@@ -157,7 +157,6 @@ def engine_pid_main():
 
     # While the queue is not empty
     while queue:
-
         # Store the next node to visit from the grid and make it our target
         target_coords = queue.popleft()
 

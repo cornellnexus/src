@@ -39,7 +39,6 @@ def activate_circle(nodes, circle_center_row, circle_center_col, circle_radius):
 
 
 def area(x1, y1, x2, y2, x3, y3):
-
     return abs((x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2.0)
 
 
@@ -47,7 +46,6 @@ def area(x1, y1, x2, y2, x3, y3):
 # lies inside the triangle formed by
 # A(x1, y1), B(x2, y2) and C(x3, y3)
 def isInsideTriangle(x1, y1, x2, y2, x3, y3, x, y):
-
     # Calculate area of triangle ABC
     A = area(x1, y1, x2, y2, x3, y3)
 

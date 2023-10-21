@@ -62,7 +62,6 @@ class KeyListener:
 
 
 def magnetometer_calibrate():
-
     i2c = busio.I2C(board.SCL, board.SDA)
 
     magnetometer = LSM9DS1_I2C(i2c)
@@ -142,7 +141,6 @@ def magnetometer_calibrate():
 
 
 def gyro_calibrate():
-
     i2c = busio.I2C(board.SCL, board.SDA)
 
     gyro_accel = LSM9DS1_I2C(i2c)

@@ -78,7 +78,6 @@ class RobotData(object):
     """
 
     def update_data(self, packet):
-
         packet_data = packet.split(";")
         self.phase = get_integer_value(packet_data[0])
         self.weight = get_float_value(packet_data[1])

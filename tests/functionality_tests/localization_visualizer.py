@@ -210,7 +210,6 @@ if __name__ == "__main__":
                 new_location = (measurements[0], measurements[1])
 
             elif not is_live and use_ekf:
-
                 # Potential future testing note from Allen:
                 # I think as long as we have a theta, r, and width, we have a valid arclength
                 # (arclength = theta*R, where R = r or r + width. Then we can randomize theta, r,
@@ -238,7 +237,6 @@ if __name__ == "__main__":
                 new_heading = ekf.mu[2][0]
 
             else:
-
                 # new_heading = math.degrees(math.atan2(
                 #     imu_readings[i]["mag"]["y"], imu_readings[i]["mag"]["x"]))
                 new_heading = math.degrees(

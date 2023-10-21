@@ -201,7 +201,7 @@ class Grid:
         If the row/col position is out of bounds or no active node exists at the
         given location, None is returned.
         Args:
-            coordinate (int tuple): coordinate of the location        
+            coordinate (int tuple): coordinate of the location
         """
         (row, col) = coordinate
         if row < 0 or row >= row_max or col < 0 or col >= col_max:
@@ -273,7 +273,7 @@ class Grid:
         If is_horizontal is True, the line is from (row, col) to (row, col + n).
         Otherwise, the line is from (row, col) to (row + n, col).
         Args:
-            coordinate (int tuple): coordinate of the starting node         
+            coordinate (int tuple): coordinate of the starting node
         """
         (row, col) = coordinate
         # Note: rows are y-position and columns are x-position
@@ -344,7 +344,9 @@ class Grid:
         for row in range(self.num_rows):
             for col in range(self.num_cols):
                 node = self.nodes[row][col]
-                if node.is_active and self.is_on_border((row, col), self.num_rows, self.num_cols):
+                if node.is_active and self.is_on_border(
+                    (row, col), self.num_rows, self.num_cols
+                ):
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
                     border_list.append((node, row, col))
@@ -477,7 +479,9 @@ class Grid:
                 )
                 return max(node_info_next[2], node_info_curr[2])
 
-    def plot_circle(self, start_coordinate, center, orientation, theta_step=math.pi / 12):
+    def plot_circle(
+        self, start_coordinate, center, orientation, theta_step=math.pi / 12
+    ):
         """
         Returns a circle of nodes starting from the [start_pos], going at orientation [orientation], and ending at the [end_pos] with center [center].
         Arguments:
@@ -489,8 +493,7 @@ class Grid:
             smaller the value, the smoother the curve will be. Default value = math.pi/12.
         """
         (start_pos, end_pos) = start_coordinate
-        r = math.hypot(float(start_pos[0]) - center[0],
-                       float(start_pos[1]) - center[1])
+        r = math.hypot(float(start_pos[0]) - center[0], float(start_pos[1]) - center[1])
 
         theta_init = math.atan2(start_pos[1] - center[1], start_pos[0] - center[0])
         theta_end = math.atan2(end_pos[1] - center[1], end_pos[0] - center[0])
@@ -655,11 +658,17 @@ class Grid:
             # Create waypoints needed for a smooth turning trajectory to
             # "guide" our robot to the next original waypoint
             if is_vertical:
-                circle_plt = self.plot_circle(((self.curr_pos[0], turning_column), (next_row, turning_column)),
-                                              (self.curr_pos[0] + .5, turning_column), self.get_turn_orientation())
+                circle_plt = self.plot_circle(
+                    ((self.curr_pos[0], turning_column), (next_row, turning_column)),
+                    (self.curr_pos[0] + 0.5, turning_column),
+                    self.get_turn_orientation(),
+                )
             else:
-                circle_plt = self.plot_circle(((turning_column, self.curr_pos[1]), (turning_column, next_row)),
-                                              (turning_column, self.curr_pos[1] + .5), self.get_turn_orientation())
+                circle_plt = self.plot_circle(
+                    ((turning_column, self.curr_pos[1]), (turning_column, next_row)),
+                    (turning_column, self.curr_pos[1] + 0.5),
+                    self.get_turn_orientation(),
+                )
             self.waypoints += circle_plt
             # Update traversal details
             self.switch_directions()

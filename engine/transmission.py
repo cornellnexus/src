@@ -6,6 +6,7 @@ from engine.phase import Phase
 format = "%(asctime)s: %(message)s"
 logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
+
 # ser = serial.Serial("/dev/ttyS0", 57600) # Uncomment for RPI to GUI test
 # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600) # RPI_GUI_TEST
 def send_packet_to_gui(name, robot_state, database):

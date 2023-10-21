@@ -44,7 +44,7 @@ def readCoordsFromCsv(file):
 def pasteCoords(coords):
     # Take tuples from coordList
 
-    for (x, y) in coords:
+    for x, y in coords:
         # Create oval based on coordinates
         c.create_oval(x - 3, y - 3, x + 3, y + 3, fill="green")
 
@@ -58,7 +58,7 @@ def generatediagonalCoordsFile():
 def moveRobot(coords):
     robot = c.create_rectangle(0, 0, 10, 10, fill="red")
 
-    for (x, y) in coords:
+    for x, y in coords:
         print("moving to: " + str((x, y)))
         c.coords(robot, x - 5, y - 5, x + 5, y + 5)
         c.update()

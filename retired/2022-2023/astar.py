@@ -3,7 +3,6 @@ from queue import PriorityQueue
 
 # TODO: documentation
 class Astar:
-
     # A* Algorithm (hardcoded inputs)
     # Hardcoded: ROWS, SCREEN WIDTH, STARTING NODE, ENDING NODE
     def make_grid(rows, width):

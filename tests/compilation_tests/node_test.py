@@ -74,7 +74,7 @@ class TestNodes(unittest.TestCase):
 
     def test_get_status(self):
         ans_set = [0, 0, 0, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 0, 0, 0]
-        for (a, t) in zip(ans_set, self.test_set):
+        for a, t in zip(ans_set, self.test_set):
             self.assertEqual(a, t.get_status())
 
     def test_set_status(self):
@@ -88,7 +88,7 @@ class TestNodes(unittest.TestCase):
 
         ans_set = [1, 1, 1, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 1, 1, 1]
 
-        for (a, t) in zip(ans_set, self.test_set):
+        for a, t in zip(ans_set, self.test_set):
             self.assertEqual(a, t.get_status())
 
     def test_eq(self):
