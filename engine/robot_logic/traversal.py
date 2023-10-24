@@ -96,10 +96,6 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             target[1] - robot_state.state[1], target[0] - robot_state.state[0]
         )
 
-        desired_angle = math.atan2(
-            target[1] - robot_state.state[1], target[0] - robot_state.state[0]
-        )
-
         x_vel = robot_state.loc_pid_x.update(x_coords_error)
         y_vel = robot_state.loc_pid_y.update(y_coords_error)
 
