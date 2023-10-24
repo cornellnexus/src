@@ -47,7 +47,7 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
         robot_state
         unvisited_waypoints ([Node list]): GPS traversal path in terms of meters for the current grid.
     """
-    if unvisited_waypoints is None:
+    if unvisited_waypoints is None or len(unvisited_waypoints) == 0:
         robot_state.phase = Phase.RETURN
         phase_change(robot_state)
         return robot_state, None
@@ -325,6 +325,7 @@ def turn_to_target_heading(
     # we dont want the robot to avoid obstacle here
     robot_state.enable_obstacle_avoidance = False
     predicted_state = robot_state.state  # this will come from Kalman Filter
+    target_heading = (target_heading + math.pi) % (2 * math.pi) - math.pi
 
     abs_heading_error = abs(target_heading - float(predicted_state[2]))
     robot_state.head_pid.reset_integral()
