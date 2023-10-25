@@ -1,5 +1,7 @@
 from engine.packet import Packet
 from engine.phase import Phase
+
+
 class DataBase:
 
     def __init__(self, robot):
@@ -25,9 +27,12 @@ class DataBase:
             "plastic_level": robot.robot_state.plastic_level,  # not detected by sensors yet
             "battery": robot.robot_state.battery,  # not detected by sensors yet
             "move_dist": robot.robot_state.move_dist,
-            "acceleration": robot.robot_state.acceleration,  # not called in main algorithm yet
-            "magnetic_field": robot.robot_state.magnetic_field,  # not called in main algorithm yet
-            "gyro_rotation": robot.robot_state.gyro_rotation,  # not called in main algorithm yet
+            # not called in main algorithm yet
+            "acceleration": robot.robot_state.acceleration,
+            # not called in main algorithm yet
+            "magnetic_field": robot.robot_state.magnetic_field,
+            # not called in main algorithm yet
+            "gyro_rotation": robot.robot_state.gyro_rotation,
             "position_pid": [robot.robot_state.position_kp, robot.robot_state.position_ki, robot.robot_state.position_kd],
             "position_noise": robot.robot_state.position_noise,
             "heading_pid": [robot.robot_state.heading_kp, robot.robot_state.heading_ki, robot.robot_state.heading_kd]
@@ -35,9 +40,9 @@ class DataBase:
 
     def __str__(self):
         return "phase: " + str(self.core_data["phase"].value) + ",\n" + \
-               "state [x, y, heading]: [" + str(self.core_data["state"][0,0])+ \
-                ", "+str(self.core_data["state"][1,0]) + ", " +\
-                str(self.core_data["state"][2,0])+ "]" + ",\n" + \
+               "state [x, y, heading]: [" + str(self.core_data["state"][0, 0]) + \
+            ", "+str(self.core_data["state"][1, 0]) + ", " +\
+            str(self.core_data["state"][2, 0]) + "]" + ",\n" + \
                "is_sim: " + str(self.core_data["is_sim"]) + ",\n" + \
                "plastic_level: " + str(self.core_data["plastic_level"]) + ",\n" + \
                "battery: " + str(self.core_data["battery"]) + ",\n" + \
@@ -46,7 +51,7 @@ class DataBase:
                "magnetic_field [x, y, z]: " + str(self.core_data["magnetic_field"]) + ",\n" + \
                "gyro_rotation [x, y, z]: " + str(self.core_data["gyro_rotation"]) + ",\n" + \
                "position_pid [proportional factor, integral factor, derivative factor]: " + \
-                str(self.core_data["position_pid"]) + ",\n" + \
+            str(self.core_data["position_pid"]) + ",\n" + \
                "position_noise: " + str(self.core_data["position_noise"]) + ",\n" + \
                "heading_pid [proportional factor, integral factor, derivative factor]: " + \
                str(self.core_data["heading_pid"])
@@ -73,14 +78,18 @@ class DataBase:
                 so state is now [3, 5, 20]
 
         '''
-        optional_keys = ["state", "acceleration", "magnetic_field", "gyro_rotation", "position_pid", "heading_pid"]
+        optional_keys = ["state", "acceleration", "magnetic_field",
+                         "gyro_rotation", "position_pid", "heading_pid"]
         if name in optional_keys:
             if x != None:
-                self.core_data[name] = [x, self.core_data[name][1], self.core_data[name][2]]
+                self.core_data[name] = [
+                    x, self.core_data[name][1], self.core_data[name][2]]
             if y != None:
-                self.core_data[name] = [self.core_data[name][0], y, self.core_data[name][2]]
+                self.core_data[name] = [self.core_data[name]
+                                        [0], y, self.core_data[name][2]]
             if z != None:
-                self.core_data[name] = [self.core_data[name][0], self.core_data[name][1], z]
+                self.core_data[name] = [self.core_data[name]
+                                        [0], self.core_data[name][1], z]
         else:
             self.core_data[name] = x
 
@@ -88,20 +97,21 @@ class DataBase:
         phase = self.get_data("phase")
         return phase.value
 
-    def make_packet(self):
-        coords = [str(self.get_data("state")[0][0]), str(self.get_data("state")[1][0]), str(self.get_data("state")[2][0])]
-        
-        acc = []
-        for i in self.get_data("acceleration"):
-            acc.append(str(i))
+    # def make_packet(self):
+    #     coords = [str(self.get_data("state")[0][0]), str(
+    #         self.get_data("state")[1][0]), str(self.get_data("state")[2][0])]
 
-        temp_n_dist = "00.0"
-        temp_rot = "00.00"
-        temp_last_n = ["000.00","000.00"]
-        temp_vel = "0.00"
-        next_n = ["000.00","000.00"]
-        temp_ctrl = "1"
-        packet = Packet(self.phase_as_value(), str(self.get_data("plastic_level")), acc,\
-               temp_n_dist, temp_rot, temp_last_n, temp_vel, next_n, coords, str(self.get_data("battery")), temp_ctrl)
+    #     acc = []
+    #     for i in self.get_data("acceleration"):
+    #         acc.append(str(i))
 
-        return str(packet)
+    #     temp_n_dist = "00.0"
+    #     temp_rot = "00.00"
+    #     temp_last_n = ["000.00", "000.00"]
+    #     temp_vel = "0.00"
+    #     next_n = ["000.00", "000.00"]
+    #     temp_ctrl = "1"
+    #     packet = Packet(self.phase_as_value(), str(self.get_data("plastic_level")), acc,
+    #                     temp_n_dist, temp_rot, temp_last_n, temp_vel, next_n, coords, str(self.get_data("battery")), temp_ctrl)
+
+    #     return str(packet)
