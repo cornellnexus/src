@@ -347,3 +347,36 @@ def turn_to_target_heading(
     robot_state.enable_obstacle_avoidance = True
     if not robot_state.is_sim:
         robot_state.motor_controller.spin_motors(0, 0)
+
+
+def refactored_turn_to_target_heading(
+    robot_state, target_heading, allowed_heading_error, database
+):
+    """
+    Turns robot in-place to target heading + or - allowed_heading_error, utilizing heading PID.
+    Arguments:
+        target_heading: the heading in radians the robot should approach at the end of in-place rotation.
+        allowed_heading_error: the maximum error in radians a robot can have to target heading while turning in
+            place.
+    """
+    # we dont want the robot to avoid obstacle here
+    robot_state.enable_obstacle_avoidance = False
+
+    while abs(target_heading - float(robot_state.state[2])) > allowed_heading_error:
+        theta_error = target_heading - robot_state.state[2]
+        w = robot_state.head_pid.update(theta_error)  # angular velocity
+        _, limited_cmd_w = limit_cmds(
+            0, w, robot_state.max_velocity, robot_state.radius
+        )
+
+        travel(robot_state, 0, robot_state.time_step * limited_cmd_w)
+        if not robot_state.is_sim:
+            robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
+            time.sleep(10)
+
+        database.update_data(
+            "state", robot_state.state[0], robot_state.state[1], robot_state.state[2]
+        )
+
+    # re-enable after finishing turning
+    robot_state.enable_obstacle_avoidance = True
