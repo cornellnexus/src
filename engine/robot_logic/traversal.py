@@ -50,6 +50,63 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
 
     return robot_state, unvisited_waypoints
 
+def simple_move_to_target_node(robot_state, target, allowed_dist_error, database):
+    """
+    Moves robot to target + or - allowed_dist_error
+    Arguments:
+        target: target coordinates in the form (latitude, longitude)
+        allowed_dist_error: the maximum distance in meters that the robot 
+        can be from a node for the robot to have "visited" that node
+        database: 
+    """
+    
+    robot_state.goal_location = target
+
+    # Calculate the desired angle (heading) to the target
+    desired_angle = math.atan2(
+        target[1] - robot_state.state[1], target[0] - robot_state.state[0])
+    #TODO Set the allowed angle error 
+    
+    heading_error = robot_state.state[2] - desired_angle
+    allowed_angle_error = 10
+
+    omega = 5  # TODO Adjust the angular velocity as needed
+    vel = 50  # TODO Adjust the velocity as needed
+
+    #Continously adjusts the robot's heading to match a desired angle. Motor speeds are constant, 
+    #and the direction is determined by the sign of the error 
+    while(Math.abs(heading_error) < allowed_angle_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
+        #Set the motors for the robot to turn at a constant velocity in the correct direction for 0.5 seconds 
+        if(heading_error > 0){
+            robot_state.motor_controller.spin_motors(omega, vel)
+        }else{
+            robot_state.motor_controller.spin_motors(-omega, vel)
+        }
+        time.sleep(0.5)
+        robot_state.motor_controller.spin_motors(0,0)
+        time.sleep(0.01)
+
+        #Update heading_error
+        heading_error = robot_state.state[2] - desired_angle
+
+    
+    # Location error (in meters)
+    distance_away = calculate_dist(target, robot_state.state)
+
+    #Continously moves the robot forward to travel a target distance. Motor speeds are constant. 
+    while (distance_away > allowed_dist_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
+        #Set the motors to drive forward at a constant velocity for 0.5 seconds
+        robot_state.motor_controller.spin_motors(0, vel)
+        time.sleep(0.5)
+        robot_state.motor_controller.spin_motors(0,0)
+        time.sleep(0.01)
+        
+        #Update location error
+        distance_away = calculate_dist(target, robot_state.state)
+
+        
+    
+
 
 def move_to_target_node(robot_state, target, allowed_dist_error, database):
     """
