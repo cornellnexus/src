@@ -21,7 +21,7 @@ class Transmittor:
         """
         Call this function to transmit information to the GUI
         """        
-        self.gather_info()
+        self.rmi()
     
     def rmi(self):
         """
@@ -39,11 +39,11 @@ class Transmittor:
             "sensors": {
                 "gps": {
                     "connected": self.robot_state.gps_connected,
-                    "reading": json.dumps(self.robot_state.gps.get_gps())
+                    "reading": json.dumps(self.robot_state.gps.get_gps()),
                 },
                 "imu": {
                     "connected": self.robot_state.imu_connected,
-                    "reading": json.dumps(self.robot_state.imu.get_imu())
+                    "reading": json.dumps(self.robot_state.imu.get_imu()),
                 },
                 # need to wait for commits
                 # "break_beams": {
@@ -74,69 +74,66 @@ class Transmittor:
                     "right_wheel_velocity": self.robot_state.motorcontroller.left_right_angular_vel(self.robot_state.angular_v, self.robot_state.linear_v)[1]
                 },
                 # need to wait for commits
-                "cams": {
-                    "front_cam": {
+                #"cams": {
+                    #"front_cam": {
                         #"connected": Boolean,
                         #"tag_id_detected": String or null
-                    },
-                    "back_cam": {
+                    #},
+                    #"back_cam": {
                         #"connected": Boolean,
                         #"tag_id_detected": String or null
-                    }
-                },
-                "ultrasonic": { 
+                    #}
+                #},
+                "ultrasonic": {
                     "front_uls": 
                     {
                         "connected": (self.robot_state.front_ultrasonic.distance() >= max (self.robot_state.front_sensor_offset, 0)),
-                        "distance_to_object": self.robot_state.front_ultrasonic.distance()
+                        "distance_to_object": self.robot_state.front_ultrasonic.distance(),
                     },
                     "left1_uls": 
                     {
                         "connected": self.robot_state.lf_ultrasonic.distance() >= 0,
-                        "distance_to_object": self.robot_state.lf_ultrasonic.distance()
+                        "distance_to_object": self.robot_state.lf_ultrasonic.distance(),
                     },
                     "left2_uls": 
                     {
                        "connected": self.robot_state.lb_ultrasonic.distance() >= 0,
-                       "distance_to_object": self.robot_state.lb_ultrasonic.distance()
+                       "distance_to_object": self.robot_state.lb_ultrasonic.distance(),
                     },
                     "right1_uls": 
                     {
                        "connected": self.robot_state.rf_ultrasonic.distance() >= 0,
-                       "distance_to_object": self.robot_state.rf_ultrasonic.distance()
-                    }
+                       "distance_to_object": self.robot_state.rf_ultrasonic.distance(),
+                    },
                     "right2_uls": 
                     {
                        "connected": self.robot_state.rb_ultrasonic.distance() >= 0,
-                       "distance_to_object": self.robot_state.rb_ultrasonic.distance()
+                       "distance_to_object": self.robot_state.rb_ultrasonic.distance(),
                     }
                 }
-            }
+            },
             "battery": {
                 "battery_percent": self.robot_state.battery,
-                
-                "time_until_recharge": 00:00:00 #TODO, 
-                "low_power_mode": false #TODO
-                
+                "time_until_recharge": "00:00:00", #TODO 
+                "low_power_mode": False, #TODO
             },
-            
             "metrics": {
                 "goal_loc": {
-                    "global_coord": self.robot_state.goal_location  #TODO,
+                    "global_coord": self.robot_state.goal_location,  #TODO
                     "local_coord": self.robot_state.goal_location,
-                    "robot_goal_dist": 0 #TODO Float <Distance between robot and goal node>
+                    "robot_goal_dist": 0, #TODO Float <Distance between robot and goal node>
                 },
                 "state":{
-                    "global_coord": self.robot_state.state[0] #TODO
-                    "local_coord": self.robot_state.state[0] ,
+                    "global_coord": self.robot_state.state[0], #TODO
+                    "local_coord": self.robot_state.state[0],
                     "heading": self.robot_state.state[1]
                 },
                 "phase": self.robot_state.phase,
-                "eta_to_base": 00:00:00 #TODO,
-                "goal_nodes_completed": 0 #TODO ,
-                "eta_complete": 00:00:00 #TODO
+                "eta_to_base": "00:00:00", #TODO
+                "goal_nodes_completed": 0, #TODO 
+                "eta_complete": "00:00:00", #TODO
+                "eta_next_node": "00:00:00", #TODO
             },
-        }
-        )
+        })
     
     
