@@ -1,4 +1,3 @@
-
 from collections import deque
 from engine.control_mode import ControlMode
 from engine.grid import Grid
@@ -9,6 +8,7 @@ class Mission_State:
     """
     Contains Mission-specific information.
     """
+
     def __init__(self, robot, base_station_coord, init_control_mode, **kwargs):
         """
         Arguments:
@@ -33,13 +33,15 @@ class Mission_State:
             time_limit: the maximum time the robot can execute roomba traversal mode
             roomba_radius: the maximum radius from the base station that the robot in roomba traversal mode can move
 
-        Important: All the ports of the electrical classes (ie. Serial) need to be updated to the respective 
+        Important: All the ports of the electrical classes (ie. Serial) need to be updated to the respective
                     ports they are connected to on the computer running the code.
-        """    
+        """
         self.robot = robot
         self.control_mode = ControlMode(init_control_mode)
-        self.grid = kwargs.get("grid", Grid(42.444250, 42.444599, -76.483682, -76.483276)) # Default grid to eng quad
-        self.base_station = BaseStation(coord=base_station_coord,grid=self.grid)
+        self.grid = kwargs.get(
+            "grid", Grid(42.444250, 42.444599, -76.483682, -76.483276)
+        )  # Default grid to eng quad
+        self.base_station = BaseStation(coord=base_station_coord, grid=self.grid)
         self.all_waypoints = self.grid.get_waypoints(self.control_mode)
         self.active_waypoints = self.grid.get_active_waypoints_list()
         self.inactive_waypoints = self.grid.get_inactive_waypoints_list()
@@ -47,5 +49,5 @@ class Mission_State:
         self.allowed_dist_error = kwargs.get("allowed_dist_error", 0.5)
         self.allowed_heading_error = kwargs.get("allowed_heading_error", 0.1)
         self.allowed_docking_pos_error = kwargs.get("allowed_docking_pos_error", 0.1)
-        self.time_limit = kwargs.get("time_limit",50000)
+        self.time_limit = kwargs.get("time_limit", 50000)
         self.roomba_radius = kwargs.get("roomba_radius", 20)

@@ -10,20 +10,24 @@ EARTH_RADIUS = 6371008.8  # meters
 
 def robot_to_global(pose, x_robot, y_robot):
     """
-    Transforms the (x_robot, y_robot) point in robot coordinates into global 
+    Transforms the (x_robot, y_robot) point in robot coordinates into global
     coordinates (x_global, y_global). Outputs a [2x1] np array.
 
-    Inputs: 
+    Inputs:
         pose: robot's current pose (global) [3x1]
-        x_R: x coordinate in robot/body frame 
+        x_R: x coordinate in robot/body frame
         y_R: y coordinate in robot/body frame
     """
     px = pose[0]
     py = pose[1]
     theta = pose[2]
-    Tgr = np.array([[math.cos(theta), -1 * math.sin(theta), px], \
-                    [math.sin(theta), math.cos(theta), py], \
-                    [0, 0, 1]])
+    Tgr = np.array(
+        [
+            [math.cos(theta), -1 * math.sin(theta), px],
+            [math.sin(theta), math.cos(theta), py],
+            [0, 0, 1],
+        ]
+    )
     # DEBUG UPDATE: added [1] to array in order to make it 3x3 times 3x1 rather than 2x1
     # rounding x,y coordinates to make it testable (ex: 4.000000001 --> 4); noise?
     pose_global = np.matmul(Tgr, np.array([[x_robot], [y_robot], [1]]))
@@ -33,11 +37,11 @@ def robot_to_global(pose, x_robot, y_robot):
 
 def global_to_robot(pose, x_global, y_global):
     """
-    Transforms xy_global into robot coordinates. Outputs a [2x1] np array. 
-    
-    Inputs: 
+    Transforms xy_global into robot coordinates. Outputs a [2x1] np array.
+
+    Inputs:
         pose: robot's current pose (global) [3x1]
-        x_global: x coordinate in global frame 
+        x_global: x coordinate in global frame
         y_global: y coordinate in global frame
 
         xy_global: 2D point in gloabl coordinates [2x1] (get rid of this?)
@@ -45,9 +49,13 @@ def global_to_robot(pose, x_global, y_global):
     px = pose[0]
     py = pose[1]
     theta = pose[2]
-    Tgr = np.array([[math.cos(theta), -1 * math.sin(theta), px], \
-                    [math.sin(theta), math.cos(theta), py], \
-                    [0, 0, 1]])
+    Tgr = np.array(
+        [
+            [math.cos(theta), -1 * math.sin(theta), px],
+            [math.sin(theta), math.cos(theta), py],
+            [0, 0, 1],
+        ]
+    )
     Trg = np.linalg.inv(Tgr)
     # DEBUG UPDATE: Adjusting parameters to be consistent with first funtion
     # Also adding [1] to make it a 3x3 times 3x1
@@ -59,14 +67,16 @@ def global_to_robot(pose, x_global, y_global):
 
 def feedback_lin(curr_pose, vx_global, vy_global, epsilon):
     """
-    Given desired x and y velocity in the inertial frame (calculated by 
-    desired pose - current pose), returns the linear and angular 
+    Given desired x and y velocity in the inertial frame (calculated by
+    desired pose - current pose), returns the linear and angular
     velocity the robot should move at.
         curr_pose: [3x1] (is this global?)
     """
     theta = float(curr_pose[2])
     v = vx_global * math.cos(theta) + vy_global * math.sin(theta)
-    w = (-1 / epsilon) * vx_global * math.sin(theta) + (1 / epsilon) * vy_global * math.cos(theta)
+    w = (-1 / epsilon) * vx_global * math.sin(theta) + (
+        1 / epsilon
+    ) * vy_global * math.cos(theta)
     return (v, w)
 
 
@@ -75,9 +85,9 @@ def feedback_lin(curr_pose, vx_global, vy_global, epsilon):
 
 
 def limit_cmds(v, w, max_v, wheel_to_center):
-    '''
-    Returns a scaled v and w, such that 
-    '''
+    """
+    Returns a scaled v and w, such that
+    """
     diameter = wheel_to_center * 2
     v_leftwheel = (-w * diameter + 2 * v) / 2
     v_rightwheel = (w * diameter + 2 * v) / 2
@@ -116,18 +126,19 @@ def integrate_odom(pose, d, phi):
     else:
         new_x = pose[0] + (d / phi) * (math.sin(pose[2] + phi) - math.sin(pose[2]))
         new_y = pose[1] + (d / phi) * (-math.cos(pose[2] + phi) + math.cos(pose[2]))
-        new_theta = (pose[2] + phi) % (2 * math.pi)
-        # new_theta = (pose[2] + phi)
+        new_theta = (pose[2] + phi + math.pi) % (2 * math.pi) - math.pi
     return np.array([[float(new_x)], [float(new_y)], [float(new_theta)]])
 
 
 def meters_to_gps(lat, long, dy, dx):
     """
-    Returns the approximate gps coordinate of starting at (lat,long) and moving 
+    Returns the approximate gps coordinate of starting at (lat,long) and moving
     dx meters horizontally (E-W) and dy meters vertically. [N-S]
     """
     new_lat = lat + ((dy / EARTH_RADIUS) * (180 / math.pi)) / 1000
-    new_long = long + ((dx / EARTH_RADIUS) * (180 / math.pi) / math.cos(lat * math.pi / 180))
+    new_long = long + (
+        (dx / EARTH_RADIUS) * (180 / math.pi) / math.cos(lat * math.pi / 180)
+    )
     return new_lat, new_long
 
 
@@ -135,7 +146,7 @@ def meters_to_lat(m):
     """
     Returns an approximation of m meters in units of latitude.
     """
-    lat = ((m / EARTH_RADIUS) * (180 / math.pi))
+    lat = (m / EARTH_RADIUS) * (180 / math.pi)
     return lat
 
 
@@ -143,7 +154,7 @@ def meters_to_long(m, latitude):
     """
     Returns an approximation of m meters in units of longitude.
     """
-    long = ((m / EARTH_RADIUS) * (180 / math.pi) / math.cos(latitude * math.pi / 180))
+    long = (m / EARTH_RADIUS) * (180 / math.pi) / math.cos(latitude * math.pi / 180)
     return long
 
 

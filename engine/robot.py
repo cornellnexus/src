@@ -27,9 +27,9 @@ class Robot:
 
     def __init__(self, robot_state):
         """
-            Arguments:
-            robot_state: an instance encapsulating conditions, measurements, etc. (i.e. all data)
-                         about this robot  
+        Arguments:
+        robot_state: an instance encapsulating conditions, measurements, etc. (i.e. all data)
+                     about this robot
         """
         self.robot_state = robot_state
 
@@ -45,7 +45,9 @@ class Robot:
     def execute_traversal(self, mission_state, database):
         return traversal_logic(self.robot_state, mission_state, database)
 
-    def execute_obstacle_avoidance(self, ):
+    def execute_obstacle_avoidance(
+        self,
+    ):
         avoid_obstacle_logic(self.robot_state)
 
     def execute_return(self, mission_state, database):
@@ -53,6 +55,3 @@ class Robot:
 
     def execute_docking(self):
         docking_logic(self.robot_state)
-
-
-

@@ -1,4 +1,5 @@
 from time import sleep
+
 # from engine_rpi import *
 from grid import *
 
@@ -7,14 +8,14 @@ import os.path
 cwd = os.getcwd()
 import sys
 
-sys.path.append(cwd[0:cwd.index('2020-2021') - 1] + "/electrical")
+sys.path.append(cwd[0 : cwd.index("2020-2021") - 1] + "/electrical")
 from gpiozero import Robot, DigitalInputDevice
 import gps
 
 SAMPLETIME = 1
 
 # Call this method in Engine every 5th node or boundary?
-# -> add constructor for current position/target 
+# -> add constructor for current position/target
 # change next target to be 5th node away or next boundary
 target = Grid.queue[0]
 KP = 0.02
@@ -58,8 +59,16 @@ while True:
     lat_error = target[0] - lat_value
     long_error = target[1] - long_value
 
-    target_lat += (lat_error * KP) + (((lat_error - lat_prev_error) / SAMPLETIME) * KD) + (lat_sum_error * KI)
-    target_long += (long_error * KP) + (((long_error - long_prev_error) / SAMPLETIME) * KD) + (long_sum_error * KI)
+    target_lat += (
+        (lat_error * KP)
+        + (((lat_error - lat_prev_error) / SAMPLETIME) * KD)
+        + (lat_sum_error * KI)
+    )
+    target_long += (
+        (long_error * KP)
+        + (((long_error - long_prev_error) / SAMPLETIME) * KD)
+        + (long_sum_error * KI)
+    )
 
     # examples i see online have bounds but idk if that is applicable in our case
     # m1_speed = max(min(1, m1_speed), 0)

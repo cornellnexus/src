@@ -17,7 +17,9 @@ class SensorModule:
             write: True if IMU data should be written to a file, False if not. The file is named after the current
             datetime.
         """
-        self.port = serial.Serial(port="/dev/tty.usbserial-017543DC", baudrate=57600, timeout=0)
+        self.port = serial.Serial(
+            port="/dev/tty.usbserial-017543DC", baudrate=57600, timeout=0
+        )
         self.port.flushInput()
         self.imu_dict = {"mag": {"x": 0, "y": 0}}
         self.created = datetime.now().strftime("%d-%m-%Y_%H_%M_%S")
@@ -36,7 +38,7 @@ class SensorModule:
                 self.imu_dict = ast.literal_eval(line.rstrip("\n"))
 
         if self.write_data:
-            imu_file = open("csv/IMU_" + self.created + ".txt", 'w+')
+            imu_file = open("csv/IMU_" + self.created + ".txt", "w+")
             imu_file.write(json.dumps(self.imu_dict) + "\n")
             imu_file.close()
 
@@ -50,7 +52,7 @@ class SensorModule:
             self.gps_dict = ast.literal_eval(line.rstrip("\n"))
 
         if self.write_data:
-            gps_file = open("csv/GPS_" + self.created + ".txt", 'a')
+            gps_file = open("csv/GPS_" + self.created + ".txt", "a")
             gps_file.write(json.dumps(self.gps_dict) + "\n")
             gps_file.close()
 
@@ -65,9 +67,15 @@ class SensorModule:
         """
         measurement = np.zeros((3, 1))
 
-        x_measurement = get_vincenty_x(origin, (self.gps_dict["lat"], self.gps_dict["lon"]))
-        y_measurement = get_vincenty_y(origin, (self.gps_dict["lat"], self.gps_dict["lon"]))
-        theta_measurement = math.degrees(math.atan2(self.imu_dict["mag"]["y"], self.imu_dict["mag"]["x"]))
+        x_measurement = get_vincenty_x(
+            origin, (self.gps_dict["lat"], self.gps_dict["lon"])
+        )
+        y_measurement = get_vincenty_y(
+            origin, (self.gps_dict["lat"], self.gps_dict["lon"])
+        )
+        theta_measurement = math.degrees(
+            math.atan2(self.imu_dict["mag"]["y"], self.imu_dict["mag"]["x"])
+        )
 
         measurement[0] = x_measurement
         measurement[1] = y_measurement
