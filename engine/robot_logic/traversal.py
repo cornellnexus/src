@@ -59,51 +59,45 @@ def simple_move_to_target_node(robot_state, target, allowed_dist_error, database
         can be from a node for the robot to have "visited" that node
         database: 
     """
-    
-    robot_state.goal_location = target
+    import matplotlib.pyplot as plt
 
-    # Calculate the desired angle (heading) to the target
-    desired_angle = math.atan2(
-        target[1] - robot_state.state[1], target[0] - robot_state.state[0])
-    #TODO Set the allowed angle error 
-    
-    heading_error = robot_state.state[2] - desired_angle
-    allowed_angle_error = 10
 
-    omega = 5  # TODO Adjust the angular velocity as needed
-    vel = 50  # TODO Adjust the velocity as needed
-
-    #Continously adjusts the robot's heading to match a desired angle. Motor speeds are constant, 
-    #and the direction is determined by the sign of the error 
-    while(Math.abs(heading_error) < allowed_angle_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
-        #Set the motors for the robot to turn at a constant velocity in the correct direction for 0.5 seconds 
-        if(heading_error > 0){
-            robot_state.motor_controller.spin_motors(omega, vel)
-        }else{
-            robot_state.motor_controller.spin_motors(-omega, vel)
-        }
-        time.sleep(0.5)
-        robot_state.motor_controller.spin_motors(0,0)
-        time.sleep(0.01)
-
-        #Update heading_error
-        heading_error = robot_state.state[2] - desired_angle
-
-    
-    # Location error (in meters)
+    # location error (in meters)
     distance_away = calculate_dist(target, robot_state.state)
-
-    #Continously moves the robot forward to travel a target distance. Motor speeds are constant. 
+    robot_state.goal_location = target
+    
     while (distance_away > allowed_dist_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
-        #Set the motors to drive forward at a constant velocity for 0.5 seconds
-        robot_state.motor_controller.spin_motors(0, vel)
-        time.sleep(0.5)
-        robot_state.motor_controller.spin_motors(0,0)
-        time.sleep(0.01)
-        
-        #Update location error
-        distance_away = calculate_dist(target, robot_state.state)
+        # Error in terms of latitude and longitude, NOT meters
+        x_coords_error = target[0] - robot_state.state[0]
+        y_coords_error = target[1] - robot_state.state[1]
 
+        desired_angle = math.atan2(
+            target[1] - robot_state.state[1], target[0] - robot_state.state[0])
+
+        x_vel = x_coords_error
+        y_vel = y_coords_error
+
+        cmd_v, cmd_w = feedback_lin(
+            predicted_state, x_vel, y_vel, robot_state.epsilon)
+
+        # clamping of velocities:
+        (limited_cmd_v, limited_cmd_w) = limit_cmds(
+            cmd_v, cmd_w, robot_state.max_velocity, robot_state.radius)
+        # self.linear_v = limited_cmd_v[0]
+        # self.angular_v = limited_cmd_w[0]
+
+        robot_state.linear_v = limited_cmd_v[0]
+        robot_state.angular_v = limited_cmd_w[0]
+        travel(robot_state, robot_state.time_step *
+               limited_cmd_v[0], robot_state.time_step * limited_cmd_w[0])
+        if not robot_state.is_sim:
+            robot_state.motor_controller.spin_motors(
+                limited_cmd_w[0], limited_cmd_v[0])
+            time.sleep(10)
+
+
+        # location error (in meters)
+        distance_away = calculate_dist(target, robot_state.state)
         
     
 
