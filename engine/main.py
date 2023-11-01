@@ -31,15 +31,31 @@ if __name__ == "__main__":
     )  # Let user define if on the pi, otherwise set to True
     r2d2 = Robot(robot_state=r2d2_state)
     database = DataBase(r2d2)  # TODO: Replace w new packet transmission impl
+    init_control_mode = user_args.get("control_mode", None)
+    if init_control_mode == "lawnmower":
+        init_control_mode = ControlMode.LAWNMOWER
+    elif init_control_mode == "lawnmower_a":
+        init_control_mode = ControlMode.LAWNMOWER_A
+    elif init_control_mode == "lawnmower_b":
+        init_control_mode = ControlMode.LAWNMOWER_B
+    elif init_control_mode == "spiral":
+        init_control_mode = ControlMode.SPIRAL
+    elif init_control_mode == "straight":
+        init_control_mode = ControlMode.STRAIGHT
+    elif init_control_mode == "manual":
+        init_control_mode = ControlMode.MANUAL
+    elif init_control_mode == "roomba":
+        init_control_mode = ControlMode.ROOMBA
+    else:
+        raise Exception("Control Mode Undefined")
+
     mission_state = Mission_State(
         robot=r2d2,
         base_station_coord=(
             user_args.get("base_lat", 42.444250),
             user_args.get("base_long", -76.483682),
         ),
-        init_control_mode=ControlMode.LAWNMOWER
-        if user_args.get("control_mode", "lawnmower") == "lawnmower"
-        else ControlMode.ROOMBA,
+        init_control_mode=init_control_mode,
     )
     r2d2_state.control_mode = mission_state.control_mode
     m = Mission(mission_state=mission_state)
