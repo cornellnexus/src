@@ -38,9 +38,10 @@ if __name__ == "__main__":
             user_args.get("base_long", -76.483682),
         ),
         init_control_mode=ControlMode.LAWNMOWER
-        if user_args.get("lawnmower", True)
+        if user_args.get("control_mode", "lawnmower") == "lawnmower"
         else ControlMode.ROOMBA,
     )
+    r2d2_state.control_mode = mission_state.control_mode
     m = Mission(mission_state=mission_state)
 
     """------------------- MISSION EXECUTION -------------------"""
