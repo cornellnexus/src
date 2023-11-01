@@ -78,13 +78,11 @@ def simple_move_to_target_node(robot_state, target, allowed_dist_error, database
         y_vel = y_coords_error
 
         cmd_v, cmd_w = feedback_lin(
-            predicted_state, x_vel, y_vel, robot_state.epsilon)
+            robot_state.state, x_vel, y_vel, robot_state.epsilon)
 
         # clamping of velocities:
         (limited_cmd_v, limited_cmd_w) = limit_cmds(
             cmd_v, cmd_w, robot_state.max_velocity, robot_state.radius)
-        # self.linear_v = limited_cmd_v[0]
-        # self.angular_v = limited_cmd_w[0]
 
         robot_state.linear_v = limited_cmd_v[0]
         robot_state.angular_v = limited_cmd_w[0]
@@ -94,8 +92,7 @@ def simple_move_to_target_node(robot_state, target, allowed_dist_error, database
             robot_state.motor_controller.spin_motors(
                 limited_cmd_w[0], limited_cmd_v[0])
             time.sleep(10)
-
-
+            
         # location error (in meters)
         distance_away = calculate_dist(target, robot_state.state)
         
