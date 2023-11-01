@@ -118,9 +118,6 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             robot_state.time_step * limited_cmd_v[0],
             robot_state.time_step * limited_cmd_w[0],
         )
-        if not robot_state.is_sim:
-            robot_state.motor_controller.spin_motors(limited_cmd_w[0], limited_cmd_v[0])
-            time.sleep(10)
 
         # Get state after movement:
         predicted_state = robot_state.state  # this will come from Kalman Filter
@@ -164,13 +161,17 @@ def travel(robot_state, delta_d, delta_phi):
         robot_state.truthpose = np.append(
             robot_state.truthpose, np.transpose(robot_state.state), 0
         )
-    # otherwise, we update the robot state using EKF
+    # otherwise, we update the robot state using kinematics and EKF
     else:
         update_state(
             robot_state,
             delta_d / robot_state.time_step,
             delta_phi / robot_state.time_step,
         )
+        robot_state.motor_controller.motors(
+            delta_phi / robot_state.time_step, delta_d / robot_state.time_step
+        )
+        time.sleep(robot_state.time_step)
 
 
 def update_state(robot_state, velocity, omega):
@@ -246,21 +247,10 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius):
         # sensor should not detect something in the robot
         if (next_radius > roomba_radius) or is_next_timestep_blocked:
             # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
-            if robot_state.is_sim:
-                # for some reason I don't think this should work. This needs to be blocking: wait for the robot to finish going backward before turning
-                travel(robot_state, -robot_state.move_dist, 0)
-                travel(robot_state, 0, robot_state.turn_angle)
-            else:
-                robot_state.motor_controller.motors(0, 0)
-                # TODO: change this to pid or time based. NEED TO MAKE SURE ROBOT DOESN'T BREAK WHEN GOING FROM
-                #  POS VEL TO NEG VEL IN A SHORT PERIOD OF TIME -> ramp down prob
+            travel(robot_state, -robot_state.move_dist, 0)
+            travel(robot_state, 0, robot_state.turn_angle)
         else:
-            if robot_state.is_sim:
-                travel(robot_state, robot_state.move_dist, 0)
-            else:
-                # TODO: determine what vel to run this at
-                robot_state.motor_controller.motors(0, 0)
-                time.sleep(10)
+            travel(robot_state, robot_state.move_dist, 0)
         dt += 10  # accumulation in time in ms
         exit_boolean = dt > time_limit
     robot_state.phase = Phase.COMPLETE
@@ -294,9 +284,6 @@ def turn_to_target_heading(
         )
 
         travel(robot_state, 0, robot_state.time_step * limited_cmd_w)
-        if not robot_state.is_sim:
-            robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
-            time.sleep(10)
 
         # Get state after movement:
         predicted_state = robot_state.state  # this will come from Kalman Filter
