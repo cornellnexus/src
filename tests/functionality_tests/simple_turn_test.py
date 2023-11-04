@@ -4,12 +4,13 @@ from engine.robot_state import Robot_State
 from engine.robot import Robot
 from engine.robot_logic.traversal import simpler_turn_to_target_heading
 from engine.database import DataBase
+import numpy as np
 import math
 
 if __name__ == "__main__":
     # 0 does nothing, 1 is a 90 degree turn, 2 is a 180 degree turn, 3 is a -90 degree turn, 4 is a negative 180 degree turn
     test_state = 0
-    rb_state = Robot_State(0, 0, 0, 0.2, 0.5, 0.2)
+    rb_state = Robot_State(x_pos=0, y_pos = 0, heading = 0, epsilon = 0.2, max_velocity = 0.5, radius = 0.2)
     r2d2 = Robot(rb_state)
     database = DataBase(r2d2)
     r2d2.execute_setup()
