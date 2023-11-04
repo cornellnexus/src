@@ -340,7 +340,7 @@ class Grid:
         border_list = []
         leftmost_node = None
         left_bottom_most_node_pos = None
-        left_top_most_node_pos = None
+        starter_node = None
 
         for row in range(self.num_rows):
             for col in range(self.num_cols):
@@ -348,6 +348,8 @@ class Grid:
                 if node.is_active and self.is_on_border(
                     (row, col), self.num_rows, self.num_cols
                 ):
+                    if row == 3:
+                        print(row, col, "PASSED")
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
                     border_list.append((node, row, col))
@@ -358,18 +360,24 @@ class Grid:
                     ):
                         leftmost_node = node
                         left_bottom_most_node_pos = (row, col)
-                    elif (
-                        left_top_most_node_pos is None
-                        or (not is_vertical and col > left_top_most_node_pos[1])
-                        or (is_vertical and row > left_top_most_node_pos[0])
-                    ):
-                        leftmost_node = node
-                        left_top_most_node_pos = (row, col)
+
+        starter_node = left_bottom_most_node_pos
+        row = starter_node[0]
+        for col in range(self.num_cols):
+            print(row, col)
+            node = self.nodes[row][col]
+            if node.is_active and self.is_on_border(
+                (row, col), self.num_rows, self.num_cols
+            ):
+                print("yes is ACTIVE")
+                if is_vertical and col > starter_node[1]:
+                    starter_node = (row, col)
 
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
         self.left_bottom_most_node_pos = left_bottom_most_node_pos
-        self.left_top_most_node_pos = left_top_most_node_pos
+
+        self.starter_node = starter_node
         print(
             ",,..,,.,.,.,.,.,..,left_bottom_most_node_pos",
             left_bottom_most_node_pos,
@@ -378,8 +386,8 @@ class Grid:
             ".,,,,.,.,,,.,.,.,.",
         )
         print(
-            ",,..,,.,.,.,.,.,..,left_top_most_node_pos",
-            left_top_most_node_pos,
+            ",,..,,.,.,.,.,.,..,starter_node",
+            starter_node,
             ".,,,,.,.,,,.,.,.,.",
         )
 
@@ -733,7 +741,7 @@ class Grid:
             self.direction == self.Direction.DOWN
             or self.direction == self.Direction.LEFT
         ):
-            self.curr_pos = self.left_top_most_node_pos
+            self.curr_pos = self.starter_node
         self.waypoints.append(self.curr_pos)
 
         while not self.waypoints_is_finished:
