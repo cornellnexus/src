@@ -17,9 +17,16 @@ def main():
         print("flip rows, cols for traversal")
 
     activation_type = input("Activation type: ")
-    is_vertical = "True" == input("Vertical traversal: ")
-    if is_vertical:
+    direction = input("Traversal Direction: ")
+    print(direction)
+    if direction == "UP":
         grid.direction = grid.Direction.UP
+    elif direction == "DOWN":
+        grid.direction = grid.Direction.DOWN
+    elif direction == "RIGHT":
+        grid.direction = grid.Direction.RIGHT
+    else:
+        grid.direction = grid.Direction.LEFT
     plt.figure()
     plt.title("Activated Nodes")
     plt.xlim(-1, grid.get_num_rows() + 1)
@@ -35,7 +42,7 @@ def main():
             rec_row_start, rec_col_start, rec_row_limit, rec_col_limit
         )
         grid.find_border_nodes()
-        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(direction)
 
     if activation_type == "rectangle":
         rec_row_start = rows // 3  # Good value 13
@@ -46,7 +53,7 @@ def main():
             rec_row_start, rec_col_start, rec_row_limit, rec_col_limit
         )
         grid.find_border_nodes()
-        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(direction)
 
     if activation_type == "circle":
         circle_center_row = rows // 2  # Good value 19
@@ -54,7 +61,7 @@ def main():
         circle_radius = min(rows, cols) // 2  # Good value 17
         grid.activate_circle(circle_center_row, circle_center_col, circle_radius)
         grid.find_border_nodes()
-        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(direction)
 
     # TODO: Vertical traversal in triangle
     # The triangle test is currently specific for horizontal traversal, and does not work for vertical traversal due to its orientation
@@ -67,14 +74,14 @@ def main():
         y3 = cols // 6  # Good value 5
         grid.activate_triangle((x1, y1), (x2, y2), (x3, y3))
         grid.find_border_nodes()
-        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(direction)
 
     if activation_type == "line":
         row = 0  # rows are y position
         col = cols // 2  # cols are x position
         grid.activate_line((row, col), n=cols // 2, is_horizontal=False)
         grid.find_border_nodes()
-        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(direction)
 
     # Questions: what if we make a new file for visualizing the path? It would also help with catching exceptions.
     #  For example, `node = grid.nodes[i,j]` can throw index out of bound error given STEP_SIZE_METERS of 100,
