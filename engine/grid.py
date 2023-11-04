@@ -360,15 +360,31 @@ class Grid:
                         leftmost_node = node
                         bottom_left_pos = (row, col)
 
+        bottom_right_pos = bottom_left_pos
+        l_col = bottom_left_pos[1]
+        for row in range(self.num_rows):
+            node = self.nodes[row][l_col]
+            if row > bottom_right_pos[0]:
+                if node.is_active and self.is_on_border(
+                    (row, l_col), self.num_rows, self.num_cols
+                ):
+                    bottom_right_pos = (row, l_col)
+
         top_left_pos = bottom_left_pos
-        row = top_left_pos[0]
+        top_right_pos = bottom_right_pos
+        l_row = top_left_pos[0]
+        r_row = top_right_pos[0]
         for col in range(self.num_cols):
-            node = self.nodes[row][col]
-            if node.is_active and self.is_on_border(
-                (row, col), self.num_rows, self.num_cols
-            ):
-                if is_vertical and col > top_left_pos[1]:
-                    top_left_pos = (row, col)
+            node = self.nodes[l_row][col]
+            if col > top_left_pos[1]:
+                if node.is_active and self.is_on_border(
+                    (l_row, col), self.num_rows, self.num_cols
+                ):
+                    top_left_pos = (l_row, col)
+                if node.is_active and self.is_on_border(
+                    (r_row, col), self.num_rows, self.num_cols
+                ):
+                    top_right_pos = (r_row, col)
 
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
@@ -378,13 +394,17 @@ class Grid:
         print(
             ",,..,,.,.,.,.,.,..,bottom_left_pos",
             bottom_left_pos,
+            ",,..,,.,.,.,.,.,..,top_left_pos",
+            top_left_pos,
             is_vertical,
             self.direction,
             ".,,,,.,.,,,.,.,.,.",
         )
         print(
-            ",,..,,.,.,.,.,.,..,top_left_pos",
-            top_left_pos,
+            ",,..,,.,.,.,.,.,..,bottom_right_pos",
+            bottom_right_pos,
+            ",,..,,.,.,.,.,.,..,top_right_pos",
+            top_right_pos,
             ".,,,,.,.,,,.,.,.,.",
         )
 
