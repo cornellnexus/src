@@ -46,7 +46,7 @@ class Grid:
         #num_cols: Number of columns of Nodes in the grid. [int]
 
         #leftmost_node: the leftmost active node in the Grid which is used as the starting node in lawnmower and spiral traversal.
-        #leftmost_node_pos: the (row,col) position of the leftmost node
+        #left_bottom_most_node_pos: the (row,col) position of the leftmost node
         #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
         #active_waypoints_list: a list of active waypoints for every traversal algorithm. It is used to implement a color visualizaition of active waypoints.
         #inactive_waypoints_list: a list of inactive waypoints for every traversal algorithm. It is used to implement a color visualization of inactive waypoints.
@@ -140,7 +140,7 @@ class Grid:
         )
         self.border_nodes = None
         self.leftmost_node = None
-        self.leftmost_node_pos = None
+        self.left_bottom_most_node_pos = None
         self.active_waypoints_list = []
         self.inactive_waypoints_list = []
 
@@ -339,7 +339,8 @@ class Grid:
             is_vertical = False
         border_list = []
         leftmost_node = None
-        leftmost_node_pos = None
+        left_bottom_most_node_pos = None
+        left_top_most_node_pos = None
 
         for row in range(self.num_rows):
             for col in range(self.num_cols):
@@ -351,16 +352,36 @@ class Grid:
                     self.nodes[row][col].is_border = True
                     border_list.append((node, row, col))
                     if (
-                        leftmost_node_pos is None
-                        or (not is_vertical and col < leftmost_node_pos[1])
-                        or (is_vertical and row < leftmost_node_pos[0])
+                        left_bottom_most_node_pos is None
+                        or (not is_vertical and col < left_bottom_most_node_pos[1])
+                        or (is_vertical and row < left_bottom_most_node_pos[0])
                     ):
                         leftmost_node = node
-                        leftmost_node_pos = (row, col)
+                        left_bottom_most_node_pos = (row, col)
+                    elif (
+                        left_top_most_node_pos is None
+                        or (not is_vertical and col > left_top_most_node_pos[1])
+                        or (is_vertical and row > left_top_most_node_pos[0])
+                    ):
+                        leftmost_node = node
+                        left_top_most_node_pos = (row, col)
 
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
-        self.leftmost_node_pos = leftmost_node_pos
+        self.left_bottom_most_node_pos = left_bottom_most_node_pos
+        self.left_top_most_node_pos = left_top_most_node_pos
+        print(
+            ",,..,,.,.,.,.,.,..,left_bottom_most_node_pos",
+            left_bottom_most_node_pos,
+            is_vertical,
+            self.direction,
+            ".,,,,.,.,,,.,.,.,.",
+        )
+        print(
+            ",,..,,.,.,.,.,.,..,left_top_most_node_pos",
+            left_top_most_node_pos,
+            ".,,,,.,.,,,.,.,.,.",
+        )
 
     # --------------------- HELPER FUNCTIONS FOR TRAVERSAL CREATION -------------- #
     def edge_column_of_next_row(self, pos):
@@ -677,7 +698,7 @@ class Grid:
             else:
                 self.curr_pos = (turning_column, next_row)
 
-    def get_all_guided_lawnmower_waypoints_adjustable(self, is_vertical):
+    def get_all_guided_lawnmower_waypoints_adjustable(self, direction):
         """
         Returns the waypoints being traversed. The algorithm traverses from bottom
         up starting from left to right.
@@ -691,19 +712,36 @@ class Grid:
         """
         # TODO: move find border nodes into this func instead of doing it
         # everytime before this is called
-        self.curr_pos = self.leftmost_node_pos
-        self.waypoints.append(self.curr_pos)
+        # self.curr_pos = self.left_bottom_most_node_pos
         # TODO: Change to allow choosing down and left directions
         # TODO: Implement function to traverse vertical triangle/ slanted shapes
-        if is_vertical:
-            self.direction = self.direction.UP
+        if direction == "DOWN":
+            self.direction = self.Direction.DOWN
+        elif direction == "UP":
+            self.direction = self.Direction.UP
+        elif direction == "LEFT":
+            self.direction = self.Direction.LEFT
+        else:
+            self.direction = self.Direction.RIGHT
+        print(direction, self.direction)
+        is_vertical = (
+            self.direction == self.Direction.DOWN or self.direction == self.Direction.UP
+        )
+        self.curr_pos = self.left_bottom_most_node_pos
+
+        if (
+            self.direction == self.Direction.DOWN
+            or self.direction == self.Direction.LEFT
+        ):
+            self.curr_pos = self.left_top_most_node_pos
+        self.waypoints.append(self.curr_pos)
+
         while not self.waypoints_is_finished:
             if self.curr_pos == None:
                 self.waypoints_is_finished = True
 
             # Handle traversal from left/right and turning CW/CCW at the end of
             # the row (or terminating).
-
             self.add_guided_waypoints(is_vertical)
         print(self.waypoints)
         return self.waypoints
