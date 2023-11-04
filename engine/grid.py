@@ -400,22 +400,6 @@ class Grid:
         self.top_right_pos = top_right_pos
 
         self.top_left_pos = top_left_pos
-        print(
-            ",,..,,.,.,.,.,.,..,bottom_left_pos",
-            bottom_left_pos,
-            ",,..,,.,.,.,.,.,..,top_left_pos",
-            top_left_pos,
-            is_vertical,
-            self.direction,
-            ".,,,,.,.,,,.,.,.,.",
-        )
-        print(
-            ",,..,,.,.,.,.,.,..,bottom_right_pos",
-            bottom_right_pos,
-            ",,..,,.,.,.,.,.,..,top_right_pos",
-            top_right_pos,
-            ".,,,,.,.,,,.,.,.,.",
-        )
 
     # --------------------- HELPER FUNCTIONS FOR TRAVERSAL CREATION -------------- #
     def edge_column_of_next_row(self, pos):
@@ -757,7 +741,6 @@ class Grid:
             self.direction = self.Direction.LEFT
         else:
             self.direction = self.Direction.RIGHT
-        print(direction, self.direction)
         is_vertical = (
             self.direction == self.Direction.DOWN or self.direction == self.Direction.UP
         )
@@ -776,7 +759,7 @@ class Grid:
             # Handle traversal from left/right and turning CW/CCW at the end of
             # the row (or terminating).
             self.add_guided_waypoints(is_vertical)
-        print(self.waypoints)
+        # print(self.waypoints)
         return self.waypoints
 
     # --------------------- STANDARD TRAVERSAL ALGORITHMS -------------- #
