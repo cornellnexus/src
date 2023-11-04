@@ -389,6 +389,9 @@ class Grid:
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
         self.bottom_left_pos = bottom_left_pos
+        self.top_left_pos = top_left_pos
+        self.bottom_right_pos = bottom_right_pos
+        self.top_right_pos = top_right_pos
 
         self.top_left_pos = top_left_pos
         print(
@@ -754,11 +757,10 @@ class Grid:
         )
         self.curr_pos = self.bottom_left_pos
 
-        if (
-            self.direction == self.Direction.DOWN
-            or self.direction == self.Direction.LEFT
-        ):
+        if self.direction == self.Direction.DOWN:
             self.curr_pos = self.top_left_pos
+        if self.direction == self.Direction.LEFT:
+            self.curr_pos = self.bottom_right_pos
         self.waypoints.append(self.curr_pos)
 
         while not self.waypoints_is_finished:
