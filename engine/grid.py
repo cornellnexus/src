@@ -46,7 +46,7 @@ class Grid:
         #num_cols: Number of columns of Nodes in the grid. [int]
 
         #leftmost_node: the leftmost active node in the Grid which is used as the starting node in lawnmower and spiral traversal.
-        #left_bottom_most_node_pos: the (row,col) position of the leftmost node
+        #bottom_left_pos: the (row,col) position of the leftmost node
         #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
         #active_waypoints_list: a list of active waypoints for every traversal algorithm. It is used to implement a color visualizaition of active waypoints.
         #inactive_waypoints_list: a list of inactive waypoints for every traversal algorithm. It is used to implement a color visualization of inactive waypoints.
@@ -140,7 +140,7 @@ class Grid:
         )
         self.border_nodes = None
         self.leftmost_node = None
-        self.left_bottom_most_node_pos = None
+        self.bottom_left_pos = None
         self.active_waypoints_list = []
         self.inactive_waypoints_list = []
 
@@ -339,55 +339,52 @@ class Grid:
             is_vertical = False
         border_list = []
         leftmost_node = None
-        left_bottom_most_node_pos = None
-        starter_node = None
-
+        bottom_left_pos = None
+        top_left_pos = None
+        bottom_right_pos = None
+        top_right_pos = None
         for row in range(self.num_rows):
             for col in range(self.num_cols):
                 node = self.nodes[row][col]
                 if node.is_active and self.is_on_border(
                     (row, col), self.num_rows, self.num_cols
                 ):
-                    if row == 3:
-                        print(row, col, "PASSED")
                     # check if this is an active node and on the border
                     self.nodes[row][col].is_border = True
                     border_list.append((node, row, col))
                     if (
-                        left_bottom_most_node_pos is None
-                        or (not is_vertical and col < left_bottom_most_node_pos[1])
-                        or (is_vertical and row < left_bottom_most_node_pos[0])
+                        bottom_left_pos is None
+                        or (not is_vertical and col < bottom_left_pos[1])
+                        or (is_vertical and row < bottom_left_pos[0])
                     ):
                         leftmost_node = node
-                        left_bottom_most_node_pos = (row, col)
+                        bottom_left_pos = (row, col)
 
-        starter_node = left_bottom_most_node_pos
-        row = starter_node[0]
+        top_left_pos = bottom_left_pos
+        row = top_left_pos[0]
         for col in range(self.num_cols):
-            print(row, col)
             node = self.nodes[row][col]
             if node.is_active and self.is_on_border(
                 (row, col), self.num_rows, self.num_cols
             ):
-                print("yes is ACTIVE")
-                if is_vertical and col > starter_node[1]:
-                    starter_node = (row, col)
+                if is_vertical and col > top_left_pos[1]:
+                    top_left_pos = (row, col)
 
         self.border_nodes = border_list
         self.leftmost_node = leftmost_node
-        self.left_bottom_most_node_pos = left_bottom_most_node_pos
+        self.bottom_left_pos = bottom_left_pos
 
-        self.starter_node = starter_node
+        self.top_left_pos = top_left_pos
         print(
-            ",,..,,.,.,.,.,.,..,left_bottom_most_node_pos",
-            left_bottom_most_node_pos,
+            ",,..,,.,.,.,.,.,..,bottom_left_pos",
+            bottom_left_pos,
             is_vertical,
             self.direction,
             ".,,,,.,.,,,.,.,.,.",
         )
         print(
-            ",,..,,.,.,.,.,.,..,starter_node",
-            starter_node,
+            ",,..,,.,.,.,.,.,..,top_left_pos",
+            top_left_pos,
             ".,,,,.,.,,,.,.,.,.",
         )
 
@@ -720,7 +717,7 @@ class Grid:
         """
         # TODO: move find border nodes into this func instead of doing it
         # everytime before this is called
-        # self.curr_pos = self.left_bottom_most_node_pos
+        # self.curr_pos = self.bottom_left_pos
         # TODO: Change to allow choosing down and left directions
         # TODO: Implement function to traverse vertical triangle/ slanted shapes
         if direction == "DOWN":
@@ -735,13 +732,13 @@ class Grid:
         is_vertical = (
             self.direction == self.Direction.DOWN or self.direction == self.Direction.UP
         )
-        self.curr_pos = self.left_bottom_most_node_pos
+        self.curr_pos = self.bottom_left_pos
 
         if (
             self.direction == self.Direction.DOWN
             or self.direction == self.Direction.LEFT
         ):
-            self.curr_pos = self.starter_node
+            self.curr_pos = self.top_left_pos
         self.waypoints.append(self.curr_pos)
 
         while not self.waypoints_is_finished:
