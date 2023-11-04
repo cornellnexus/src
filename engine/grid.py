@@ -337,27 +337,36 @@ class Grid:
         end of the function call, fields 'leftmost_node', 'leftmost_node_pos', and
         'border_nodes' will be initialized.
         """
+        # initialize variables
         is_vertical = True
         if (
             self.direction == self.Direction.LEFT
             or self.direction == self.Direction.RIGHT
         ):
             is_vertical = False
+
         border_list = []
         leftmost_node = None
         bottom_left_pos = None
         top_left_pos = None
         bottom_right_pos = None
         top_right_pos = None
+        # go through each row and column
         for row in range(self.num_rows):
             for col in range(self.num_cols):
                 node = self.nodes[row][col]
+                # check if this is an active node and on the border
                 if node.is_active and self.is_on_border(
                     (row, col), self.num_rows, self.num_cols
                 ):
-                    # check if this is an active node and on the border
+                    # add node to list of border nodes
                     self.nodes[row][col].is_border = True
                     border_list.append((node, row, col))
+                    # if the bottom_left_pos is uninitialized or
+                    # if we are traversing vertically, keep shifting the point to the left
+                    # if we are traversing horizontally, keep shifting the point downwards
+                    # This logic is necessary for cases like the circle, where the initial
+                    # position is different depending on if we are traversing vertically or horizonally
                     if (
                         bottom_left_pos is None
                         or (not is_vertical and col < bottom_left_pos[1])
@@ -731,7 +740,6 @@ class Grid:
         # TODO: move find border nodes into this func instead of doing it
         # everytime before this is called
         # self.curr_pos = self.bottom_left_pos
-        # TODO: Change to allow choosing down and left directions
         # TODO: Implement function to traverse vertical triangle/ slanted shapes
         if direction == "DOWN":
             self.direction = self.Direction.DOWN
