@@ -19,7 +19,7 @@ def main():
     activation_type = input("Activation type: ")
     direction = input("Traversal Direction: ")
     print(direction)
-    if direction == "UP":
+    if direction == "UP" or direction == "DOWN":
         grid.direction = grid.Direction.UP
     elif direction == "DOWN":
         grid.direction = grid.Direction.DOWN
