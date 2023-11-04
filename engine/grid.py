@@ -46,7 +46,10 @@ class Grid:
         #num_cols: Number of columns of Nodes in the grid. [int]
 
         #leftmost_node: the leftmost active node in the Grid which is used as the starting node in lawnmower and spiral traversal.
-        #bottom_left_pos: the (row,col) position of the leftmost node
+        #bottom_left_pos: the (row,col) position of the bottom leftmost node
+        #bottom_right_pos: the (row,col) position of the bottom rightmost node
+        #top_left_pos: the (row,col) position of the top leftmost node
+        #top_right_pos: the (row,col) position of the top rightmost node
         #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
         #active_waypoints_list: a list of active waypoints for every traversal algorithm. It is used to implement a color visualizaition of active waypoints.
         #inactive_waypoints_list: a list of inactive waypoints for every traversal algorithm. It is used to implement a color visualization of inactive waypoints.
@@ -141,6 +144,9 @@ class Grid:
         self.border_nodes = None
         self.leftmost_node = None
         self.bottom_left_pos = None
+        self.bottom_right_pos = None
+        self.top_left_pos = None
+        self.top_right_pos = None
         self.active_waypoints_list = []
         self.inactive_waypoints_list = []
 
