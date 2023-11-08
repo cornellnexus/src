@@ -228,16 +228,13 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
     accumulated_time = 0
     # TODO: battery_limit, time_limit, tank_capacity is full
     exit_boolean = False
-    if not robot_state.is_sim:
-        from electrical.ultrasonic_sensor import Ultrasonic
-
-        front_ultrasonic = Ultrasonic(0)
     curr_pos = past_pos = robot_state.state
     while not exit_boolean:
         # sensor should not detect something in the robot
         if (
             not robot_state.is_sim
-            and front_ultrasonic.distance() < robot_state.front_sensor_offset
+            and robot_state.front_ultrasonic.distance()
+            < robot_state.front_sensor_offset
         ):
             robot_state.phase = Phase.FAULT
             phase_change(robot_state)
@@ -256,7 +253,8 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
         if not robot_state.is_sim:
             # if obstacle detected; have to make sure move_dist < detect_obstacle_range; otherwise, robot might hit obstacle before we go back to this loop
             is_next_timestep_blocked = (
-                front_ultrasonic.distance() < robot_state.detect_obstacle_range
+                robot_state.front_ultrasonic.distance()
+                < robot_state.detect_obstacle_range
             )
         else:
             next_radius_2 = calculate_dist(base_station_loc, curr_pos[:2])
