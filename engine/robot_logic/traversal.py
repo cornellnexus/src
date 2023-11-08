@@ -255,11 +255,10 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
             is_next_timestep_blocked = (
                 robot_state.front_ultrasonic.distance()
                 < robot_state.detect_obstacle_range
-            )
+            ) or (next_radius < robot_state.detect_obstacle_range)
         else:
-            next_radius_2 = calculate_dist(base_station_loc, curr_pos[:2])
             threshold = 1
-            is_next_timestep_blocked = abs(next_radius_2 - roomba_radius) < threshold
+            is_next_timestep_blocked = abs(next_radius - roomba_radius) < threshold
         # sensor should not detect something in the robot
         if (next_radius > roomba_radius) or is_next_timestep_blocked:
             # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
