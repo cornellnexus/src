@@ -749,6 +749,8 @@ class Grid:
             self.direction = self.Direction.LEFT
         else:
             self.direction = self.Direction.RIGHT
+
+        self.find_border_nodes()
         is_vertical = (
             self.direction == self.Direction.DOWN or self.direction == self.Direction.UP
         )
