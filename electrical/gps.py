@@ -30,7 +30,7 @@ class GPS:
         """
         if not self.is_sim:
             geo = self.gps.geo_coords()
-            return {"long": geo.lon, "lat": geo.lat}
+            return {"latitude": geo.lat, "longitude": geo.lon}
 
     """ parse_gps[gps_line]: helper that takes in serial gps data and returns
         a coord in the form (longitude, latitude).

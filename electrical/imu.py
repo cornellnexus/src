@@ -32,7 +32,7 @@ class IMU:
         x = round(reading[0], num)
         y = round(reading[1], num)
         z = round(reading[2], num)
-        return x, y, z
+        return {"x-axis": x, "y-axis": y, "z-axis": z}
 
     def get_imu(self):
         """
@@ -40,8 +40,8 @@ class IMU:
         """
         if not self.is_sim:
             self.acc = self.set_num_dec(3, tuple(self.imu.acceleration))
-            self.gyro = self.set_num_dec(3, tuple(self.imu.gyro))
             self.mag = self.set_num_dec(3, tuple(self.imu.magnetic))
+            self.gyro = self.set_num_dec(3, tuple(self.imu.gyro))
             combined_data = self.imu_format(self.acc, self.mag, self.gyro)
             return combined_data
 
