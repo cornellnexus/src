@@ -27,9 +27,7 @@ def traversal_logic(robot_state, mission_state, database):
             database,
         )
         robot_state.enable_obstacle_avoidance = True
-        return None
-    elif control_mode == ControlMode.MANUAL or control_mode == ControlMode.LAWNMOWER_A:
-        print("MANUAL MODE IS UNIMPLEMENTED; LAWNMOWER_A IS BUGGY")
+        return robot_state, None
     else:
         return traverse_standard(
             robot_state,

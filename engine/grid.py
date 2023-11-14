@@ -858,7 +858,9 @@ class Grid:
         elif mode == ControlMode.STRAIGHT:
             waypoints = self.get_straight_line_waypoints(y_start_pct=0.5)
         elif mode == ControlMode.LAWNMOWER_A:
+            raise Exception("LAWNMOWER_A is currently buggy")
             waypoints = self.get_all_guided_lawnmower_waypoints_adjustable(True)
         else:
+            raise Exception("Invalid ControlMode")
             return []
         return waypoints
