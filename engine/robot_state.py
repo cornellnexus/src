@@ -132,9 +132,7 @@ class Robot_State:
         # Note: user-defined parameter; defaulted to most common use case
         self.radius = kwargs.get("radius", 0.2)
         self.move_dist = kwargs.get("move_dist", 0.5)
-        self.turn_angle = kwargs.get("turn_angle", 3)
-        # dividing by time_step ignores the effect of time_step on absolute
-        self.turn_angle = self.turn_angle / self.time_step
+        self.turn_angle = kwargs.get("turn_angle", 5 * math.pi / 7)
         # TODO: replace this with how far offset the sensor is to the front of the robot
         self.front_sensor_offset = kwargs.get("front_sensor_offset", 0)
         self.max_sensor_range = kwargs.get("max_sensor_range", 600)

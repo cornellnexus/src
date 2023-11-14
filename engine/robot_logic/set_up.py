@@ -32,6 +32,8 @@ def track_obstacle(robot_state):
     front_ultrasonic = None
     counter = 0  # added for testing
     while True:
+        if not robot_state.is_sim:
+            time.sleep(10)  # don't hog the cpu
         if not robot_state.enable_obstacle_avoidance:
             continue
         if robot_state.is_sim:
@@ -97,8 +99,6 @@ def track_obstacle(robot_state):
                     "a",
                 ) as fd:
                     fd.write("Fault" + "\n")
-        if not robot_state.is_sim:
-            time.sleep(10)  # don't hog the cpu
 
 
 def setup_logic(robot_state):

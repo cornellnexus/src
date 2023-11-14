@@ -68,3 +68,4 @@ class MotorControllerTest:
         self.test_straight()
         self.test_stop()
         self.test_turning_and_moving()
+        self.test_stop()

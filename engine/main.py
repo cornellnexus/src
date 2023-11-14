@@ -71,4 +71,4 @@ if __name__ == "__main__":
     m.execute_mission(database)  # Run main mission
     """ ---------- MISSION COMPLETE, PLOT TRUTH POSE --------------"""
     if config_args.get("simulate_trajectory"):
-        plot_sim_traj(m=m)  #  Plot the trajectory of the completed mission
+        plot_sim_traj(m=m)  # Plot the trajectory of the completed mission
