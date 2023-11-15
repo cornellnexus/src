@@ -861,6 +861,5 @@ class Grid:
             raise Exception("LAWNMOWER_A is currently buggy")
             waypoints = self.get_all_guided_lawnmower_waypoints_adjustable(True)
         else:
-            raise Exception("Invalid ControlMode")
             return []
         return waypoints
