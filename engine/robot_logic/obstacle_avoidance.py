@@ -39,6 +39,7 @@ def avoid_obstacle_logic(robot_state):
     while True:
         # fault has priority over obstacle avoidance
         if robot_state.phase == Phase.FAULT:
+            robot_state.motor_controller.spin_motors(0, 0)
             return None
 
         curr_pos = (robot_state.state[0], robot_state.state[1])
@@ -54,10 +55,12 @@ def avoid_obstacle_logic(robot_state):
         if curr_dist_to_goal < robot_state.goal_threshold:
             robot_state.phase = robot_state.prev_phase
             phase_change(robot_state)
+            robot_state.motor_controller.spin_motors(0, 0)
             return None
         elif has_traversed_boundary:
             robot_state.phase = Phase.FAULT  # cannot reach goal
             phase_change(robot_state)
+            robot_state.motor_controller.spin_motors(0, 0)
             return None
         # bug 2
         elif is_on_line and (curr_dist_to_goal < init_dist_to_goal):
@@ -67,6 +70,7 @@ def avoid_obstacle_logic(robot_state):
             ):
                 robot_state.phase = robot_state.prev_phase
                 phase_change(robot_state)
+                robot_state.motor_controller.spin_motors(0, 0)
                 return None
         else:
             execute_boundary_following(robot_state)
@@ -150,15 +154,17 @@ def execute_boundary_following(robot_state):
             robot_state.motor_controller.spin_motors(
                 0, direction * robot_state.turn_angle
             )
-        # NOTE: TEST WHETHER THIS ACTUALLY WORKS WHEN TURNING:
-        # IF NOT, MIGHT HAVE TO ADD LOCKS TO FORCE THE ROBOT TO TURN UNTIL IT IS PARALLEL TO ROBOT
-        # THIS INVOLVES A LOT OF SEQUENCE OF MOVES, SO IT MIGHT INVOLVE A LOT OF SEQUENTIAL UNLOCKING
-        # for example, if robot starts off parallel and it turns until parallel again,
-        # lock1 unlocks when robot no longer detects obstacle in front,
-        # then lock2 unlocks if lock1 unlocked and rb ultrasonic < rf ultrasonic.
-        # This is assuming rb ultrasonic > rf ultrasonic when turning ccw.
-        # otherwise, might have to have a condition where robot not moving and just turning
-        # and gets back to the same heading to keep turning
+    if not robot_state.is_sim:
+        time.sleep(10)
+    # NOTE: TEST WHETHER THIS ACTUALLY WORKS WHEN TURNING:
+    # IF NOT, MIGHT HAVE TO ADD LOCKS TO FORCE THE ROBOT TO TURN UNTIL IT IS PARALLEL TO ROBOT
+    # THIS INVOLVES A LOT OF SEQUENCE OF MOVES, SO IT MIGHT INVOLVE A LOT OF SEQUENTIAL UNLOCKING
+    # for example, if robot starts off parallel and it turns until parallel again,
+    # lock1 unlocks when robot no longer detects obstacle in front,
+    # then lock2 unlocks if lock1 unlocked and rb ultrasonic < rf ultrasonic.
+    # This is assuming rb ultrasonic > rf ultrasonic when turning ccw.
+    # otherwise, might have to have a condition where robot not moving and just turning
+    # and gets back to the same heading to keep turning
 
 
 # TODO: add dp to not traverse to node already traversed/in obstacle
