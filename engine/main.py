@@ -42,8 +42,6 @@ if __name__ == "__main__":
         init_control_mode = ControlMode.SPIRAL
     elif init_control_mode == "straight":
         init_control_mode = ControlMode.STRAIGHT
-    elif init_control_mode == "manual":
-        init_control_mode = ControlMode.MANUAL
     elif init_control_mode == "roomba":
         init_control_mode = ControlMode.ROOMBA
     else:

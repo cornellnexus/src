@@ -11,5 +11,4 @@ class ControlMode(Enum):
     LAWNMOWER_A = 3
     SPIRAL = 4
     ROOMBA = 5
-    MANUAL = 6
-    STRAIGHT = 7
+    STRAIGHT = 6
