@@ -16,8 +16,13 @@ def main():
         cols = h
         print("flip rows, cols for traversal")
 
-    activation_type = input("Activation type: ")
-    is_vertical = "True" == input("Vertical traversal: ")
+    #activation_type = input("Activation type: ")
+    #is_vertical = "True" == input("Vertical traversal: ")
+
+    ## TEMPORARY TESTING CHANGES: 
+    activation_type = "snake"
+    is_vertical = "True"
+    
     if is_vertical:
         grid.direction = grid.Direction.UP
     plt.figure()
@@ -73,6 +78,34 @@ def main():
         row = 0  # rows are y position
         col = cols // 2  # cols are x position
         grid.activate_line((row, col), n=cols // 2, is_horizontal=False)
+        grid.find_border_nodes()
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
+
+    if activation_type == "parallelogram":
+        rec_row_start = rows // 4
+        rec_row_limit = 3 * rows // 4
+        rec_col_start = 4
+        grid.activate_parallelogram(
+            rec_row_start, rec_col_start, rec_row_limit
+        )
+        grid.find_border_nodes()
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
+
+    if activation_type == "hexagon":
+        row = rows // 2
+        col = cols // 2
+        radius = 6
+        grid.activate_hexagon((row, col), radius)
+        grid.find_border_nodes()
+        way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
+    
+    if activation_type == "snake":
+        row = rows // 3
+        col = cols // 3
+        row_limit = 2 * rows // 3
+        col_limit = 2 * cols // 3
+        spacing = 3
+        grid.activate_snake((row, col), (row_limit, col_limit), spacing)
         grid.find_border_nodes()
         way_points = grid.get_all_guided_lawnmower_waypoints_adjustable(is_vertical)
 
