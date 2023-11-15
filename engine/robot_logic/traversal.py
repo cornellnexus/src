@@ -50,6 +50,7 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
 
     return robot_state, unvisited_waypoints
 
+#Does not use PID, EKF. The method assumes that we are physically running the robot and not running it in simulation.
 def simple_move_to_target_node(robot_state, target, allowed_dist_error, database):
     """
     Moves robot to target + or - allowed_dist_error
@@ -71,8 +72,7 @@ def simple_move_to_target_node(robot_state, target, allowed_dist_error, database
         x_coords_error = target[0] - robot_state.state[0]
         y_coords_error = target[1] - robot_state.state[1]
 
-        desired_angle = math.atan2(
-            target[1] - robot_state.state[1], target[0] - robot_state.state[0])
+        desired_angle = math.atan2(y_coords_error,  x_coords_error)
 
         x_vel = x_coords_error
         y_vel = y_coords_error
@@ -92,7 +92,7 @@ def simple_move_to_target_node(robot_state, target, allowed_dist_error, database
             robot_state.motor_controller.spin_motors(
                 limited_cmd_w[0], limited_cmd_v[0])
             time.sleep(10)
-            
+
         # location error (in meters)
         distance_away = calculate_dist(target, robot_state.state)
         
@@ -128,8 +128,7 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             iterations += 1
             if iterations == 50:
                 break
-        desired_angle = math.atan2(
-            target[1] - robot_state.state[1], target[0] - robot_state.state[0])
+        desired_angle = math.atan2( y_coords_error,  x_coords_error)
 
         x_vel = robot_state.loc_pid_x.update(x_coords_error)
         y_vel = robot_state.loc_pid_y.update(y_coords_error)
