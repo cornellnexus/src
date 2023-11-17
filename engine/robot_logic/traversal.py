@@ -86,6 +86,7 @@ def simple_move_to_target_node(robot_state, target, allowed_dist_error, database
 
         robot_state.linear_v = limited_cmd_v[0]
         robot_state.angular_v = limited_cmd_w[0]
+        #TODO: we need to unify time.sleep and robot_state.time_step
         travel(robot_state, robot_state.time_step *
                limited_cmd_v[0], robot_state.time_step * limited_cmd_w[0])
         if not robot_state.is_sim:

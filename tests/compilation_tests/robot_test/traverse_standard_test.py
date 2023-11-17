@@ -17,58 +17,40 @@ gps_noise_range = .3
 
 class TestMoveToTargetNode(unittest.TestCase):
 
-    def test1(self):
-        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=0,phase=2, position_kp=.1, heading_kp=.1)
-        r2d2 = Robot(robot_state=r2d2_state)
-        database = DataBase(r2d2)
+    def setUp(self):
+        self.r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=0, phase=2, position_kp=.1, heading_kp=.1)
+        self.r2d2 = Robot(robot_state=self.r2d2_state)
+        self.database = DataBase(self.r2d2)
+        self.allowed_dist_error = 0.5
 
-        allowed_dist_error = 0.05
-        move_to_target_node(r2d2_state,
-                            (42.444250, -66.483682), allowed_dist_error, database)
+    def test1(self):
+        #Modify allowed_dist_error for test 1
+        self.allowed_dist_error = 0.05
+        move_to_target_node(self.r2d2_state, (42.444250, -66.483682), self.allowed_dist_error, self.database)
     
     #Runs test1 using simple_move_to_target_node
     def test1_simple(self):
-        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=0,phase=2, position_kp=.1, heading_kp=.1)
-        r2d2 = Robot(robot_state=r2d2_state)
-        database = DataBase(r2d2)
-
-        allowed_dist_error = 0.05
-        simple_move_to_target_node(r2d2_state,
-                            (42.444250, -66.483682), allowed_dist_error, database)
+        #Modify allowed_dist_error for test 1
+        self.allowed_dist_error = 0.05
+        simple_move_to_target_node(self.r2d2_state, (42.444250, -66.483682), self.allowed_dist_error, self.database)
     
     def test2(self):
-        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=math.pi/2, phase=2, position_kp=.1, heading_kp=.1)
-        r2d2 = Robot(robot_state=r2d2_state)
-        database = DataBase(r2d2)
-
-        allowed_dist_error = 0.5
-        move_to_target_node(r2d2_state,
-                            (52.444750, -76.483682), allowed_dist_error, database)
+        #Modify heading for test 2
+        self.r2d2_state.heading = math.pi / 2
+        move_to_target_node(self.r2d2_state, (52.444750, -76.483682), self.allowed_dist_error, self.database)
+        
     #Runs test2 using simple_move_to_target_node
     def test2_simple(self):
-        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=math.pi/2, phase=2, position_kp=.1, heading_kp=.1)
-        r2d2 = Robot(robot_state=r2d2_state)
-        database = DataBase(r2d2)
-
-        allowed_dist_error = 0.5
-        simple_move_to_target_node(r2d2_state,
-                            (52.444750, -76.483682), allowed_dist_error, database)    
+        #Modify heading for test 2
+        self.r2d2_state.heading = math.pi / 2
+        simple_move_to_target_node(self.r2d2_state, (52.444750, -76.483682), self.allowed_dist_error, self.database)    
 
     def test3(self):
-        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=0, phase=2, position_kp=.1, heading_kp=.1)
-        r2d2 = Robot(robot_state=r2d2_state)
-        database = DataBase(r2d2)
-        allowed_dist_error = 0.5
-        move_to_target_node(r2d2_state,
-                            (43.444250, -76.483682), allowed_dist_error, database)
+        move_to_target_node(self.r2d2_state, (42.444250, -66.483682), self.allowed_dist_error, self.database)
+
     #Runs test3 using simple_move_to_target_node
     def test3_simple(self):
-        r2d2_state = Robot_State(xpos=42.444250, ypos=-76.483682, heading=0, phase=2, position_kp=.1, heading_kp=.1)
-        r2d2 = Robot(robot_state=r2d2_state)
-        database = DataBase(r2d2)
-        allowed_dist_error = 0.5
-        simple_move_to_target_node(r2d2_state,
-                            (43.444250, -76.483682), allowed_dist_error, database)
+        simple_move_to_target_node(self.r2d2_state, (42.444250, -66.483682), self.allowed_dist_error, self.database)
 
 # Takes approx. 9 seconds for 5 tests
 

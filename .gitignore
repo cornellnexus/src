@@ -10,3 +10,4 @@ venv/
 .csv/
 .coverage
 **/apriltag/build/
+csv_files/phases.csv
