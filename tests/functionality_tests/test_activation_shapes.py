@@ -16,8 +16,8 @@ def main():
         cols = h
         print("flip rows, cols for traversal")
 
-    activation_type = input("Activation type: ")
-    is_vertical = "true" == input("Vertical traversal: ")
+    activation_type = input("Activation type: ").lower()
+    is_vertical = "true" == input("Vertical traversal: ").lower()
     
     if is_vertical:
         grid.direction = grid.Direction.UP
