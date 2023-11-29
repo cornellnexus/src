@@ -25,8 +25,12 @@ class SensorModule:
         self.write_data = write
         self.gps_dict = {"lon": 0, "lat": 0}
 
-        #Initialize breakbeam sensors
-        self.breakbeam = breakbeam()
+        # HALF1 = 17
+        # HALF2 = 22
+        # FULL1 = 23
+        # FULL2 = 24
+        pins = [ 17, 22, 23, 24 ]
+        self.breakbeam = breakbeam(pins)
 
     def update_imu_data(self):
         """
