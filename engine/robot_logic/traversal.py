@@ -143,8 +143,7 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             y = robot_state.truthpose[:, 1]
             plt.scatter(target[0], target[1])
             plt.text(target[0], target[1], "target")
-    if not robot_state.is_sim:
-        robot_state.motor_controller.spin_motors(0, 0)
+    travel(robot_state, 0, 0)
     if simulate:
         for index in range(iterations):
             plt.scatter(robot_state.truthpose[:, 0], robot_state.truthpose[:, 1])
@@ -161,10 +160,16 @@ def travel(robot_state, delta_d, delta_phi):
     """
     # if it is a simulation, we update the robot state directly
     if robot_state.is_sim:
-        robot_state.state = integrate_odom(robot_state.state, delta_d, delta_phi)
-        robot_state.truthpose = np.append(
-            robot_state.truthpose, np.transpose(robot_state.state), 0
+        robot_state.state = integrate_odom(
+            robot_state.state,
+            delta_d / robot_state.time_step,
+            delta_phi / robot_state.time_step,
         )
+        prev_truthpose = robot_state.truthpose[-1]
+        if (robot_state.state != np.transpose(prev_truthpose)).any():
+            robot_state.truthpose = np.append(
+                robot_state.truthpose, np.transpose(robot_state.state), 0
+            )
     # otherwise, we update the robot state using kinematics and EKF
     else:
         update_state(
@@ -225,7 +230,6 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
     # to add obstacle avoidance, can either change roomba to go to point on the circle in the direction of the
     # robot direction or use raw sensor value
     # can we guarantee that when giving a velocity that the robot will move at that velocity?
-    dt = 10
     accumulated_time = 0
     # TODO: battery_limit, time_limit, tank_capacity is full
     exit_boolean = False
@@ -241,13 +245,13 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
             phase_change(robot_state)
             return None
         curr_pos = robot_state.state
-        vel = calculate_dist(past_pos[:2], curr_pos[:2]) / (dt / 1000)
+        vel = calculate_dist(past_pos[:2], curr_pos[:2]) / (robot_state.time_step)
         if robot_state.using_ekf:
             [new_x, new_y, _] = robot_state.ekf.get_predicted_state(
-                curr_pos, [vel * dt / 1000, 0]
+                curr_pos, [vel * robot_state.time_step, 0]
             )
         else:
-            [new_x, new_y, _] = curr_pos + vel * dt / 1000
+            [new_x, new_y, _] = curr_pos + vel * robot_state.time_step
         next_radius = calculate_dist(base_station_loc, (new_x, new_y))
         robot_state.goal_location = (new_x, new_y)
         # if moving will cause the robot to move through the obstacle
@@ -282,25 +286,19 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
                 database,
             )
         else:
-            travel(robot_state, robot_state.move_dist, 0)
+            travel(robot_state, robot_state.move_dist * robot_state.time_step, 0)
             database.update_data(
                 "state",
                 robot_state.state[0],
                 robot_state.state[1],
                 robot_state.state[2],
             )
-            if not robot_state.is_sim:
-                # TODO: determine what vel to run this at
-                robot_state.motor_controller.motors(0, 0)
-        if not robot_state.is_sim:
-            time.sleep(dt)
-        accumulated_time += dt  # accumulation in time in ms
+        accumulated_time += robot_state.time_step  # accumulation in time in ms
         exit_boolean = accumulated_time > time_limit
         past_pos = curr_pos
     robot_state.phase = Phase.RETURN
     phase_change(robot_state)
-    if not robot_state.is_sim:
-        robot_state.motor_controller.spin_motors(0, 0)
+    travel(robot_state, 0, 0)
     return robot_state
 
 
@@ -343,5 +341,4 @@ def turn_to_target_heading(
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
     # re-enable after finishing turning
     robot_state.enable_obstacle_avoidance = True
-    if not robot_state.is_sim:
-        robot_state.motor_controller.spin_motors(0, 0)
+    travel(robot_state, 0, 0)
