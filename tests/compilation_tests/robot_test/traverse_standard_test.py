@@ -12,7 +12,7 @@ from collections import deque
 
 target = [0, 0]
 add_to_x = False
-gps_noise_range = .3
+gps_noise_range = 0.3
 
 
 class TestMoveToTargetNode(unittest.TestCase):
@@ -57,8 +57,15 @@ class TestMoveToTargetNode(unittest.TestCase):
 
 class TestTraverseStandardFunctions(unittest.TestCase):
     def test_init(self):
-        r2d2_state = Robot_State(xpos=0, ypos=0, heading=math.pi / 2,
-                                 epsilon=0.2, max_velocity=0.5, radius=0.2, phase=2)
+        r2d2_state = Robot_State(
+            xpos=0,
+            ypos=0,
+            heading=math.pi / 2,
+            epsilon=0.2,
+            max_velocity=0.5,
+            radius=0.2,
+            phase=2,
+        )
         r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
@@ -69,12 +76,20 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         waypoints_to_visit = deque(all_waypoints)
         while waypoints_to_visit:
             r2d2_state, waypoints_to_visit = traverse_standard(
-                r2d2_state, waypoints_to_visit, allowed_dist_error, database)
+                r2d2_state, waypoints_to_visit, allowed_dist_error, database
+            )
         self.assertEqual(deque([]), waypoints_to_visit)
 
     def test_different_init_robot_pos(self):
-        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi / 2,
-                                 epsilon=0.2, max_velocity=0.5, radius=0.2, phase=2)
+        r2d2_state = Robot_State(
+            xpos=42,
+            ypos=-76,
+            heading=math.pi / 2,
+            epsilon=0.2,
+            max_velocity=0.5,
+            radius=0.2,
+            phase=2,
+        )
         r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
@@ -85,12 +100,20 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         waypoints_to_visit = deque(all_waypoints)
         while waypoints_to_visit:
             r2d2_state, waypoints_to_visit = traverse_standard(
-                r2d2_state, waypoints_to_visit, allowed_dist_error, database)
+                r2d2_state, waypoints_to_visit, allowed_dist_error, database
+            )
         self.assertEqual(deque([]), waypoints_to_visit)
 
     def test_different_allowed_dist(self):
-        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi / 2,
-                                 epsilon=0.2, max_velocity=0.5, radius=0.2, phase=2)
+        r2d2_state = Robot_State(
+            xpos=42,
+            ypos=-76,
+            heading=math.pi / 2,
+            epsilon=0.2,
+            max_velocity=0.5,
+            radius=0.2,
+            phase=2,
+        )
         r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
@@ -101,12 +124,20 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         waypoints_to_visit = deque(all_waypoints)
         while waypoints_to_visit:
             r2d2_state, waypoints_to_visit = traverse_standard(
-                r2d2_state, waypoints_to_visit, allowed_dist_error, database)
+                r2d2_state, waypoints_to_visit, allowed_dist_error, database
+            )
         self.assertEqual(deque([]), waypoints_to_visit)
 
     def test_different_heading(self):
-        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi,
-                                 epsilon=0.2, max_velocity=0.5, radius=0.2, phase=2)
+        r2d2_state = Robot_State(
+            xpos=42,
+            ypos=-76,
+            heading=math.pi,
+            epsilon=0.2,
+            max_velocity=0.5,
+            radius=0.2,
+            phase=2,
+        )
         r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
@@ -117,12 +148,21 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         waypoints_to_visit = deque(all_waypoints)
         while waypoints_to_visit:
             r2d2_state, waypoints_to_visit = traverse_standard(
-                r2d2_state, waypoints_to_visit, allowed_dist_error, database)
+                r2d2_state, waypoints_to_visit, allowed_dist_error, database
+            )
         self.assertEqual(deque([]), waypoints_to_visit)
 
     def test_with_minimal_noise(self):
-        r2d2_state = Robot_State(xpos=42, ypos=-76, heading=math.pi, epsilon=0.2,
-                                 max_velocity=0.5, radius=0.2, phase=2, position_noise=0.05)
+        r2d2_state = Robot_State(
+            xpos=42,
+            ypos=-76,
+            heading=math.pi,
+            epsilon=0.2,
+            max_velocity=0.5,
+            radius=0.2,
+            phase=2,
+            position_noise=0.05,
+        )
         r2d2 = Robot(robot_state=r2d2_state)
         database = DataBase(r2d2)
 
@@ -133,9 +173,10 @@ class TestTraverseStandardFunctions(unittest.TestCase):
         waypoints_to_visit = deque(all_waypoints)
         while waypoints_to_visit:
             r2d2_state, waypoints_to_visit = traverse_standard(
-                r2d2_state, waypoints_to_visit, allowed_dist_error, database)
+                r2d2_state, waypoints_to_visit, allowed_dist_error, database
+            )
         self.assertEqual(deque([]), waypoints_to_visit)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

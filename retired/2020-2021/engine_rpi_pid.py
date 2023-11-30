@@ -12,7 +12,7 @@ class Robot:
     """Initializes the robot with the given position and heading.
     Parameters:
     position: A 2-index array representing x and y position of robot
-    heading: Angle robot is facing from North 
+    heading: Angle robot is facing from North
     """
 
     def __init__(self, position=[0, 0], heading=90):
@@ -22,15 +22,15 @@ class Robot:
     """Randomly generates noise"""
 
     def get_noise(self):
-        return np.random.uniform(-.02, .02)
+        return np.random.uniform(-0.02, 0.02)
 
     """Psuedo to_String method to print position and heading of robot."""
 
     def print_current_state(self):
-        print('pos: ' + str(self.pos))
-        print('heading: ' + str(self.heading))
-        # time.sleep(0.1) 
-        #  
+        print("pos: " + str(self.pos))
+        print("heading: " + str(self.heading))
+        # time.sleep(0.1)
+        #
 
     """Moves the robot forward. 
     If the robot is facing West or East, y position of robot is updated. 
@@ -39,13 +39,13 @@ class Robot:
 
     def move_forward(self):
         if self.heading == 90:
-            self.pos[1] = round(self.pos[1] + .1, 3)
+            self.pos[1] = round(self.pos[1] + 0.1, 3)
             # self.pos[1] = round(self.pos[1] + .1 + self.get_noise(),3)
         elif self.heading == 270:
-            self.pos[1] = round(self.pos[1] - .1, 3)
+            self.pos[1] = round(self.pos[1] - 0.1, 3)
             # self.pos[1] = round(self.pos[1] - .1 + self.get_noise(),3)
         elif self.heading == 0:
-            self.pos[0] = round(self.pos[0] + .1, 3)
+            self.pos[0] = round(self.pos[0] + 0.1, 3)
             # self.pos[0] = round(self.pos[0] + .1 + self.get_noise(),3)
         self.print_current_state()
 
@@ -106,7 +106,7 @@ def graph_traversal_path(traversal_path):
         xlist.append(node[0])
         ylist.append(node[1])
 
-    plt.plot(xlist, ylist, marker='o', markerfacecolor='blue')
+    plt.plot(xlist, ylist, marker="o", markerfacecolor="blue")
     plt.ylim(min(ylist) - 1, max(ylist) + 1)
     plt.xlim(min(xlist) - 1, max(xlist) + 1)
     plt.show()
@@ -131,10 +131,22 @@ PID controllers, given simulated noise on received data."""
 
 def engine_pid_main():
     # Initilize location PID controller and heading PID controller
-    loc_pid = PID(Kp=0.02, Ki=0.005, Kd=0.0, target=0,
-                  sample_time=0.01, output_limits=(None, None))
-    head_pid = PID(Kp=0.02, Ki=0.005, Kd=0.0, target=0,
-                   sample_time=0.01, output_limits=(None, None))
+    loc_pid = PID(
+        Kp=0.02,
+        Ki=0.005,
+        Kd=0.0,
+        target=0,
+        sample_time=0.01,
+        output_limits=(None, None),
+    )
+    head_pid = PID(
+        Kp=0.02,
+        Ki=0.005,
+        Kd=0.0,
+        target=0,
+        sample_time=0.01,
+        output_limits=(None, None),
+    )
 
     # Generates traversal path
     g = generate_nodes()
@@ -145,7 +157,6 @@ def engine_pid_main():
 
     # While the queue is not empty
     while queue:
-
         # Store the next node to visit from the grid and make it our target
         target_coords = queue.popleft()
 
@@ -154,11 +165,11 @@ def engine_pid_main():
         predicted_head = r.get_heading()
 
         # distance should be close to 1 (??? explain pls) @jess/@yagmur?
-        # # TODO: confirm location error = pythagorean or 2d? 
+        # # TODO: confirm location error = pythagorean or 2d?
         # Error between location of target and predicted robot location
-        location_error = \
-            get_distance(target_coords[0], predicted_loc[0], \
-                         target_coords[1], predicted_loc[1])
+        location_error = get_distance(
+            target_coords[0], predicted_loc[0], target_coords[1], predicted_loc[1]
+        )
         allowed_error = 0  # TODO: measure this
 
         # While the robot is too far away from target node
@@ -184,9 +195,9 @@ def engine_pid_main():
             # TODO: Get current location from Kalman Filter
             predicted_loc = r.get_position()
             # Updates the location error
-            location_error = \
-                get_distance(target_coords[0], predicted_loc[0], \
-                             target_coords[1], predicted_loc[1])
+            location_error = get_distance(
+                target_coords[0], predicted_loc[0], target_coords[1], predicted_loc[1]
+            )
 
             # We have reached the target node
         # Stop the robot and sleep
@@ -252,7 +263,7 @@ def plot_path(traversal_path):
     for node in traversal_path:
         xlist.append(node[0])
         ylist.append(node[1])
-    plt.plot(xlist, ylist, 'ro', markerfacecolor='blue')
+    plt.plot(xlist, ylist, "ro", markerfacecolor="blue")
     plt.ylim(min(ylist) - 1, max(ylist) + 1)
     plt.xlim(min(xlist) - 1, max(xlist) + 1)
     plt.show()
@@ -262,7 +273,7 @@ def plot_path(traversal_path):
     for node in history:
         xlist2.append(node[0])
         ylist2.append(node[1])
-    plt.plot(xlist2, ylist2, 'bx')
+    plt.plot(xlist2, ylist2, "bx")
     plt.ylim(min(ylist2) - 1, max(ylist2) + 1)
     plt.xlim(min(xlist2) - 1, max(xlist2) + 1)
     plt.show()

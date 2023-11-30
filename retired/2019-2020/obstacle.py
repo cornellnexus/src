@@ -24,6 +24,7 @@ class Obstacle:
         long_min: User input of minimum longitude boundary point
         long_max: User input of maximum longitude boundary point
     """
+
     traversalPath = []
     traversalDict = {}
     obstacle_coordinates = []
@@ -44,7 +45,7 @@ class Obstacle:
     lat_step = 0
 
     # ser = serial.Serial('/dev/cu.usbserial-1420', 9600)
-    ser = serial.Serial('/dev/cu.usbserial-1420', 9600, timeout=1)
+    ser = serial.Serial("/dev/cu.usbserial-1420", 9600, timeout=1)
 
     # Time to wait before checking for distance data again.
     distance_check_wait_time = 5
@@ -97,8 +98,12 @@ class Obstacle:
 
         TODO: fix lawnmower to be zig zag and not c1 - cn ...
         """
-        for lat in numpy.arange(self.lat_min, self.lat_max + self.lat_step, self.lat_step):
-            for long in numpy.arange(self.long_min, self.long_max + self.long_step, self.long_step):
+        for lat in numpy.arange(
+            self.lat_min, self.lat_max + self.lat_step, self.lat_step
+        ):
+            for long in numpy.arange(
+                self.long_min, self.long_max + self.long_step, self.long_step
+            ):
                 # initialize list of entire traversal to be popped off queue
                 self.traversalPath.append(Coordinate(lat, long))
                 # initialize dict to be used to search for neighbors
@@ -144,7 +149,7 @@ class Obstacle:
         # how to actually calculate time?
         time = 1
         # how does robot know when to stop?
-        self.ser.write(b'F')
+        self.ser.write(b"F")
 
         # tweek bc we won't(?) have diagonals
 
@@ -153,32 +158,32 @@ class Obstacle:
         (current_x, current_y) = current_coordinate.getCoords()
         # all relative to robot
 
-        if (next_x > current_x and next_y > current_y):
+        if next_x > current_x and next_y > current_y:
             # rotate clockwise 45 degrees; topright
             self.sendHeading("top_right")
-        elif (next_x == current_x and next_y > current_y):
+        elif next_x == current_x and next_y > current_y:
             # same heading; above
-            self.sendHeading(b'F')
-        elif (next_x < current_x and next_y > current_y):
+            self.sendHeading(b"F")
+        elif next_x < current_x and next_y > current_y:
             # rotate counterclockwise 45 degrees; topleft
             self.sendHeading("top_left")
-        elif (next_x > current_x and next_y == current_y):
+        elif next_x > current_x and next_y == current_y:
             # rotate clockwise 90 degrees; right
-            self.sendHeading(b'R')
-        elif (next_x == current_x and next_y == current_y):
+            self.sendHeading(b"R")
+        elif next_x == current_x and next_y == current_y:
             # same heading
             return
             # raise Exception ("Current node = next node")
-        elif (next_x < current_x and next_y == current_y):
+        elif next_x < current_x and next_y == current_y:
             # rotate counterclockwise 90 degrees; left
-            self.sendHeading(b'L')
-        elif (next_x > current_x and next_y < current_y):
+            self.sendHeading(b"L")
+        elif next_x > current_x and next_y < current_y:
             # rotate clockwise 135 degrees; bottomright
             self.sendHeading("bottom_right")
-        elif (next_x == current_x and next_y < current_y):
+        elif next_x == current_x and next_y < current_y:
             # rotate 180 degrees; below
-            self.sendHeading(b'B')
-        elif (next_x < current_x and next_y < current_y):
+            self.sendHeading(b"B")
+        elif next_x < current_x and next_y < current_y:
             # rotate counterclockwise 135 degrees; bottomleft
             self.sendHeading("bottom_left")
 
@@ -186,23 +191,28 @@ class Obstacle:
     def check_for_obstacle(self, vertex):
         """Preliminary implementation:
         Checks if obstacle is present, and if it is,
-        sets [vertex] as an obstacle Coordinate. """
+        sets [vertex] as an obstacle Coordinate."""
         updated_distance_data = 30
         # self.retrieveDistance()
         for obstacle_attempt in range(0, 2):
-            if (obstacle_attempt == 0 and updated_distance_data
-                    < self.obstacle_length_limit):
+            if (
+                obstacle_attempt == 0
+                and updated_distance_data < self.obstacle_length_limit
+            ):
                 time.sleep(10)
-            elif (obstacle_attempt == 1 and updated_distance_data
-                  < self.obstacle_length_limit):
+            elif (
+                obstacle_attempt == 1
+                and updated_distance_data < self.obstacle_length_limit
+            ):
                 vertex.setObstacle()
 
     # Precondition: Robot is at (lat_min, long_min)
     def obstacle_path(self):
         queue = self.traversalPath[:]  # make a copy of traversal list
         closed = []
-        current_vertex = Coordinate(self.robot_starting_position[0],
-                                    self.robot_starting_position[1])
+        current_vertex = Coordinate(
+            self.robot_starting_position[0], self.robot_starting_position[1]
+        )
 
         while queue:
             vertex = queue.pop(0)  # Next node to visit
@@ -229,7 +239,7 @@ class Obstacle:
         branched_path = []  # nodes we travel to in this iteration
         goal_node = queue.pop(0)
 
-        while (current_node.getCoords() != goal_node.getCoords()):
+        while current_node.getCoords() != goal_node.getCoords():
             choose_optimal_neighbor(current_node, goal_node)
             moveRobotToCoordinates(choose_optimal_neighbor.getCoords())
             # stop function
@@ -243,7 +253,7 @@ class Obstacle:
         # return math.dist(dir_coords,goal_coords)
         x = directional_node.getX() - goal_node.getX()
         y = direction_node.getY() - goal_node.getY()
-        inside = x ** 2 + y ** 2
+        inside = x**2 + y**2
         return math.sqrt(inside)
 
     def get_shortest_path(self, dir_lst, goal_node):
@@ -251,10 +261,10 @@ class Obstacle:
         min_dist = Integer.MAX_VALUE
         for direction in dir_lst:
             dist = get_distance(direction, goal_node)
-            if (dist < min_dist):
+            if dist < min_dist:
                 min_dist = dist
                 distance_lst = [direction]
-            elif (dist == min_dist):
+            elif dist == min_dist:
                 distance_lst.append(direction)
         return distance_lst
 
@@ -288,7 +298,7 @@ class Obstacle:
                 directions.remove(direction)
             # turn robot left 90 degrees
             # self.change_heading(90)
-            sendHeading(b'L')
+            sendHeading(b"L")
 
         shortest_dir = self.get_shortest_path(directions)
 

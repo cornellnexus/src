@@ -32,7 +32,7 @@ class Robot:
     """
 
     def get_noise(self):
-        return np.random.uniform(-.02, .02)
+        return np.random.uniform(-0.02, 0.02)
 
     """
     Prints robots current position and heading
@@ -42,7 +42,7 @@ class Robot:
         return
         # print('pos: ' + str(self.pos))
         # print('heading: ' + str(self.heading))
-        # time.sleep(0.1)    
+        # time.sleep(0.1)
 
     """
     Moves robot forward by an increment of 0.1
@@ -57,14 +57,14 @@ class Robot:
     def move_forward(self):
         if self.heading == 90:
             # self.pos = (round(self.pos[0] + .00001,8), self.pos[1])
-            self.pos = (round(self.pos[0] + .00001, 8), self.pos[1])
+            self.pos = (round(self.pos[0] + 0.00001, 8), self.pos[1])
             # self.pos[1] = round(self.pos[1] + .1 + self.get_noise(),3)
         elif self.heading == 270:
-            self.pos = (round(self.pos[0] + .00001, 8), self.pos[1])
+            self.pos = (round(self.pos[0] + 0.00001, 8), self.pos[1])
             # self.pos[1] = round(self.pos[1] - .00001,8)
             # self.pos[1] = round(self.pos[1] - .1 + self.get_noise(),3)
         elif self.heading == 0:
-            self.pos = (self.pos[0], round(self.pos[1] + .00001, 8))
+            self.pos = (self.pos[0], round(self.pos[1] + 0.00001, 8))
             # self.pos[0] = round(self.pos[0] + .00001,8)
             # self.pos[0] = round(self.pos[0] + .1 + self.get_noise(),3)
         self.print_current_state()
@@ -110,7 +110,7 @@ def graph_traversal_path(traversal_path):
         xlist.append(node[0])
         ylist.append(node[1])
 
-    plt.plot(xlist, ylist, marker='o', markerfacecolor='blue')
+    plt.plot(xlist, ylist, marker="o", markerfacecolor="blue")
     plt.ylim(min(ylist) - 1, max(ylist) + 1)
     plt.xlim(min(xlist) - 1, max(xlist) + 1)
     plt.show()
@@ -150,9 +150,9 @@ def engine_desktop():
             return math.sqrt((x_targ - x_pred) ** 2 + (y_targ - y_pred) ** 2)
 
         # distance should be close to 1
-        distance_from_target = \
-            get_distance(target_coords[0], predicted_loc[0], \
-                         target_coords[1], predicted_loc[1])
+        distance_from_target = get_distance(
+            target_coords[0], predicted_loc[0], target_coords[1], predicted_loc[1]
+        )
         gps_noise_range = 0.00001
         # gps_noise_range = 0.00005
         # gps_noise_range = 0.13
@@ -162,15 +162,24 @@ def engine_desktop():
             # move forward command; talk to electrical about moving
             print("moving forward")
             r.move_forward()
-            print("Actual location of robot: " + \
-                  str(r.get_position()[0]) + "," + str(r.get_position()[1]))
-            print("Target node: x is " + str(target_coords[0]) + ", y is " + str(target_coords[1]))
-            # Get predicted location from robot 
+            print(
+                "Actual location of robot: "
+                + str(r.get_position()[0])
+                + ","
+                + str(r.get_position()[1])
+            )
+            print(
+                "Target node: x is "
+                + str(target_coords[0])
+                + ", y is "
+                + str(target_coords[1])
+            )
+            # Get predicted location from robot
             predicted_loc = r.get_position()
             history.append(predicted_loc[:])
-            distance_from_target = \
-                get_distance(target_coords[0], predicted_loc[0], \
-                             target_coords[1], predicted_loc[1])
+            distance_from_target = get_distance(
+                target_coords[0], predicted_loc[0], target_coords[1], predicted_loc[1]
+            )
             print("distance from target is now" + str(distance_from_target))
             print("-----------------------------------")
 
@@ -209,7 +218,7 @@ def engine_desktop():
     for node in g:
         xlist.append(node[0])
         ylist.append(node[1])
-    plt.plot(xlist, ylist, 'ro', markerfacecolor='blue')
+    plt.plot(xlist, ylist, "ro", markerfacecolor="blue")
     plt.ylim(min(ylist) - 1, max(ylist) + 1)
     plt.xlim(min(xlist) - 1, max(xlist) + 1)
     plt.show()
@@ -219,7 +228,7 @@ def engine_desktop():
     for node in history:
         xlist2.append(node[0])
         ylist2.append(node[1])
-    plt.plot(xlist2, ylist2, 'bx')
+    plt.plot(xlist2, ylist2, "bx")
     plt.ylim(min(ylist2) - 1, max(ylist2) + 1)
     plt.xlim(min(xlist2) - 1, max(xlist2) + 1)
     plt.show()

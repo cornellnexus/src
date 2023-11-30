@@ -2,5 +2,5 @@
   "is_transmit": false,
   "is_sim": true,
   "store_data": false,
-  "simulate_trajectory": false
+  "simulate_trajectory": true
 }

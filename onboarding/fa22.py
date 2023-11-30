@@ -1,10 +1,16 @@
 print("Welcome to Nexus!! For our onboarding, we will practice using Git and Github!")
 
-names = ["Sammie","Lin", "Angela", "Aayush", "Ellie"] # Add your name here and push your changes!
+names = [
+    "Sammie",
+    "Lin",
+    "Angela",
+    "Aayush",
+    "Ellie",
+]  # Add your name here and push your changes!
 introduction = []
 
 for name in names:
-  print("Welcome " + name + " !")
+    print("Welcome " + name + " !")
 
 for intro in introduction:
-  print("Introduction: " + intro)
+    print("Introduction: " + intro)

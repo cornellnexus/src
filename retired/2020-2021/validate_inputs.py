@@ -20,7 +20,9 @@ ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600)
 
 def update_gui():
     packets = []
-    robot_data_file = open((CSV_PATH + '/robot_data.csv'), "r+")  # open csv file of robot data
+    robot_data_file = open(
+        (CSV_PATH + "/robot_data.csv"), "r+"
+    )  # open csv file of robot data
     while True:
         while len(packets) < 5:
             packet = ser.readline()
@@ -28,20 +30,21 @@ def update_gui():
                 packets.append(packet)
         valid_packet = validate_packet(packets)
 
-        robot_data_file.write(valid_packet + '\n')
+        robot_data_file.write(valid_packet + "\n")
+
 
 def get_values(data):
-    '''
+    """
     Args:
         data: a string of format "id:value"
 
     Returns: value (substring after :)
-    '''
+    """
     separator_index = data.find(":")
     if separator_index == -1:
         print("data corruption")
         raise Exception()
-    return data[separator_index + 1:]
+    return data[separator_index + 1 :]
 
 
 def validate_packet(packets):
@@ -81,21 +84,43 @@ def validate_packet(packets):
     batt = get_median(batts)
 
     # return packet with combined data --> need to extend or shrink value to match data string
-    return build_validated_packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt)
+    return build_validated_packet(
+        phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt
+    )
 
 
-def build_validated_packet(phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt):
+def build_validated_packet(
+    phase, weight, acc, n_dist, rot, last_n, vel, next_n, coord, batt
+):
     # "phse:0;p_weight:00.0;acc:0.00;n_dist:00.0;rot:00.00;last_n:000.00,000.00;vel:0.00;next_n:000.00,000.00;coords:000.00,000.00;bat:000"
-    return "phse" + phase + ";p_weight" + fix_data_size(weight, 2, 1) + ";acc" + fix_data_size(acc, 1, 2) + ";n_dist" + \
-           fix_data_size(n_dist, 2, 1) + ";rot" + fix_data_size(rot, 2, 2) + ";last_n" + fix_tuple_size(last_n, 3, 2) + \
-           ";vel" + fix_data_size(vel, 1, 2) + ";next_n" + fix_tuple_size(next_n, 3, 2) + \
-           ";coords" + fix_tuple_size(coord, 3, 2) + ";bat" + + fix_data_size(batt, 3, 0)
+    return (
+        "phse"
+        + phase
+        + ";p_weight"
+        + fix_data_size(weight, 2, 1)
+        + ";acc"
+        + fix_data_size(acc, 1, 2)
+        + ";n_dist"
+        + fix_data_size(n_dist, 2, 1)
+        + ";rot"
+        + fix_data_size(rot, 2, 2)
+        + ";last_n"
+        + fix_tuple_size(last_n, 3, 2)
+        + ";vel"
+        + fix_data_size(vel, 1, 2)
+        + ";next_n"
+        + fix_tuple_size(next_n, 3, 2)
+        + ";coords"
+        + fix_tuple_size(coord, 3, 2)
+        + ";bat"
+        + +fix_data_size(batt, 3, 0)
+    )
 
 
 def fix_data_size(s, desired_int_length, desired_decimal_length):
     separator_index = s.find(".")
     current_int_len = len(s[0:separator_index])
-    current_deci_len = len(s[separator_index + 1:])
+    current_deci_len = len(s[separator_index + 1 :])
     int_difference = desired_int_length - current_int_len
     deci_difference = desired_decimal_length - current_deci_len
 
@@ -109,7 +134,7 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
 
     if deci_difference < 0:
         # shrink: cut off extra decimal values
-        s = s[0:len(s) - deci_difference]
+        s = s[0 : len(s) - deci_difference]
     else:
         # extend: add 0's to the end to extend decimal values
         deci_buffer = "0" * deci_difference
@@ -118,9 +143,15 @@ def fix_data_size(s, desired_int_length, desired_decimal_length):
     return s
 
 
-def fix_tuple_size(t, desired_int_length, desired_decimal_length, ):
-    return (fix_data_size(t[0], desired_int_length, desired_decimal_length), \
-            fix_data_size(t[1], desired_int_length, desired_decimal_length))
+def fix_tuple_size(
+    t,
+    desired_int_length,
+    desired_decimal_length,
+):
+    return (
+        fix_data_size(t[0], desired_int_length, desired_decimal_length),
+        fix_data_size(t[1], desired_int_length, desired_decimal_length),
+    )
 
 
 def get_phase(phases):
@@ -142,6 +173,7 @@ def get_coord(coords):
     x_median = get_median(x)
     y_median = get_median(y)
     return (str(x_median), str(y_median))
+
 
 #### From raspberry pi
 # Robot Phase: phse (mission)

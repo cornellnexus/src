@@ -6,14 +6,14 @@ from engine.robot_logic.set_up import execute_setup
 from engine.robot_logic.traversal import move_to_target_node, turn_to_target_heading
 from electrical.gps import GPS
 from engine.grid import Grid
-from engine. database import DataBase
+from engine.database import DataBase
 import math
 
 if __name__ == "__main__":
     # make sure to go to imu and gps and set import to true
     # 0 is no node straight, 1 is node straight (generating node with grid), 2 is turn, -1 is sensor
     test_state = 0
-    rb_state = Robot_State(0, 0, 0, .2, .5, .2)
+    rb_state = Robot_State(0, 0, 0, 0.2, 0.5, 0.2)
     r2d2 = Robot(rb_state)
     database = DataBase(r2d2)
     r2d2.execute_setup()

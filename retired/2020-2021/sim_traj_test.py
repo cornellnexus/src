@@ -6,7 +6,13 @@ from matplotlib import patches as patch
 import unittest
 
 from engine.grid import *
-from engine.kinematics import limit_cmds, feedback_lin, integrate_odom, get_vincenty_x, get_vincenty_y
+from engine.kinematics import (
+    limit_cmds,
+    feedback_lin,
+    integrate_odom,
+    get_vincenty_x,
+    get_vincenty_y,
+)
 from engine.node import *
 from engine.pid_controller import PID
 from engine.robot import Robot
@@ -20,20 +26,42 @@ Running this file will yield errors.
 
 target = [0, 0]
 add_to_x = False
-gps_noise_range = .3
+gps_noise_range = 0.3
 
 
 # lat_min, lat_max, long_min, long_max = get_coord_inputs()
 # current_position = [lat_min, long_min]
+
 
 class TestGenerateNodes(unittest.TestCase):
     def test_no_noise_all_nodes(self):
         r2d2 = Robot(-5, -10, math.pi / 2)
         NOISE_RANGE = 0.0
 
-        goals = np.array([[-5, -10], [-5, -5], [-5, 0], [-5, 5], [-5, 10], [0, 10], [0, 5], \
-                          [0, 0], [0, -5], [0, -10], [5, -10], [5, -5], [5, 0], [5, 5], [5, 10], [10, 10], [10, 5], \
-                          [10, 0], [10, -5], [10, -10]])
+        goals = np.array(
+            [
+                [-5, -10],
+                [-5, -5],
+                [-5, 0],
+                [-5, 5],
+                [-5, 10],
+                [0, 10],
+                [0, 5],
+                [0, 0],
+                [0, -5],
+                [0, -10],
+                [5, -10],
+                [5, -5],
+                [5, 0],
+                [5, 5],
+                [5, 10],
+                [10, 10],
+                [10, 5],
+                [10, 0],
+                [10, -5],
+                [10, -10],
+            ]
+        )
 
         Kp = 1
         Ki = 0.1
@@ -46,9 +74,30 @@ class TestGenerateNodes(unittest.TestCase):
         r2d2 = Robot(-5, -10, math.pi / 2)
         NOISE_RANGE = 0.0
 
-        goals = np.array([[-5, -10], [-5, -5], [-5, 0], [-5, 5], [-5, 10], [0, 10], [0, 5], \
-                          [0, 0], [0, -5], [0, -10], [5, -10], [5, -5], [5, 0], [5, 5], [5, 10], [10, 10], [10, 5], \
-                          [10, 0], [10, -5], [10, -10]])
+        goals = np.array(
+            [
+                [-5, -10],
+                [-5, -5],
+                [-5, 0],
+                [-5, 5],
+                [-5, 10],
+                [0, 10],
+                [0, 5],
+                [0, 0],
+                [0, -5],
+                [0, -10],
+                [5, -10],
+                [5, -5],
+                [5, 0],
+                [5, 5],
+                [5, 10],
+                [10, 10],
+                [10, 5],
+                [10, 0],
+                [10, -5],
+                [10, -10],
+            ]
+        )
 
         Kp = 1
         Ki = 0.1
@@ -61,9 +110,30 @@ class TestGenerateNodes(unittest.TestCase):
         r2d2 = Robot(-5, -10, math.pi / 2)
         NOISE_RANGE = 0.0
 
-        goals = np.array([[-5, -10], [-5, -5], [-5, 0], [-5, 5], [-5, 10], [0, 10], [0, 5], \
-                          [0, 0], [0, -5], [0, -10], [5, -10], [5, -5], [5, 0], [5, 5], [5, 10], [10, 10], [10, 5], \
-                          [10, 0], [10, -5], [10, -10]])
+        goals = np.array(
+            [
+                [-5, -10],
+                [-5, -5],
+                [-5, 0],
+                [-5, 5],
+                [-5, 10],
+                [0, 10],
+                [0, 5],
+                [0, 0],
+                [0, -5],
+                [0, -10],
+                [5, -10],
+                [5, -5],
+                [5, 0],
+                [5, 5],
+                [5, 10],
+                [10, 10],
+                [10, 5],
+                [10, 0],
+                [10, -5],
+                [10, -10],
+            ]
+        )
 
         Kp = 1
         Ki = 0.1
@@ -92,7 +162,9 @@ class TestPlottingFunctions(unittest.TestCase):
         # CASE: Eng Quad
         grid_eng = Grid(42.444250, 42.444599, -76.483682, -76.483276).meters_grid
         self.assertEqual(([0.0, 32.085], [0, 37.961]), get_plot_boundaries(grid_eng, 0))
-        self.assertEqual(([-5.0, 37.085], [-5.0, 42.961]), get_plot_boundaries(grid_eng, 5))
+        self.assertEqual(
+            ([-5.0, 37.085], [-5.0, 42.961]), get_plot_boundaries(grid_eng, 5)
+        )
 
         # Calculates bounds based on input grid information
         def calc_ans(lat_min, long_min, grid, delta):
@@ -112,8 +184,10 @@ class TestPlottingFunctions(unittest.TestCase):
         lat_max = 0.0001
         long_max = 0.0001
         grid_simple = Grid(lat_min, lat_max, long_min, long_max)
-        self.assertEqual(calc_ans(lat_min, long_min, grid_simple, 0), \
-                         get_plot_boundaries(grid_simple.meters_grid, 0))
+        self.assertEqual(
+            calc_ans(lat_min, long_min, grid_simple, 0),
+            get_plot_boundaries(grid_simple.meters_grid, 0),
+        )
 
         # CASE: Checking unit meter conversion (with extra spacing)
         lat_min = 1.0
@@ -121,8 +195,10 @@ class TestPlottingFunctions(unittest.TestCase):
         lat_max = 1.0003
         long_max = 1.0003
         grid_spacing = Grid(lat_min, lat_max, long_min, long_max)
-        self.assertEqual(calc_ans(lat_min, long_min, grid_spacing, 4), \
-                         get_plot_boundaries(grid_spacing.meters_grid, 4))
+        self.assertEqual(
+            calc_ans(lat_min, long_min, grid_spacing, 4),
+            get_plot_boundaries(grid_spacing.meters_grid, 4),
+        )
 
         # CASE: Checking unit meter conversion (diff lat longs)
         lat_min = 0.0001
@@ -130,9 +206,11 @@ class TestPlottingFunctions(unittest.TestCase):
         lat_max = 0.0003
         long_max = 0.0002
         grid_diff = Grid(lat_min, lat_max, long_min, long_max)
-        self.assertEqual(calc_ans(lat_min, long_min, grid_diff, 3), \
-                         get_plot_boundaries(grid_diff.meters_grid, 3))
+        self.assertEqual(
+            calc_ans(lat_min, long_min, grid_diff, 3),
+            get_plot_boundaries(grid_diff.meters_grid, 3),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
