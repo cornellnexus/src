@@ -49,8 +49,12 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
     unvisited_waypoints.popleft()
 
     return robot_state, unvisited_waypoints
-
-#Does not use PID, EKF. The method assumes that we are physically running the robot and not running it in simulation.
+"""
+Does not use PID, EKF. The method assumes that we are physically running the robot and not running it in simulation.
+TODO: For now, we are keep the original move_to_target_node logic. 
+When we test it on the robot, and if it does not follow the intended trajectory
+then add back Alan's fix.
+"""
 def simple_move_to_target_node(robot_state, target, allowed_dist_error, database):
     """
     Moves robot to target + or - allowed_dist_error
@@ -96,7 +100,7 @@ def simple_move_to_target_node(robot_state, target, allowed_dist_error, database
 
         # location error (in meters)
         distance_away = calculate_dist(target, robot_state.state)
-        
+        #TODO: Determine whether we want to update database here.
     
 
 
