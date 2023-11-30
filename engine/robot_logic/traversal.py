@@ -64,7 +64,7 @@ def simple_move_to_target_node(robot_state, target, allowed_dist_error, database
         can be from a node for the robot to have "visited" that node
         database: 
     """
-    import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt 
 
 
     # location error (in meters)
