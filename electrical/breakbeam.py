@@ -3,9 +3,6 @@ import time
 from enum import Enum
 
 
-def ackerman_calculations (steer_ang, left_ang, right_ang, outside_ang, inside_ang, track_width, wheel_base, steering_ration):
-    pass
-
 class Breakbeam:
     ACCEPTABLE_TIME = 3  # time to wait to confirm a full break
 

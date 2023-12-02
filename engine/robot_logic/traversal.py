@@ -395,35 +395,37 @@ def turn_to_target_heading(
     if not robot_state.is_sim:
         robot_state.motor_controller.spin_motors(0, 0)
 
+    # Ackerman calculations calculates the ideal wheel angles, and then uses the 
+    # ackerman percentage to adjust the outside wheel angle
+    
     def ackerman_calculations (left_ang, right_ang, inside_ang, wheel_base, 
                                steering_ratio):
         #calculate ideal wheel angle
+        ackerman_percentage = 0 
 
-        ackerman_percentage = 0 #This value needs to be determined by mechanical
-
+        #calculate desired width of turn
         track_width = wheel_base * ((1/np.tan(left_ang) - (1/np.tan(right_ang))))
+
+        #ackerman ratio used in adjusting wheel angles
         ackerman_ratio = (inside_ang / steering_ratio)
+
+        #apply the ackerman ratio to our wheels 
         new_left_ang = 1/ np.tan((wheel_base * np.tan(ackerman_ratio)) / (wheel_base + (.5 * track_width )(np.tan(ackerman_ratio))))
         new_right_ang = 1/ np.tan((wheel_base * np.tan(ackerman_ratio)) / (wheel_base - (.5 * track_width )(np.tan(ackerman_ratio))))
-        new_inside = new_left_ang #(change to new_right_ang based on above logic) ^
+        new_inside = new_left_ang 
         outside_ang = new_inside - ackerman_percentage * (new_inside - ackerman_ratio)
 
+        #return needed data to complete turns
         return [track_width, ackerman_ratio, new_left_ang, new_right_ang, new_inside, outside_ang]
 
-    def parallel_ackerman_right (left_ang, right_ang, inside_ang, wheel_base, 
+    def ackerman_right (left_ang, right_ang, inside_ang, wheel_base, 
                                steering_ratio):
         
-        data = ackerman_calculations(left_ang, right_ang, inside_ang, wheel_base, 
-                               steering_ratio)
-        
-            #continue to implement
+        raise "unimplemented"
             
 
-    def parallel_ackerman_left (left_ang, right_ang, inside_ang, wheel_base, 
+    def ackerman_left (left_ang, right_ang, inside_ang, wheel_base, 
                                steering_ratio):
         
-        data = ackerman_calculations(left_ang, right_ang, inside_ang, wheel_base, 
-                               steering_ratio)
-        
-            #continue to implement-         #Left turn: outside angle is right wheel angle, inside angle is left wheel
+        raise "unimplemented"
         
