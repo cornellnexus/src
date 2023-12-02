@@ -70,7 +70,6 @@ def parse_main():
             "lawnmower_a",
             "spiral",
             "roomba",
-            "manual",
             "straight",
         ],
         help="determines initial control mode",
