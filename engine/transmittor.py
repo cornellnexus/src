@@ -18,37 +18,6 @@ class Transmittor:
         self.robot_state = robot_state
         self.mission_state = mission_state
 
-    # def make_packet(self, robot_state, mission_state):
-    #     """
-    #     Creates a new packet based on the robot state and mission state.
-
-    #     Args:
-    #         robot_state: Robot_State object
-    #         mission_state: Mission_State object
-
-    #     Returns:
-    #         str: Formatted packet string
-    #     """
-    #     coords = [str(robot_state.state[0][0]), str(
-    #         robot_state.state[1][0]), str(robot_state.state[2][0])]
-    #     acc = [str(i) for i in robot_state.acceleration]
-    #     current_waypoint = mission_state.waypoints_to_visit[0] if mission_state.waypoints_to_visit else (
-    #         "000.00", "000.00")
-    #     packet = Packet(
-    #         phase=str(robot_state.phase.value),
-    #         p_weight=str(robot_state.plastic_level),
-    #         acc=acc,
-    #         temp_n_dist="00.0",
-    #         temp_rot="00.00",
-    #         last_n=["000.00", "000.00"],
-    #         vel=str(robot_state.linear_v),
-    #         next_n=[str(current_waypoint.get_m_coords())],
-    #         coord=coords,
-    #         batt=str(robot_state.battery),
-    #         ctrl=str(mission_state.control_mode.value)
-    #     )
-    #     return str(packet)
-
     def transmit_to_gui(self):
         """
         Call this function to transmit information to the GUI
