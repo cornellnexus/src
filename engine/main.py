@@ -13,6 +13,7 @@ from engine.transmission import send_packet_to_gui
 from engine.is_raspberrypi import is_raspberrypi
 from engine.plot_trajectory import plot_sim_traj
 from engine.parser import parse_main
+from engine.transmittor import Transmittor
 
 if __name__ == "__main__":
     # Load config from JSON file
@@ -27,7 +28,8 @@ if __name__ == "__main__":
         ypos=user_args.get("ypos", 0),
         heading=user_args.get("heading", math.pi / 4),
         store_data=config_args.get("store_data"),
-        is_sim=config_args.get("is_sim") if is_raspberrypi() else not is_raspberrypi(),
+        is_sim=config_args.get(
+            "is_sim") if is_raspberrypi() else not is_raspberrypi(),
     )  # Let user define if on the pi, otherwise set to True
     r2d2 = Robot(robot_state=r2d2_state)
     database = DataBase(r2d2)  # TODO: Replace w new packet transmission impl
@@ -43,13 +45,14 @@ if __name__ == "__main__":
     )
     r2d2_state.control_mode = mission_state.control_mode
     m = Mission(mission_state=mission_state)
+    transmittor = Transmittor(r2d2_state, mission_state)
 
     """------------------- MISSION EXECUTION -------------------"""
     if config_args.get(
         "is_transmit"
     ):  # Set to true when the rpi/robot is communicating w/ the GUI
         packet_sender = threading.Thread(
-            target=send_packet_to_gui, args=(1, r2d2_state, database), daemon=True
+            target=send_packet_to_gui, args=(1, r2d2_state, transmittor), daemon=True
         )  # Thread to read and send robot properties
         packet_sender.start()
     m.execute_mission(database)  # Run main mission

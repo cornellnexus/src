@@ -54,7 +54,8 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
     curr_waypoint = unvisited_waypoints[0].get_m_coords()
     # TODO: add return when tank is full, etc
     robot_state.goal_location = curr_waypoint
-    move_to_target_node(robot_state, curr_waypoint, allowed_dist_error, database)
+    move_to_target_node(robot_state, curr_waypoint,
+                        allowed_dist_error, database)
     unvisited_waypoints.popleft()
 
     return robot_state, unvisited_waypoints
@@ -99,7 +100,8 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
         x_vel = robot_state.loc_pid_x.update(x_coords_error)
         y_vel = robot_state.loc_pid_y.update(y_coords_error)
 
-        cmd_v, cmd_w = feedback_lin(predicted_state, x_vel, y_vel, robot_state.epsilon)
+        cmd_v, cmd_w = feedback_lin(
+            predicted_state, x_vel, y_vel, robot_state.epsilon)
 
         if using_heading_pid:
             turn_to_target_heading(robot_state, desired_angle, 0.01, database)
@@ -121,7 +123,8 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             robot_state.time_step * limited_cmd_w[0],
         )
         if not robot_state.is_sim:
-            robot_state.motor_controller.spin_motors(limited_cmd_w[0], limited_cmd_v[0])
+            robot_state.motor_controller.spin_motors(
+                limited_cmd_w[0], limited_cmd_v[0])
             time.sleep(10)
 
         # Get state after movement:
@@ -150,7 +153,8 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
         robot_state.motor_controller.spin_motors(0, 0)
     if simulate:
         for index in range(iterations):
-            plt.scatter(robot_state.truthpose[:, 0], robot_state.truthpose[:, 1])
+            plt.scatter(robot_state.truthpose[:, 0],
+                        robot_state.truthpose[:, 1])
             plt.text(x[index], y[index], index)
         plt.show()
 
@@ -164,7 +168,8 @@ def travel(robot_state, delta_d, delta_phi):
     """
     # if it is a simulation, we update the robot state directly
     if robot_state.is_sim:
-        robot_state.state = integrate_odom(robot_state.state, delta_d, delta_phi)
+        robot_state.state = integrate_odom(
+            robot_state.state, delta_d, delta_phi)
         robot_state.truthpose = np.append(
             robot_state.truthpose, np.transpose(robot_state.state), 0
         )
@@ -197,7 +202,8 @@ def update_state(robot_state, velocity, omega):
     y = get_vincenty_y(robot_state.init_gps, robot_state.gps_data)
 
     heading = math.degrees(
-        math.atan2(robot_state.imu_data["mag"]["y"], robot_state.imu_data["mag"]["x"])
+        math.atan2(robot_state.imu_data["mag"]
+                   ["y"], robot_state.imu_data["mag"]["x"])
     )
 
     measurements = np.array([[x], [y], [heading]])
@@ -258,7 +264,8 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
             ) or (next_radius < robot_state.detect_obstacle_range)
         else:
             threshold = 1
-            is_next_timestep_blocked = abs(next_radius - roomba_radius) < threshold
+            is_next_timestep_blocked = abs(
+                next_radius - roomba_radius) < threshold
         # sensor should not detect something in the robot
         if (next_radius > roomba_radius) or is_next_timestep_blocked:
             # this needs to be synchronous/PID'ed, otherwise, turn might be called while robot moving forward
@@ -268,8 +275,10 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
             move_to_target_node(
                 robot_state,
                 (
-                    curr_pos[0] - robot_state.move_dist * math.cos(curr_pos[2]),
-                    curr_pos[1] - robot_state.move_dist * math.sin(curr_pos[2]),
+                    curr_pos[0] - robot_state.move_dist *
+                    math.cos(curr_pos[2]),
+                    curr_pos[1] - robot_state.move_dist *
+                    math.sin(curr_pos[2]),
                 ),
                 allowed_dist_error,
                 database,

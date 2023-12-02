@@ -124,8 +124,10 @@ def integrate_odom(pose, d, phi):
         new_y = pose[1] + d * math.sin(pose[2])
         new_theta = pose[2]
     else:
-        new_x = pose[0] + (d / phi) * (math.sin(pose[2] + phi) - math.sin(pose[2]))
-        new_y = pose[1] + (d / phi) * (-math.cos(pose[2] + phi) + math.cos(pose[2]))
+        new_x = pose[0] + (d / phi) * \
+            (math.sin(pose[2] + phi) - math.sin(pose[2]))
+        new_y = pose[1] + (d / phi) * \
+            (-math.cos(pose[2] + phi) + math.cos(pose[2]))
         new_theta = (pose[2] + phi + math.pi) % (2 * math.pi) - math.pi
     return np.array([[float(new_x)], [float(new_y)], [float(new_theta)]])
 
@@ -154,7 +156,8 @@ def meters_to_long(m, latitude):
     """
     Returns an approximation of m meters in units of longitude.
     """
-    long = (m / EARTH_RADIUS) * (180 / math.pi) / math.cos(latitude * math.pi / 180)
+    long = (m / EARTH_RADIUS) * (180 / math.pi) / \
+        math.cos(latitude * math.pi / 180)
     return long
 
 
