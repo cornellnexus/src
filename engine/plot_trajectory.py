@@ -120,7 +120,7 @@ def plot_sim_traj(m):
         circle = plt.Circle((init_x, init_y), m.mission_state.roomba_radius)
         ax.add_patch(circle)
 
-    elif m.mission_state.control_mode != ControlMode.MANUAL:
+    else:
         active_nodes = waypoints_to_array(m.mission_state.active_waypoints)
         inactive_nodes = waypoints_to_array(m.mission_state.inactive_waypoints)
         ax.plot(active_nodes[:, 0], active_nodes[:, 1], "bx")

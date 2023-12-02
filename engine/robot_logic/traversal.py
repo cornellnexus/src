@@ -17,14 +17,7 @@ def traversal_logic(robot_state, mission_state, database):
     """
     robot_state.prev_phase = Phase.TRAVERSE
     control_mode = robot_state.control_mode
-    if control_mode == ControlMode.LAWNMOWER:
-        return traverse_standard(
-            robot_state,
-            mission_state.waypoints_to_visit,
-            mission_state.allowed_dist_error,
-            database,
-        )
-    elif control_mode == ControlMode.ROOMBA:
+    if control_mode == ControlMode.ROOMBA:
         robot_state.enable_obstacle_avoidance = False
         robot_state = traverse_roomba(
             robot_state,
@@ -35,6 +28,13 @@ def traversal_logic(robot_state, mission_state, database):
         )
         robot_state.enable_obstacle_avoidance = True
         return robot_state, None
+    else:
+        return traverse_standard(
+            robot_state,
+            mission_state.waypoints_to_visit,
+            mission_state.allowed_dist_error,
+            database,
+        )
 
 
 def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, database):
