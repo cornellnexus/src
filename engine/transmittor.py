@@ -46,28 +46,28 @@ class Transmittor:
                     "connected": self.robot_state.imu is not None,
                     "reading": self.robot_state.imu_data,
                 },
-                #     # need to wait for commits
-                #     # "break_beams": {
+                # need to wait for commits
+                # "break_beams": {
 
-                #     #     "half1": {
-                #     #         "connected":
-                #     #         "blocked":
-                #     #     },
-                #     #     "half2": {
-                #     #         "connected":
-                #     #         "blocked":
-                #     #     },
-                #     #     "full1": {
-                #     #         "connected":
-                #     #         "blocked":
-                #     #     },
-                #     #     "full2": {
-                #     #         "connected":
-                #     #         "blocked":
-                #     #     },
-                #     #     #"half_full":
-                #     #     #"max_full":
-                #     # },
+                #     "half1": {
+                #         "connected":
+                #         "blocked":
+                #     },
+                #     "half2": {
+                #         "connected":
+                #         "blocked":
+                #     },
+                #     "full1": {
+                #         "connected":
+                #         "blocked":
+                #     },
+                #     "full2": {
+                #         "connected":
+                #         "blocked":
+                #     },
+                #     #"half_full":
+                #     #"max_full":
+                # },
                 "wheel_motors": {
                     "duty_cycle": self.robot_state.motor_controller.dc if not self.robot_state.is_sim else None,
                     "linear_velocity": self.robot_state.linear_v,
