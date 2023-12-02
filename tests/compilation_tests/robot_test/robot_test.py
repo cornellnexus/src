@@ -46,7 +46,11 @@ class TestNodes(unittest.TestCase):
     turn_angle = math.pi / 2
 
     def test_travel(self):
-        travel(self.robot_one.robot_state, self.distance, self.turn_angle)
+        travel(
+            self.robot_one.robot_state,
+            self.distance * self.robot_state.time_step,
+            self.turn_angle * self.robot_state.time_step,
+        )
         # Values calculated by hand based on kinematic equations
         new_x = round(-1.3662, 3)
         new_y = round(-0.366198, 3)
@@ -56,7 +60,9 @@ class TestNodes(unittest.TestCase):
             np.round(self.robot_one.robot_state.state, 3).tolist(),
         )
         # was move_forward_default
-        travel(self.robot_two.robot_state, self.distance, 0)
+        travel(
+            self.robot_two.robot_state, self.distance * self.robot_state.time_step, 0
+        )
         new_x = self.robot_two.robot_state.state[0]
         new_y = self.robot_two.robot_state.state[1]
         new_theta = float(self.robot_two.robot_state.state[2])
@@ -65,11 +71,11 @@ class TestNodes(unittest.TestCase):
             self.robot_two.robot_state.state.tolist(),
         )
         # was test_turn
-        travel(self.robot_four.robot_state, 0, math.pi / 2)
+        travel(self.robot_four.robot_state, 0, math.pi / 2 * self.robot_state.time_step)
         self.assertEqual([-math.pi / 2], self.robot_four.robot_state.state[2])
         # was test_circle_turn
         original_angle = self.robot_five.robot_state.state[2]
-        travel(self.robot_five.robot_state, 0, math.pi * 2)
+        travel(self.robot_five.robot_state, 0, math.pi * 2 * self.robot_state.time_step)
         rounded_robot_five_state = [
             round(state[0], 3) for state in self.robot_five.robot_state.state
         ]
@@ -78,7 +84,7 @@ class TestNodes(unittest.TestCase):
             round(rounded_robot_five_state[2] % math.pi, 2),
         )  # added round because travel clamps heading
         # was test_turn_with_time
-        travel(self.robot_six.robot_state, 0, math.pi / 2)
+        travel(self.robot_six.robot_state, 0, math.pi / 2 * self.robot_state.time_step)
         self.assertEqual([-math.pi / 2], self.robot_six.robot_state.state[2])
 
     # TODO: double check the calculations + test doesn't use time
