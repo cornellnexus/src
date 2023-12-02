@@ -104,7 +104,7 @@ def track_obstacle(robot_state):
 def setup_logic(robot_state):
     if not robot_state.is_sim:
         robot_state.motor_controller = MotorController(
-            wheel_radius=0, vm_load1=1, vm_load2=1, L=0, R=0, is_sim=robot.is_sim
+            wheel_radius=0, vm_load1=1, vm_load2=1, L=0, R=0, is_sim=robot_state.is_sim
         )
         robot_state.robot_radio_session = RadioModule(
             serial.Serial("/dev/ttyS0", 57600)

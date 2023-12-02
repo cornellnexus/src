@@ -1,4 +1,3 @@
-from engine.packet import Packet
 from engine.phase import Phase
 
 
@@ -26,9 +25,12 @@ class DataBase:
             "plastic_level": robot.robot_state.plastic_level,  # not detected by sensors yet
             "battery": robot.robot_state.battery,  # not detected by sensors yet
             "move_dist": robot.robot_state.move_dist,
-            "acceleration": robot.robot_state.acceleration,  # not called in main algorithm yet
-            "magnetic_field": robot.robot_state.magnetic_field,  # not called in main algorithm yet
-            "gyro_rotation": robot.robot_state.gyro_rotation,  # not called in main algorithm yet
+            # not called in main algorithm yet
+            "acceleration": robot.robot_state.acceleration,
+            # not called in main algorithm yet
+            "magnetic_field": robot.robot_state.magnetic_field,
+            # not called in main algorithm yet
+            "gyro_rotation": robot.robot_state.gyro_rotation,
             "position_pid": [
                 robot.robot_state.position_kp,
                 robot.robot_state.position_ki,
@@ -141,36 +143,3 @@ class DataBase:
     def phase_as_value(self):
         phase = self.get_data("phase")
         return phase.value
-
-    def make_packet(self):
-        coords = [
-            str(self.get_data("state")[0][0]),
-            str(self.get_data("state")[1][0]),
-            str(self.get_data("state")[2][0]),
-        ]
-
-        acc = []
-        for i in self.get_data("acceleration"):
-            acc.append(str(i))
-
-        temp_n_dist = "00.0"
-        temp_rot = "00.00"
-        temp_last_n = ["000.00", "000.00"]
-        temp_vel = "0.00"
-        next_n = ["000.00", "000.00"]
-        temp_ctrl = "1"
-        packet = Packet(
-            self.phase_as_value(),
-            str(self.get_data("plastic_level")),
-            acc,
-            temp_n_dist,
-            temp_rot,
-            temp_last_n,
-            temp_vel,
-            next_n,
-            coords,
-            str(self.get_data("battery")),
-            temp_ctrl,
-        )
-
-        return str(packet)

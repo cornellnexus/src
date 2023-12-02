@@ -9,7 +9,9 @@ logging.basicConfig(format=format, level=logging.INFO, datefmt="%H:%M:%S")
 
 # ser = serial.Serial("/dev/ttyS0", 57600) # Uncomment for RPI to GUI test
 # ser = serial.Serial("/dev/cu.usbserial-017543DC", 57600) # RPI_GUI_TEST
-def send_packet_to_gui(name, robot_state, database):
+
+
+def send_packet_to_gui(name, robot_state, transmittor):
     """
     Composes a data packet representing attributes of the current robot
     (and in the future mission state) and transmits the data for the GUI. Currently,
@@ -23,11 +25,12 @@ def send_packet_to_gui(name, robot_state, database):
     """
     logging.info("Thread %s: starting", name)
     while robot_state.phase != Phase.COMPLETE:
-        packet = database.make_packet()  # TODO: Replace implementation
+        packet = transmittor.rmi()
         if not robot_state.is_sim:
             # Sending data packet to gui from rpi
             cast_data = bytes(packet, encoding="utf-8")
-            ser = serial.Serial("/dev/ttyS0", 57600)  # Uncomment for RPI to GUI test
+            # Uncomment for RPI to GUI test
+            ser = serial.Serial("/dev/ttyS0", 57600)
             ser.write(cast_data)
         # logging.info("Sent packet: " + packet)
         time.sleep(0.01)

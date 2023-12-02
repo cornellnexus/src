@@ -11,6 +11,7 @@ import tests.compilation_tests.mag_heading_test as mag_heading_test
 import tests.compilation_tests.grid_test as grid_test
 import tests.compilation_tests.node_test as node_test
 import tests.compilation_tests.database_test as database_test
+import tests.compilation_tests.transmission_test as transmission_test
 
 """
 Runs all compilation test files as individual modules
@@ -38,6 +39,7 @@ compilation_tests = [
     grid_test,
     node_test,
     database_test,
+    transmission_test
 ]
 for test_case in compilation_tests:
     suite.addTests(loader.loadTestsFromModule(test_case))
