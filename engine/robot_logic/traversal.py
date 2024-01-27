@@ -58,6 +58,59 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
     unvisited_waypoints.popleft()
 
     return robot_state, unvisited_waypoints
+"""
+Does not use PID, EKF. The method assumes that we are physically running the robot and not running it in simulation.
+TODO: For now, we are keep the original move_to_target_node logic. 
+When we test it on the robot, and if it does not follow the intended trajectory
+then add back Alan's fix.
+"""
+def simple_move_to_target_node(robot_state, target, allowed_dist_error, database):
+    """
+    Moves robot to target + or - allowed_dist_error
+    Arguments:
+        target: target coordinates in the form (latitude, longitude)
+        allowed_dist_error: the maximum distance in meters that the robot 
+        can be from a node for the robot to have "visited" that node
+        database: 
+    """
+    import matplotlib.pyplot as plt 
+
+
+    # location error (in meters)
+    distance_away = calculate_dist(target, robot_state.state)
+    robot_state.goal_location = target
+    
+    while (distance_away > allowed_dist_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
+        # Error in terms of latitude and longitude, NOT meters
+        x_coords_error = target[0] - robot_state.state[0]
+        y_coords_error = target[1] - robot_state.state[1]
+
+        desired_angle = math.atan2(y_coords_error,  x_coords_error)
+
+        x_vel = x_coords_error
+        y_vel = y_coords_error
+
+        cmd_v, cmd_w = feedback_lin(
+            robot_state.state, x_vel, y_vel, robot_state.epsilon)
+
+        # clamping of velocities:
+        (limited_cmd_v, limited_cmd_w) = limit_cmds(
+            cmd_v, cmd_w, robot_state.max_velocity, robot_state.radius)
+
+        robot_state.linear_v = limited_cmd_v[0]
+        robot_state.angular_v = limited_cmd_w[0]
+        #TODO: we need to unify time.sleep and robot_state.time_step
+        travel(robot_state, robot_state.time_step *
+               limited_cmd_v[0], robot_state.time_step * limited_cmd_w[0])
+        if not robot_state.is_sim:
+            robot_state.motor_controller.spin_motors(
+                limited_cmd_w[0], limited_cmd_v[0])
+            time.sleep(10)
+
+        # location error (in meters)
+        distance_away = calculate_dist(target, robot_state.state)
+        #TODO: Determine whether we want to update database here.
+    
 
 
 def move_to_target_node(robot_state, target, allowed_dist_error, database):
@@ -92,9 +145,7 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             iterations += 1
             if iterations == 50:
                 break
-        desired_angle = math.atan2(
-            target[1] - robot_state.state[1], target[0] - robot_state.state[0]
-        )
+        desired_angle = math.atan2( y_coords_error,  x_coords_error)
 
         x_vel = robot_state.loc_pid_x.update(x_coords_error)
         y_vel = robot_state.loc_pid_y.update(y_coords_error)
