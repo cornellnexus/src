@@ -17,14 +17,7 @@ def traversal_logic(robot_state, mission_state, database):
     """
     robot_state.prev_phase = Phase.TRAVERSE
     control_mode = robot_state.control_mode
-    if control_mode == ControlMode.LAWNMOWER:
-        return traverse_standard(
-            robot_state,
-            mission_state.waypoints_to_visit,
-            mission_state.allowed_dist_error,
-            database,
-        )
-    elif control_mode == ControlMode.ROOMBA:
+    if control_mode == ControlMode.ROOMBA:
         robot_state.enable_obstacle_avoidance = False
         robot_state = traverse_roomba(
             robot_state,
@@ -35,6 +28,13 @@ def traversal_logic(robot_state, mission_state, database):
         )
         robot_state.enable_obstacle_avoidance = True
         return robot_state, None
+    else:
+        return traverse_standard(
+            robot_state,
+            mission_state.waypoints_to_visit,
+            mission_state.allowed_dist_error,
+            database,
+        )
 
 
 def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, database):
@@ -58,6 +58,59 @@ def traverse_standard(robot_state, unvisited_waypoints, allowed_dist_error, data
     unvisited_waypoints.popleft()
 
     return robot_state, unvisited_waypoints
+"""
+Does not use PID, EKF. The method assumes that we are physically running the robot and not running it in simulation.
+TODO: For now, we are keep the original move_to_target_node logic. 
+When we test it on the robot, and if it does not follow the intended trajectory
+then add back Alan's fix.
+"""
+def simple_move_to_target_node(robot_state, target, allowed_dist_error, database):
+    """
+    Moves robot to target + or - allowed_dist_error
+    Arguments:
+        target: target coordinates in the form (latitude, longitude)
+        allowed_dist_error: the maximum distance in meters that the robot 
+        can be from a node for the robot to have "visited" that node
+        database: 
+    """
+    import matplotlib.pyplot as plt 
+
+
+    # location error (in meters)
+    distance_away = calculate_dist(target, robot_state.state)
+    robot_state.goal_location = target
+    
+    while (distance_away > allowed_dist_error) and not (robot_state.phase == Phase.AVOID_OBSTACLE):
+        # Error in terms of latitude and longitude, NOT meters
+        x_coords_error = target[0] - robot_state.state[0]
+        y_coords_error = target[1] - robot_state.state[1]
+
+        desired_angle = math.atan2(y_coords_error,  x_coords_error)
+
+        x_vel = x_coords_error
+        y_vel = y_coords_error
+
+        cmd_v, cmd_w = feedback_lin(
+            robot_state.state, x_vel, y_vel, robot_state.epsilon)
+
+        # clamping of velocities:
+        (limited_cmd_v, limited_cmd_w) = limit_cmds(
+            cmd_v, cmd_w, robot_state.max_velocity, robot_state.radius)
+
+        robot_state.linear_v = limited_cmd_v[0]
+        robot_state.angular_v = limited_cmd_w[0]
+        #TODO: we need to unify time.sleep and robot_state.time_step
+        travel(robot_state, robot_state.time_step *
+               limited_cmd_v[0], robot_state.time_step * limited_cmd_w[0])
+        if not robot_state.is_sim:
+            robot_state.motor_controller.spin_motors(
+                limited_cmd_w[0], limited_cmd_v[0])
+            time.sleep(10)
+
+        # location error (in meters)
+        distance_away = calculate_dist(target, robot_state.state)
+        #TODO: Determine whether we want to update database here.
+    
 
 
 def move_to_target_node(robot_state, target, allowed_dist_error, database):
@@ -92,9 +145,7 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             iterations += 1
             if iterations == 50:
                 break
-        desired_angle = math.atan2(
-            target[1] - robot_state.state[1], target[0] - robot_state.state[0]
-        )
+        desired_angle = math.atan2( y_coords_error,  x_coords_error)
 
         x_vel = robot_state.loc_pid_x.update(x_coords_error)
         y_vel = robot_state.loc_pid_y.update(y_coords_error)
@@ -120,9 +171,6 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             robot_state.time_step * limited_cmd_v[0],
             robot_state.time_step * limited_cmd_w[0],
         )
-        if not robot_state.is_sim:
-            robot_state.motor_controller.spin_motors(limited_cmd_w[0], limited_cmd_v[0])
-            time.sleep(10)
 
         # Get state after movement:
         predicted_state = robot_state.state  # this will come from Kalman Filter
@@ -146,8 +194,7 @@ def move_to_target_node(robot_state, target, allowed_dist_error, database):
             y = robot_state.truthpose[:, 1]
             plt.scatter(target[0], target[1])
             plt.text(target[0], target[1], "target")
-    if not robot_state.is_sim:
-        robot_state.motor_controller.spin_motors(0, 0)
+    travel(robot_state, 0, 0)
     if simulate:
         for index in range(iterations):
             plt.scatter(robot_state.truthpose[:, 0], robot_state.truthpose[:, 1])
@@ -164,17 +211,27 @@ def travel(robot_state, delta_d, delta_phi):
     """
     # if it is a simulation, we update the robot state directly
     if robot_state.is_sim:
-        robot_state.state = integrate_odom(robot_state.state, delta_d, delta_phi)
-        robot_state.truthpose = np.append(
-            robot_state.truthpose, np.transpose(robot_state.state), 0
+        robot_state.state = integrate_odom(
+            robot_state.state,
+            delta_d / robot_state.time_step,
+            delta_phi / robot_state.time_step,
         )
-    # otherwise, we update the robot state using EKF
+        prev_truthpose = robot_state.truthpose[-1]
+        if (robot_state.state != np.transpose(prev_truthpose)).any():
+            robot_state.truthpose = np.append(
+                robot_state.truthpose, np.transpose(robot_state.state), 0
+            )
+    # otherwise, we update the robot state using kinematics and EKF
     else:
         update_state(
             robot_state,
             delta_d / robot_state.time_step,
             delta_phi / robot_state.time_step,
         )
+        robot_state.motor_controller.motors(
+            delta_phi / robot_state.time_step, delta_d / robot_state.time_step
+        )
+        time.sleep(robot_state.time_step)
 
 
 def update_state(robot_state, velocity, omega):
@@ -224,7 +281,6 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
     # to add obstacle avoidance, can either change roomba to go to point on the circle in the direction of the
     # robot direction or use raw sensor value
     # can we guarantee that when giving a velocity that the robot will move at that velocity?
-    dt = 10
     accumulated_time = 0
     # TODO: battery_limit, time_limit, tank_capacity is full
     exit_boolean = False
@@ -240,13 +296,13 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
             phase_change(robot_state)
             return None
         curr_pos = robot_state.state
-        vel = calculate_dist(past_pos[:2], curr_pos[:2]) / (dt / 1000)
+        vel = calculate_dist(past_pos[:2], curr_pos[:2]) / (robot_state.time_step)
         if robot_state.using_ekf:
             [new_x, new_y, _] = robot_state.ekf.get_predicted_state(
-                curr_pos, [vel * dt / 1000, 0]
+                curr_pos, [vel * robot_state.time_step, 0]
             )
         else:
-            [new_x, new_y, _] = curr_pos + vel * dt / 1000
+            [new_x, new_y, _] = curr_pos + vel * robot_state.time_step
         next_radius = calculate_dist(base_station_loc, (new_x, new_y))
         robot_state.goal_location = (new_x, new_y)
         # if moving will cause the robot to move through the obstacle
@@ -281,25 +337,19 @@ def traverse_roomba(robot_state, base_station_loc, time_limit, roomba_radius, da
                 database,
             )
         else:
-            travel(robot_state, robot_state.move_dist, 0)
+            travel(robot_state, robot_state.move_dist * robot_state.time_step, 0)
             database.update_data(
                 "state",
                 robot_state.state[0],
                 robot_state.state[1],
                 robot_state.state[2],
             )
-            if not robot_state.is_sim:
-                # TODO: determine what vel to run this at
-                robot_state.motor_controller.motors(0, 0)
-        if not robot_state.is_sim:
-            time.sleep(dt)
-        accumulated_time += dt  # accumulation in time in ms
+        accumulated_time += robot_state.time_step  # accumulation in time in ms
         exit_boolean = accumulated_time > time_limit
         past_pos = curr_pos
     robot_state.phase = Phase.RETURN
     phase_change(robot_state)
-    if not robot_state.is_sim:
-        robot_state.motor_controller.spin_motors(0, 0)
+    travel(robot_state, 0, 0)
     return robot_state
 
 
@@ -331,9 +381,6 @@ def turn_to_target_heading(
         )
 
         travel(robot_state, 0, robot_state.time_step * limited_cmd_w)
-        if not robot_state.is_sim:
-            robot_state.motor_controller.spin_motors(limited_cmd_w, 0)
-            time.sleep(10)
 
         # Get state after movement:
         predicted_state = robot_state.state  # this will come from Kalman Filter
@@ -345,5 +392,4 @@ def turn_to_target_heading(
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
     # re-enable after finishing turning
     robot_state.enable_obstacle_avoidance = True
-    if not robot_state.is_sim:
-        robot_state.motor_controller.spin_motors(0, 0)
+    travel(robot_state, 0, 0)

@@ -49,5 +49,5 @@ class Mission_State:
         self.allowed_dist_error = kwargs.get("allowed_dist_error", 0.5)
         self.allowed_heading_error = kwargs.get("allowed_heading_error", 0.1)
         self.allowed_docking_pos_error = kwargs.get("allowed_docking_pos_error", 0.1)
-        self.time_limit = kwargs.get("time_limit", 50000)
+        self.time_limit = kwargs.get("time_limit", 400)
         self.roomba_radius = kwargs.get("roomba_radius", 20)

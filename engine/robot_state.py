@@ -115,7 +115,7 @@ class Robot_State:
         # CONSTANTS
         self.width = kwargs.get("width", 700)
         self.length = kwargs.get("length", 700)
-        self.time_step = kwargs.get("time_step", 1)
+        self.time_step = kwargs.get("time_step", 10 / 1000)
         self.control_mode = kwargs.get("control_mode", ControlMode.LAWNMOWER)
         self.position_kp = kwargs.get("position_kp", 1)
         self.position_ki = kwargs.get("position_ki", 0)
