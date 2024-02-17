@@ -4,14 +4,14 @@ Installing virtual environment (venv) & nexus software dependencies:
 
 1. Ensure python3 is downloaded
 2. Navigate to the <software> directory
-3. Create venv by running:  
-   * macOS: <python3 -m venv venv>
-   * linux: <python3 -m venv venv>
-   * windows: <py -m venv venv>
+3. Create venv by running:
+   - macOS: <python3 -m venv venv>
+   - linux: <python3 -m venv venv>
+   - windows: <py -m venv venv>
 4. Activate the venv by running:  
    *macOS: <venv/bin/activate>
    *linux: <venv/bin/activate>
-   *windows: <venv\Scripts\activate>
+   \*windows: <venv\Scripts\activate>
 5. Run: <pip3 install -r requirements.txt> to install nexus software dependencies.
 
 For IMU lsm9ds1, must be operating on Raspberry Pi to run these commands.
@@ -34,3 +34,4 @@ For GUI Module
 
 1. install tkinter
    brew install python-tk@3.10
+2. ask sophia for help
