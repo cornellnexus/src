@@ -294,12 +294,15 @@ class Grid:
                     self.nodes[x, y].is_active = True
 
     def activate_parallelogram(self, row, col, row_limit):
+        # Horizontal traversal does not currently work for this shape
         for x in range(row, row_limit):
             for y in range(0, col):
                 self.nodes[x, x + y].is_active = True
         return self.nodes
 
     def activate_snake(self, start, end, spacing):
+        # Note that this is meant to document a shape in which the traversal
+        # algorithm does not currently work
         (row, col) = start
         (row_limit, col_limit) = end
 
