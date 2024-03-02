@@ -293,6 +293,60 @@ class Grid:
                 if self.is_inside_triangle(p1, p2, p3, (x, y)):
                     self.nodes[x, y].is_active = True
 
+    def activate_parallelogram(self, row, col, row_limit):
+        # Horizontal traversal does not currently work for this shape
+        for x in range(row, row_limit):
+            for y in range(0, col):
+                self.nodes[x, x + y].is_active = True
+        return self.nodes
+
+    def activate_snake(self, start, end, spacing):
+        # Note that this is meant to document a shape in which the traversal
+        # algorithm does not currently work
+        (row, col) = start
+        (row_limit, col_limit) = end
+
+        for x in range(row, row_limit):
+            if (x - row) % spacing == 0:
+                for y in range(col, col_limit + 1):
+                    self.nodes[x][y].is_active = True
+            else:
+                if (x - row) % (2 * spacing) < spacing:
+                    self.nodes[x][col_limit].is_active = True
+                else:
+                    self.nodes[x][col].is_active = True
+
+
+    def activate_hexagon(self, center, radius):
+        (row, col) = center
+
+        degrees_0 = (row + radius, col)
+        degrees_60 = (row + radius / 2, col + radius * math.sqrt(3) / 2)
+        degrees_120 = (row - radius / 2, col + radius * math.sqrt(3) / 2)
+        degrees_180 = (row - radius, col)
+        degrees_240 = (row - radius / 2, col - radius * math.sqrt(3) / 2)
+        degrees_300 = (row + radius / 2, col - radius * math.sqrt(3) / 2)
+        
+        # A circle circumscribes a hexagon
+        for x in range(row - radius, row + radius + 1):
+            for y in range(col - radius, col + radius + 1):
+                sector1 = self.is_inside_triangle(
+                    center, degrees_0, degrees_60, (x, y))
+                sector2 = self.is_inside_triangle(
+                    center, degrees_60, degrees_120, (x, y))
+                sector3 = self.is_inside_triangle(
+                    center, degrees_120, degrees_180, (x, y))
+                sector4 = self.is_inside_triangle(
+                    center, degrees_180, degrees_240, (x, y))
+                sector5 = self.is_inside_triangle(
+                    center, degrees_240, degrees_300, (x, y))
+                sector6 = self.is_inside_triangle(
+                    center, degrees_300, degrees_0, (x, y))
+
+                if (sector1 or sector2 or sector3 or 
+                    sector4 or sector5 or sector6):
+                    self.nodes[x, y].is_active = True
+
     def is_on_border(self, coordinate, row_limit, col_limit):
         """
         Checks if node is on border of activated nodes
