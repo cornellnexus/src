@@ -392,4 +392,40 @@ def turn_to_target_heading(
         abs_heading_error = abs(target_heading - float(predicted_state[2]))
     # re-enable after finishing turning
     robot_state.enable_obstacle_avoidance = True
-    travel(robot_state, 0, 0)
+    if not robot_state.is_sim:
+        robot_state.motor_controller.spin_motors(0, 0)
+
+    # Ackerman calculations calculates the ideal wheel angles, and then uses the 
+    # ackerman percentage to adjust the outside wheel angle
+    
+    def ackerman_calculations (left_ang, right_ang, inside_ang, wheel_base, 
+                               steering_ratio):
+        #calculate ideal wheel angle
+        ackerman_percentage = 0 
+
+        #calculate desired width of turn
+        track_width = wheel_base * ((1/np.tan(left_ang) - (1/np.tan(right_ang))))
+
+        #ackerman ratio used in adjusting wheel angles
+        ackerman_ratio = (inside_ang / steering_ratio)
+
+        #apply the ackerman ratio to our wheels 
+        new_left_ang = 1/ np.tan((wheel_base * np.tan(ackerman_ratio)) / (wheel_base + (.5 * track_width )(np.tan(ackerman_ratio))))
+        new_right_ang = 1/ np.tan((wheel_base * np.tan(ackerman_ratio)) / (wheel_base - (.5 * track_width )(np.tan(ackerman_ratio))))
+        new_inside = new_left_ang 
+        outside_ang = new_inside - ackerman_percentage * (new_inside - ackerman_ratio)
+
+        #return needed data to complete turns
+        return [track_width, ackerman_ratio, new_left_ang, new_right_ang, new_inside, outside_ang]
+
+    def ackerman_right (left_ang, right_ang, inside_ang, wheel_base, 
+                               steering_ratio):
+        
+        raise "unimplemented"
+            
+
+    def ackerman_left (left_ang, right_ang, inside_ang, wheel_base, 
+                               steering_ratio):
+        
+        raise "unimplemented"
+        
