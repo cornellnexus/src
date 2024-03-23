@@ -44,7 +44,7 @@ class Grid:
 
         #num_rows: Number of rows of Nodes in the grid [int]
         #num_cols: Number of columns of Nodes in the grid. [int]
-
+        #TODO: remove leftmost_node, leftmost_node_pos, border_nodes, 
         #leftmost_node: the leftmost active node in the Grid which is used as the starting node in lawnmower and spiral traversal.
         #leftmost_node_pos: the (row,col) position of the leftmost node
         #border_nodes: all active nodes which either exist on the edge of the grid or have a neighbor that is an inactive node
@@ -150,6 +150,9 @@ class Grid:
         self.curr_pos = None
         self.direction = self.Direction.RIGHT
         self.waypoints = []
+        # RFWP
+        self.vertical_waypoint_list = []
+        self.horizontal_waypoint_list = [[] for _ in range(self.num_cols)]
 
     def get_active_waypoints_list(self):
         return self.active_waypoints_list
@@ -219,9 +222,15 @@ class Grid:
         Activates all the nodes in a rectangle based on row start/end, col
         start/end.
         """
+        self.horizontal_waypoint_list = [[] for _ in range(col_limit - col)]
         for x in range(row, row_limit):
+            # RFWP
+            col_list = []
             for y in range(col, col_limit):
                 self.nodes[x, y].is_active = True
+                col_list.append(self.nodes[x, y])
+                self.horizontal_waypoint_list[y - col].append(self.nodes[x, y])
+            self.vertical_waypoint_list.append(col_list)
         return self.nodes
 
     def activate_circle(self, circle_center_row, circle_center_col, circle_radius):
@@ -229,6 +238,7 @@ class Grid:
         Activates all the nodes in a circle based on center and radius.
         """
         for x in range(self.num_rows):
+            col_list = []
             for y in range(self.num_cols):
                 if (
                     (x - circle_center_row) ** 2
@@ -236,6 +246,10 @@ class Grid:
                     - circle_radius**2
                 ) < 0:
                     self.nodes[x, y].is_active = True
+                    col_list.append(self.nodes[x, y])
+                    self.horizontal_waypoint_list[y].append(self.nodes[x, y])
+            if col_list:
+                self.vertical_waypoint_list.append(col_list)
 
     def is_inside_triangle(self, p1, p2, p3, p4):
         """A function to check whether point p4 lies inside the triangle formed by
@@ -267,31 +281,38 @@ class Grid:
         # is same as A
         return A == (A1 + A2 + A3)
 
-    def activate_line(self, coordinate, n, is_horizontal):
+    def activate_line(self, coordinate, n: int, is_vertical: bool):
         """
         Activate a single horizontal line of length n starting at row, col.
         If is_horizontal is True, the line is from (row, col) to (row, col + n).
         Otherwise, the line is from (row, col) to (row + n, col).
         Args:
             coordinate (int tuple): coordinate of the starting node
+            n: the number of points in the line
+            is_vertical: whether the line is vertical or horizontal
         """
         (row, col) = coordinate
         # Note: rows are y-position and columns are x-position
-        if is_horizontal:
-            for i in range(n):
+        for i in range(n):
+            if is_vertical:
+                self.nodes[col, row + i].is_active = True
+                self.vertical_waypoint_list.append([self.nodes[col, row + i]])
+            else:
                 self.nodes[col + i][row].is_active = True
-        else:
-            for i in range(n):
-                self.nodes[col][row + i].is_active = True
+                self.horizontal_waypoint_list.append([self.nodes[col + i, row]])
 
     def activate_triangle(self, p1, p2, p3):
         """
-        Activates all the nodes in a triangle based on three vertices p1, p2, p3.
+        Activates all the nodes in a triangle based on three vertices p1, p2, p3. The vertices should all be on the positive x-y quadrant
         """
         for x in range(self.num_rows):
+            col = []
             for y in range(self.num_cols):
                 if self.is_inside_triangle(p1, p2, p3, (x, y)):
                     self.nodes[x, y].is_active = True
+                    self.horizontal_waypoint_list[y].append(self.nodes[x, y])
+                    col.append(self.nodes[x, y])
+            self.vertical_waypoint_list.append(col)
 
     def activate_parallelogram(self, row, col, row_limit):
         # Horizontal traversal does not currently work for this shape
@@ -731,6 +752,87 @@ class Grid:
             else:
                 self.curr_pos = (turning_column, next_row)
 
+    def add_waypoints(self, is_vertical, flip):
+        """
+        Adds waypoints to the self.waypoints list based on the specified orientation and flip condition.
+
+        Parameters:
+        - is_vertical (bool): If True, waypoints are extracted from the vertical_waypoint_list; otherwise, from horizontal_waypoint_list.
+        - flip (bool): If True, waypoints are added in a flipped order within each row/column.
+
+        Note:
+        - This is a helper function used by simple_get_guided_waypoints
+        """
+        if is_vertical:
+            lst = self.vertical_waypoint_list
+        else:
+            lst = self.horizontal_waypoint_list
+        for i in range(len(lst)):
+            if len(lst[0]) == 0:
+                continue
+                # TODO add turning function that returns list of Nodes
+            if flip:
+                # add last and first waypoint in the row/col
+                self.waypoints += [
+                    lst[i][-1],
+                    lst[i][0],
+                ]
+            else:
+                # add first and last waypoint in the row/col
+                self.waypoints += [
+                    lst[i][0],
+                    lst[i][-1],
+                ]
+            flip = not flip
+
+    def simple_get_guided_waypoints(self):
+        """
+        Retrieves waypoints based on the direction of movement.
+
+        This method calculates waypoints for navigation based on the current direction
+        of movement (up, down, left, or right) and waypoint lists provided.
+
+        Returns:
+            list: List of waypoints for guided navigation.
+
+        Note:
+            - This method updates the internal `self.waypoints` list with the calculated waypoints.
+            - The calculation of waypoints depends on the direction of movement and the provided
+              vertical or horizontal waypoint lists.
+
+        Example:
+            # Assuming 'self' represents an instance of a class with direction and waypoint lists set.
+            waypoints = simple_get_guided_waypoints(self)
+        """
+        flip = True
+        if (
+            self.direction == self.direction.UP
+            or self.direction == self.direction.RIGHT
+        ):
+            flip = False
+
+        def add_points(flip, lst):
+            for row in range(len(lst)):
+                if len(lst[row]) == 0:
+                    continue
+                if flip:
+                    self.waypoints += [
+                        lst[row][-1],
+                        lst[row][0],
+                    ]
+                else:
+                    self.waypoints += [
+                        lst[row][0],
+                        lst[row][-1],
+                    ]
+                flip = not flip
+
+        if self.direction == self.direction.UP or self.direction == self.direction.DOWN:
+            add_points(flip, self.vertical_waypoint_list)
+        else:
+            add_points(flip, self.horizontal_waypoint_list)
+        return self.waypoints
+
     def get_all_guided_lawnmower_waypoints_adjustable(self, is_vertical):
         """
         Returns the waypoints being traversed. The algorithm traverses from bottom
@@ -759,7 +861,6 @@ class Grid:
             # the row (or terminating).
 
             self.add_guided_waypoints(is_vertical)
-        print(self.waypoints)
         return self.waypoints
 
     # --------------------- STANDARD TRAVERSAL ALGORITHMS -------------- #
@@ -911,9 +1012,7 @@ class Grid:
             waypoints = self.get_spiral_waypoints()
         elif mode == ControlMode.STRAIGHT:
             waypoints = self.get_straight_line_waypoints(y_start_pct=0.5)
-        elif mode == ControlMode.LAWNMOWER_A:
-            # TODO: Fix lawnmower_a; documented in a separate google docs
-            raise Exception("LAWNMOWER_A is currently buggy")
+        elif mode == ControlMode.LAWNMOWER_GUIDED:
             waypoints = self.get_all_guided_lawnmower_waypoints_adjustable(True)
         else:
             return []
