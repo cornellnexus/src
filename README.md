@@ -34,3 +34,6 @@ For GUI Module
 
 1. install tkinter
    brew install python-tk@3.10
+
+
+Yes
