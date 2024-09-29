@@ -213,6 +213,8 @@ with dai.Device(pipeline) as device:
                 cv2.putText(frame, "{:.1f}m".format(distance/1000), (xmin + 10, ymin + 20), fontType, 0.5, color)
                 print(f"STOP! object within critical bounds")
             elif distance < WARNING:
+                angle_rad = math.atan2(coords.x, coords.z)  # Angle in radians
+        angle_deg = math.degrees(angle_rad)
                 if coords.x > 0:
                     print("Turn left: obstables on right")
                 else:
