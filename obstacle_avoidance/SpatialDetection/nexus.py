@@ -214,11 +214,14 @@ with dai.Device(pipeline) as device:
                 print(f"STOP! object within critical bounds")
             elif distance < WARNING:
                 angle_rad = math.atan2(coords.x, coords.z)  # Angle in radians
-        angle_deg = math.degrees(angle_rad)
+                angle_deg = math.degrees(angle_rad)
                 if coords.x > 0:
-                    print("Turn left: obstables on right")
+                    turn_direction = "left"
+                    #print("Turn left: obstables on right")
                 else:
-                    print("Turn right: obstables on left")
+                    turn_direction = "right"
+                    #print("Turn right: obstables on left")
+                print(f"Obstacle at {abs(angle_deg):.2f} degrees to the {turn_direction}")
                 color = (0, 140, 255)
                 cv2.rectangle(frame, (x1, y1), (x2, y2), color, cv2.FONT_HERSHEY_SIMPLEX)
                 cv2.putText(frame, "{:.1f}m".format(distance/1000), (xmin + 10, ymin + 20), fontType, 0.5, color)
