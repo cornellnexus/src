@@ -96,7 +96,7 @@ def plot_sim_traj(m):
     # Global parameters for animation functions
     global mission, ax, circle_patch, wedge_patch, circle_patch_base, wedge_patch_base, anim
 
-    plt.style.use("seaborn-whitegrid")
+    plt.style.use("seaborn-v0_8-whitegrid")
     x_coords = m.mission_state.robot.robot_state.truthpose[:, 0]
     y_coords = m.mission_state.robot.robot_state.truthpose[:, 1]
     fig, ax = plt.subplots()
