@@ -1,16 +1,15 @@
-geopy==2.1.0
-pyserial==3.5 
-pynmea2==1.15.0
-pyparsing==2.2.1
+geopy>=2.1.0
+pyserial>=3.5 
+pynmea2>=1.15.0
+pyparsing>=2.2.1
 matplotlib
-haversine==2.3.0
-vincenty==0.1.4
-numpy==1.22.0
-statistics==1.0.3.5
-PySimpleGui == 4.59.0 #comment this out when running on rpi
+haversine>=2.3.0
+vincenty>=0.1.4
+numpy>=1.22.0
+statistics>=1.0.3.5
+PySimpleGui >= 4.59.0 #comment this out when running on rpi
 black >= 23.0.0
 coverage
-numpy
 CMake
 wmm2020
 ahrs
