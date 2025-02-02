@@ -70,7 +70,7 @@ def magnetometer_calibrate():
 
     # could maybe automate when we detect that the hard offset values stop changing
     print("Magnetometer Calibration")
-    print("Start moving the board in all directions")
+    print("Start SLOWLY moving the board in all directions")
     print("When the magnetic Hard Offset values stop")
     print("changing, press ENTER to go to the next step")
     print("Press ENTER to continue...")
@@ -94,7 +94,6 @@ def magnetometer_calibrate():
         min_x = min(min_x, mag_x)
         min_y = min(min_y, mag_y)
         min_z = min(min_z, mag_z)
-
         max_x = max(max_x, mag_x)
         max_y = max(max_y, mag_y)
         max_z = max(max_z, mag_z)
@@ -105,9 +104,15 @@ def magnetometer_calibrate():
         HI_offset_z = (max_z + min_z) / 2
 
         # Get the soft-iron offset values
-        SI_offset_x = (max_x - min_x) / 2
-        SI_offset_y = (max_y - min_y) / 2
-        SI_offset_z = (max_z - min_z) / 2
+        mag_scale_x = (max_x - min_x) / 2
+        mag_scale_y = (max_y - min_y) / 2
+        mag_scale_z = (max_z - min_z) / 2
+
+        avg_rad = (mag_scale_x + mag_scale_y + mag_scale_z) / 3.0
+
+        SI_offset_x = avg_rad/(mag_scale_x)
+        SI_offset_y = avg_rad/(mag_scale_y)
+        SI_offset_z = avg_rad/(mag_scale_z)
 
         print(
             "Hard-Iron Offset:  X: {0:8.2f}, Y:{1:8.2f}, Z:{2:8.2f} uT".format(
@@ -134,6 +139,8 @@ def magnetometer_calibrate():
             SI_offset_x, SI_offset_y, SI_offset_z
         )
     )
+
+    return hard_off, soft_off
 
     #########################
     # Gyroscope Calibration #
@@ -182,6 +189,7 @@ def gyro_calibrate():
         noise_y = max_y - min_y
         noise_z = max_z - min_z
 
+
         print(
             "Zero Rate Offset:  X: {0:8.2f}, Y:{1:8.2f}, Z:{2:8.2f} rad/s".format(
                 offset_x, offset_y, offset_z
@@ -201,3 +209,7 @@ def gyro_calibrate():
             offset_x, offset_y, offset_z
         )
     )
+
+
+while True:
+    magnetometer_calibrate()
