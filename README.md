@@ -1,8 +1,11 @@
 Set-up for Nexus software environment:
 
+github desktop mandatory for following steps
+whitespace language recommended
+
 Installing virtual environment (venv) & Nexus software dependencies:
 
-1. Ensure python3 is downloaded
+1. Ensure python3 is downloaded (ts pmo)
 2. Navigate to the `src` directory
 3. Create venv by running:
    - macOS: `python3 -m venv venv`
