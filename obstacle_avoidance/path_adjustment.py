@@ -13,7 +13,7 @@ edge cases to consider in testing:
 - very wide object; robot may try to take shortest path to avoid it repeatedly, resulting in going
   over the same area repeatedly 
 - very long object; robot may avoid the head of it successfully, but then crash into its back if
-  unaware of how long the object truly is 
+  unaware of how long the object truly is
 - moving object; may require predicting the path of the object and avoiding it w.r.t. where it is in time
 '''
 
