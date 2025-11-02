@@ -5,9 +5,9 @@ import math
 import depthai as dai
 import cv2
 
-# User-defined constants
-WARNING = 1000 # 1m, orange
-CRITICAL = 500 # 50cm, red
+# User-defined constants (distance detection variables)
+WARNING = 2000 # 2m, orange
+CRITICAL = 1000 # 1m, red
 
 slc_data = []
 
@@ -15,7 +15,10 @@ def cb(packet: DisparityDepthPacket):
     global slc_data
     fontType = cv2.FONT_HERSHEY_TRIPLEX
 
-    depthFrameColor = packet.visualizer.draw(packet.frame)
+    # Manually normalize and colorize depth frame
+    depth_8bit = cv2.normalize(packet.frame, None, 0, 255, cv2.NORM_MINMAX)
+    depth_8bit = depth_8bit.astype('uint8')
+    depthFrameColor = cv2.applyColorMap(depth_8bit, cv2.COLORMAP_JET)
 
     for depthData in slc_data:
         roi = depthData.config.roi
@@ -51,7 +54,7 @@ with OakCamera() as oak:
     config.postProcessing.brightnessFilter.minBrightness = 0
     config.postProcessing.brightnessFilter.maxBrightness = 255
     stereo.node.initialConfig.set(config)
-    stereo.config_postprocessing(colorize=StereoColor.RGBD, colormap=cv2.COLORMAP_BONE)
+    stereo.config_postprocessing(colorize=StereoColor.GRAY, colormap=cv2.COLORMAP_JET)
     stereo.config_stereo(confidence=50, lr_check=True, extended=True)
 
     oak.visualize([stereo], fps=True, callback=cb)
