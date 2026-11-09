@@ -20,6 +20,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 if(APPLE)
   SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif(APPLE)
+Asdfasdf
 
 add_subdirectory(core)
 include_directories(core core/common core/contrib)
